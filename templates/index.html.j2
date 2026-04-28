@@ -1,0 +1,68 @@
+{% extends "_layout.html.j2" %}
+{% block content %}
+<h2>Today at a glance</h2>
+
+<div class="cards">
+  <div class="card {% if alerts_today >= 5 %}warn{% else %}ok{% endif %}">
+    <div class="label">Alerts sent today (UTC)</div>
+    <div class="value">{{ alerts_today }} <span style="font-size:14px;color:var(--muted)">/ 5 cap</span></div>
+    <div class="sub">{{ 5 - alerts_today }} remaining today</div>
+  </div>
+  <div class="card">
+    <div class="label">Open candidates</div>
+    <div class="value">{{ open_signals }}</div>
+    <div class="sub">awaiting cluster confirmation or cap</div>
+  </div>
+  <div class="card">
+    <div class="label">Fresh events (last 30m)</div>
+    <div class="value">{{ fresh_events }}</div>
+    <div class="sub">across all agents</div>
+  </div>
+  <div class="card {% if all_agents_healthy %}ok{% else %}bad{% endif %}">
+    <div class="label">Agent health</div>
+    <div class="value">{{ healthy_agent_count }} / {{ total_agent_count }}</div>
+    <div class="sub">{% if all_agents_healthy %}all agents reporting{% else %}stale: {{ stale_agents|join(', ') }}{% endif %}</div>
+  </div>
+</div>
+
+<h3>Recent signals</h3>
+{% if recent_signals %}
+<table>
+  <thead>
+    <tr><th>Fired</th><th>Ticker</th><th>Action</th><th class="num">Score</th><th>Summary</th><th>Status</th></tr>
+  </thead>
+  <tbody>
+    {% for s in recent_signals %}
+    <tr>
+      <td>{{ s.fired_at[:16] }}</td>
+      <td><strong>{{ s.ticker }}</strong></td>
+      <td><span class="tag {{ s.action }}">{{ s.action }}</span></td>
+      <td class="num">
+        {{ s.score|int }}
+        <span class="score-bar"><span class="fill" style="width: {{ (s.score|float / 100 * 100)|round|int }}%"></span></span>
+      </td>
+      <td>{{ s.evidence_summary }}</td>
+      <td><span class="tag {{ s.status_v2 }}">{{ s.status_v2 }}</span></td>
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
+{% else %}
+<div class="empty">No signals yet. The system fires only when ≥2 agents agree (per §15.3 cluster rule). Quiet days are normal — high signal density is the goal.</div>
+{% endif %}
+
+<h3>Top recent events by agent</h3>
+<div class="cards">
+  {% for agent_name, n_recent, sample in agent_activity %}
+  <div class="card">
+    <div class="label"><span class="tag agent-{{ agent_name }}">{{ agent_name }}</span></div>
+    <div class="value">{{ n_recent }}</div>
+    <div class="sub">events in last 24h{% if sample %}<br>latest: {{ sample[:60] }}{% endif %}</div>
+  </div>
+  {% endfor %}
+</div>
+
+<div class="note">
+  <strong>Reading guide:</strong> WATCH = ≥2 agents agree, score ≥70. RESEARCH = single strong signal. AVOID_CHASE = price moved before alert fired. The bot stays in this conservative vocabulary until 60 days of paper trading hits the §17.6 graduation thresholds.
+</div>
+{% endblock %}

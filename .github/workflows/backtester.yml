@@ -1,0 +1,31 @@
+name: backtester
+
+# Manual-only — replays last 180 days of filings through the live thesis logic.
+# NEVER on cron. Writes to stock_signals (status_v2='backtest'),
+# stock_forecast_audit, stock_agent_weights, stock_backtest_runs.
+# Safety: only repo secrets are used; no untrusted PR/issue input is interpolated.
+
+on:
+  workflow_dispatch:
+
+concurrency:
+  group: backtester
+  cancel-in-progress: false
+
+jobs:
+  replay-180d:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+      - name: Install deps
+        run: pip install -r requirements.txt
+      - name: Run backtest
+        env:
+          SUPABASE_URL:         ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
+        run: python agents/backtester.py

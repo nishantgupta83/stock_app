@@ -1,0 +1,53 @@
+name: site_generator
+
+# Generates static HTML dashboard from Supabase data, commits to dist/ branch
+# for user download + manual upload to Hostinger.
+# Safety: only uses repo secrets and GITHUB_RUN_NUMBER (always numeric) — no
+# untrusted PR/issue inputs are interpolated into shell.
+
+on:
+  schedule:
+    - cron: "*/15 * * * *"
+  workflow_dispatch:
+
+concurrency:
+  group: site_generator
+  cancel-in-progress: true
+
+jobs:
+  build-and-publish:
+    runs-on: ubuntu-latest
+    timeout-minutes: 4
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+
+      - name: Install deps
+        run: pip install -r requirements.txt
+
+      - name: Generate site
+        env:
+          SUPABASE_URL:         ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
+        run: python agents/site_generator.py
+
+      - name: Publish dist/ to dist branch
+        env:
+          GH_TOKEN:   ${{ secrets.GITHUB_TOKEN }}
+          RUN_NUMBER: ${{ github.run_number }}
+          REPO:       ${{ github.repository }}
+        run: |
+          cd dist
+          git init -q
+          git checkout -q -b dist
+          git config user.name  "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add .
+          git commit -q -m "site: $RUN_NUMBER" --allow-empty
+          git push -q -f "https://x-access-token:$GH_TOKEN@github.com/$REPO.git" dist:dist

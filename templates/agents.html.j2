@@ -1,0 +1,55 @@
+{% extends "_layout.html.j2" %}
+{% block content %}
+<h2>Agents</h2>
+<p style="color:var(--muted);font-size:12px">Per-agent diagnostics. Weights evolve via §9.7 EMA after each EOD reconciliation. Agents with weight < 1.0 are underperforming the 50/50 baseline.</p>
+
+<table>
+  <thead>
+    <tr>
+      <th>Agent</th>
+      <th class="num">Current weight</th>
+      <th class="num">Accuracy EMA</th>
+      <th class="num">Signals contributed (30d)</th>
+      <th>Last seen</th>
+      <th class="num">Failures (1h)</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for a in agent_rows %}
+    <tr>
+      <td><span class="tag agent-{{ a.name }}">{{ a.name }}</span></td>
+      <td class="num">{{ "%.2f"|format(a.weight) }}</td>
+      <td class="num">{{ "%.1f%%"|format(a.accuracy_ema * 100) }}</td>
+      <td class="num">{{ a.contributions_30d }}</td>
+      <td>{{ a.last_seen or "—" }}</td>
+      <td class="num">{{ a.failures_1h }}</td>
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
+
+<h3>Per-agent recent failure log (last 10)</h3>
+{% if recent_failures %}
+<table>
+  <thead><tr><th>When</th><th>Agent</th><th>Reason</th><th>Detail</th></tr></thead>
+  <tbody>
+    {% for f in recent_failures %}
+    <tr>
+      <td>{{ f.occurred_at[:16] }}</td>
+      <td><span class="tag agent-{{ f.agent }}">{{ f.agent }}</span></td>
+      <td>{{ f.reason }}</td>
+      <td style="font-family: ui-monospace, monospace; font-size: 11px;">{{ f.detail[:120] if f.detail }}</td>
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
+{% else %}
+<div class="empty">No failures recorded.</div>
+{% endif %}
+
+<div class="note">
+  <strong>How weights work:</strong> after EOD, each agent's accuracy EMA updates as <code>acc_new = 0.1·correct + 0.9·acc_old</code>.
+  Weight = <code>clip(acc_ema / 0.5, 0.1, 2.0)</code>. So 50% accuracy → weight 1.0; 70% → 1.4; 30% → 0.6.
+  An agent stuck at weight ≤ 0.8 is being muted by the system.
+</div>
+{% endblock %}

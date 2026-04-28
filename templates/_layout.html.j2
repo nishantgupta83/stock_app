@@ -1,0 +1,37 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta http-equiv="refresh" content="900">  <!-- self-refresh every 15 min -->
+  <title>{{ title }} · Hub4Apps Market Intel</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <header>
+    <div class="brand">
+      <span class="logo">📈</span>
+      <h1>Hub4Apps Market Intel</h1>
+      <span class="subtitle">private · educational · not financial advice</span>
+    </div>
+    <nav>
+      <a href="index.html"     class="{% if active=='index' %}active{% endif %}">Dashboard</a>
+      <a href="signals.html"   class="{% if active=='signals' %}active{% endif %}">Signals</a>
+      <a href="events.html"    class="{% if active=='events' %}active{% endif %}">Events</a>
+      <a href="agents.html"    class="{% if active=='agents' %}active{% endif %}">Agents</a>
+      <a href="backtest.html"  class="{% if active=='backtest' %}active{% endif %}">Backtest</a>
+    </nav>
+    <div class="meta">
+      <span>generated {{ generated_at }} UTC</span>
+    </div>
+  </header>
+  <main>
+    {% block content %}{% endblock %}
+  </main>
+  <footer>
+    <p>v1 paper-trading vocabulary: <strong>WATCH</strong> / <strong>RESEARCH</strong> / <strong>AVOID_CHASE</strong>.
+    The bot does not say BUY or SELL until 60 days of paper-trading hits the §17.6 graduation thresholds.</p>
+    <p>Data: SEC EDGAR · trumpstruth.org RSS · yfinance. Free-tier stack: GitHub Actions + Supabase Free + Hostinger static.</p>
+  </footer>
+</body>
+</html>

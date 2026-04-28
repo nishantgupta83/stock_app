@@ -1,0 +1,77 @@
+{% extends "_layout.html.j2" %}
+{% block content %}
+<h2>Events stream</h2>
+<p style="color:var(--muted);font-size:12px">Raw normalized events from every agent. Last 200, ordered by event time. Use this to verify what each agent is seeing.</p>
+
+<div class="filters">
+  <label>Type</label>
+  <select id="f-type" onchange="render()">
+    <option value="">all</option>
+    {% for t in distinct_types %}<option>{{ t }}</option>{% endfor %}
+  </select>
+  <label>Ticker</label>
+  <input id="f-ticker" type="text" placeholder="NVDA" oninput="render()" style="width:80px">
+  <label>Min severity</label>
+  <input id="f-sev" type="number" min="0" max="4" value="0" oninput="render()" style="width:60px">
+  <span class="count" id="count">— rows</span>
+</div>
+
+<table>
+  <thead>
+    <tr>
+      <th>Event time (UTC)</th>
+      <th>Ticker</th>
+      <th>Type</th>
+      <th>Subtype</th>
+      <th>Sev</th>
+      <th>Detail</th>
+    </tr>
+  </thead>
+  <tbody id="rows"></tbody>
+</table>
+<div id="empty" class="empty" style="display:none">No events match.</div>
+
+<script id="data" type="application/json">{{ events_json|safe }}</script>
+<script>
+// HTML-escape — Trump post payloads contain raw HTML, must never reach innerHTML unescaped.
+function esc(s) {
+  if (s === null || s === undefined) return '';
+  return String(s).replace(/[&<>"']/g, c => ({
+    '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'
+  }[c]));
+}
+const DATA = JSON.parse(document.getElementById('data').textContent);
+function render() {
+  const fT = document.getElementById('f-type').value;
+  const fTick = document.getElementById('f-ticker').value.trim().toUpperCase();
+  const fSev = parseInt(document.getElementById('f-sev').value) || 0;
+  const tbody = document.getElementById('rows');
+  while (tbody.firstChild) tbody.removeChild(tbody.firstChild);
+  let n = 0;
+  for (const r of DATA) {
+    if (fT && r.event_type !== fT) continue;
+    if (fTick && (r.ticker || '').toUpperCase().indexOf(fTick) === -1) continue;
+    if (r.severity < fSev) continue;
+    n++;
+    let detail = '';
+    if (r.payload) {
+      if (r.payload.form_type) detail = r.payload.form_type;
+      else if (r.payload.post_excerpt) detail = String(r.payload.post_excerpt).substring(0,100);
+      else if (r.payload.rule_label) detail = r.payload.rule_label;
+    }
+    const tr = document.createElement('tr');
+    tr.innerHTML =
+      `<td>${esc((r.event_at || '').substring(0,16))}</td>` +
+      `<td><strong>${esc(r.ticker || '—')}</strong></td>` +
+      `<td>${esc(r.event_type)}</td>` +
+      `<td>${esc(r.event_subtype)}</td>` +
+      `<td class="center">${Number(r.severity) || 0}</td>` +
+      `<td>${esc(detail)}</td>`;
+    tbody.appendChild(tr);
+  }
+  document.getElementById('count').textContent = `${n} of ${DATA.length} rows`;
+  document.getElementById('empty').style.display = n === 0 ? 'block' : 'none';
+}
+render();
+</script>
+{% endblock %}

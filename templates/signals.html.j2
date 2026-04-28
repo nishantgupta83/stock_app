@@ -1,0 +1,94 @@
+{% extends "_layout.html.j2" %}
+{% block content %}
+<h2>Signals</h2>
+<p style="color:var(--muted);font-size:12px">All signals scored by the v1 rubric (§17.7). Filter client-side — no page reload.</p>
+
+<div class="filters">
+  <label>Agent</label>
+  <select id="f-agent" onchange="render()">
+    <option value="">all</option>
+    {% for a in distinct_agents %}<option>{{ a }}</option>{% endfor %}
+  </select>
+  <label>Action</label>
+  <select id="f-action" onchange="render()">
+    <option value="">all</option>
+    <option>WATCH</option>
+    <option>RESEARCH</option>
+    <option>AVOID_CHASE</option>
+  </select>
+  <label>Status</label>
+  <select id="f-status" onchange="render()">
+    <option value="">all</option>
+    <option>candidate</option>
+    <option>sent</option>
+    <option>suppressed</option>
+    <option>backtest</option>
+  </select>
+  <label>Min score</label>
+  <input id="f-score" type="number" min="0" max="100" value="0" oninput="render()" style="width:70px">
+  <label>Ticker</label>
+  <input id="f-ticker" type="text" placeholder="e.g. NVDA" oninput="render()" style="width:80px">
+  <span class="count" id="count">— rows</span>
+</div>
+
+<table>
+  <thead>
+    <tr>
+      <th>Fired (UTC)</th>
+      <th>Ticker</th>
+      <th>Action</th>
+      <th class="num">Score</th>
+      <th>Summary</th>
+      <th>Agents</th>
+      <th>Status</th>
+    </tr>
+  </thead>
+  <tbody id="rows"></tbody>
+</table>
+<div id="empty" class="empty" style="display:none">No signals match the current filter.</div>
+
+<script id="data" type="application/json">{{ signals_json|safe }}</script>
+<script>
+// HTML-escape any string that could contain user-controlled content
+// (ticker fields, evidence summaries, agent names, status values).
+function esc(s) {
+  if (s === null || s === undefined) return '';
+  return String(s).replace(/[&<>"']/g, c => ({
+    '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'
+  }[c]));
+}
+const DATA = JSON.parse(document.getElementById('data').textContent);
+function render() {
+  const fA = document.getElementById('f-agent').value;
+  const fAct = document.getElementById('f-action').value;
+  const fS = document.getElementById('f-status').value;
+  const fSc = parseFloat(document.getElementById('f-score').value) || 0;
+  const fT = document.getElementById('f-ticker').value.trim().toUpperCase();
+  const tbody = document.getElementById('rows');
+  // Build via DOM rather than innerHTML strings to avoid any XSS surface.
+  while (tbody.firstChild) tbody.removeChild(tbody.firstChild);
+  let n = 0;
+  for (const r of DATA) {
+    if (fA && !(r.agents || []).includes(fA)) continue;
+    if (fAct && r.action !== fAct) continue;
+    if (fS && r.status_v2 !== fS) continue;
+    if (r.score < fSc) continue;
+    if (fT && r.ticker.toUpperCase().indexOf(fT) === -1) continue;
+    n++;
+    const tr = document.createElement('tr');
+    tr.innerHTML =
+      `<td>${esc((r.fired_at || '').substring(0,16))}</td>` +
+      `<td><strong>${esc(r.ticker)}</strong></td>` +
+      `<td><span class="tag ${esc(r.action)}">${esc(r.action)}</span></td>` +
+      `<td class="num">${Math.round(r.score)}</td>` +
+      `<td>${esc(r.evidence_summary)}</td>` +
+      `<td>${(r.agents || []).map(a => `<span class="tag agent-${esc(a)}">${esc(a)}</span>`).join(' ')}</td>` +
+      `<td><span class="tag ${esc(r.status_v2)}">${esc(r.status_v2)}</span></td>`;
+    tbody.appendChild(tr);
+  }
+  document.getElementById('count').textContent = `${n} of ${DATA.length} rows`;
+  document.getElementById('empty').style.display = n === 0 ? 'block' : 'none';
+}
+render();
+</script>
+{% endblock %}
