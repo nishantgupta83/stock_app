@@ -63,8 +63,11 @@ MODEL_VERSION  = "rubric-v1.0-backtest-permissive"
 # as the entry threshold — this gives us calibration data on the rubric itself,
 # separate from cluster gating. Tagged in metrics so it can never be confused
 # with a real system simulation.
-BACKTEST_MODE  = "permissive"
-ENTRY_SCORE_MIN = 50    # accept RESEARCH-grade in backtest
+BACKTEST_MODE  = "permissive_all_events"
+# Filings-only data: single 8-K = 35 pts, single SC 13D = 20 pts. Both below
+# the live RESEARCH threshold (50). Lower to 25 so we get meaningful sample
+# size for calibration. This is a CALIBRATION SWEEP, not a live-system sim.
+ENTRY_SCORE_MIN = 25
 ENTRY_SCORE_MAX = 100
 
 
