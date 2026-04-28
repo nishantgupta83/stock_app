@@ -1,0 +1,35 @@
+name: source_review_agent
+
+# Monthly architectural health check — pings all registered data sources,
+# computes per-agent success rates from job_runs, sends recommendations to Telegram.
+# Safety: only repo secrets are used; no untrusted PR/issue input is interpolated.
+
+on:
+  schedule:
+    - cron: "0 13 1 * *"
+  workflow_dispatch:
+
+concurrency:
+  group: source_review_agent
+  cancel-in-progress: false
+
+jobs:
+  review:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+      - name: Install deps
+        run: pip install -r requirements.txt
+      - name: Run source review
+        env:
+          SUPABASE_URL:         ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
+          TELEGRAM_BOT_TOKEN:   ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID:     ${{ secrets.TELEGRAM_CHAT_ID }}
+          EDGAR_USER_AGENT:     ${{ secrets.EDGAR_USER_AGENT }}
+        run: python agents/source_review_agent.py

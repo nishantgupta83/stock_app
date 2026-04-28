@@ -252,26 +252,64 @@ def filings_to_events(filings: list[dict]) -> list[dict]:
 # Cache yfinance bars per ticker for the whole backtest window
 _price_cache: dict[str, pd.DataFrame] = {}
 
+def _fetch_yfinance(ticker: str, start_s: str, end_s: str) -> pd.DataFrame | None:
+    try:
+        sub = yf.Ticker(ticker).history(start=start_s, end=end_s, auto_adjust=False, prepost=False)
+        if sub is None or sub.empty:
+            return None
+        return sub[["Open", "Close"]].dropna()
+    except Exception as e:  # noqa: BLE001
+        print(f"    yfinance {ticker}: {type(e).__name__}: {e}", file=sys.stderr)
+        return None
+
+
+def _fetch_stooq(ticker: str, start_s: str, end_s: str) -> pd.DataFrame | None:
+    """Stooq fallback. Free, EU-based, no rate limit, no IP blocks. Daily bars only.
+    Stooq tickers for US stocks need '.us' suffix (e.g. 'aapl.us')."""
+    try:
+        sym = f"{ticker.lower().replace('.', '-')}.us"
+        url = f"https://stooq.com/q/d/l/?s={sym}&i=d"
+        r = cffi_requests.get(url, impersonate="chrome", timeout=20)
+        if r.status_code != 200 or not r.text or "No data" in r.text:
+            return None
+        from io import StringIO
+        df = pd.read_csv(StringIO(r.text))
+        if df.empty or "Date" not in df.columns:
+            return None
+        df["Date"] = pd.to_datetime(df["Date"])
+        df = df.set_index("Date")[["Open", "Close"]].dropna()
+        df = df[(df.index >= start_s) & (df.index <= end_s)]
+        return df if not df.empty else None
+    except Exception as e:  # noqa: BLE001
+        print(f"    stooq {ticker}: {type(e).__name__}: {e}", file=sys.stderr)
+        return None
+
+
 def load_prices(tickers: list[str], start: datetime, end: datetime) -> None:
-    """Per-ticker fetch. yfinance auto-uses curl_cffi browser impersonation
-    when curl_cffi is installed, bypassing Yahoo's GitHub-IP blocking."""
-    print(f"Fetching yfinance daily bars for {len(tickers)} tickers...")
+    """Health-monitored fallback chain: yfinance → stooq.
+    Per the §3 resilience pattern, primary failure auto-promotes fallback per-ticker.
+    """
+    print(f"Fetching daily bars for {len(tickers)} tickers (yfinance primary, stooq fallback)...")
     start_s = start.date().isoformat()
     end_s   = (end + timedelta(days=2)).date().isoformat()
-    ok = 0
+    yf_ok = stooq_ok = miss = 0
     for t in tickers:
-        try:
-            tk = yf.Ticker(t)
-            sub = tk.history(start=start_s, end=end_s, auto_adjust=False, prepost=False)
-            if sub is None or sub.empty:
-                print(f"  {t}: empty", file=sys.stderr)
-                continue
-            _price_cache[t] = sub[["Open", "Close"]].dropna()
-            ok += 1
-        except Exception as e:  # noqa: BLE001
-            print(f"  {t}: {type(e).__name__}: {e}", file=sys.stderr)
-        time.sleep(0.3)
-    print(f"  cached prices for {ok}/{len(tickers)} tickers")
+        df = _fetch_yfinance(t, start_s, end_s)
+        if df is not None and not df.empty:
+            _price_cache[t] = df
+            yf_ok += 1
+        else:
+            df = _fetch_stooq(t, start_s, end_s)
+            if df is not None and not df.empty:
+                _price_cache[t] = df
+                stooq_ok += 1
+                print(f"  {t}: stooq fallback used", file=sys.stderr)
+            else:
+                miss += 1
+                print(f"  {t}: BOTH SOURCES FAILED", file=sys.stderr)
+        time.sleep(0.25)
+    total = yf_ok + stooq_ok
+    print(f"  cached prices for {total}/{len(tickers)} (yf={yf_ok}, stooq={stooq_ok}, miss={miss})")
 
 
 def next_session_open(ticker: str, after: datetime) -> tuple[date, float] | None:
