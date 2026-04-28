@@ -148,6 +148,9 @@ BACKTEST_MODE  = "multi_source_research_grade"
 ENTRY_SCORE_MIN = 50
 ENTRY_SCORE_MAX = 100
 
+# Suffix for dedupe_key — set per-run in main() so re-runs insert fresh signals.
+_RUN_SUFFIX = "default"
+
 
 # ============================================================
 # Supabase helpers
@@ -513,11 +516,13 @@ def fetch_momentum_events(tickers: list[str], start: datetime, end: datetime,
 # Per-day replay
 # ============================================================
 
-def cluster_events_by_window(events: list[dict], window_min: int = 1440) -> dict[tuple[str, str], list[dict]]:
-    """In backtest, cluster window = 1 calendar day (1440 min).
-    Live system uses 5 min — but in backtest, momentum is computed at EOD while
-    filings are intraday, so a tighter window would miss real cross-source clusters.
-    1-day window matches how a daily-rebalanced strategy actually trades."""
+def cluster_events_by_window(events: list[dict], window_min: int = 2880) -> dict[tuple[str, str], list[dict]]:
+    """Backtest: 2-calendar-day cluster window (2880 min).
+    Why 2 days: yfinance earnings dates are US/Eastern-anchored, EDGAR filed_at
+    is UTC. After-market earnings (filed ~4:00 PM ET = 8:00 PM UTC) can land on
+    a different UTC calendar date than the corresponding 8-K filing. A 2-day
+    bucket reliably joins them.
+    Live system stays at 5 min — different problem (intraday signals)."""
     clusters: dict[tuple[str, str], list[dict]] = defaultdict(list)
     for e in events:
         try:
@@ -525,7 +530,10 @@ def cluster_events_by_window(events: list[dict], window_min: int = 1440) -> dict
         except Exception:
             continue
         if window_min >= 1440:
-            bucket = t.replace(hour=0, minute=0, second=0, microsecond=0)
+            # Round DOWN to a 2-day bucket: epoch_days // 2 * 2
+            day_index = (t.date() - date(1970, 1, 1)).days
+            bucket_start = date(1970, 1, 1) + timedelta(days=(day_index // (window_min // 1440)) * (window_min // 1440))
+            bucket = datetime.combine(bucket_start, datetime.min.time(), tzinfo=timezone.utc)
         else:
             bucket = t.replace(second=0, microsecond=0)
             bucket = bucket.replace(minute=(bucket.minute // window_min) * window_min)
@@ -615,8 +623,8 @@ def persist_signals(signals: list[dict]) -> None:
         "action":           s["action"],
         "score":            s["score"],
         "evidence_summary": s["evidence_summary"],
-        # Model version in dedupe key so multiple backtest model variants coexist.
-        "dedupe_key":       f"bt_{MODEL_VERSION}_{s['ticker']}_{s['fired_at']}",
+        # Run suffix in dedupe key so re-runs always insert fresh rows.
+        "dedupe_key":       f"bt_{_RUN_SUFFIX}_{s['ticker']}_{s['fired_at']}",
         "status_v2":        "backtest",
     } for s in signals]
 
@@ -774,7 +782,11 @@ def main() -> int:
         "config": {"lookback_days": LOOKBACK_DAYS, "slippage_bps": SLIPPAGE_BPS,
                    "ema_alpha": EMA_ALPHA, "universe_size_hint": "current_watchlist"},
     }, return_repr=True)
-    run_id = run[0]["id"] if run else None
+    run_id = run[0]["id"] if run else int(started)   # fallback: epoch as run id
+    # Suffix appended to dedupe_key so each backtest run produces fresh signals
+    # even with same MODEL_VERSION (otherwise re-runs collide silently).
+    global _RUN_SUFFIX
+    _RUN_SUFFIX = f"r{run_id}"
     print(f"backtest run_id={run_id}, window {start.date()} → {end.date()}")
 
     # Pull universe — include 'context' so SPY/QQQ are loaded for momentum baseline
