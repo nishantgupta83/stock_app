@@ -32,6 +32,8 @@ from datetime import datetime, timedelta, timezone, date
 import pandas as pd
 import requests
 import yfinance as yf
+# curl_cffi impersonates a real browser so Yahoo doesn't block GitHub Actions IPs.
+from curl_cffi import requests as cffi_requests
 
 # Reuse the live thesis-agent scoring so backtest and live cannot drift.
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
@@ -147,27 +149,26 @@ def filings_to_events(filings: list[dict]) -> list[dict]:
 _price_cache: dict[str, pd.DataFrame] = {}
 
 def load_prices(tickers: list[str], start: datetime, end: datetime) -> None:
-    """Bulk-fetch daily bars for all tickers once at start of backtest."""
+    """Per-ticker fetch via yfinance with browser-impersonation session.
+    Yahoo blocks GitHub Actions IPs unless requests look like a real browser."""
     print(f"Fetching yfinance daily bars for {len(tickers)} tickers...")
-    # yfinance accepts a space-separated ticker string for batch download
-    # Need extra padding day so we have 'next day' for last entries
-    df = yf.download(
-        " ".join(tickers),
-        start=start.date().isoformat(),
-        end=(end + timedelta(days=2)).date().isoformat(),
-        progress=False,
-        group_by="ticker",
-        auto_adjust=False,
-        threads=True,
-    )
-    if df is None or df.empty:
-        print("  yfinance returned no data", file=sys.stderr)
-        return
+    session = cffi_requests.Session(impersonate="chrome")
+    start_s = start.date().isoformat()
+    end_s   = (end + timedelta(days=2)).date().isoformat()
+    ok = 0
     for t in tickers:
-        if t in df.columns.get_level_values(0):
-            sub = df[t][["Open", "Close"]].dropna()
-            _price_cache[t] = sub
-    print(f"  cached prices for {len(_price_cache)}/{len(tickers)} tickers")
+        try:
+            tk = yf.Ticker(t, session=session)
+            sub = tk.history(start=start_s, end=end_s, auto_adjust=False, prepost=False)
+            if sub is None or sub.empty:
+                print(f"  {t}: empty", file=sys.stderr)
+                continue
+            _price_cache[t] = sub[["Open", "Close"]].dropna()
+            ok += 1
+        except Exception as e:  # noqa: BLE001
+            print(f"  {t}: {type(e).__name__}: {e}", file=sys.stderr)
+        time.sleep(0.3)   # polite pacing
+    print(f"  cached prices for {ok}/{len(tickers)} tickers")
 
 
 def next_session_open(ticker: str, after: datetime) -> tuple[date, float] | None:
