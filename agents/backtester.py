@@ -56,7 +56,16 @@ HEADERS_SB = {
 LOOKBACK_DAYS  = 180
 SLIPPAGE_BPS   = 5     # 0.05% per side
 EMA_ALPHA      = 0.10
-MODEL_VERSION  = "rubric-v1.0-backtest"
+MODEL_VERSION  = "rubric-v1.0-backtest-permissive"
+# Backtest mode: live system requires ≥2 distinct source agents (cluster rule).
+# Filings-only data has just 1 source agent, so live would fire 0 signals.
+# Permissive mode scores every cluster regardless, AND uses RESEARCH (score≥50)
+# as the entry threshold — this gives us calibration data on the rubric itself,
+# separate from cluster gating. Tagged in metrics so it can never be confused
+# with a real system simulation.
+BACKTEST_MODE  = "permissive"
+ENTRY_SCORE_MIN = 50    # accept RESEARCH-grade in backtest
+ENTRY_SCORE_MAX = 100
 
 
 # ============================================================
@@ -267,12 +276,16 @@ def replay_day(day_start: datetime, day_end: datetime, all_events: list[dict],
     fired = []
 
     for (ticker, bucket_iso), ev_list in clusters.items():
-        ok, _ = cluster_passes(ev_list)
-        if not ok:
-            continue
+        # Permissive mode: SKIP cluster check (only 1 source agent in filings-only backtest).
+        # Document why in the action label.
+        if BACKTEST_MODE != "permissive":
+            ok, _ = cluster_passes(ev_list)
+            if not ok:
+                continue
         score, breakdown = score_evidence(ev_list)
         action = action_for_score(score)
-        if action != "WATCH":
+        # In permissive mode accept RESEARCH-grade too — gives more calibration samples.
+        if not action or score < ENTRY_SCORE_MIN:
             continue
 
         # Compute outcome
@@ -296,7 +309,7 @@ def replay_day(day_start: datetime, day_end: datetime, all_events: list[dict],
             "ticker":           ticker,
             "fired_at":         bucket_iso,
             "score":            round(score, 2),
-            "action":           "WATCH",
+            "action":           action,
             "evidence_summary": evidence_summary(ev_list),
             "agents":           agents_in_signal,
             "horizon_days":     1,
@@ -317,12 +330,12 @@ def persist_signals(signals: list[dict]) -> None:
     payload = [{
         "ticker":           s["ticker"],
         "fired_at":         s["fired_at"],
-        "direction":        "WATCH",
+        "direction":        s["action"],
         "confidence":       round(min(s["score"], 100) / 100, 4),
         "horizon_days":     s["horizon_days"],
         "thesis_summary":   s["evidence_summary"],
         "model_version":    MODEL_VERSION,
-        "weight_at_time":   {"agents": s["agents"]},
+        "weight_at_time":   {"agents": s["agents"], "mode": BACKTEST_MODE},
         "status":           "open",
         "action":           s["action"],
         "score":            s["score"],
@@ -454,6 +467,8 @@ def compute_metrics(signals: list[dict]) -> dict:
     } for s in reversed(sorted_sigs[-10:])]
 
     return {
+        "mode":              BACKTEST_MODE,
+        "entry_score_min":   ENTRY_SCORE_MIN,
         "days":              len(by_day),
         "signals_total":     len(signals),
         "dir_accuracy":      round(dir_acc, 4),
