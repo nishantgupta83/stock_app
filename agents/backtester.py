@@ -32,8 +32,9 @@ from datetime import datetime, timedelta, timezone, date
 import pandas as pd
 import requests
 import yfinance as yf
-# curl_cffi impersonates a real browser so Yahoo doesn't block GitHub Actions IPs.
-from curl_cffi import requests as cffi_requests
+# curl_cffi just needs to be importable — yfinance 0.2.55+ auto-uses it
+# for browser impersonation, which bypasses Yahoo's GitHub-IP blocking.
+import curl_cffi  # noqa: F401
 
 # Reuse the live thesis-agent scoring so backtest and live cannot drift.
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
@@ -149,16 +150,15 @@ def filings_to_events(filings: list[dict]) -> list[dict]:
 _price_cache: dict[str, pd.DataFrame] = {}
 
 def load_prices(tickers: list[str], start: datetime, end: datetime) -> None:
-    """Per-ticker fetch via yfinance with browser-impersonation session.
-    Yahoo blocks GitHub Actions IPs unless requests look like a real browser."""
+    """Per-ticker fetch. yfinance auto-uses curl_cffi browser impersonation
+    when curl_cffi is installed, bypassing Yahoo's GitHub-IP blocking."""
     print(f"Fetching yfinance daily bars for {len(tickers)} tickers...")
-    session = cffi_requests.Session(impersonate="chrome")
     start_s = start.date().isoformat()
     end_s   = (end + timedelta(days=2)).date().isoformat()
     ok = 0
     for t in tickers:
         try:
-            tk = yf.Ticker(t, session=session)
+            tk = yf.Ticker(t)
             sub = tk.history(start=start_s, end=end_s, auto_adjust=False, prepost=False)
             if sub is None or sub.empty:
                 print(f"  {t}: empty", file=sys.stderr)
@@ -167,7 +167,7 @@ def load_prices(tickers: list[str], start: datetime, end: datetime) -> None:
             ok += 1
         except Exception as e:  # noqa: BLE001
             print(f"  {t}: {type(e).__name__}: {e}", file=sys.stderr)
-        time.sleep(0.3)   # polite pacing
+        time.sleep(0.3)
     print(f"  cached prices for {ok}/{len(tickers)} tickers")
 
 
