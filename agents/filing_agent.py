@@ -278,6 +278,8 @@ def main() -> int:
             ticker, cik, kind = sym["ticker"], sym["cik"], sym["kind"]
             try:
                 recent = fetch_recent_filings(cik, kind)
+                # Healthy no-op (empty response or all-already-seen) still counts as processed.
+                n_symbols_processed += 1
                 if not recent:
                     time.sleep(0.15)
                     continue
@@ -293,9 +295,9 @@ def main() -> int:
                 n_events  = emit_normalized_events(new, ticker)
                 total_new_filings += n_filings
                 total_new_events  += n_events
-                n_symbols_processed += 1
                 print(f"  {ticker}: +{n_filings} filings, +{n_events} events")
             except Exception as e:  # noqa: BLE001 — never let one symbol crash the run
+                n_symbols_processed -= 1   # roll back the optimistic increment
                 dead_letter("filing_agent", "stock_symbols", None,
                             "per_symbol_failure", f"{ticker}/{cik}: {e}",
                             {"ticker": ticker, "cik": cik, "kind": kind})

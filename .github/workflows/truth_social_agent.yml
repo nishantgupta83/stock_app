@@ -1,0 +1,31 @@
+name: truth_social_agent
+
+# Polls trumpstruth.org RSS for new Trump posts, classifies via §7.9 keyword router.
+# Safety: only uses repo secrets via env: — no untrusted PR/issue inputs interpolated.
+
+on:
+  schedule:
+    - cron: "*/5 * * * *"
+  workflow_dispatch:
+
+concurrency:
+  group: truth_social_agent
+  cancel-in-progress: false
+
+jobs:
+  poll-truth:
+    runs-on: ubuntu-latest
+    timeout-minutes: 3
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+      - name: Install deps
+        run: pip install -r requirements.txt
+      - name: Run Truth Social agent
+        env:
+          SUPABASE_URL:         ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
+        run: python agents/truth_social_agent.py

@@ -1,0 +1,35 @@
+name: thesis_agent
+
+# Reads recent normalized_events, applies §17.7 rubric + §15.3 cluster rule,
+# writes signals, and dispatches WATCH alerts via Telegram.
+# Safety: only uses repo secrets via env: — no untrusted input is interpolated.
+
+on:
+  schedule:
+    - cron: "*/5 * * * *"
+  workflow_dispatch:
+
+concurrency:
+  group: thesis_agent
+  cancel-in-progress: false
+
+jobs:
+  score-and-dispatch:
+    runs-on: ubuntu-latest
+    timeout-minutes: 4
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+      - name: Install deps
+        run: pip install -r requirements.txt
+      - name: Run thesis agent
+        env:
+          SUPABASE_URL:         ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
+          TELEGRAM_BOT_TOKEN:   ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID:     ${{ secrets.TELEGRAM_CHAT_ID }}
+          PYTHONPATH:           agents
+        run: python agents/thesis_agent.py
