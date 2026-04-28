@@ -1,0 +1,37 @@
+name: filing_agent
+
+# Polls SEC EDGAR for new filings on the universe (companies + institutions).
+# Safety: only uses repo secrets via `env:`. No untrusted PR/issue input is
+# interpolated into shell — so the github.blog Actions-injection guidance does
+# not apply to this workflow.
+
+on:
+  schedule:
+    - cron: "*/5 * * * *"   # GitHub Actions cron minimum interval = 5 min
+  workflow_dispatch:
+
+concurrency:
+  group: filing_agent
+  cancel-in-progress: false
+
+jobs:
+  poll-edgar:
+    runs-on: ubuntu-latest
+    timeout-minutes: 4
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+
+      - name: Install deps
+        run: pip install -r requirements.txt
+
+      - name: Run EDGAR filing agent
+        env:
+          SUPABASE_URL:         ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
+          EDGAR_USER_AGENT:     ${{ secrets.EDGAR_USER_AGENT }}
+        run: python agents/filing_agent.py

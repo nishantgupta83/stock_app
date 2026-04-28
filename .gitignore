@@ -1,0 +1,13 @@
+.env
+.env.local
+*.pyc
+__pycache__/
+.venv/
+venv/
+.DS_Store
+dist/*.html
+dist/alert/*.html
+*.log
+.idea/
+.vscode/
+.claude/
