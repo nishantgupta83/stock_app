@@ -339,12 +339,22 @@ def fetch_earnings_events(tickers: list[str], start: datetime, end: datetime) ->
       - earnings_post    (1 trading day after — captures PEAD)
     """
     events: list[dict] = []
+    n_with_data = 0
     for t in tickers:
         try:
             tk = yf.Ticker(t)
-            ed = tk.earnings_dates                                  # past + upcoming, indexed by date
+            # Try multiple yfinance APIs — they break across versions
+            ed = None
+            try:
+                ed = tk.get_earnings_dates(limit=24)   # 6 quarters back + future
+            except Exception:
+                pass
             if ed is None or ed.empty:
+                ed = tk.earnings_dates                 # legacy property
+            if ed is None or ed.empty:
+                print(f"  earnings {t}: no data", file=sys.stderr)
                 continue
+            n_with_data += 1
             # Filter to backtest window
             for ts, row in ed.iterrows():
                 d = ts.to_pydatetime() if hasattr(ts, "to_pydatetime") else ts
@@ -410,6 +420,7 @@ def fetch_earnings_events(tickers: list[str], start: datetime, end: datetime) ->
         except Exception as e:  # noqa: BLE001
             print(f"  earnings {t}: {type(e).__name__}: {e}", file=sys.stderr)
         time.sleep(0.2)
+    print(f"  earnings: {n_with_data}/{len(tickers)} tickers returned data, {len(events)} events", file=sys.stderr)
     return events
 
 
@@ -492,15 +503,22 @@ def fetch_momentum_events(tickers: list[str], start: datetime, end: datetime,
 # Per-day replay
 # ============================================================
 
-def cluster_events_by_window(events: list[dict], window_min: int = 5) -> dict[tuple[str, str], list[dict]]:
+def cluster_events_by_window(events: list[dict], window_min: int = 1440) -> dict[tuple[str, str], list[dict]]:
+    """In backtest, cluster window = 1 calendar day (1440 min).
+    Live system uses 5 min — but in backtest, momentum is computed at EOD while
+    filings are intraday, so a tighter window would miss real cross-source clusters.
+    1-day window matches how a daily-rebalanced strategy actually trades."""
     clusters: dict[tuple[str, str], list[dict]] = defaultdict(list)
     for e in events:
         try:
             t = datetime.fromisoformat(e["event_at"].replace("Z", "+00:00"))
         except Exception:
             continue
-        bucket = t.replace(second=0, microsecond=0)
-        bucket = bucket.replace(minute=(bucket.minute // window_min) * window_min)
+        if window_min >= 1440:
+            bucket = t.replace(hour=0, minute=0, second=0, microsecond=0)
+        else:
+            bucket = t.replace(second=0, microsecond=0)
+            bucket = bucket.replace(minute=(bucket.minute // window_min) * window_min)
         clusters[(e["ticker"], bucket.isoformat())].append(e)
     return clusters
 
