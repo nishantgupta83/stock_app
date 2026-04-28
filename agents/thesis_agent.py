@@ -172,8 +172,9 @@ def source_agent_for(event: dict) -> str:
     if et.startswith("filing_"):    return "filing"
     if et == "8k_material_event":   return "filing"
     if et == "position_change":     return "flows"
-    if et in ("price_gap", "volume_anomaly", "volatility_spike"): return "price"
+    if et in ("price_gap", "volume_anomaly", "volatility_spike", "momentum"): return "price"
     if et in ("news_headline",):    return "news"
+    if et.startswith("earnings_"):  return "earnings"
     return "unknown"
 
 

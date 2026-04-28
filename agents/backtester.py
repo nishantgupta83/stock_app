@@ -1,24 +1,35 @@
 """
-6-month historical backtester (filings-only).
+6-month historical backtester — filings + earnings + momentum.
 
-Replays the last 180 days of stock_raw_filings through the SAME thesis-agent
-scoring + cluster logic, simulates entries via yfinance next-day-open prices,
-reconciles outcomes 1 trading day later, writes:
-
+Replays the last 180 days of multi-source events through scoring + cluster
+logic, simulates entries via yfinance next-day-open prices, reconciles
+outcomes at horizon, writes:
   - stock_signals (model_version='rubric-v1.0-backtest', status_v2='backtest')
   - stock_forecast_audit (per-signal realized return)
   - stock_agent_weights (per-day per-agent EMA evolution)
   - stock_backtest_runs (summary metrics)
 
-Trigger: gh workflow run backtester.yml --repo nishantgupta83/stock_app
-Manual only — never on cron.
+Signal sources (hedge fund pattern):
+  1. SEC filings — 8-K material events, SC 13D activist, Form 4 insider
+  2. Earnings events:
+     - earnings_pre  — 5-day momentum INTO earnings (pre-earnings drift)
+     - earnings_release — actual vs estimated EPS (surprise classification)
+     - earnings_post — 1-day reaction (post-earnings drift, PEAD)
+  3. Momentum events:
+     - 20-day relative strength vs SPY (top decile = bullish)
 
-HONEST CAVEATS embedded in the metrics output:
+HONEST CAVEATS in metrics output:
   - Survivorship bias (universe = today's S&P leaders)
   - Look-ahead controlled via next-day-open entry
-  - Truth Social signals limited to last ~7 days (RSS history limit)
+  - Truth Social out of scope (RSS history limit)
+  - Fundamentals (P/E, FCF, short interest) require paid feeds — not in v1
   - 0.05% slippage per side, no commissions
-  - 6mo × ~31 symbols → small sample; calibration noisy
+  - 6mo × ~21 tickers × 4 quarters → ~84 earnings events, ~1200 filings,
+    plus ~20 momentum signals/month → ~3000 total signals upper bound
+  - PEAD literature suggests holding 60d post-earnings; v1 uses 1-day for
+    direct comparability with filing signals
+
+Trigger: gh workflow run backtester.yml --repo nishantgupta83/stock_app
 """
 from __future__ import annotations
 
@@ -39,9 +50,76 @@ import curl_cffi  # noqa: F401
 # Reuse the live thesis-agent scoring so backtest and live cannot drift.
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from thesis_agent import (   # type: ignore
-    score_evidence, cluster_passes, action_for_score, source_agent_for,
-    horizon_for, evidence_summary,
+    score_evidence as _score_filings_truth, cluster_passes,
+    action_for_score, source_agent_for, horizon_for, evidence_summary,
 )
+
+
+# ============================================================
+# Extended scoring rubric — earnings + momentum
+# These rules don't exist in live thesis_agent yet (no earnings/momentum
+# agent shipped). Backtester scores them here so we can decide whether
+# to wire them up live based on results. Documented as v1.1-extension.
+# Hedge fund pattern reference:
+#   - Bernard & Thomas (1989) on PEAD
+#   - Fama-French (1992) on momentum
+#   - Pre-earnings drift: Frazzini & Lamont (2007)
+# ============================================================
+
+def _score_earnings_momentum(events: list[dict]) -> tuple[float, list[dict]]:
+    """Score earnings + momentum events. Returns (added_score, breakdown)."""
+    score = 0.0
+    breakdown: list[dict] = []
+
+    for e in events:
+        et = e["event_type"]
+        sub = e.get("event_subtype") or ""
+        sev = e.get("severity") or 0
+        payload = e.get("payload") or {}
+
+        if et == "earnings_pre":
+            # Pre-earnings drift. Strong drift in either direction is informational.
+            # Moderate positive drift → momentum into earnings (long bias).
+            # Strong drift (>5%) often exhausts before/after release — penalize chase.
+            drift = payload.get("drift_pct") or 0
+            if   drift >  10: score += 10; breakdown.append({"rule": "earnings_pre_overextended", "points": 10, "event_id": None, "detail": f"+{drift:.1f}% drift, possible chase risk"})
+            elif drift >   2: score += 25; breakdown.append({"rule": "earnings_pre_drift_bullish", "points": 25, "event_id": None, "detail": f"+{drift:.1f}% drift"})
+            elif drift <  -2: score += 15; breakdown.append({"rule": "earnings_pre_drift_bearish", "points": 15, "event_id": None, "detail": f"{drift:.1f}% drift (informational, long-only)"})
+
+        elif et == "earnings_release":
+            # Surprise classification — beats are the primary buy signal.
+            surprise_pct = payload.get("surprise_pct")
+            if surprise_pct is None:
+                continue
+            if   sub == "beat" and surprise_pct >= 10: score += 40; breakdown.append({"rule": "earnings_beat_strong",   "points": 40, "event_id": None, "detail": f"+{surprise_pct:.1f}% vs est"})
+            elif sub == "beat" and surprise_pct >=  3: score += 25; breakdown.append({"rule": "earnings_beat_moderate", "points": 25, "event_id": None, "detail": f"+{surprise_pct:.1f}% vs est"})
+            elif sub == "beat":                         score +=  5; breakdown.append({"rule": "earnings_beat_inline",   "points":  5, "event_id": None, "detail": f"+{surprise_pct:.1f}% vs est"})
+            elif sub == "miss" and abs(surprise_pct) >= 10: score -= 40; breakdown.append({"rule": "earnings_miss_strong", "points": -40, "event_id": None, "detail": f"{surprise_pct:.1f}% vs est"})
+            elif sub == "miss":                              score -= 20; breakdown.append({"rule": "earnings_miss",        "points": -20, "event_id": None, "detail": f"{surprise_pct:.1f}% vs est"})
+
+        elif et == "earnings_post":
+            # PEAD entry — applied next day after a known surprise.
+            # Worth +30 ONLY if the prior earnings_release was a beat (we don't have
+            # cross-event awareness here; backtest scores it independently and the
+            # multi-event cluster naturally combines).
+            score += 15
+            breakdown.append({"rule": "pead_entry", "points": 15, "event_id": None, "detail": "1d after earnings, PEAD window"})
+
+        elif et == "momentum":
+            # 20d relative strength vs SPY
+            rs = payload.get("rel_strength_pct") or 0
+            if   rs >  10: score += 25; breakdown.append({"rule": "momentum_strong_long", "points": 25, "event_id": None, "detail": f"+{rs:.1f}% vs SPY 20d"})
+            elif rs >   5: score += 15; breakdown.append({"rule": "momentum_moderate",    "points": 15, "event_id": None, "detail": f"+{rs:.1f}% vs SPY 20d"})
+            elif rs < -10: score -= 20; breakdown.append({"rule": "momentum_weak",        "points": -20, "event_id": None, "detail": f"{rs:.1f}% vs SPY 20d"})
+
+    return score, breakdown
+
+
+def score_evidence(events: list[dict]) -> tuple[float, list[dict]]:
+    """Combined scorer: live filings/truth rubric + extended earnings/momentum."""
+    s1, b1 = _score_filings_truth(events)
+    s2, b2 = _score_earnings_momentum(events)
+    return s1 + s2, b1 + b2
 
 SUPABASE_URL = os.environ["SUPABASE_URL"].rstrip("/")
 SUPABASE_KEY = os.environ["SUPABASE_SERVICE_KEY"]
@@ -56,18 +134,18 @@ HEADERS_SB = {
 LOOKBACK_DAYS  = 180
 SLIPPAGE_BPS   = 5     # 0.05% per side
 EMA_ALPHA      = 0.10
-MODEL_VERSION  = "rubric-v1.0-backtest-permissive"
+MODEL_VERSION  = "rubric-v1.1-backtest-multisource"
 # Backtest mode: live system requires ≥2 distinct source agents (cluster rule).
 # Filings-only data has just 1 source agent, so live would fire 0 signals.
 # Permissive mode scores every cluster regardless, AND uses RESEARCH (score≥50)
 # as the entry threshold — this gives us calibration data on the rubric itself,
 # separate from cluster gating. Tagged in metrics so it can never be confused
 # with a real system simulation.
-BACKTEST_MODE  = "permissive_all_events"
-# Filings-only data: single 8-K = 35 pts, single SC 13D = 20 pts. Both below
-# the live RESEARCH threshold (50). Lower to 25 so we get meaningful sample
-# size for calibration. This is a CALIBRATION SWEEP, not a live-system sim.
-ENTRY_SCORE_MIN = 25
+BACKTEST_MODE  = "multi_source_research_grade"
+# v1.1: filings + earnings + momentum gives 3 distinct source agents,
+# so the live cluster rule can pass naturally. Entry at RESEARCH (≥50)
+# for richer calibration than WATCH-only.
+ENTRY_SCORE_MIN = 50
 ENTRY_SCORE_MAX = 100
 
 
@@ -250,6 +328,167 @@ def realized_outcome(ticker: str, signal_time: datetime, horizon_days: int = 1) 
 
 
 # ============================================================
+# Earnings events (hedge fund pattern: pre-drift + surprise + PEAD)
+# ============================================================
+
+def fetch_earnings_events(tickers: list[str], start: datetime, end: datetime) -> list[dict]:
+    """Pull earnings dates + actual/estimated EPS via yfinance per ticker.
+    Generates three event types per earnings:
+      - earnings_pre     (5 trading days before — captures pre-earnings drift)
+      - earnings_release (the day — captures the surprise itself)
+      - earnings_post    (1 trading day after — captures PEAD)
+    """
+    events: list[dict] = []
+    for t in tickers:
+        try:
+            tk = yf.Ticker(t)
+            ed = tk.earnings_dates                                  # past + upcoming, indexed by date
+            if ed is None or ed.empty:
+                continue
+            # Filter to backtest window
+            for ts, row in ed.iterrows():
+                d = ts.to_pydatetime() if hasattr(ts, "to_pydatetime") else ts
+                if not isinstance(d, datetime):
+                    continue
+                d = d.replace(tzinfo=timezone.utc) if d.tzinfo is None else d.astimezone(timezone.utc)
+                if d < start or d > end:
+                    continue
+                actual_eps   = row.get("Reported EPS")
+                estimated    = row.get("EPS Estimate")
+                surprise_pct = row.get("Surprise(%)")
+                # earnings_pre: 5 days before — use the prior price-history slope as drift signal
+                pre_dt = d - timedelta(days=7)   # calendar days; weekends skipped naturally
+                if pre_dt > start:
+                    drift = compute_drift_pct(t, pre_dt, d)
+                    if drift is not None:
+                        events.append({
+                            "id": None,
+                            "event_type":    "earnings_pre",
+                            "event_subtype": f"drift_{drift:+.1f}pct",
+                            "ticker":        t,
+                            "event_at":      pre_dt.isoformat(),
+                            "severity":      3 if abs(drift) > 5 else 2 if abs(drift) > 2 else 1,
+                            "source_table":  "yfinance_earnings",
+                            "parser_confidence": 0.9,
+                            "payload":       {"drift_pct": drift, "earnings_date": d.isoformat()},
+                        })
+                # earnings_release: the day — surprise classification
+                release_sev = 2   # default, used by earnings_post too
+                if actual_eps is not None and estimated is not None and not pd.isna(actual_eps) and not pd.isna(estimated):
+                    surprise_dir = "beat" if actual_eps > estimated else ("miss" if actual_eps < estimated else "inline")
+                    if surprise_pct is not None and not pd.isna(surprise_pct):
+                        release_sev = 4 if abs(surprise_pct) > 10 else 3 if abs(surprise_pct) > 3 else 2
+                    events.append({
+                        "id": None,
+                        "event_type":    "earnings_release",
+                        "event_subtype": surprise_dir,
+                        "ticker":        t,
+                        "event_at":      d.isoformat(),
+                        "severity":      release_sev,
+                        "source_table":  "yfinance_earnings",
+                        "parser_confidence": 1.0,
+                        "payload":       {
+                            "actual_eps":    float(actual_eps),
+                            "estimated_eps": float(estimated),
+                            "surprise_pct":  float(surprise_pct) if surprise_pct is not None and not pd.isna(surprise_pct) else None,
+                        },
+                    })
+                # earnings_post: next trading day — PEAD entry point
+                post_dt = d + timedelta(days=1)
+                if post_dt < end:
+                    events.append({
+                        "id": None,
+                        "event_type":    "earnings_post",
+                        "event_subtype": "pead_entry",
+                        "ticker":        t,
+                        "event_at":      post_dt.isoformat(),
+                        "severity":      release_sev,
+                        "source_table":  "yfinance_earnings",
+                        "parser_confidence": 0.9,
+                        "payload":       {"earnings_date": d.isoformat()},
+                    })
+        except Exception as e:  # noqa: BLE001
+            print(f"  earnings {t}: {type(e).__name__}: {e}", file=sys.stderr)
+        time.sleep(0.2)
+    return events
+
+
+def compute_drift_pct(ticker: str, from_dt: datetime, to_dt: datetime) -> float | None:
+    """Return % change between two dates, using closes from the price cache."""
+    bars = _price_cache.get(ticker)
+    if bars is None or bars.empty:
+        return None
+    from_d = from_dt.date()
+    to_d   = to_dt.date()
+    p_from = p_to = None
+    for ts, row in bars.iterrows():
+        d = ts.date() if hasattr(ts, "date") else ts
+        if p_from is None and d >= from_d:
+            try: p_from = float(row["Close"])
+            except Exception: pass
+        if d <= to_d:
+            try: p_to = float(row["Close"])
+            except Exception: pass
+    if p_from is None or p_to is None or p_from <= 0:
+        return None
+    return ((p_to - p_from) / p_from) * 100
+
+
+# ============================================================
+# Momentum events (20-day relative strength vs SPY)
+# ============================================================
+
+def fetch_momentum_events(tickers: list[str], start: datetime, end: datetime,
+                          period_days: int = 20, threshold_pct: float = 5.0) -> list[dict]:
+    """Generate momentum signals: stocks outperforming SPY by ≥ threshold over rolling period.
+    Fires once per ticker per non-overlapping window — gives ~9 signals per ticker over 6 months."""
+    events = []
+    spy_bars = _price_cache.get("SPY")
+    if spy_bars is None or spy_bars.empty:
+        print("  momentum: no SPY prices, skipping", file=sys.stderr)
+        return events
+    for t in tickers:
+        if t == "SPY":
+            continue
+        bars = _price_cache.get(t)
+        if bars is None or bars.empty:
+            continue
+        # Iterate by trading day, every period_days emit one event
+        all_dates = sorted({ts.date() for ts in bars.index if start.date() <= ts.date() <= end.date()})
+        i = period_days
+        while i < len(all_dates):
+            anchor_date = all_dates[i]
+            from_date   = all_dates[i - period_days]
+            t_ret  = compute_drift_pct(t,   datetime.combine(from_date, datetime.min.time(), tzinfo=timezone.utc),
+                                            datetime.combine(anchor_date, datetime.min.time(), tzinfo=timezone.utc))
+            spy_ret = compute_drift_pct("SPY", datetime.combine(from_date, datetime.min.time(), tzinfo=timezone.utc),
+                                              datetime.combine(anchor_date, datetime.min.time(), tzinfo=timezone.utc))
+            if t_ret is None or spy_ret is None:
+                i += period_days
+                continue
+            rel_strength = t_ret - spy_ret
+            if abs(rel_strength) >= threshold_pct:
+                events.append({
+                    "id": None,
+                    "event_type":    "momentum",
+                    "event_subtype": f"{period_days}d_rel_strength",
+                    "ticker":        t,
+                    "event_at":      datetime.combine(anchor_date, datetime.min.time(), tzinfo=timezone.utc).isoformat(),
+                    "severity":      3 if abs(rel_strength) > 10 else 2,
+                    "source_table":  "yfinance_prices",
+                    "parser_confidence": 0.85,
+                    "payload":       {
+                        "ticker_return_pct": t_ret,
+                        "spy_return_pct":    spy_ret,
+                        "rel_strength_pct":  rel_strength,
+                        "lookback_days":     period_days,
+                    },
+                })
+            i += period_days
+    return events
+
+
+# ============================================================
 # Per-day replay
 # ============================================================
 
@@ -279,15 +518,20 @@ def replay_day(day_start: datetime, day_end: datetime, all_events: list[dict],
     fired = []
 
     for (ticker, bucket_iso), ev_list in clusters.items():
-        # Permissive mode: SKIP cluster check (only 1 source agent in filings-only backtest).
-        # Document why in the action label.
-        if BACKTEST_MODE != "permissive":
-            ok, _ = cluster_passes(ev_list)
-            if not ok:
+        # Apply the live cluster rule — with earnings + momentum + filings we
+        # now have multiple source agents, so real clusters can form.
+        ok, _ = cluster_passes(ev_list)
+        if not ok:
+            # Single-source acceptable IF it's a high-severity earnings_release
+            # (severity 4 = >10% surprise, self-validating). Otherwise skip.
+            single_source_ok = any(
+                e["event_type"] == "earnings_release" and (e.get("severity") or 0) >= 4
+                for e in ev_list
+            )
+            if not single_source_ok:
                 continue
         score, breakdown = score_evidence(ev_list)
         action = action_for_score(score)
-        # In permissive mode accept RESEARCH-grade too — gives more calibration samples.
         if not action or score < ENTRY_SCORE_MIN:
             continue
 
@@ -504,15 +748,14 @@ def main() -> int:
     run_id = run[0]["id"] if run else None
     print(f"backtest run_id={run_id}, window {start.date()} → {end.date()}")
 
-    # Pull universe (tickers only — for yfinance batch)
+    # Pull universe — include 'context' so SPY/QQQ are loaded for momentum baseline
     syms = sb_get("stock_watchlists", {
-        "name":  "in.(\"core\",\"institutions\",\"mutual_funds\")",
+        "name":  "in.(\"core\",\"institutions\",\"mutual_funds\",\"context\")",
         "select": "ticker,stock_symbols(kind)",
     })
-    # Only fetch yfinance prices for actual tradable tickers (stock + etf — not institutions/funds)
     tradable = sorted({s["ticker"] for s in syms
                        if s.get("stock_symbols") and s["stock_symbols"]["kind"] in ("stock", "etf")})
-    print(f"Universe: {len(tradable)} tradable tickers")
+    print(f"Universe: {len(tradable)} tradable tickers (incl. SPY for momentum baseline)")
 
     load_prices(tradable, start, end)
     if not _price_cache:
@@ -523,13 +766,25 @@ def main() -> int:
                       "metrics": {"error": "no_prices"}})
         return 1
 
-    # Pull all relevant filings once
+    # Layer 1: filings
     filings = fetch_filings_in_window(start, end)
-    print(f"Pulled {len(filings)} filings in window")
-    events = filings_to_events(filings)
-    # Filter to tradable universe only
-    events = [e for e in events if e["ticker"] in _price_cache]
-    print(f"After universe filter: {len(events)} events")
+    filing_events = [e for e in filings_to_events(filings) if e["ticker"] in _price_cache]
+    print(f"Filings: {len(filings)} pulled → {len(filing_events)} after universe filter")
+
+    # Layer 2: earnings (per-ticker — yfinance earnings_dates)
+    # Only on stocks (skip ETFs which don't report)
+    stock_tickers = sorted({s["ticker"] for s in syms
+                            if s.get("stock_symbols") and s["stock_symbols"]["kind"] == "stock"
+                            and s["ticker"] in _price_cache})
+    earnings_events = fetch_earnings_events(stock_tickers, start, end)
+    print(f"Earnings: {len(earnings_events)} events across {len(stock_tickers)} stocks")
+
+    # Layer 3: momentum (20d relative strength vs SPY)
+    momentum_events = fetch_momentum_events(stock_tickers, start, end, period_days=20, threshold_pct=5.0)
+    print(f"Momentum: {len(momentum_events)} events (20d vs SPY, ≥5% rel strength)")
+
+    events = filing_events + earnings_events + momentum_events
+    print(f"Total events: {len(events)}")
 
     # Replay day by day
     agent_state: dict[str, dict] = {}
