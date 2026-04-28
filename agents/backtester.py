@@ -162,12 +162,22 @@ def sb_get(path: str, params: dict | None = None) -> list[dict]:
 
 
 def sb_post(path: str, payload: list | dict, return_repr: bool = False) -> list[dict] | None:
-    headers = {**HEADERS_SB, "Prefer": "return=representation"} if return_repr else HEADERS_SB
+    # Combine ignore-duplicates with return=representation so collisions silently
+    # drop instead of 409, and we still get inserted rows back.
+    if return_repr:
+        headers = {**HEADERS_SB, "Prefer": "resolution=ignore-duplicates,return=representation"}
+    else:
+        headers = HEADERS_SB
     r = requests.post(f"{SUPABASE_URL}/rest/v1/{path}", headers=headers, json=payload, timeout=30)
     if r.status_code not in (200, 201, 204):
         print(f"  SB POST {path} {r.status_code}: {r.text[:200]}", file=sys.stderr)
         return None
-    return r.json() if return_repr else []
+    if return_repr:
+        try:
+            return r.json()
+        except Exception:
+            return []
+    return []
 
 
 def sb_patch(path: str, payload: dict) -> None:
@@ -605,7 +615,8 @@ def persist_signals(signals: list[dict]) -> None:
         "action":           s["action"],
         "score":            s["score"],
         "evidence_summary": s["evidence_summary"],
-        "dedupe_key":       f"backtest_{s['ticker']}_{s['fired_at']}",
+        # Model version in dedupe key so multiple backtest model variants coexist.
+        "dedupe_key":       f"bt_{MODEL_VERSION}_{s['ticker']}_{s['fired_at']}",
         "status_v2":        "backtest",
     } for s in signals]
 
