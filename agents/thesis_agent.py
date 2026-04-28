@@ -95,17 +95,18 @@ def job_run_finish(run_id: int | None, status: str, rows_in: int, rows_out: int,
 # ============================================================
 
 def fetch_fresh_events() -> list[dict]:
-    """Pull normalized_events from the last FRESHNESS_WINDOW_MIN minutes."""
+    """Pull normalized_events from the last FRESHNESS_WINDOW_MIN minutes.
+    Use params= so requests URL-encodes the +00:00 in the ISO timestamp correctly."""
     cutoff = (datetime.now(timezone.utc) - timedelta(minutes=FRESHNESS_WINDOW_MIN)).isoformat()
-    url = (
-        f"{SUPABASE_URL}/rest/v1/stock_normalized_events"
-        f"?event_at=gte.{cutoff}"
-        f"&ticker=not.is.null"
-        f"&select=id,event_type,event_subtype,ticker,event_at,severity,source_table,parser_confidence,payload"
-        f"&order=event_at.desc"
-        f"&limit=500"
-    )
-    r = requests.get(url, headers=HEADERS_SB, timeout=20)
+    params = {
+        "event_at":  f"gte.{cutoff}",
+        "ticker":    "not.is.null",
+        "select":    "id,event_type,event_subtype,ticker,event_at,severity,source_table,parser_confidence,payload",
+        "order":     "event_at.desc",
+        "limit":     "500",
+    }
+    r = requests.get(f"{SUPABASE_URL}/rest/v1/stock_normalized_events",
+                     headers=HEADERS_SB, params=params, timeout=20)
     r.raise_for_status()
     return r.json()
 
@@ -128,11 +129,13 @@ def alerts_sent_today() -> int:
     """Count signals already sent today (UTC) — for the daily cap."""
     today = datetime.now(timezone.utc).date().isoformat()
     r = requests.get(
-        f"{SUPABASE_URL}/rest/v1/stock_signals"
-        f"?fired_at=gte.{today}T00:00:00Z"
-        f"&status_v2=eq.sent"
-        f"&select=id",
-        headers={**HEADERS_SB, "Prefer": "count=exact"},
+        f"{SUPABASE_URL}/rest/v1/stock_signals",
+        headers=HEADERS_SB,
+        params={
+            "fired_at":  f"gte.{today}T00:00:00Z",
+            "status_v2": "eq.sent",
+            "select":    "id",
+        },
         timeout=15,
     )
     if r.status_code != 200:
@@ -144,12 +147,16 @@ def recently_dispatched(ticker: str, event_type: str) -> bool:
     """Dedupe: was an alert sent for this (ticker, event_type) in the last DEDUPE_WINDOW_MIN?"""
     cutoff = (datetime.now(timezone.utc) - timedelta(minutes=DEDUPE_WINDOW_MIN)).isoformat()
     r = requests.get(
-        f"{SUPABASE_URL}/rest/v1/stock_signals"
-        f"?ticker=eq.{ticker}"
-        f"&fired_at=gte.{cutoff}"
-        f"&status_v2=eq.sent"
-        f"&select=id&limit=1",
-        headers=HEADERS_SB, timeout=10,
+        f"{SUPABASE_URL}/rest/v1/stock_signals",
+        headers=HEADERS_SB,
+        params={
+            "ticker":    f"eq.{ticker}",
+            "fired_at":  f"gte.{cutoff}",
+            "status_v2": "eq.sent",
+            "select":    "id",
+            "limit":     "1",
+        },
+        timeout=10,
     )
     return r.status_code == 200 and len(r.json()) > 0
 
