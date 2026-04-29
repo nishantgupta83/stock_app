@@ -51,7 +51,7 @@ from curl_cffi import requests as cffi_requests
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from thesis_agent import (   # type: ignore
     score_evidence as _score_filings_truth, cluster_passes,
-    action_for_score, source_agent_for, horizon_for, evidence_summary,
+    action_for, signal_direction, source_agent_for, horizon_for, evidence_summary,
 )
 
 
@@ -605,7 +605,8 @@ def replay_day(day_start: datetime, day_end: datetime, all_events: list[dict],
             if not single_source_ok:
                 continue
         score, breakdown = score_evidence(ev_list)
-        action = action_for_score(score)
+        direction = signal_direction(ev_list)
+        action = action_for(score, direction)
         if not action or score < ENTRY_SCORE_MIN:
             continue
 
@@ -634,6 +635,7 @@ def replay_day(day_start: datetime, day_end: datetime, all_events: list[dict],
             "fired_at":         sig_time.isoformat(),
             "score":            round(score, 2),
             "action":           action,
+            "direction":        direction,
             "evidence_summary": evidence_summary(ev_list),
             "agents":           agents_in_signal,
             "horizon_days":     1,
@@ -654,7 +656,7 @@ def persist_signals(signals: list[dict]) -> None:
     payload = [{
         "ticker":           s["ticker"],
         "fired_at":         s["fired_at"],
-        "direction":        s["action"],
+        "direction":        s.get("direction", "neutral"),
         "confidence":       round(min(s["score"], 100) / 100, 4),
         "horizon_days":     s["horizon_days"],
         "thesis_summary":   s["evidence_summary"],
