@@ -22,9 +22,8 @@
       <th>Event time (UTC)</th>
       <th>Ticker</th>
       <th>Type</th>
-      <th>Subtype</th>
-      <th>Sev</th>
-      <th>Detail</th>
+      <th class="num">Sev</th>
+      <th>Content / headline</th>
     </tr>
   </thead>
   <tbody id="rows"></tbody>
@@ -53,20 +52,40 @@ function render() {
     if (fTick && (r.ticker || '').toUpperCase().indexOf(fTick) === -1) continue;
     if (r.severity < fSev) continue;
     n++;
-    let detail = '';
-    if (r.payload) {
-      if (r.payload.form_type) detail = r.payload.form_type;
-      else if (r.payload.post_excerpt) detail = String(r.payload.post_excerpt).substring(0,100);
-      else if (r.payload.rule_label) detail = r.payload.rule_label;
+    // Extract the most human-readable content from payload
+    let content = '';
+    const p = r.payload || {};
+    if (r.event_type === 'news_article') {
+      content = p.headline || p.url || '';
+    } else if (r.event_type === 'truth_social_post') {
+      content = p.post_excerpt || p.content_snippet || '';
+    } else if (r.event_type === '8k_material_event') {
+      const items = p['8k_items'] ? ' [items: ' + p['8k_items'] + ']' : '';
+      content = (p.company_name || p.form_type || '8-K') + items;
+    } else if (r.event_type && r.event_type.startsWith('filing_')) {
+      content = p.form_type || r.event_type.replace('filing_', '').toUpperCase();
+    } else {
+      content = p.rule_label || r.event_subtype || '';
     }
+    content = String(content).substring(0, 120);
+
     const tr = document.createElement('tr');
-    tr.innerHTML =
-      `<td>${esc((r.event_at || '').substring(0,16))}</td>` +
-      `<td><strong>${esc(r.ticker || '—')}</strong></td>` +
-      `<td>${esc(r.event_type)}</td>` +
-      `<td>${esc(r.event_subtype)}</td>` +
-      `<td class="center">${Number(r.severity) || 0}</td>` +
-      `<td>${esc(detail)}</td>`;
+    // Build cells via DOM — no innerHTML with user content
+    function cell(text, cls) {
+      const td = document.createElement('td');
+      if (cls) td.className = cls;
+      td.textContent = text || '';
+      return td;
+    }
+    tr.appendChild(cell((r.event_at || '').substring(0, 16)));
+    const tickerTd = document.createElement('td');
+    const b = document.createElement('strong');
+    b.textContent = r.ticker || '—';
+    tickerTd.appendChild(b);
+    tr.appendChild(tickerTd);
+    tr.appendChild(cell(r.event_type));
+    tr.appendChild(cell(String(Number(r.severity) || 0), 'num'));
+    tr.appendChild(cell(content));
     tbody.appendChild(tr);
   }
   document.getElementById('count').textContent = `${n} of ${DATA.length} rows`;

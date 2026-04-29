@@ -51,6 +51,34 @@
 <div class="empty">No signals yet. The system fires only when ≥2 agents agree (per §15.3 cluster rule). Quiet days are normal — high signal density is the goal.</div>
 {% endif %}
 
+<h3>Building toward a signal <span style="color:var(--muted);font-size:13px;font-weight:normal">— tickers accumulating evidence, last 5 days</span></h3>
+{% if candidates %}
+<table>
+  <thead>
+    <tr><th>Ticker</th><th>Sources</th><th>Events</th><th>Latest activity</th></tr>
+  </thead>
+  <tbody>
+    {% for c in candidates %}
+    <tr>
+      <td><strong>
+        {% if c.ticker in signal_tickers %}
+          <a href="ticker/{{ c.ticker }}.html" style="color:var(--ok)">{{ c.ticker }}</a>
+        {% else %}{{ c.ticker }}{% endif %}
+      </strong></td>
+      <td>
+        {% for a in c.agents %}<span class="tag agent-{{ a }}">{{ a }}</span> {% endfor %}
+        {% if c.agent_count >= 2 %}<span style="color:var(--ok);font-size:11px">✓ cluster ready</span>{% endif %}
+      </td>
+      <td class="num">{{ c.event_count }}</td>
+      <td style="color:var(--muted);font-size:12px">{{ c.latest }}</td>
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
+{% else %}
+<div class="empty">No tickers accumulating evidence in the last 5 days.</div>
+{% endif %}
+
 <h3>Top recent events by agent</h3>
 <div class="cards">
   {% for agent_name, n_recent, sample in agent_activity %}

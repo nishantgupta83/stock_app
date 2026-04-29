@@ -1,0 +1,95 @@
+{% extends "_layout.html.j2" %}
+{% block content %}
+<h2>Learning — Agent Accuracy Over Time</h2>
+<p style="color:var(--muted);font-size:12px">Each data point is a day in the 180-day backtest replay. Accuracy EMA (α=0.1) updates after every reconciled signal. Weight = clip(accuracy/0.5, 0.1×, 2.0×) — so a 60% accurate agent gets 1.2× influence in scoring.</p>
+
+<canvas id="weightChart" height="90"></canvas>
+
+{% if audit_rows %}
+<h3 style="margin-top:28px">Paper-trade reconciliation log</h3>
+<p style="color:var(--muted);font-size:12px">Every signal that has been closed by price_agent. Entry = signal fire date close. Exit = horizon_days later close.</p>
+<table>
+  <thead>
+    <tr>
+      <th>Ticker</th>
+      <th>Action</th>
+      <th class="num">Score</th>
+      <th>Fired</th>
+      <th>Closed</th>
+      <th class="num">Return</th>
+      <th>Correct</th>
+      <th>Agents</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for a in audit_rows %}
+    {% set sig = signals_by_id.get(a.signal_id) %}
+    <tr>
+      <td><strong>{% if sig %}<a href="ticker/{{ sig.ticker }}.html" style="color:var(--ok)">{{ sig.ticker }}</a>{% else %}—{% endif %}</strong></td>
+      <td>{% if sig %}<span class="tag {{ sig.action }}">{{ sig.action }}</span>{% else %}—{% endif %}</td>
+      <td class="num">{% if sig %}{{ sig.score|int }}{% else %}—{% endif %}</td>
+      <td style="font-size:12px">{% if sig %}{{ sig.fired_at[:16]|replace("T"," ") }}{% else %}—{% endif %}</td>
+      <td style="font-size:12px">{{ (a.realized_at or "")[:10] }}</td>
+      <td class="num" style="color:{% if a.realized_return and a.realized_return > 0 %}var(--ok){% elif a.realized_return and a.realized_return < 0 %}var(--bad){% else %}var(--muted){% endif %}">
+        {% if a.realized_return is not none %}{{ "%+.2f%%"|format(a.realized_return * 100) }}{% else %}—{% endif %}
+      </td>
+      <td style="text-align:center;font-size:18px">{% if a.correct == true %}✅{% elif a.correct == false %}❌{% else %}—{% endif %}</td>
+      <td style="font-size:11px;color:var(--muted)">{% if sig %}{{ (sig.agents or [])|join(", ") }}{% else %}—{% endif %}</td>
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
+{% else %}
+<div class="empty" style="margin-top:24px">No closed signals yet. price_agent runs at 4:30 PM ET on weekdays — outcomes appear here after the first live signal is reconciled.</div>
+{% endif %}
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4/dist/chart.umd.min.js"></script>
+<script id="wdata" type="application/json">{{ weight_history_json|safe }}</script>
+<script>
+const raw = JSON.parse(document.getElementById('wdata').textContent);
+
+// Group by agent → {date: accuracy_ema}
+const byAgent = {};
+for (const r of raw) {
+  if (!byAgent[r.agent]) byAgent[r.agent] = {};
+  byAgent[r.agent][r.date] = r.accuracy_ema;
+}
+
+const allDates = [...new Set(raw.map(r => r.date))].sort();
+const COLORS   = ['#4caf93','#e88c5a','#7ab8d9','#c97ab5','#a8c45a','#e8c15a','#9b7fe8'];
+const agents   = Object.keys(byAgent);
+
+const datasets = agents.map((ag, i) => ({
+  label:           ag,
+  data:            allDates.map(d => byAgent[ag][d] ?? null),
+  borderColor:     COLORS[i % COLORS.length],
+  backgroundColor: COLORS[i % COLORS.length] + '22',
+  tension:         0.3,
+  spanGaps:        true,
+  pointRadius:     2,
+}));
+
+new Chart(document.getElementById('weightChart'), {
+  type: 'line',
+  data: { labels: allDates, datasets },
+  options: {
+    responsive: true,
+    scales: {
+      y: {
+        min: 0, max: 1,
+        ticks: { callback: v => (v * 100).toFixed(0) + '%' },
+        title: { display: true, text: 'Accuracy EMA' },
+      },
+    },
+    plugins: {
+      tooltip: { callbacks: { label: ctx => `${ctx.dataset.label}: ${(ctx.parsed.y * 100).toFixed(1)}%` }},
+      annotation: {
+        annotations: {
+          baseline: { type: 'line', yMin: 0.5, yMax: 0.5, borderColor: '#666', borderDash: [4,4], label: { content: 'baseline 50%', display: true }},
+        }
+      }
+    }
+  }
+});
+</script>
+{% endblock %}

@@ -17,7 +17,14 @@ from datetime import datetime, timedelta, timezone
 from pathlib import Path
 
 import requests
+import yfinance as yf
 from jinja2 import Environment, FileSystemLoader, select_autoescape
+
+try:
+    from curl_cffi import requests as cffi_requests
+    _CF_SESSION = cffi_requests.Session(impersonate="chrome")
+except ImportError:
+    _CF_SESSION = None
 
 SUPABASE_URL = os.environ["SUPABASE_URL"].rstrip("/")
 SUPABASE_KEY = os.environ["SUPABASE_SERVICE_KEY"]
@@ -33,6 +40,18 @@ HEADERS_SB = {
 
 # Known agent inventory — drives the agents tab even if agent has no signals yet
 KNOWN_AGENTS = ["filing", "truth_social", "thesis", "telegram_dispatcher", "news", "flows", "price"]
+
+# Maps short display name → job_runs agent string (fixes last_seen showing "—")
+_JOB_NAME = {
+    "filing":              "filing_agent",
+    "truth_social":        "truth_social_agent",
+    "thesis":              "thesis_agent",
+    "news":                "news_agent",
+    "price":               "price_agent",
+    "telegram_dispatcher": "telegram_dispatcher",
+    "flows":               "flows_agent",
+    "site_generator":      "site_generator",
+}
 
 
 def sb_get(path: str, params: dict | None = None) -> list[dict]:
@@ -142,7 +161,83 @@ def count_fresh_events() -> int:
 # Build derived views
 # ============================================================
 
+def fetch_agent_weight_history() -> list[dict]:
+    """All agent_weights rows ordered by date — used for the learning chart."""
+    return sb_get("stock_agent_weights", {
+        "select": "agent,date,accuracy_ema,weight,n_signals",
+        "order":  "date.asc",
+        "limit":  "2000",
+    })
+
+
+def fetch_forecast_audit() -> list[dict]:
+    """All closed signal outcomes for the paper-trade review table."""
+    return sb_get("stock_forecast_audit", {
+        "select": "signal_id,horizon_days,realized_return,realized_at,correct",
+        "order":  "realized_at.desc",
+        "limit":  "200",
+    })
+
+
+def fetch_ticker_prices(tickers: list[str], days: int = 90) -> dict[str, list[dict]]:
+    """Fetch daily close prices for tickers via yfinance. Returns {ticker: [{date, close}]}."""
+    result: dict[str, list[dict]] = {}
+    if not tickers:
+        return result
+    start = (datetime.now(timezone.utc) - timedelta(days=days)).strftime("%Y-%m-%d")
+    for ticker in tickers:
+        try:
+            t = yf.Ticker(ticker, session=_CF_SESSION) if _CF_SESSION else yf.Ticker(ticker)
+            df = t.history(start=start, auto_adjust=True)
+            if df.empty:
+                continue
+            result[ticker] = [
+                {"date": str(ts.date()), "close": round(float(row["Close"]), 2)}
+                for ts, row in df.iterrows()
+            ]
+        except Exception as e:
+            print(f"  price fetch {ticker}: {e}", file=sys.stderr)
+    return result
+
+
+def build_pre_signal_candidates(events: list[dict]) -> list[dict]:
+    """Tickers with events in the last 5 days that haven't yet clustered into a signal.
+    Shows the user what's building toward a signal."""
+    cutoff = datetime.now(timezone.utc) - timedelta(days=5)
+    by_ticker: dict[str, dict] = {}
+    for e in events:
+        try:
+            t = datetime.fromisoformat(e["event_at"].replace("Z", "+00:00"))
+        except Exception:
+            continue
+        if t < cutoff:
+            continue
+        ticker = e.get("ticker") or "?"
+        if ticker not in by_ticker:
+            by_ticker[ticker] = {"ticker": ticker, "agents": set(), "events": [], "latest": t}
+        by_ticker[ticker]["events"].append(e)
+        et = e["event_type"]
+        agent = ("filing" if et.startswith("filing_") or et == "8k_material_event"
+                 else "truth_social" if et == "truth_social_post"
+                 else "news" if et == "news_article" else "other")
+        by_ticker[ticker]["agents"].add(agent)
+        if t > by_ticker[ticker]["latest"]:
+            by_ticker[ticker]["latest"] = t
+
+    rows = []
+    for d in sorted(by_ticker.values(), key=lambda x: len(x["agents"]), reverse=True):
+        rows.append({
+            "ticker":      d["ticker"],
+            "event_count": len(d["events"]),
+            "agents":      sorted(d["agents"]),
+            "agent_count": len(d["agents"]),
+            "latest":      d["latest"].strftime("%Y-%m-%d %H:%M"),
+        })
+    return rows[:15]
+
+
 def derive_agent_rows(weights: dict, freshness: list[dict], signals: list[dict]) -> list[dict]:
+    # job_runs uses long names ("filing_agent"), KNOWN_AGENTS uses short ("filing")
     fresh_map = {f["agent"]: f for f in freshness}
     contrib = Counter()
     cutoff_30d = datetime.now(timezone.utc) - timedelta(days=30)
@@ -158,8 +253,9 @@ def derive_agent_rows(weights: dict, freshness: list[dict], signals: list[dict])
 
     rows = []
     for name in KNOWN_AGENTS:
-        w = weights.get(name) or {}
-        f = fresh_map.get(name) or {}
+        w        = weights.get(name) or {}
+        job_name = _JOB_NAME.get(name, name)
+        f        = fresh_map.get(job_name) or fresh_map.get(name) or {}
         rows.append({
             "name":               name,
             "weight":             float(w.get("weight") or 1.0),
@@ -220,18 +316,25 @@ def render_all() -> int:
     )
 
     # Pull data once
-    signals     = fetch_signals(500)
-    events      = fetch_recent_events(200)
-    freshness   = fetch_agent_freshness()
-    failures    = fetch_recent_failures(10)
-    weights     = fetch_latest_agent_weights()
-    backtest    = fetch_latest_backtest()
+    signals      = fetch_signals(500)
+    events       = fetch_recent_events(200)
+    freshness    = fetch_agent_freshness()
+    failures     = fetch_recent_failures(10)
+    weights      = fetch_latest_agent_weights()
+    backtest     = fetch_latest_backtest()
     alerts_today = count_alerts_today()
     open_signals = count_open_signals()
     fresh_events = count_fresh_events()
+    weight_hist  = fetch_agent_weight_history()
+    audit_rows   = fetch_forecast_audit()
 
-    agent_rows = derive_agent_rows(weights, freshness, signals)
-    dash       = derive_dashboard_metrics(events, freshness)
+    agent_rows   = derive_agent_rows(weights, freshness, signals)
+    dash         = derive_dashboard_metrics(events, freshness)
+    candidates   = build_pre_signal_candidates(events)
+
+    # Fetch price history for tickers with signals (for ticker chart pages)
+    signal_tickers = list({s["ticker"] for s in signals if s.get("ticker")})[:20]
+    prices = fetch_ticker_prices(signal_tickers, days=90)
 
     distinct_agents = sorted({a for s in signals for a in s.get("agents", [])} | set(KNOWN_AGENTS))
     distinct_types  = sorted({e["event_type"] for e in events})
@@ -256,6 +359,8 @@ def render_all() -> int:
         healthy_agent_count=len(dash["healthy_agents"]),
         total_agent_count=len(dash["healthy_agents"]) + len(dash["stale_agents"]),
         stale_agents=dash["stale_agents"],
+        candidates=candidates,
+        signal_tickers=set(prices.keys()),
     ))
 
     # Signals (with embedded JSON for client-side filter)
@@ -288,6 +393,40 @@ def render_all() -> int:
         title="Backtest", active="backtest",
         bt=backtest,
     ))
+
+    # Learning — agent weight evolution over time + paper-trade audit
+    (DIST_DIR / "learning.html").write_text(env.get_template("learning.html.j2").render(
+        **common,
+        title="Learning", active="learning",
+        weight_history_json=json.dumps(weight_hist, default=str),
+        audit_rows=audit_rows,
+        signals_by_id={s["id"]: s for s in signals},
+    ))
+
+    # Per-ticker chart pages
+    ticker_dir = DIST_DIR / "ticker"
+    ticker_dir.mkdir(exist_ok=True)
+    shutil.copy(DIST_DIR / "styles.css", ticker_dir / "styles.css")
+    ticker_tmpl  = env.get_template("ticker_chart.html.j2")
+    signals_by_ticker: dict[str, list[dict]] = {}
+    for s in signals:
+        signals_by_ticker.setdefault(s["ticker"], []).append(s)
+    audit_by_signal: dict[int, dict] = {a["signal_id"]: a for a in audit_rows}
+    for ticker, price_data in prices.items():
+        ticker_sigs = signals_by_ticker.get(ticker, [])
+        # Attach audit outcome to each signal
+        for s in ticker_sigs:
+            s["_audit"] = audit_by_signal.get(s["id"])
+        (ticker_dir / f"{ticker}.html").write_text(ticker_tmpl.render(
+            **common,
+            title=f"{ticker} · Chart",
+            active="signals",
+            root_path="../",
+            ticker=ticker,
+            price_json=json.dumps(price_data, default=str),
+            signals_json=json.dumps(ticker_sigs, default=str),
+        ))
+    shutil.copy(DIST_DIR / "styles.css", ticker_dir / "styles.css")
 
     # Per-alert detail pages — one file per signal so Telegram links resolve
     alert_dir = DIST_DIR / "alert"

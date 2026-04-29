@@ -228,14 +228,25 @@ def score_evidence(events: list[dict]) -> tuple[float, list[dict]]:
         elif et.startswith("filing_") and sev > 0:
             add(f"filing_other_sev{sev}", min(15, sev * 4), e["id"])
 
-        # Staleness penalty
+        # Staleness penalty — only for short-lived signal types.
+        # SEC filings are valid for days; social/news posts expire fast.
         try:
             event_at = datetime.fromisoformat(e["event_at"].replace("Z", "+00:00"))
-            age_min = (now - event_at).total_seconds() / 60
-            if age_min > 15:
-                add("staleness", -10, e["id"], f"{int(age_min)}m old")
+            age_min  = (now - event_at).total_seconds() / 60
+            if et == "truth_social_post" and age_min > 30:
+                add("staleness_social", -10, e["id"], f"{int(age_min)}m old")
+            elif et == "news_article" and age_min > 120:
+                add("staleness_news", -5, e["id"], f"{int(age_min/60):.1f}h old")
+            # 8-K / filing_* events: no staleness — valid for the full horizon window
         except Exception:
             pass
+
+    # Multi-source confirmation bonus — independent agents agreeing boosts confidence
+    distinct_src = len({source_agent_for(e) for e in events})
+    if distinct_src >= 3:
+        add("tri_source_confirm", 13, detail=f"{distinct_src} agents")
+    elif distinct_src >= 2:
+        add("multi_source_confirm", 8, detail=f"{distinct_src} agents")
 
     return score, breakdown
 

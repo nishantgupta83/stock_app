@@ -1,7 +1,8 @@
 name: site_generator
 
-# Generates static HTML dashboard from Supabase data, commits to dist/ branch
-# for user download + manual upload to Hostinger.
+# Generates static HTML dashboard from Supabase data.
+# Commits to dist/ branch AND auto-deploys to Hostinger via FTP.
+# Requires secrets: HOSTINGER_FTP_HOST, HOSTINGER_FTP_USER, HOSTINGER_FTP_PASS, HOSTINGER_FTP_PATH
 # Safety: only uses repo secrets and GITHUB_RUN_NUMBER (always numeric) — no
 # untrusted PR/issue inputs are interpolated into shell.
 
@@ -17,7 +18,7 @@ concurrency:
 jobs:
   build-and-publish:
     runs-on: ubuntu-latest
-    timeout-minutes: 4
+    timeout-minutes: 8
     permissions:
       contents: write
     steps:
@@ -51,3 +52,14 @@ jobs:
           git add .
           git commit -q -m "site: $RUN_NUMBER" --allow-empty
           git push -q -f "https://x-access-token:$GH_TOKEN@github.com/$REPO.git" dist:dist
+
+      - name: Deploy to Hostinger via FTP
+        if: ${{ secrets.HOSTINGER_FTP_HOST != '' }}
+        env:
+          FTP_HOST: ${{ secrets.HOSTINGER_FTP_HOST }}
+          FTP_USER: ${{ secrets.HOSTINGER_FTP_USER }}
+          FTP_PASS: ${{ secrets.HOSTINGER_FTP_PASS }}
+          FTP_PATH: ${{ secrets.HOSTINGER_FTP_PATH }}
+        run: |
+          sudo apt-get install -q -y lftp
+          lftp -c "set ftp:ssl-allow no; set net:timeout 30; open -u $FTP_USER,$FTP_PASS ftp://$FTP_HOST; mirror -R --delete --verbose dist/ $FTP_PATH"

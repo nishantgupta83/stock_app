@@ -1,0 +1,141 @@
+{% extends "_layout.html.j2" %}
+{% block content %}
+<div style="display:flex;align-items:center;gap:12px;margin-bottom:8px">
+  <h2 style="margin:0">{{ ticker }}</h2>
+  <span style="color:var(--muted);font-size:13px">90-day price · alerts overlaid · paper-trade review</span>
+</div>
+
+<canvas id="priceChart" height="80"></canvas>
+
+<h3 style="margin-top:28px">Signal log — {{ ticker }}</h3>
+<table id="sigTable">
+  <thead>
+    <tr>
+      <th>Fired (UTC)</th>
+      <th>Action</th>
+      <th class="num">Score</th>
+      <th>Summary</th>
+      <th>Status</th>
+      <th class="num">Return</th>
+      <th>Outcome</th>
+    </tr>
+  </thead>
+  <tbody id="sigRows"></tbody>
+</table>
+<div id="noSigs" class="empty" style="display:none">No signals for {{ ticker }} yet.</div>
+
+<div style="margin-top:24px">
+  <a href="{{ root_path | default('') }}signals.html" style="color:var(--ok)">&larr; All signals</a>
+  &nbsp;&nbsp;
+  <a href="{{ root_path | default('') }}learning.html" style="color:var(--ok)">Learning timeline &rarr;</a>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4/dist/chart.umd.min.js"></script>
+<script id="pdata" type="application/json">{{ price_json|safe }}</script>
+<script id="sdata" type="application/json">{{ signals_json|safe }}</script>
+<script>
+const prices  = JSON.parse(document.getElementById('pdata').textContent);
+const signals = JSON.parse(document.getElementById('sdata').textContent);
+
+// ── Price chart ──────────────────────────────────────────
+const labels = prices.map(p => p.date);
+const closes = prices.map(p => p.close);
+
+const annotations = {};
+signals.forEach((sig, i) => {
+  const firedDate = (sig.fired_at || '').substring(0, 10);
+  const idx = labels.indexOf(firedDate);
+  if (idx === -1) return;
+  const isAvoid = sig.action === 'AVOID_CHASE';
+  const color   = sig.action === 'WATCH' ? '#4caf93' : isAvoid ? '#e85a5a' : '#e8c15a';
+  annotations['sig_' + i] = {
+    type: 'point', xValue: firedDate, yValue: closes[idx],
+    backgroundColor: color, radius: 8,
+    label: { display: true, content: sig.action + ' ' + Math.round(sig.score || 0),
+             position: isAvoid ? 'end' : 'start', color: '#fff',
+             backgroundColor: color, font: { size: 10 } },
+  };
+  const audit = sig._audit;
+  if (audit) {
+    const exitIdx = Math.min(idx + (sig.horizon_days || 1), labels.length - 1);
+    annotations['shade_' + i] = {
+      type: 'box', xMin: firedDate, xMax: labels[exitIdx],
+      backgroundColor: audit.correct ? '#4caf9322' : '#e85a5a22', borderWidth: 0,
+    };
+  }
+});
+
+new Chart(document.getElementById('priceChart'), {
+  type: 'line',
+  data: {
+    labels,
+    datasets: [{ label: '{{ ticker }} Close', data: closes, borderColor: '#7ab8d9',
+                 backgroundColor: '#7ab8d911', tension: 0.2, pointRadius: 0, fill: true }],
+  },
+  options: {
+    responsive: true,
+    scales: {
+      x: { ticks: { maxTicksLimit: 12 } },
+      y: { ticks: { callback: v => '$' + v.toFixed(0) } },
+    },
+    plugins: {
+      legend: { display: false },
+      annotation: { annotations },
+      tooltip: { callbacks: { label: ctx => '$' + ctx.parsed.y.toFixed(2) } },
+    }
+  }
+});
+
+// ── Signal table — build via DOM to avoid innerHTML XSS surface ──
+const tbody = document.getElementById('sigRows');
+if (signals.length === 0) {
+  document.getElementById('noSigs').style.display = 'block';
+  document.getElementById('sigTable').style.display = 'none';
+} else {
+  for (const s of signals) {
+    const a  = s._audit || {};
+    const tr = document.createElement('tr');
+
+    function td(text, cls) {
+      const c = document.createElement('td');
+      if (cls) c.className = cls;
+      c.textContent = text;
+      return c;
+    }
+    function tdHTML(node) {
+      const c = document.createElement('td');
+      c.appendChild(node);
+      return c;
+    }
+
+    const actionSpan = document.createElement('span');
+    actionSpan.className = 'tag ' + (s.action || '');
+    actionSpan.textContent = s.action || '';
+
+    const statusSpan = document.createElement('span');
+    statusSpan.className = 'tag ' + (s.status_v2 || '');
+    statusSpan.textContent = s.status_v2 || '';
+
+    const retTd = document.createElement('td');
+    retTd.className = 'num';
+    if (a.realized_return != null) {
+      retTd.textContent = (a.realized_return * 100).toFixed(2) + '%';
+      retTd.style.color = a.realized_return > 0 ? 'var(--ok)' : 'var(--bad)';
+    } else { retTd.textContent = '—'; }
+
+    const okTd = document.createElement('td');
+    okTd.style.textAlign = 'center';
+    okTd.textContent = a.correct === true ? '✅' : a.correct === false ? '❌' : '—';
+
+    tr.appendChild(td((s.fired_at||'').substring(0,16), 'fired'));
+    tr.appendChild(tdHTML(actionSpan));
+    tr.appendChild(td(String(Math.round(s.score||0)), 'num'));
+    tr.appendChild(td(s.evidence_summary || '', 'summary'));
+    tr.appendChild(tdHTML(statusSpan));
+    tr.appendChild(retTd);
+    tr.appendChild(okTd);
+    tbody.appendChild(tr);
+  }
+}
+</script>
+{% endblock %}
