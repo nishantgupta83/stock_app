@@ -38,7 +38,7 @@ HEADERS_SB = {
 _FEEDS = [
     ("cnbc_markets",    "https://search.cnbc.com/rs/search/combinedcms/view.xml?partnerId=wrss01&id=15839069"),
     ("marketwatch",     "https://feeds.marketwatch.com/marketwatch/topstories/"),
-    ("ap_business",     "https://feeds.apnews.com/apnews/business"),
+    ("seeking_alpha",   "https://seekingalpha.com/market_currents.xml"),
 ]
 
 # ============================================================
@@ -185,30 +185,19 @@ def dead_letter(agent: str, reason: str, detail: str) -> None:
 # Ingestion
 # ============================================================
 
-def already_seen_ids(article_ids: list[str]) -> set[str]:
-    if not article_ids:
+def already_seen_dedupe_keys(keys: list[str]) -> set[str]:
+    """Check which news dedupe_keys already exist in normalized_events."""
+    if not keys:
         return set()
-    in_list = ",".join(f'"{i}"' for i in article_ids)
+    in_list = ",".join(f'"{k}"' for k in keys)
     r = requests.get(
-        f"{SUPABASE_URL}/rest/v1/stock_raw_news?article_id=in.({in_list})&select=article_id",
+        f"{SUPABASE_URL}/rest/v1/stock_normalized_events"
+        f"?dedupe_key=in.({in_list})&select=dedupe_key",
         headers=HEADERS_SB, timeout=15,
     )
     if r.status_code != 200:
         return set()
-    return {row["article_id"] for row in r.json()}
-
-
-def upsert_articles(articles: list[dict]) -> int:
-    if not articles:
-        return 0
-    r = requests.post(
-        f"{SUPABASE_URL}/rest/v1/stock_raw_news",
-        headers=HEADERS_SB, json=articles, timeout=20,
-    )
-    if r.status_code not in (200, 201, 204):
-        print(f"  articles insert {r.status_code}: {r.text[:300]}", file=sys.stderr)
-        return 0
-    return len(articles)
+    return {row["dedupe_key"] for row in r.json()}
 
 
 def emit_news_events(articles: list[dict]) -> int:
@@ -283,8 +272,7 @@ def poll_feed(source_name: str, feed_url: str) -> list[dict]:
 
 def main() -> int:
     run_id = job_run_start("news_agent")
-    total_in  = 0
-    total_new = 0
+    total_in     = 0
     total_events = 0
 
     try:
@@ -300,14 +288,10 @@ def main() -> int:
             job_run_finish(run_id, "ok", 0, 0)
             return 0
 
-        ids  = [a["article_id"] for a in all_articles]
-        seen = already_seen_ids(ids)
-        new_articles = [a for a in all_articles if a["article_id"] not in seen]
-
-        total_new    = upsert_articles(new_articles)
-        total_events = emit_news_events(new_articles)
-        print(f"Fetched {total_in} articles, {total_new} new, {total_events} events emitted")
-        job_run_finish(run_id, "ok", total_in, total_new + total_events)
+        # DB handles dedup via resolution=ignore-duplicates on dedupe_key unique index
+        total_events = emit_news_events(all_articles)
+        print(f"Fetched {total_in} articles, {total_events} events emitted (dupes ignored by DB)")
+        job_run_finish(run_id, "ok", total_in, total_events)
         return 0
 
     except Exception as e:  # noqa: BLE001
