@@ -37,7 +37,8 @@ When all five are done, the EDGAR filing agent will run every 5 minutes on GitHu
    - `sql/0002_seed_universe.sql` → Run
    - `sql/0003_add_kind_and_funds.sql` → Run
    - `sql/0004_ops_tables.sql` → Run (heartbeat + dead-letter + signal enrichment)
-7. Verify: **Table Editor** should show 22 `stock_*` tables (incl. `stock_job_runs`, `stock_dead_letter_events`)
+   - `sql/0005_extend_status_and_data_sources.sql` → Run (adds status_v2='backtest' + data sources registry)
+7. Verify: **Table Editor** should show 23 `stock_*` tables (incl. `stock_job_runs`, `stock_dead_letter_events`, `stock_data_sources`)
 8. Get your credentials: **Project Settings → API**:
    - Copy `Project URL` → this is `SUPABASE_URL`
    - Copy `service_role` key (NOT `anon`) → this is `SUPABASE_SERVICE_KEY`

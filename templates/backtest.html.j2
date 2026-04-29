@@ -18,9 +18,9 @@
     <div class="sub">target ≥ 55% (§19)</div>
   </div>
   <div class="card {% if bt.brier <= 0.22 %}ok{% else %}warn{% endif %}">
-    <div class="label">Brier score</div>
+    <div class="label">Pseudo-Brier (uncalibrated)</div>
     <div class="value">{{ "%.3f"|format(bt.brier) }}</div>
-    <div class="sub">target ≤ 0.22 — lower is better</div>
+    <div class="sub">score/100 ≠ probability — relative use only</div>
   </div>
   <div class="card {% if bt.cal_error <= 0.10 %}ok{% else %}warn{% endif %}">
     <div class="label">Calibration error</div>

@@ -50,7 +50,7 @@ def format_payload(sig: dict) -> str:
         f"{sig['evidence_summary']}\n"
         f"Confidence: {float(sig['confidence']):.2f} · Horizon: {horizon}\n"
         f"Fired: {fired} UTC\n"
-        f"Tap for thesis → {SITE_BASE}/alert/{sig['id']}.html"
+        f"View signals → {SITE_BASE}/signals.html"
     )
 
 

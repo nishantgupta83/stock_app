@@ -45,7 +45,7 @@ import requests
 import yfinance as yf
 # curl_cffi just needs to be importable — yfinance 0.2.55+ auto-uses it
 # for browser impersonation, which bypasses Yahoo's GitHub-IP blocking.
-import curl_cffi  # noqa: F401
+from curl_cffi import requests as cffi_requests
 
 # Reuse the live thesis-agent scoring so backtest and live cannot drift.
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
@@ -609,9 +609,12 @@ def replay_day(day_start: datetime, day_end: datetime, all_events: list[dict],
         if not action or score < ENTRY_SCORE_MIN:
             continue
 
-        # Compute outcome
+        # Compute outcome — entry after the LAST event in the cluster (no look-ahead)
         try:
-            sig_time = datetime.fromisoformat(bucket_iso.replace("Z", "+00:00"))
+            sig_time = max(
+                datetime.fromisoformat(e["event_at"].replace("Z", "+00:00"))
+                for e in ev_list
+            )
         except Exception:
             continue
         outcome = realized_outcome(ticker, sig_time, horizon_days=1)
@@ -628,7 +631,7 @@ def replay_day(day_start: datetime, day_end: datetime, all_events: list[dict],
 
         fired.append({
             "ticker":           ticker,
-            "fired_at":         bucket_iso,
+            "fired_at":         sig_time.isoformat(),
             "score":            round(score, 2),
             "action":           action,
             "evidence_summary": evidence_summary(ev_list),
@@ -725,7 +728,8 @@ def compute_metrics(signals: list[dict]) -> dict:
     # Direction accuracy = fraction with positive return
     dir_acc = sum(correct) / len(correct)
 
-    # Brier score: ((p - actual)^2) averaged
+    # Pseudo-Brier (uncalibrated): score/100 is NOT empirical probability.
+    # Useful only for relative comparison across runs — not an absolute calibration claim.
     brier = sum((p - (1.0 if c else 0.0)) ** 2 for p, c in zip(confs, correct)) / len(confs)
 
     # Calibration: bucket by predicted prob, compute realized hit rate per bucket

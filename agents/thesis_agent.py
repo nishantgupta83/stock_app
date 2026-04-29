@@ -204,9 +204,13 @@ def score_evidence(events: list[dict]) -> tuple[float, list[dict]]:
             add("new_sc_13d", 20, e["id"])
         elif et == "filing_13g" or e.get("event_subtype") == "13G":
             add("new_sc_13g", 10, e["id"])
-        # Truth Social mention
+        # Truth Social mention — bearish posts don't inflate WATCH confidence
         elif et == "truth_social_post":
-            add("truth_social_mapping", 15, e["id"], e.get("event_subtype") or "")
+            direction = (e.get("payload") or {}).get("direction_prior", "long")
+            if direction == "short":
+                add("truth_social_bearish_watch", 0, e["id"], e.get("event_subtype") or "")
+            else:
+                add("truth_social_mapping", 15, e["id"], e.get("event_subtype") or "")
         # Other filings carry only the severity component
         elif et.startswith("filing_") and sev > 0:
             add(f"filing_other_sev{sev}", min(15, sev * 4), e["id"])
@@ -234,8 +238,8 @@ def cluster_passes(events: list[dict]) -> tuple[bool, str]:
         sev = e.get("severity") or 0
         if et == "filing_13d" or e.get("event_subtype") == "13D":
             return True, "exception:sc_13d"
-        if et == "8k_material_event" and sev >= 4:
-            return True, "exception:8k_sev4"
+        if et == "8k_material_event" and sev >= 3:
+            return True, "exception:8k_sev3"
     return False, "single_source_no_exception"
 
 
