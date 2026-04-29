@@ -33,7 +33,7 @@ SITE_BASE = "https://market.hub4apps.com"   # Phase 2 will populate; harmless if
 def fetch_signal(signal_id: int) -> dict | None:
     r = requests.get(
         f"{SUPABASE_URL}/rest/v1/stock_signals?id=eq.{signal_id}"
-        f"&select=id,ticker,action,score,confidence,evidence_summary,horizon_days,fired_at,model_version",
+        f"&select=id,ticker,action,score,confidence,evidence_summary,horizon_days,fired_at,model_version,direction",
         headers=HEADERS_SB, timeout=10,
     )
     if r.status_code != 200 or not r.json():
@@ -45,13 +45,20 @@ def format_payload(sig: dict) -> str:
     emoji = EMOJI.get(sig["action"], "⚪")
     horizon = "1d" if sig.get("horizon_days") == 1 else "15m"
     fired = sig["fired_at"][:19].replace("T", " ")
-    return (
+    direction = sig.get("direction") or "neutral"
+    dir_line = f"Direction: {direction}" if direction not in ("neutral", "WATCH") else ""
+    body = (
         f"{emoji} {sig['ticker']} · {sig['action']} · score {int(sig['score'])}/100\n"
         f"{sig['evidence_summary']}\n"
         f"Confidence: {float(sig['confidence']):.2f} · Horizon: {horizon}\n"
-        f"Fired: {fired} UTC\n"
-        f"View signals → {SITE_BASE}/signals.html"
     )
+    if dir_line:
+        body += f"{dir_line}\n"
+    body += (
+        f"Fired: {fired} UTC\n"
+        f"View thesis → {SITE_BASE}/alert/{sig['id']}.html"
+    )
+    return body
 
 
 def inline_keyboard(signal_id: int) -> dict:

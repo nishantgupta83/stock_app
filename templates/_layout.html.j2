@@ -5,7 +5,8 @@
   <meta name="viewport" content="width=device-width,initial-scale=1">
   <meta http-equiv="refresh" content="900">  <!-- self-refresh every 15 min -->
   <title>{{ title }} · Hub4Apps Market Intel</title>
-  <link rel="stylesheet" href="styles.css">
+  {% set rp = root_path | default("") %}
+  <link rel="stylesheet" href="{{ rp }}styles.css">
 </head>
 <body>
   <header>
@@ -15,11 +16,11 @@
       <span class="subtitle">private · educational · not financial advice</span>
     </div>
     <nav>
-      <a href="index.html"     class="{% if active=='index' %}active{% endif %}">Dashboard</a>
-      <a href="signals.html"   class="{% if active=='signals' %}active{% endif %}">Signals</a>
-      <a href="events.html"    class="{% if active=='events' %}active{% endif %}">Events</a>
-      <a href="agents.html"    class="{% if active=='agents' %}active{% endif %}">Agents</a>
-      <a href="backtest.html"  class="{% if active=='backtest' %}active{% endif %}">Backtest</a>
+      <a href="{{ rp }}index.html"     class="{% if active=='index' %}active{% endif %}">Dashboard</a>
+      <a href="{{ rp }}signals.html"   class="{% if active=='signals' %}active{% endif %}">Signals</a>
+      <a href="{{ rp }}events.html"    class="{% if active=='events' %}active{% endif %}">Events</a>
+      <a href="{{ rp }}agents.html"    class="{% if active=='agents' %}active{% endif %}">Agents</a>
+      <a href="{{ rp }}backtest.html"  class="{% if active=='backtest' %}active{% endif %}">Backtest</a>
     </nav>
     <div class="meta">
       <span>generated {{ generated_at }} UTC</span>

@@ -49,7 +49,7 @@ def sb_get(path: str, params: dict | None = None) -> list[dict]:
 
 def fetch_signals(limit: int = 500) -> list[dict]:
     rows = sb_get("stock_signals", {
-        "select": "id,ticker,fired_at,action,score,confidence,evidence_summary,status_v2,model_version,weight_at_time",
+        "select": "id,ticker,fired_at,action,score,confidence,evidence_summary,status_v2,model_version,weight_at_time,score_breakdown,direction,horizon_days",
         "order":  "fired_at.desc",
         "limit":  str(limit),
     })
@@ -289,7 +289,31 @@ def render_all() -> int:
         bt=backtest,
     ))
 
-    print(f"Wrote {len(list(DIST_DIR.glob('*.html')))} HTML files + styles.css to {DIST_DIR}")
+    # Per-alert detail pages — one file per signal so Telegram links resolve
+    alert_dir = DIST_DIR / "alert"
+    alert_dir.mkdir(exist_ok=True)
+    # Reuse the CSS by symlinking-equivalent relative path (copy already done above)
+    detail_tmpl = env.get_template("signal_detail.html.j2")
+    # Group events by ticker for efficient related-event lookup
+    events_by_ticker: dict[str, list[dict]] = {}
+    for ev in events:
+        events_by_ticker.setdefault(ev["ticker"], []).append(ev)
+    for sig in signals:
+        related = events_by_ticker.get(sig["ticker"], [])[:10]
+        (alert_dir / f"{sig['id']}.html").write_text(detail_tmpl.render(
+            **common,
+            title=f"{sig['ticker']} · {sig['action']}",
+            active="signals",
+            root_path="../",
+            sig=sig,
+            related=related,
+            SITE_BASE="https://market.hub4apps.com",
+        ))
+    # Copy styles.css into alert/ so relative links work when opened standalone
+    shutil.copy(DIST_DIR / "styles.css", alert_dir / "styles.css")
+
+    total_html = len(list(DIST_DIR.glob("*.html"))) + len(list(alert_dir.glob("*.html")))
+    print(f"Wrote {total_html} HTML files (incl. {len(signals)} alert pages) + styles.css to {DIST_DIR}")
     return 0
 
 

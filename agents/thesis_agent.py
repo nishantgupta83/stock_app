@@ -169,6 +169,7 @@ def source_agent_for(event: dict) -> str:
     """Map normalized event back to its originating agent."""
     et = event["event_type"]
     if et == "truth_social_post":   return "truth_social"
+    if et == "news_article":        return "news"
     if et.startswith("filing_"):    return "filing"
     if et == "8k_material_event":   return "filing"
     if et == "position_change":     return "flows"
@@ -211,6 +212,18 @@ def score_evidence(events: list[dict]) -> tuple[float, list[dict]]:
                 add("truth_social_bearish_watch", 0, e["id"], e.get("event_subtype") or "")
             else:
                 add("truth_social_mapping", 15, e["id"], e.get("event_subtype") or "")
+        # News article — bullish confirmation adds weight; bearish noted but doesn't boost WATCH
+        elif et == "news_article":
+            direction = (e.get("payload") or {}).get("direction_prior", "neutral")
+            if direction == "long":
+                add("news_bullish", 12, e["id"], e.get("event_subtype") or "")
+            elif direction == "short":
+                add("news_bearish_note", 0, e["id"], e.get("event_subtype") or "")
+            else:
+                add("news_neutral", 5, e["id"], e.get("event_subtype") or "")
+        # S-3 shelf registration = dilution headwind — score negatively
+        elif et in ("filing_s-3", "filing_s-3/a"):
+            add("s3_dilution_risk", -8, e["id"])
         # Other filings carry only the severity component
         elif et.startswith("filing_") and sev > 0:
             add(f"filing_other_sev{sev}", min(15, sev * 4), e["id"])
@@ -243,7 +256,30 @@ def cluster_passes(events: list[dict]) -> tuple[bool, str]:
     return False, "single_source_no_exception"
 
 
-def action_for_score(score: float) -> str:
+def signal_direction(events: list[dict]) -> str:
+    """Compute net direction of a cluster (bullish / bearish / neutral)."""
+    bull, bear = 0, 0
+    for e in events:
+        et = e["event_type"]
+        d  = (e.get("payload") or {}).get("direction_prior", "neutral")
+        if et == "truth_social_post":
+            if d == "short": bear += 1
+            elif d == "long": bull += 1
+        elif et in ("8k_material_event", "filing_13d"):
+            bull += 1
+        elif et in ("filing_s-3", "filing_s-3/a"):
+            bear += 1
+        elif et == "news_article":
+            if d == "short": bear += 1
+            elif d == "long": bull += 1
+    if bear > bull:  return "bearish"
+    if bull > 0:     return "bullish"
+    return "neutral"
+
+
+def action_for(score: float, direction: str) -> str:
+    if direction == "bearish" and score >= 50:
+        return "AVOID_CHASE"
     if score >= 70: return "WATCH"
     if score >= 50: return "RESEARCH"
     return ""  # suppress
@@ -270,6 +306,8 @@ def evidence_summary(events: list[dict]) -> str:
         parts.append(f"new 8-K{' '+sample_subtype if sample_subtype else ''}")
     if by_type.get("truth_social_post"):
         parts.append("Trump post")
+    if by_type.get("news_article"):
+        parts.append(f"news ({by_type['news_article']})")
     if by_type.get("filing_4"):
         parts.append(f"{by_type['filing_4']}× Form 4")
     for f in ("filing_13d", "filing_13g"):
@@ -283,12 +321,12 @@ def evidence_summary(events: list[dict]) -> str:
 # Signal write + dispatch
 # ============================================================
 
-def write_signal(ticker: str, score: float, action: str, breakdown: list[dict],
-                 events: list[dict], dedupe_key: str) -> int | None:
+def write_signal(ticker: str, score: float, action: str, direction: str,
+                 breakdown: list[dict], events: list[dict], dedupe_key: str) -> int | None:
     payload = {
         "ticker":           ticker,
         "fired_at":         datetime.now(timezone.utc).isoformat(),
-        "direction":        "WATCH",   # legacy column; status_v2 + action carry the real meaning
+        "direction":        direction,
         "confidence":       round(min(score, 100) / 100, 4),
         "horizon_days":     1 if horizon_for(events) == "1d" else 0,
         "thesis_summary":   evidence_summary(events),
@@ -374,13 +412,15 @@ def main() -> int:
         for (ticker, bucket), ev_list in clusters.items():
             ok, cluster_label = cluster_passes(ev_list)
             score, breakdown = score_evidence(ev_list)
-            action = action_for_score(score)
+            direction = signal_direction(ev_list)
+            action = action_for(score, direction)
             scored.append({
                 "ticker":   ticker,
                 "bucket":   bucket,
                 "events":   ev_list,
                 "score":    score,
                 "action":   action,
+                "direction": direction,
                 "cluster_ok": ok,
                 "cluster_label": cluster_label,
                 "breakdown": breakdown,
@@ -403,13 +443,14 @@ def main() -> int:
                 continue
             sig_id = write_signal(
                 ticker=ticker, score=cand["score"], action=cand["action"],
+                direction=cand["direction"],
                 breakdown=cand["breakdown"], events=cand["events"],
                 dedupe_key=cand["dedupe_key"],
             )
             if sig_id is None:
                 continue
-            # Cap: only WATCH respects the daily cap; RESEARCH is suppressed past cap
-            if cand["action"] == "WATCH" and cap_remaining > 0:
+            # Cap: WATCH and AVOID_CHASE both dispatch (directional alerts are high value)
+            if cand["action"] in ("WATCH", "AVOID_CHASE") and cap_remaining > 0:
                 from telegram_dispatcher import dispatch_signal
                 ok = dispatch_signal(sig_id)
                 if ok:

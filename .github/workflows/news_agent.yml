@@ -1,0 +1,33 @@
+name: news_agent
+
+# Polls CNBC, MarketWatch, AP Business RSS every 5 min.
+# One of three co-equal source agents (filing, news, truth_social).
+# Safety: only repo secrets via env: — no untrusted input interpolated.
+# No github.event.* inputs are used in this workflow.
+
+on:
+  schedule:
+    - cron: "*/5 * * * *"
+  workflow_dispatch:
+
+concurrency:
+  group: news_agent
+  cancel-in-progress: false
+
+jobs:
+  poll-news:
+    runs-on: ubuntu-latest
+    timeout-minutes: 3
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+      - name: Install deps
+        run: pip install -r requirements.txt
+      - name: Run news agent
+        env:
+          SUPABASE_URL:         ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
+        run: python agents/news_agent.py

@@ -1,0 +1,90 @@
+{% extends "_layout.html.j2" %}
+{% block content %}
+{% set action_class = sig.action if sig.action else "RESEARCH" %}
+<div style="display:flex;align-items:center;gap:12px;margin-bottom:16px">
+  <span style="font-size:2rem">{% if sig.action=='WATCH' %}🟢{% elif sig.action=='AVOID_CHASE' %}🔴{% else %}🟡{% endif %}</span>
+  <div>
+    <h2 style="margin:0">{{ sig.ticker }} &middot; <span class="tag {{ action_class }}">{{ sig.action }}</span></h2>
+    <div style="color:var(--muted);font-size:12px">{{ sig.fired_at[:19]|replace("T"," ") }} UTC &middot; score {{ sig.score|round|int }}/100 &middot; {{ sig.model_version }}</div>
+  </div>
+</div>
+
+<div class="cards" style="margin-bottom:20px">
+  <div class="card {% if sig.score >= 70 %}ok{% elif sig.score >= 50 %}warn{% else %}bad{% endif %}">
+    <div class="label">Rubric score</div>
+    <div class="value">{{ sig.score|round|int }}</div>
+    <div class="sub">WATCH ≥ 70 · RESEARCH ≥ 50</div>
+  </div>
+  <div class="card">
+    <div class="label">Confidence</div>
+    <div class="value">{{ "%.0f%%"|format(sig.confidence * 100) }}</div>
+    <div class="sub">score / 100 (uncalibrated)</div>
+  </div>
+  <div class="card">
+    <div class="label">Horizon</div>
+    <div class="value">{{ "1d" if sig.horizon_days == 1 else "15m" }}</div>
+    <div class="sub">default entry next open</div>
+  </div>
+  <div class="card">
+    <div class="label">Direction</div>
+    <div class="value">{{ sig.direction or "neutral" }}</div>
+    <div class="sub">cluster net sentiment</div>
+  </div>
+</div>
+
+<h3>Thesis</h3>
+<p style="font-size:14px">{{ sig.evidence_summary }}</p>
+
+<h3>Score breakdown</h3>
+{% set bd = sig.score_breakdown.items if sig.score_breakdown else [] %}
+{% if bd %}
+<table>
+  <thead>
+    <tr><th>Rule</th><th class="num">Points</th><th>Detail</th></tr>
+  </thead>
+  <tbody>
+    {% for item in bd %}
+    <tr>
+      <td><code>{{ item.rule }}</code></td>
+      <td class="num" style="color:{% if item.points > 0 %}var(--ok){% elif item.points < 0 %}var(--bad){% else %}var(--muted){% endif %}">
+        {% if item.points > 0 %}+{% endif %}{{ item.points }}
+      </td>
+      <td style="color:var(--muted);font-size:12px">{{ item.detail or "" }}</td>
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
+{% else %}
+<p style="color:var(--muted)">No breakdown available.</p>
+{% endif %}
+
+<h3>Contributing agents</h3>
+<div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px">
+  {% for a in (sig.weight_at_time.agents if sig.weight_at_time else []) %}
+  <span class="tag agent-{{ a }}">{{ a }}</span>
+  {% endfor %}
+</div>
+
+{% if related %}
+<h3>Related events ({{ sig.ticker }}, last 24h)</h3>
+<table>
+  <thead>
+    <tr><th>Time (UTC)</th><th>Type</th><th>Subtype</th><th class="num">Sev</th></tr>
+  </thead>
+  <tbody>
+    {% for e in related %}
+    <tr>
+      <td style="font-size:12px">{{ e.event_at[:16]|replace("T"," ") }}</td>
+      <td><code>{{ e.event_type }}</code></td>
+      <td style="color:var(--muted);font-size:12px">{{ e.event_subtype or "" }}</td>
+      <td class="num">{{ e.severity or 0 }}</td>
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
+{% endif %}
+
+<div style="margin-top:24px">
+  <a href="{{ root_path | default('') }}signals.html" style="color:var(--ok)">&larr; Back to all signals</a>
+</div>
+{% endblock %}

@@ -76,11 +76,12 @@ def fetch_recent_filings(cik: str, kind: str) -> list[dict]:
         return []
     data = r.json()
     recent = data.get("filings", {}).get("recent", {})
-    forms = recent.get("form", [])
-    accs  = recent.get("accessionNumber", [])
-    dates = recent.get("filingDate", [])
-    times = recent.get("acceptanceDateTime", [])
-    docs  = recent.get("primaryDocument", [])
+    forms      = recent.get("form", [])
+    accs       = recent.get("accessionNumber", [])
+    dates      = recent.get("filingDate", [])
+    times      = recent.get("acceptanceDateTime", [])
+    docs       = recent.get("primaryDocument", [])
+    items_list = recent.get("items", [])   # 8-K item numbers e.g. "2.02,9.01"
     out = []
     for i, form in enumerate(forms):
         if form not in relevant:
@@ -97,6 +98,7 @@ def fetch_recent_filings(cik: str, kind: str) -> list[dict]:
             "form_type":         form,
             "filed_at":          filed_at,
             "primary_doc_url":   primary_url,
+            "8k_items":          items_list[i] if i < len(items_list) else "",
         })
     return out
 
@@ -106,40 +108,46 @@ def severity_for_filing(form_type: str, raw: dict) -> int:
     Score how loud this filing should ring on your phone.
     Returns 0..4 (0=info, 4=critical).
 
-    TODO (you decide — see learning-mode prompt below):
-    Replace the stub mapping with your conviction. Examples to consider:
-      - 8-K is the most market-moving form (material events). Score it >= 2.
-      - Form 4 (insider trades) only matters in clusters. Default low; cluster
-        detection happens in normalization, not here.
-      - 10-K / 10-Q bring earnings — but the actual reaction is to earnings
-        releases (often filed as 8-K Item 2.02). The 10-K itself is rarely a
-        same-day mover. Score it 1 unless you want to read every annual report.
-      - 13D > 13G (active vs passive >5% holder).
-      - S-3 = shelf registration, typically dilutive, score 2.
+    For 8-Ks, item numbers from the EDGAR submissions `items` field are used
+    to differentiate high-impact items (acquisition, CEO change, agreement)
+    from routine disclosures (financial exhibits, other events).
     """
-    # --- stub: please replace with your judgment ---
     table = {
         # Operating company filings
-        "8-K":      3,
+        "8-K":      3,    # upgraded to 4 for high-impact items below
         "4":        1,
         "13D":      3,
         "13G":      2,
         "10-Q":     1,
         "10-K":     1,
         "S-3":      2,
-        # Institutional positions (13F = quarterly portfolio disclosure)
-        "13F-HR":   3,    # full holdings — high signal when famous fund repositions
-        "13F-HR/A": 2,    # amendment
+        "S-3/A":    2,
+        # Institutional positions
+        "13F-HR":   3,
+        "13F-HR/A": 2,
         "SC 13D":   3,    # activist stake (>5%, intent to influence)
-        "SC 13G":   2,    # passive stake (>5%, no intent)
-        # Mutual fund / ETF disclosures (rarely market-moving for the fund itself,
-        # but holdings are useful as a flow signal)
+        "SC 13G":   2,    # passive stake
+        # Mutual fund / ETF
         "N-PORT":   1,
         "N-CSR":    1,
         "N-CSRS":   1,
-        "485BPOS":  0,    # prospectus filing — informational only
+        "485BPOS":  0,
     }
-    return table.get(form_type, 0)
+    base = table.get(form_type, 0)
+
+    # Upgrade 8-K severity based on item numbers (parsed from EDGAR submissions JSON)
+    if form_type == "8-K":
+        items_str = raw.get("8k_items") or ""
+        if items_str:
+            items = {x.strip() for x in items_str.split(",")}
+            # High-impact items → sev 4 (M&A, material agreement, officer change, delisting)
+            if items & {"2.01", "1.01", "5.02", "3.01", "1.05"}:
+                return 4
+            # Routine-only items → sev 1 (exhibits, other events with no specifics)
+            if items <= {"8.01", "9.01"}:
+                return 1
+
+    return base
 
 
 def upsert_filings(rows: list[dict], ticker: str) -> int:
@@ -187,6 +195,7 @@ def emit_normalized_events(filings: list[dict], ticker: str) -> int:
                 "accession_number": f["accession_number"],
                 "form_type":        f["form_type"],
                 "primary_doc_url":  f["primary_doc_url"],
+                "8k_items":         f.get("8k_items") or "",
             },
         })
     if not payload:
