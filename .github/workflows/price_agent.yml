@@ -1,0 +1,37 @@
+name: price_agent
+
+# EOD learning loop — reconciles open signals against actual closing prices.
+# Runs at 21:30 UTC (4:30 PM ET) every weekday after US market close.
+# Safety: only repo secrets used; no untrusted user input interpolated into shell.
+
+on:
+  schedule:
+    - cron: "30 21 * * 1-5"
+  workflow_dispatch:
+
+concurrency:
+  group: price_agent
+  cancel-in-progress: false
+
+jobs:
+  reconcile:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+
+      - name: Install deps
+        run: pip install -r requirements.txt
+
+      - name: Run price agent
+        env:
+          SUPABASE_URL:         ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
+          TELEGRAM_BOT_TOKEN:   ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID:     ${{ secrets.TELEGRAM_CHAT_ID }}
+        run: python agents/price_agent.py
