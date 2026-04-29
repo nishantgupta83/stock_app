@@ -147,9 +147,9 @@ def generate_recommendations(sources: list[dict], success: dict[str, dict]) -> l
             continue
         # If primary has had ≥3 consecutive failures or last check failed: warn
         if primary.get("consecutive_failures", 0) >= 3:
-            recs.append(f"⚠️ {category}: primary `{primary['name']}` has {primary['consecutive_failures']} consecutive failures. Consider promoting a fallback.")
+            recs.append(f"⚠️ {category}: primary <code>{primary['name']}</code> has {primary['consecutive_failures']} consecutive failures. Consider promoting a fallback.")
         elif primary.get("last_health_check_ok") is False:
-            recs.append(f"⚠️ {category}: primary `{primary['name']}` failed last health check. Investigating.")
+            recs.append(f"⚠️ {category}: primary <code>{primary['name']}</code> failed last health check. Investigating.")
         # If a fallback is healthy and primary has poor job_run success, recommend swap
         prim_jobs = success.get(primary["name"], {})
         if prim_jobs.get("total", 0) >= 5 and prim_jobs.get("success_rate", 1.0) < 0.8:
@@ -158,7 +158,7 @@ def generate_recommendations(sources: list[dict], success: dict[str, dict]) -> l
                     continue
                 if fb.get("last_health_check_ok"):
                     recs.append(
-                        f"📈 {category}: promote `{fb['name']}` (healthy) — primary `{primary['name']}` "
+                        f"📈 {category}: promote <code>{fb['name']}</code> (healthy) — primary <code>{primary['name']}</code> "
                         f"success rate {prim_jobs['success_rate']:.0%} over last 30d."
                     )
                     break
@@ -172,7 +172,7 @@ def generate_recommendations(sources: list[dict], success: dict[str, dict]) -> l
 def telegram_send(text: str) -> bool:
     try:
         r = requests.post(f"https://api.telegram.org/bot{BOT_TOKEN}/sendMessage",
-                          data={"chat_id": CHAT_ID, "text": text, "parse_mode": "Markdown"}, timeout=15)
+                          data={"chat_id": CHAT_ID, "text": text, "parse_mode": "HTML"}, timeout=15)
         return r.status_code == 200 and r.json().get("ok", False)
     except Exception:
         return False
@@ -243,24 +243,24 @@ def main() -> int:
         # Generate recommendations
         recs = generate_recommendations(sources, success)
 
-        # Build report
-        lines = ["📊 *Hub4Apps source health (monthly review)*", ""]
+        # Build report (HTML parse mode — avoids Markdown underscore ambiguity in agent names)
+        lines = ["📊 <b>Hub4Apps source health (monthly review)</b>", ""]
         by_cat: dict[str, list[dict]] = defaultdict(list)
         for s in sources:
             by_cat[s["category"]].append(s)
         for cat, items in sorted(by_cat.items()):
-            lines.append(f"*{cat}*:")
+            lines.append(f"<b>{cat}</b>:")
             for s in items:
                 marker = "★" if s["is_primary"] else "·"
                 health = "✅" if s["last_health_check_ok"] else "❌" if s["last_health_check_ok"] is False else "?"
-                lines.append(f"  {marker} {s['name']:<20} {health}  fails: {s['consecutive_failures']}")
+                lines.append(f"  {marker} <code>{s['name']:<20}</code> {health}  fails: {s['consecutive_failures']}")
             lines.append("")
-        lines.append("*Per-agent success (last 30d):*")
+        lines.append("<b>Per-agent success (last 30d):</b>")
         for agent, st in success.items():
-            lines.append(f"  {agent:<22} {st.get('success_rate',0):.0%}  (n={st.get('total',0)})")
+            lines.append(f"  <code>{agent:<22}</code> {st.get('success_rate',0):.0%}  (n={st.get('total',0)})")
         if recs:
             lines.append("")
-            lines.append("*Recommendations:*")
+            lines.append("<b>Recommendations:</b>")
             lines.extend(recs)
         else:
             lines.append("")
