@@ -62,5 +62,5 @@ jobs:
           protocol:        ftps
           port:            21
           local-dir:       ./dist/
-          server-dir:      /public_html/stock_app/
+          server-dir:      /home/u832160935/domains/hub4apps.com/public_html/stock_app/
           dangerous-clean-slate: false
