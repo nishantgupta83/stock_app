@@ -1,0 +1,37 @@
+name: earnings_agent
+
+# Weekly: refresh upcoming + recently-released earnings into stock_normalized_events.
+# historical_ingest.py covered the 6-month backfill; this keeps the table fresh
+# as new quarterly earnings dates get announced and recent releases get final EPS.
+
+on:
+  schedule:
+    - cron: "0 12 * * 0"   # Sundays 12:00 UTC
+  workflow_dispatch:
+
+concurrency:
+  group: earnings_agent
+  cancel-in-progress: true
+
+jobs:
+  fetch:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+
+      - name: Install deps
+        run: pip install -r requirements.txt
+
+      - name: Fetch earnings
+        env:
+          SUPABASE_URL:         ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
+        run: python agents/earnings_agent.py

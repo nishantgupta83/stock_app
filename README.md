@@ -29,7 +29,8 @@ and learns from outcomes via per-agent EMA weights.
 | `filing_agent`        | `*/5 * * * *`     | EDGAR → 8-K (with item parsing), 10-K/Q, Form 4, 13D/G, S-3 → `stock_raw_filings` + `stock_normalized_events` |
 | `news_agent`          | `*/5 * * * *`     | CNBC / MarketWatch / AP RSS → ticker mention + sentiment classifier → `stock_normalized_events` |
 | `truth_social_agent`  | `*/5 * * * *`     | Trump Truth Social RSS → keyword router → `stock_normalized_events` |
-| `thesis_agent`        | `*/5 * * * *`     | Cluster rule (≥2 distinct agents within 5-day window) → 100-pt score → action → Telegram dispatch |
+| `thesis_agent`        | `*/5 * * * *`     | Cluster rule (≥2 distinct agents within 5-day window) → 100-pt weighted score → action → Telegram dispatch. Reads live `stock_agent_weights` to amplify reliable agents and dampen chronically-wrong ones. Includes chase-risk downgrade if price already moved >5% since cluster start. |
+| `earnings_agent`      | weekly Sun 12:00 UTC | yfinance earnings dates per stock → upcoming + recently-released into `stock_normalized_events` |
 | `price_agent`         | weekday 21:30 UTC | yfinance EOD closes → outcome audit → EMA weight update per agent → digest |
 | `backtester`          | manual / weekly   | 180-day replay (filings + earnings + momentum) → Sharpe, precision, calibration metrics |
 | `site_generator`      | `*/15 * * * *`    | Supabase → Jinja2 HTML → `dist` branch + FTPS auto-deploy to Hostinger |
@@ -45,7 +46,8 @@ and learns from outcomes via per-agent EMA weights.
 
 - **WATCH**       — score ≥70, bullish cluster (≥2 agents agree)
 - **RESEARCH**    — score ≥50, single strong signal or weaker cluster
-- **AVOID_CHASE** — score ≥50, bearish cluster (S-3 dilution, miss, downgrade, bearish news)
+- **AVOID_CHASE** — score ≥50, bearish cluster (S-3, 8-K dilution flagged via primaryDocDescription, earnings miss, downgrade, bearish news)
+- **CHASE_RISK**  — would-be WATCH/RESEARCH on a ticker that already moved >5% since the cluster's earliest event. Recorded for review, not dispatched to Telegram.
 
 ## Dashboard tabs
 

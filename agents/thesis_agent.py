@@ -48,6 +48,11 @@ HEADERS_SB = {
 FRESHNESS_WINDOW_MIN = 30
 CLUSTER_WINDOW_MIN   = 5
 MAX_ALERTS_PER_DAY   = 5
+# Chase-risk threshold: if the price has already moved >5% in the cluster's
+# direction since the earliest event, downgrade WATCH→RESEARCH (the move is
+# already in the price; we'd be chasing). Bearish AVOID_CHASE doesn't get
+# downgraded — late-warning bearish alerts are still useful.
+CHASE_RISK_PCT = 0.05
 DEDUPE_WINDOW_MIN    = 60
 
 MODEL_VERSION = "rubric-v1.0"
@@ -109,6 +114,85 @@ def fetch_fresh_events() -> list[dict]:
                      headers=HEADERS_SB, params=params, timeout=20)
     r.raise_for_status()
     return r.json()
+
+
+def fetch_latest_agent_weights() -> dict[str, float]:
+    """Most recent weight per agent from stock_agent_weights, populated by
+    price_agent (live signals) and backtester (historical replay).
+    Default 1.0 if no row yet (fresh install / new agent)."""
+    r = requests.get(
+        f"{SUPABASE_URL}/rest/v1/stock_agent_weights",
+        headers=HEADERS_SB,
+        params={"select": "agent,date,weight", "order": "date.desc", "limit": "200"},
+        timeout=15,
+    )
+    if r.status_code != 200:
+        return {}
+    latest: dict[str, float] = {}
+    for row in r.json():
+        agent = row.get("agent")
+        if agent and agent not in latest:
+            try:
+                latest[agent] = float(row.get("weight") or 1.0)
+            except (TypeError, ValueError):
+                continue
+    return latest
+
+
+def fetch_recent_closes(tickers: list[str], days_back: int = 7) -> dict[str, list[dict]]:
+    """Up-to-7-day daily closes per ticker from stock_raw_prices, populated by
+    historical_ingest + site_generator's self-healing fallback. Returns
+    {ticker: [{ts, close}]} ordered by ts asc — latest is the rightmost."""
+    if not tickers:
+        return {}
+    cutoff = (datetime.now(timezone.utc) - timedelta(days=days_back)).date().isoformat()
+    in_list = ",".join(f'"{t}"' for t in tickers)
+    r = requests.get(
+        f"{SUPABASE_URL}/rest/v1/stock_raw_prices",
+        headers=HEADERS_SB,
+        params={
+            "ticker": f"in.({in_list})",
+            "ts":     f"gte.{cutoff}",
+            "select": "ticker,ts,close",
+            "order":  "ts.asc",
+            "limit":  "500",
+        },
+        timeout=15,
+    )
+    if r.status_code != 200:
+        return {}
+    by_t: dict[str, list[dict]] = defaultdict(list)
+    for row in r.json():
+        if row.get("close") is not None:
+            by_t[row["ticker"]].append(row)
+    return dict(by_t)
+
+
+def chase_risk_pct(closes: list[dict], earliest_event_iso: str) -> float | None:
+    """Return % move of the latest close vs. the close on/before the cluster's
+    earliest event date. None if not enough data."""
+    if not closes or not earliest_event_iso:
+        return None
+    try:
+        ev_date = earliest_event_iso[:10]   # YYYY-MM-DD
+    except Exception:
+        return None
+    # Find the bar at or just before ev_date
+    base = None
+    for row in closes:
+        if (row.get("ts") or "")[:10] <= ev_date:
+            base = row
+        else:
+            break
+    if base is None or not base.get("close"):
+        return None
+    latest = closes[-1]
+    if not latest.get("close"):
+        return None
+    try:
+        return (float(latest["close"]) - float(base["close"])) / float(base["close"])
+    except (TypeError, ValueError, ZeroDivisionError):
+        return None
 
 
 def already_signaled_dedupe_keys(keys: list[str]) -> set[str]:
@@ -179,14 +263,29 @@ def source_agent_for(event: dict) -> str:
     return "unknown"
 
 
-def score_evidence(events: list[dict]) -> tuple[float, list[dict]]:
-    """Apply Phase-1 rubric. Returns (total_score, breakdown)."""
+def score_evidence(events: list[dict],
+                   agent_weights: dict[str, float] | None = None) -> tuple[float, list[dict]]:
+    """Apply Phase-1 rubric. Returns (total_score, breakdown).
+
+    Per-agent learned weights from stock_agent_weights are applied at the end —
+    each event-tied rule's contribution is summed per source-agent, then a single
+    weight_adj_<agent> entry per agent shows the delta (raw × (weight − 1)).
+    Cluster-level bonuses (multi_source_confirm, tri_source_confirm) carry no
+    event_id and stay raw, since they reward independent agreement, not any
+    single agent's accuracy.
+    """
+    weights = agent_weights or {}
     score = 0.0
     breakdown: list[dict] = []
+    raw_by_agent: dict[str, float] = defaultdict(float)
+    # event_id → source agent map for cheap lookup inside add()
+    ev_agent: dict[int, str] = {e["id"]: source_agent_for(e) for e in events if e.get("id") is not None}
 
     def add(rule: str, points: float, ev_id: int | None = None, detail: str = "") -> None:
         nonlocal score
         score += points
+        if ev_id is not None and ev_id in ev_agent:
+            raw_by_agent[ev_agent[ev_id]] += points
         breakdown.append({"rule": rule, "points": points, "event_id": ev_id, "detail": detail})
 
     now = datetime.now(timezone.utc)
@@ -226,6 +325,11 @@ def score_evidence(events: list[dict]) -> tuple[float, list[dict]]:
         # S-3 shelf registration = dilution headwind — score negatively
         elif et in ("filing_s-3", "filing_s-3/a"):
             add("s3_dilution_risk", -8, e["id"])
+        # 8-K-flavored dilution (PIPE, ATM, warrant issuance, registered direct) —
+        # filing_agent.looks_like_dilution emits this alongside the primary 8-K.
+        # Symmetric magnitude so AVOID_CHASE clusters can reach threshold.
+        elif et == "filing_dilution":
+            add("dilution_8k", 12, e["id"], (e.get("payload") or {}).get("matched_keyword", ""))
         # Other filings carry only the severity component
         elif et.startswith("filing_") and sev > 0:
             add(f"filing_other_sev{sev}", min(15, sev * 4), e["id"])
@@ -249,6 +353,24 @@ def score_evidence(events: list[dict]) -> tuple[float, list[dict]]:
         add("tri_source_confirm", 13, detail=f"{distinct_src} agents")
     elif distinct_src >= 2:
         add("multi_source_confirm", 8, detail=f"{distinct_src} agents")
+
+    # Apply learned per-agent weights — closes the loop with price_agent's
+    # EMA. weight=1.0 means no change; <1 dampens chronically-wrong agents,
+    # >1 amplifies reliable ones (bounded 0.1..2.0 in the EMA writer).
+    weight_adj_total = 0.0
+    for agent, raw in raw_by_agent.items():
+        w = weights.get(agent, 1.0)
+        if w == 1.0 or raw == 0:
+            continue
+        adj = raw * (w - 1.0)
+        weight_adj_total += adj
+        breakdown.append({
+            "rule":      f"weight_adj_{agent}",
+            "points":    round(adj, 2),
+            "event_id":  None,
+            "detail":    f"raw={raw:.0f} × (weight {w:.2f} − 1.0)",
+        })
+    score += weight_adj_total
 
     return score, breakdown
 
@@ -280,7 +402,7 @@ def signal_direction(events: list[dict]) -> str:
             elif d == "long": bull += 1
         elif et in ("8k_material_event", "filing_13d"):
             bull += 1
-        elif et in ("filing_s-3", "filing_s-3/a"):
+        elif et in ("filing_s-3", "filing_s-3/a", "filing_dilution"):
             bear += 1
         elif et == "news_article":
             if d == "short": bear += 1
@@ -335,16 +457,25 @@ def evidence_summary(events: list[dict]) -> str:
 # ============================================================
 
 def write_signal(ticker: str, score: float, action: str, direction: str,
-                 breakdown: list[dict], events: list[dict], dedupe_key: str) -> int | None:
+                 breakdown: list[dict], events: list[dict], dedupe_key: str,
+                 agent_weights: dict[str, float] | None = None) -> int | None:
+    weights = agent_weights or {}
+    cluster_agents = list({source_agent_for(e) for e in events})
     payload = {
         "ticker":           ticker,
         "fired_at":         datetime.now(timezone.utc).isoformat(),
         "direction":        direction,
-        "confidence":       round(min(score, 100) / 100, 4),
+        "confidence":       round(min(max(score, 0), 100) / 100, 4),
         "horizon_days":     1 if horizon_for(events) == "1d" else 0,
         "thesis_summary":   evidence_summary(events),
         "model_version":    MODEL_VERSION,
-        "weight_at_time":   {"agents": list({source_agent_for(e) for e in events})},
+        # Snapshot the weights actually used for this signal — price_agent reads
+        # this to attribute outcomes back to the contributing agents at the
+        # weight that was in effect at fire time, not whatever it is later.
+        "weight_at_time":   {
+            "agents":  cluster_agents,
+            "weights": {a: round(weights.get(a, 1.0), 4) for a in cluster_agents},
+        },
         "status":           "open",
         "action":           action,
         "score":            round(score, 2),
@@ -402,6 +533,16 @@ def main() -> int:
             job_run_finish(run_id, "ok", 0, 0)
             return 0
 
+        # Learning loop: pull current per-agent weights so well-performing agents
+        # get amplified and chronically-wrong ones get dampened. Empty dict on
+        # cold start is fine — score_evidence treats missing as weight=1.0.
+        agent_weights = fetch_latest_agent_weights()
+        if agent_weights:
+            print(f"Agent weights in effect: " +
+                  ", ".join(f"{a}={w:.2f}" for a, w in sorted(agent_weights.items())))
+        else:
+            print("No agent_weights yet — using default 1.0 for all (cold start)")
+
         # Group by (ticker, 5-min bucket)
         clusters: dict[tuple[str, str], list[dict]] = defaultdict(list)
         for e in events:
@@ -424,7 +565,7 @@ def main() -> int:
         scored = []
         for (ticker, bucket), ev_list in clusters.items():
             ok, cluster_label = cluster_passes(ev_list)
-            score, breakdown = score_evidence(ev_list)
+            score, breakdown = score_evidence(ev_list, agent_weights=agent_weights)
             direction = signal_direction(ev_list)
             action = action_for(score, direction)
             scored.append({
@@ -445,6 +586,33 @@ def main() -> int:
         # Skip already-signaled buckets
         existing = already_signaled_dedupe_keys([c["dedupe_key"] for c in candidates])
         candidates = [c for c in candidates if c["dedupe_key"] not in existing]
+
+        # Chase-risk downgrade: WATCH/RESEARCH on a stock that has already moved
+        # >5% in the cluster's bullish direction since the earliest event becomes
+        # CHASE_RISK (suppressed from Telegram dispatch but still recorded).
+        if candidates:
+            tickers_to_check = list({c["ticker"] for c in candidates if c["direction"] == "bullish"})
+            closes_map = fetch_recent_closes(tickers_to_check, days_back=7)
+            for c in candidates:
+                if c["direction"] != "bullish" or c["action"] not in ("WATCH", "RESEARCH"):
+                    continue
+                earliest = min((e["event_at"] for e in c["events"] if e.get("event_at")),
+                               default=None)
+                if not earliest:
+                    continue
+                pct = chase_risk_pct(closes_map.get(c["ticker"], []), earliest)
+                if pct is not None and pct >= CHASE_RISK_PCT:
+                    print(f"  {c['ticker']}: chase risk — already +{pct*100:.1f}% since cluster start, downgrade {c['action']}→CHASE_RISK")
+                    c["chase_pct"] = round(pct, 4)
+                    c["original_action"] = c["action"]
+                    c["action"] = "CHASE_RISK"
+                    c["breakdown"].append({
+                        "rule":     "chase_risk_downgrade",
+                        "points":   0,
+                        "event_id": None,
+                        "detail":   f"+{pct*100:.1f}% since {earliest[:10]}, was {c['original_action']}",
+                    })
+
         # Sort by score descending — top-k for governor
         candidates.sort(key=lambda x: x["score"], reverse=True)
 
@@ -459,6 +627,7 @@ def main() -> int:
                 direction=cand["direction"],
                 breakdown=cand["breakdown"], events=cand["events"],
                 dedupe_key=cand["dedupe_key"],
+                agent_weights=agent_weights,
             )
             if sig_id is None:
                 continue

@@ -81,6 +81,7 @@ def fetch_recent_filings(cik: str, kind: str) -> list[dict]:
     dates      = recent.get("filingDate", [])
     times      = recent.get("acceptanceDateTime", [])
     docs       = recent.get("primaryDocument", [])
+    descs      = recent.get("primaryDocDescription", [])  # e.g. "Underwriting Agreement"
     items_list = recent.get("items", [])   # 8-K item numbers e.g. "2.02,9.01"
     out = []
     for i, form in enumerate(forms):
@@ -98,6 +99,7 @@ def fetch_recent_filings(cik: str, kind: str) -> list[dict]:
             "form_type":         form,
             "filed_at":          filed_at,
             "primary_doc_url":   primary_url,
+            "primary_doc_desc":  descs[i] if i < len(descs) else "",
             "8k_items":          items_list[i] if i < len(items_list) else "",
         })
     return out
@@ -148,6 +150,42 @@ def severity_for_filing(form_type: str, raw: dict) -> int:
                 return 1
 
     return base
+
+
+# Dilution keyword set — appears in EDGAR's primaryDocDescription for 8-Ks
+# attached to financing events (PIPE, public offering, ATM, warrant issuance, etc.).
+# Source: empirical scan of 8-K filings 2024-2026 across watchlist stocks.
+_DILUTION_KEYWORDS = (
+    "underwriting agreement",
+    "purchase agreement",
+    "private placement",
+    "registered direct",
+    "warrants to purchase",
+    "warrant to purchase",
+    "convertible notes",
+    "at-the-market",
+    "atm offering",
+    "shelf takedown",
+    "pipe financing",
+    "stock and warrant",
+)
+
+
+def looks_like_dilution(filing: dict) -> tuple[bool, str]:
+    """Detect dilution-flavored 8-Ks via primaryDocDescription text + item codes.
+    Avoids fetching the actual document — keeps EDGAR rate-limit pressure flat.
+
+    Returns (is_dilution, matched_keyword). Item 1.01 (Material Agreement) +
+    description keyword = high confidence. Description keyword alone = also
+    treated as dilution. Item 1.01 alone (no keyword) is too noisy — many
+    1.01s are non-dilutive (commercial agreements, partnerships)."""
+    if filing.get("form_type") != "8-K":
+        return False, ""
+    desc = (filing.get("primary_doc_desc") or "").lower()
+    for kw in _DILUTION_KEYWORDS:
+        if kw in desc:
+            return True, kw
+    return False, ""
 
 
 def upsert_filings(rows: list[dict], ticker: str) -> int:
@@ -211,9 +249,30 @@ def emit_normalized_events(filings: list[dict], ticker: str) -> int:
                 "accession_number": f["accession_number"],
                 "form_type":        ft,
                 "primary_doc_url":  f["primary_doc_url"],
+                "primary_doc_desc": f.get("primary_doc_desc") or "",
                 "8k_items":         f.get("8k_items") or "",
             },
         })
+        # Dilution-flavored 8-K → emit a SECOND event of type filing_dilution
+        # with direction_prior=short. Lets thesis_agent treat it as bearish
+        # without contaminating the primary 8-K event's neutral/bullish read.
+        is_dil, matched_kw = looks_like_dilution(f)
+        if is_dil:
+            payload.append({
+                "event_type":   "filing_dilution",
+                "event_subtype": "8k_financing",
+                "ticker":       ticker,
+                "event_at":     f["filed_at"],
+                "severity":     3,
+                "source_table": "stock_raw_filings",
+                "dedupe_key":   f"dilution_{f['accession_number']}",
+                "payload": {
+                    "accession_number": f["accession_number"],
+                    "matched_keyword":  matched_kw,
+                    "primary_doc_desc": f.get("primary_doc_desc") or "",
+                    "direction_prior":  "short",
+                },
+            })
     if not payload:
         return 0
     # on_conflict targets the partial unique index on dedupe_key (added in 0004).
