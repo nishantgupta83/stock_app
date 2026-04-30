@@ -1,0 +1,59 @@
+name: historical_ingest
+
+# One-time 6-month backfill: SEC filings + earnings + daily prices.
+# Idempotent — safe to re-run. Run manually via workflow_dispatch only.
+# After this finishes, trigger backtester.yml to populate stock_agent_weights
+# with 180 days of EMA evolution.
+#
+# Safety: `sections` input is a constrained choice (all/filings/earnings/prices),
+# but we still pass it via env (not interpolated into shell) per workflow injection
+# best practice.
+
+on:
+  workflow_dispatch:
+    inputs:
+      sections:
+        description: "Which sections to ingest"
+        type: choice
+        required: true
+        default: "all"
+        options:
+          - all
+          - filings
+          - earnings
+          - prices
+
+concurrency:
+  group: historical_ingest
+  cancel-in-progress: false
+
+jobs:
+  backfill:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+
+      - name: Install deps
+        run: pip install -r requirements.txt
+
+      - name: Run historical backfill
+        env:
+          SUPABASE_URL:         ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
+          EDGAR_USER_AGENT:     ${{ secrets.EDGAR_USER_AGENT }}
+          SECTIONS:             ${{ inputs.sections }}
+        run: |
+          # SECTIONS is constrained by choice list to one of: all|filings|earnings|prices
+          case "$SECTIONS" in
+            all|filings|earnings|prices) ;;
+            *) echo "invalid sections: $SECTIONS"; exit 1 ;;
+          esac
+          python agents/historical_ingest.py "--$SECTIONS"

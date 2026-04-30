@@ -2,10 +2,35 @@
 {% block content %}
 <div style="display:flex;align-items:center;gap:12px;margin-bottom:8px">
   <h2 style="margin:0">{{ ticker }}</h2>
-  <span style="color:var(--muted);font-size:13px">90-day price · alerts overlaid · paper-trade review</span>
+  <span style="color:var(--muted);font-size:13px">180-day price · events overlaid · big-move explanations</span>
+</div>
+
+<div style="font-size:12px;color:var(--muted);margin-bottom:8px">
+  Legend:
+  <span style="color:#7ab8d9">━ price</span> ·
+  <span style="color:#5a8fd9">● filing</span> ·
+  <span style="color:#e89c5a">● earnings</span> ·
+  <span style="color:#9c9c9c">● momentum</span> ·
+  <span style="color:#4caf93">● WATCH</span> /
+  <span style="color:#e8c15a">● RESEARCH</span> /
+  <span style="color:#e85a5a">● AVOID_CHASE</span>
 </div>
 
 <canvas id="priceChart" height="80"></canvas>
+
+<h3 style="margin-top:28px">Big moves <span style="color:var(--muted);font-size:13px;font-weight:normal">— days the close moved &gt; 5%, with events from the prior 2 trading days as candidate causes (correlation, not causation)</span></h3>
+<table id="bigMovesTable">
+  <thead>
+    <tr>
+      <th>Date</th>
+      <th class="num">Move</th>
+      <th class="num">Close</th>
+      <th>Events in prior 2 trading days</th>
+    </tr>
+  </thead>
+  <tbody id="bigMovesRows"></tbody>
+</table>
+<div id="noBigMoves" class="empty" style="display:none">No daily moves &gt;5% in the last 180 days for {{ ticker }}.</div>
 
 <h3 style="margin-top:28px">Signal log — {{ ticker }}</h3>
 <table id="sigTable">
@@ -22,7 +47,7 @@
   </thead>
   <tbody id="sigRows"></tbody>
 </table>
-<div id="noSigs" class="empty" style="display:none">No signals for {{ ticker }} yet.</div>
+<div id="noSigs" class="empty" style="display:none">No signals fired for {{ ticker }} in the last 180 days.</div>
 
 <div style="margin-top:24px">
   <a href="{{ root_path | default('') }}signals.html" style="color:var(--ok)">&larr; All signals</a>
@@ -31,26 +56,69 @@
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4/dist/chart.umd.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-annotation@3"></script>
 <script id="pdata" type="application/json">{{ price_json|safe }}</script>
 <script id="sdata" type="application/json">{{ signals_json|safe }}</script>
+<script id="edata" type="application/json">{{ events_json|safe }}</script>
 <script>
 const prices  = JSON.parse(document.getElementById('pdata').textContent);
 const signals = JSON.parse(document.getElementById('sdata').textContent);
+const events  = JSON.parse(document.getElementById('edata').textContent);
 
-// ── Price chart ──────────────────────────────────────────
+// ── Date axis (one entry per available trading day) ──────────────
 const labels = prices.map(p => p.date);
 const closes = prices.map(p => p.close);
+const dateToIdx = {};
+labels.forEach((d, i) => { dateToIdx[d] = i; });
 
+// ── Event-type → display config ──────────────────────────────────
+function eventBucket(et) {
+  if (!et) return 'other';
+  if (et === '8k_material_event' || et.indexOf('filing_') === 0) return 'filing';
+  if (et === 'earnings_release' || et === 'earnings_pre' || et === 'earnings_post') return 'earnings';
+  if (et === 'momentum') return 'momentum';
+  if (et === 'news_article') return 'news';
+  if (et === 'truth_social_post') return 'social';
+  return 'other';
+}
+const BUCKET_COLOR = {
+  filing:   '#5a8fd9',
+  earnings: '#e89c5a',
+  momentum: '#9c9c9c',
+  news:     '#a07acc',
+  social:   '#d97a8f',
+  other:    '#888888',
+};
+
+// ── Build chart annotations: one dot per event + one dot per signal ──
 const annotations = {};
+
+// Events as small dots on the price line
+events.forEach((e, i) => {
+  const eventDate = (e.event_at || '').substring(0, 10);
+  const idx = dateToIdx[eventDate];
+  if (idx === undefined) return;
+  const bucket = eventBucket(e.event_type);
+  annotations['ev_' + i] = {
+    type: 'point',
+    xValue: eventDate,
+    yValue: closes[idx],
+    backgroundColor: BUCKET_COLOR[bucket],
+    radius: 4,
+    borderWidth: 0,
+  };
+});
+
+// Signals as larger labeled dots (drawn on top because they're added after)
 signals.forEach((sig, i) => {
   const firedDate = (sig.fired_at || '').substring(0, 10);
-  const idx = labels.indexOf(firedDate);
-  if (idx === -1) return;
+  const idx = dateToIdx[firedDate];
+  if (idx === undefined) return;
   const isAvoid = sig.action === 'AVOID_CHASE';
   const color   = sig.action === 'WATCH' ? '#4caf93' : isAvoid ? '#e85a5a' : '#e8c15a';
   annotations['sig_' + i] = {
     type: 'point', xValue: firedDate, yValue: closes[idx],
-    backgroundColor: color, radius: 8,
+    backgroundColor: color, radius: 9, borderColor: '#fff', borderWidth: 2,
     label: { display: true, content: sig.action + ' ' + Math.round(sig.score || 0),
              position: isAvoid ? 'end' : 'start', color: '#fff',
              backgroundColor: color, font: { size: 10 } },
@@ -86,7 +154,95 @@ new Chart(document.getElementById('priceChart'), {
   }
 });
 
-// ── Signal table — build via DOM to avoid innerHTML XSS surface ──
+// ── Big Moves table — find days with |daily return| > 5%, list nearby events ──
+function eventLabel(e) {
+  const p = e.payload || {};
+  if (e.event_type === '8k_material_event') {
+    const items = p['8k_items'] ? ' [items: ' + p['8k_items'] + ']' : '';
+    return '8-K' + items;
+  }
+  if (e.event_type === 'earnings_release') {
+    const sub = e.event_subtype || 'earnings';
+    const surp = (p.surprise_pct != null) ? ' (' + Number(p.surprise_pct).toFixed(1) + '%)' : '';
+    return 'Earnings ' + sub + surp;
+  }
+  if (e.event_type === 'momentum') {
+    const rs = p.rel_strength_pct;
+    return 'Momentum' + (rs != null ? ' ' + Number(rs).toFixed(1) + '% vs SPY' : '');
+  }
+  if (e.event_type && e.event_type.indexOf('filing_') === 0) {
+    return p.form_type || e.event_type.replace('filing_', '').toUpperCase();
+  }
+  if (e.event_type === 'news_article') return p.headline || 'News';
+  return e.event_type;
+}
+
+// HTML-escape — payloads may contain raw text from RSS, must never reach innerHTML unescaped.
+function esc(s) {
+  if (s === null || s === undefined) return '';
+  return String(s).replace(/[&<>"']/g, c => ({
+    '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'
+  }[c]));
+}
+
+const bigMoves = [];
+for (let i = 1; i < prices.length; i++) {
+  const prev = prices[i - 1].close;
+  const cur  = prices[i].close;
+  if (!prev || !cur) continue;
+  const ret  = (cur - prev) / prev;
+  if (Math.abs(ret) < 0.05) continue;
+
+  // Find events in the prior 2 trading days (i-2 to i, inclusive of move day itself)
+  const lowDateIdx  = Math.max(0, i - 2);
+  const highDateIdx = i;
+  const lowDate  = prices[lowDateIdx].date;
+  const highDate = prices[highDateIdx].date;
+  const nearby = events.filter(e => {
+    const d = (e.event_at || '').substring(0, 10);
+    return d >= lowDate && d <= highDate;
+  });
+  bigMoves.push({ date: prices[i].date, ret, close: cur, nearby });
+}
+
+const bigMovesBody = document.getElementById('bigMovesRows');
+if (bigMoves.length === 0) {
+  document.getElementById('noBigMoves').style.display = 'block';
+  document.getElementById('bigMovesTable').style.display = 'none';
+} else {
+  // Most recent first
+  bigMoves.reverse();
+  for (const m of bigMoves) {
+    const tr = document.createElement('tr');
+    const tdDate  = document.createElement('td'); tdDate.textContent = m.date;
+    const tdMove  = document.createElement('td'); tdMove.className = 'num';
+    tdMove.textContent = (m.ret * 100).toFixed(2) + '%';
+    tdMove.style.color = m.ret > 0 ? 'var(--ok)' : 'var(--bad)';
+    const tdClose = document.createElement('td'); tdClose.className = 'num';
+    tdClose.textContent = '$' + m.close.toFixed(2);
+    const tdEv    = document.createElement('td');
+    if (m.nearby.length === 0) {
+      tdEv.style.color = 'var(--muted)';
+      tdEv.textContent = '— no tracked events';
+    } else {
+      m.nearby.forEach((e, idx) => {
+        const span = document.createElement('span');
+        span.className = 'tag agent-' + eventBucket(e.event_type);
+        span.textContent = eventLabel(e);
+        span.title = e.event_at;
+        tdEv.appendChild(span);
+        if (idx < m.nearby.length - 1) tdEv.appendChild(document.createTextNode(' '));
+      });
+    }
+    tr.appendChild(tdDate);
+    tr.appendChild(tdMove);
+    tr.appendChild(tdClose);
+    tr.appendChild(tdEv);
+    bigMovesBody.appendChild(tr);
+  }
+}
+
+// ── Signal table (unchanged from prior version, DOM-built) ──────
 const tbody = document.getElementById('sigRows');
 if (signals.length === 0) {
   document.getElementById('noSigs').style.display = 'block';
@@ -95,7 +251,6 @@ if (signals.length === 0) {
   for (const s of signals) {
     const a  = s._audit || {};
     const tr = document.createElement('tr');
-
     function td(text, cls) {
       const c = document.createElement('td');
       if (cls) c.className = cls;
@@ -107,26 +262,21 @@ if (signals.length === 0) {
       c.appendChild(node);
       return c;
     }
-
     const actionSpan = document.createElement('span');
     actionSpan.className = 'tag ' + (s.action || '');
     actionSpan.textContent = s.action || '';
-
     const statusSpan = document.createElement('span');
     statusSpan.className = 'tag ' + (s.status_v2 || '');
     statusSpan.textContent = s.status_v2 || '';
-
     const retTd = document.createElement('td');
     retTd.className = 'num';
     if (a.realized_return != null) {
       retTd.textContent = (a.realized_return * 100).toFixed(2) + '%';
       retTd.style.color = a.realized_return > 0 ? 'var(--ok)' : 'var(--bad)';
     } else { retTd.textContent = '—'; }
-
     const okTd = document.createElement('td');
     okTd.style.textAlign = 'center';
     okTd.textContent = a.correct === true ? '✅' : a.correct === false ? '❌' : '—';
-
     tr.appendChild(td((s.fired_at||'').substring(0,16), 'fired'));
     tr.appendChild(tdHTML(actionSpan));
     tr.appendChild(td(String(Math.round(s.score||0)), 'num'));

@@ -179,24 +179,122 @@ def fetch_forecast_audit() -> list[dict]:
     })
 
 
-def fetch_ticker_prices(tickers: list[str], days: int = 90) -> dict[str, list[dict]]:
-    """Fetch daily close prices for tickers via yfinance. Returns {ticker: [{date, close}]}."""
+def _yfinance_fetch_one(ticker: str, days: int) -> list[dict] | None:
+    """Per-ticker yfinance fallback. Used when DB is empty or stale."""
+    start = (datetime.now(timezone.utc) - timedelta(days=days)).strftime("%Y-%m-%d")
+    try:
+        t = yf.Ticker(ticker, session=_CF_SESSION) if _CF_SESSION else yf.Ticker(ticker)
+        df = t.history(start=start, auto_adjust=False)
+        if df.empty:
+            return None
+        return [
+            {
+                "ts":     ts.strftime("%Y-%m-%dT00:00:00+00:00"),
+                "open":   round(float(row["Open"]),   4) if row.get("Open")  is not None else None,
+                "high":   round(float(row["High"]),   4) if row.get("High")  is not None else None,
+                "low":    round(float(row["Low"]),    4) if row.get("Low")   is not None else None,
+                "close":  round(float(row["Close"]),  4) if row.get("Close") is not None else None,
+                "volume": int(row["Volume"]) if row.get("Volume") is not None else None,
+            }
+            for ts, row in df.iterrows()
+        ]
+    except Exception as e:
+        print(f"  yfinance fallback {ticker}: {e}", file=sys.stderr)
+        return None
+
+
+def _persist_prices(ticker: str, bars: list[dict]) -> None:
+    """Best-effort bulk insert of yfinance bars into stock_raw_prices. Dups ignored
+    via unique(ticker, ts, source) — safe to call repeatedly."""
+    if not bars:
+        return
+    payload = [{**b, "ticker": ticker, "source": "yfinance"} for b in bars]
+    try:
+        url = f"{SUPABASE_URL}/rest/v1/stock_raw_prices"
+        headers = {**HEADERS_SB, "Content-Type": "application/json",
+                   "Prefer": "resolution=ignore-duplicates,return=minimal"}
+        requests.post(url, headers=headers, json=payload, timeout=30)
+    except Exception as e:
+        print(f"  persist_prices {ticker}: {e}", file=sys.stderr)
+
+
+def fetch_ticker_prices(tickers: list[str], days: int = 180) -> dict[str, list[dict]]:
+    """Read daily bars from stock_raw_prices for each ticker. Self-healing:
+    if a ticker has no DB rows or its latest row is >3 days stale, fall back to
+    yfinance and persist the result so the next run reads from DB.
+
+    Returns {ticker: [{date, close}]} ordered by date asc.
+    """
     result: dict[str, list[dict]] = {}
     if not tickers:
         return result
-    start = (datetime.now(timezone.utc) - timedelta(days=days)).strftime("%Y-%m-%d")
+
+    cutoff_date    = (datetime.now(timezone.utc) - timedelta(days=days)).date()
+    stale_cutoff   = (datetime.now(timezone.utc) - timedelta(days=3)).date()
+
     for ticker in tickers:
-        try:
-            t = yf.Ticker(ticker, session=_CF_SESSION) if _CF_SESSION else yf.Ticker(ticker)
-            df = t.history(start=start, auto_adjust=True)
-            if df.empty:
-                continue
+        # 1. Try DB
+        bars = sb_get("stock_raw_prices", {
+            "ticker": f"eq.{ticker}",
+            "ts":     f"gte.{cutoff_date.isoformat()}",
+            "select": "ts,close",
+            "order":  "ts.asc",
+            "limit":  "300",
+        })
+        latest_db_date = None
+        if bars:
+            try:
+                latest_db_date = datetime.fromisoformat(bars[-1]["ts"].replace("Z", "+00:00")).date()
+            except Exception:
+                pass
+
+        # 2. Refresh from yfinance if DB is empty or stale
+        need_refresh = (not bars) or (latest_db_date is None) or (latest_db_date < stale_cutoff)
+        if need_refresh:
+            yf_bars = _yfinance_fetch_one(ticker, days)
+            if yf_bars:
+                _persist_prices(ticker, yf_bars)
+                # Re-read so we get the unified, deduped view
+                bars = sb_get("stock_raw_prices", {
+                    "ticker": f"eq.{ticker}",
+                    "ts":     f"gte.{cutoff_date.isoformat()}",
+                    "select": "ts,close",
+                    "order":  "ts.asc",
+                    "limit":  "300",
+                })
+
+        if bars:
             result[ticker] = [
-                {"date": str(ts.date()), "close": round(float(row["Close"]), 2)}
-                for ts, row in df.iterrows()
+                {"date": b["ts"][:10], "close": round(float(b["close"]), 2)}
+                for b in bars if b.get("close") is not None
             ]
-        except Exception as e:
-            print(f"  price fetch {ticker}: {e}", file=sys.stderr)
+    return result
+
+
+def fetch_all_watchlist_tickers() -> list[str]:
+    """Every distinct ticker on any watchlist — used to render a ticker page per ticker."""
+    rows = sb_get("stock_watchlists", {"select": "ticker"})
+    return sorted({r["ticker"] for r in rows if r.get("ticker")})
+
+
+def fetch_events_for_tickers(tickers: list[str], days: int = 180) -> dict[str, list[dict]]:
+    """Pull historical normalized events per ticker for chart annotations + Big Moves."""
+    result: dict[str, list[dict]] = {ticker: [] for ticker in tickers}
+    if not tickers:
+        return result
+    cutoff = (datetime.now(timezone.utc) - timedelta(days=days)).isoformat()
+    in_list = ",".join(f'"{t}"' for t in tickers)
+    rows = sb_get("stock_normalized_events", {
+        "ticker":   f"in.({in_list})",
+        "event_at": f"gte.{cutoff}",
+        "select":   "ticker,event_type,event_subtype,event_at,severity,payload",
+        "order":    "event_at.asc",
+        "limit":    "5000",
+    })
+    for r in rows:
+        ticker = r.get("ticker")
+        if ticker in result:
+            result[ticker].append(r)
     return result
 
 
@@ -332,9 +430,15 @@ def render_all() -> int:
     dash         = derive_dashboard_metrics(events, freshness)
     candidates   = build_pre_signal_candidates(events)
 
-    # Fetch price history for tickers with signals (for ticker chart pages)
-    signal_tickers = list({s["ticker"] for s in signals if s.get("ticker")})[:20]
-    prices = fetch_ticker_prices(signal_tickers, days=90)
+    # Build ticker pages for the entire watchlist (not only signal-bearing ones)
+    # so any tracked ticker can be inspected. Signal tickers get prioritized
+    # by sorting them first; cap at 30 to keep render time bounded.
+    all_watchlist  = fetch_all_watchlist_tickers()
+    signal_tickers = list({s["ticker"] for s in signals if s.get("ticker")})
+    sorted_tickers = sorted(set(all_watchlist),
+                            key=lambda t: (t not in signal_tickers, t))[:30]
+    prices = fetch_ticker_prices(sorted_tickers, days=180)
+    ticker_events = fetch_events_for_tickers(list(prices.keys()), days=180)
 
     distinct_agents = sorted({a for s in signals for a in s.get("agents", [])} | set(KNOWN_AGENTS))
     distinct_types  = sorted({e["event_type"] for e in events})
@@ -417,6 +521,7 @@ def render_all() -> int:
         # Attach audit outcome to each signal
         for s in ticker_sigs:
             s["_audit"] = audit_by_signal.get(s["id"])
+        events_for_ticker = ticker_events.get(ticker, [])
         (ticker_dir / f"{ticker}.html").write_text(ticker_tmpl.render(
             **common,
             title=f"{ticker} · Chart",
@@ -425,6 +530,7 @@ def render_all() -> int:
             ticker=ticker,
             price_json=json.dumps(price_data, default=str),
             signals_json=json.dumps(ticker_sigs, default=str),
+            events_json=json.dumps(events_for_ticker, default=str),
         ))
     shutil.copy(DIST_DIR / "styles.css", ticker_dir / "styles.css")
 

@@ -5,6 +5,13 @@ Date: 2026-04-26
 Owner: Nishant
 Supersedes: v1 (paid-stack assumptions: Supabase Pro, Polygon, Next.js on Hostinger Node)
 
+> **Current state (2026-04-29):** 8 agents live on GitHub Actions cron. Signal vocabulary is
+> WATCH / RESEARCH / **AVOID_CHASE** (added in Phase 4B). Static dashboard auto-deploys to
+> hub4apps.com/stock_app/ via FTPS every 15 min (Phase 5). EOD `price_agent` reconciles signals
+> against actual prices and updates per-agent EMA weights — the learning loop is closed.
+> Sections of this doc that predate those phases (notably §7.5 Price-Action Agent, §7.7
+> Reconciliation Agent) describe future work; the live agent inventory is in `README.md`.
+
 ## 1. Executive Summary
 
 You asked for a project that can help you recover financially over time after a major loss. The right way to build this is not a "guaranteed winner" bot and not an autonomous prediction engine that claims 90%+ accuracy. That target is not realistic for liquid U.S. equities, and designing around it would push the system toward overfitting, false confidence, and avoidable losses.
