@@ -43,7 +43,7 @@
 <div class="empty" style="margin-top:24px">No closed signals yet. price_agent runs at 4:30 PM ET on weekdays — outcomes appear here after the first live signal is reconciled.</div>
 {% endif %}
 
-<script src="https://cdn.jsdelivr.net/npm/chart.js@4/dist/chart.umd.min.js"></script>
+<script src="{{ root_path | default('') }}vendor/chart.umd.min.js"></script>
 <script id="wdata" type="application/json">{{ weight_history_json|safe }}</script>
 <script>
 const raw = JSON.parse(document.getElementById('wdata').textContent);

@@ -55,8 +55,8 @@
   <a href="{{ root_path | default('') }}learning.html" style="color:var(--ok)">Learning timeline &rarr;</a>
 </div>
 
-<script src="https://cdn.jsdelivr.net/npm/chart.js@4/dist/chart.umd.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-annotation@3"></script>
+<script src="{{ root_path | default('') }}vendor/chart.umd.min.js"></script>
+<script src="{{ root_path | default('') }}vendor/chartjs-plugin-annotation.min.js"></script>
 <script id="pdata" type="application/json">{{ price_json|safe }}</script>
 <script id="sdata" type="application/json">{{ signals_json|safe }}</script>
 <script id="edata" type="application/json">{{ events_json|safe }}</script>

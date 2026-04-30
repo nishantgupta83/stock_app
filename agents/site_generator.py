@@ -450,6 +450,17 @@ def render_all() -> int:
     DIST_DIR.mkdir(exist_ok=True)
     shutil.copy(TEMPLATES_DIR / "styles.css", DIST_DIR / "styles.css")
 
+    # Vendor: copy Chart.js + annotation plugin into dist/vendor/. Hostinger
+    # LiteSpeed enforces script-src 'self' on the CSP, so external CDN scripts
+    # (cdn.jsdelivr.net) are blocked. Templates load these via relative paths.
+    vendor_src = TEMPLATES_DIR / "vendor"
+    if vendor_src.is_dir():
+        vendor_dst = DIST_DIR / "vendor"
+        vendor_dst.mkdir(exist_ok=True)
+        for f in vendor_src.iterdir():
+            if f.is_file():
+                shutil.copy(f, vendor_dst / f.name)
+
     # Dashboard
     (DIST_DIR / "index.html").write_text(env.get_template("index.html.j2").render(
         **common,
