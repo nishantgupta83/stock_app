@@ -54,11 +54,11 @@ jobs:
           git push -q -f "https://x-access-token:$GH_TOKEN@github.com/$REPO.git" dist:dist
 
       - name: Deploy to Hostinger via FTP
-        env:
-          FTP_HOST: ${{ secrets.HOSTINGER_FTP_HOST }}
-          FTP_USER: ${{ secrets.HOSTINGER_FTP_USER }}
-          FTP_PASS: ${{ secrets.HOSTINGER_FTP_PASS }}
-          FTP_PATH: ${{ secrets.HOSTINGER_FTP_PATH }}
-        run: |
-          sudo apt-get install -q -y lftp
-          lftp -e "set ftp:ssl-allow no; set net:timeout 30; set net:max-retries 3; open ftp://$FTP_HOST; user $FTP_USER $FTP_PASS; mirror -R --delete dist/ $FTP_PATH; quit"
+        uses: SamKirkland/FTP-Deploy-Action@v4.3.5
+        with:
+          server:          ${{ secrets.HOSTINGER_FTP_HOST }}
+          username:        ${{ secrets.HOSTINGER_FTP_USER }}
+          password:        ${{ secrets.HOSTINGER_FTP_PASS }}
+          local-dir:       ./dist/
+          server-dir:      /public_html/stock_app/
+          dangerous-clean-slate: false
