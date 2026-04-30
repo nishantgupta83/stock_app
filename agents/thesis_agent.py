@@ -205,20 +205,22 @@ def score_evidence(events: list[dict]) -> tuple[float, list[dict]]:
             add("new_sc_13d", 20, e["id"])
         elif et == "filing_13g" or e.get("event_subtype") == "13G":
             add("new_sc_13g", 10, e["id"])
-        # Truth Social mention — bearish posts don't inflate WATCH confidence
+        # Truth Social — score symmetrically. signal_direction() decides whether
+        # the cluster routes to WATCH (bullish) or AVOID_CHASE (bearish).
         elif et == "truth_social_post":
             direction = (e.get("payload") or {}).get("direction_prior", "long")
             if direction == "short":
-                add("truth_social_bearish_watch", 0, e["id"], e.get("event_subtype") or "")
+                add("truth_social_bearish", 15, e["id"], e.get("event_subtype") or "")
             else:
                 add("truth_social_mapping", 15, e["id"], e.get("event_subtype") or "")
-        # News article — bullish confirmation adds weight; bearish noted but doesn't boost WATCH
+        # News article — symmetric: bearish confirmation adds the same weight as
+        # bullish so AVOID_CHASE clusters can reach the 50-pt threshold.
         elif et == "news_article":
             direction = (e.get("payload") or {}).get("direction_prior", "neutral")
             if direction == "long":
                 add("news_bullish", 12, e["id"], e.get("event_subtype") or "")
             elif direction == "short":
-                add("news_bearish_note", 0, e["id"], e.get("event_subtype") or "")
+                add("news_bearish", 12, e["id"], e.get("event_subtype") or "")
             else:
                 add("news_neutral", 5, e["id"], e.get("event_subtype") or "")
         # S-3 shelf registration = dilution headwind — score negatively

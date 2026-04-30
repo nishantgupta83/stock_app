@@ -185,15 +185,31 @@ def emit_normalized_events(filings: list[dict], ticker: str) -> int:
         sev = severity_for_filing(f["form_type"], f)
         if sev == 0:
             continue
+        # Normalize event_type so thesis_agent's lookups match.
+        # "SC 13D" (institutional schedule, with space) collapses to filing_13d
+        # to match the operating-company "13D" branch in thesis_agent.score_evidence.
+        ft = f["form_type"]
+        if ft == "8-K":
+            event_type = "8k_material_event"
+        elif ft in ("SC 13D", "13D"):
+            event_type = "filing_13d"
+        elif ft in ("SC 13G", "13G"):
+            event_type = "filing_13g"
+        else:
+            event_type = f"filing_{ft.lower().replace(' ', '_')}"
         payload.append({
-            "event_type":   "8k_material_event" if f["form_type"] == "8-K" else f"filing_{f['form_type'].lower()}",
+            "event_type":   event_type,
             "ticker":       ticker,
             "event_at":     f["filed_at"],
             "severity":     sev,
             "source_table": "stock_raw_filings",
+            # Defensive idempotency: stock_normalized_events has a partial unique index
+            # on dedupe_key. already_seen_accessions() prevents dups upstream, but if a
+            # re-run ever bypasses that (e.g. parallel jobs), this stops dup events.
+            "dedupe_key":   f"filing_{f['accession_number']}",
             "payload": {
                 "accession_number": f["accession_number"],
-                "form_type":        f["form_type"],
+                "form_type":        ft,
                 "primary_doc_url":  f["primary_doc_url"],
                 "8k_items":         f.get("8k_items") or "",
             },

@@ -49,15 +49,17 @@ YF_SLEEP      = 0.20
 # Watchlist helpers
 # ============================================================
 
-def fetch_all_watchlist_tickers() -> list[str]:
-    """Every distinct ticker on any watchlist, including ETFs/indices without a CIK.
-    Used by --earnings and --prices, which don't need EDGAR access."""
-    rows = requests.get(
-        f"{SUPABASE_URL}/rest/v1/stock_watchlists",
-        headers=HEADERS_SB,
-        params={"select": "ticker"},
-        timeout=30,
-    ).json()
+def fetch_tradeable_tickers() -> list[str]:
+    """Distinct tickers on any watchlist where stock_symbols.kind = 'stock'.
+    Used by --earnings and --prices: ETFs, mutual funds, indices, and the INST_*
+    institutional CIK placeholders all return errors from yfinance and have no
+    earnings, so we skip them entirely instead of wasting cycles on doomed fetches."""
+    url = (
+        f"{SUPABASE_URL}/rest/v1/stock_watchlists"
+        f"?select=ticker,stock_symbols!inner(kind)"
+        f"&stock_symbols.kind=eq.stock"
+    )
+    rows = requests.get(url, headers=HEADERS_SB, timeout=30).json()
     return sorted({r["ticker"] for r in rows if r.get("ticker")})
 
 
@@ -115,7 +117,7 @@ def ingest_earnings() -> tuple[int, int]:
     earnings_release event with dedupe_key=earnings_{ticker}_{date}."""
     cutoff_dt   = datetime.now(timezone.utc) - timedelta(days=LOOKBACK_DAYS)
     upper_dt    = datetime.now(timezone.utc) + timedelta(days=14)   # include scheduled near-future
-    tickers     = fetch_all_watchlist_tickers()
+    tickers     = fetch_tradeable_tickers()
     print(f"[earnings] {len(tickers)} tickers, window {cutoff_dt.date()} → {upper_dt.date()}")
 
     rows: list[dict] = []
@@ -193,7 +195,7 @@ def ingest_earnings() -> tuple[int, int]:
 def ingest_prices() -> tuple[int, int]:
     """Single batched yfinance.download() for all watchlist tickers, 6mo of daily bars.
     Inserts into stock_raw_prices; (ticker, ts, source) uniqueness handles dup rows."""
-    tickers = fetch_all_watchlist_tickers()
+    tickers = fetch_tradeable_tickers()
     if not tickers:
         print("[prices] empty watchlist, nothing to do")
         return 0, 0

@@ -346,7 +346,10 @@ def session_close_on(ticker: str, on: date) -> float | None:
 # Reconcile outcome (entry next session open → close at horizon)
 # ============================================================
 
-def realized_outcome(ticker: str, signal_time: datetime, horizon_days: int = 1) -> dict | None:
+def realized_outcome(ticker: str, signal_time: datetime, horizon_days: int = 1,
+                     action: str = "WATCH") -> dict | None:
+    """Compute realized return at horizon. `correct` is direction-aware to match
+    live price_agent semantics — AVOID_CHASE is correct when the price falls."""
     entry = next_session_open(ticker, signal_time)
     if not entry:
         return None
@@ -368,13 +371,15 @@ def realized_outcome(ticker: str, signal_time: datetime, horizon_days: int = 1) 
     raw_return = (exit_px - entry_px) / entry_px
     # Subtract slippage on both sides (entry buy, exit sell)
     net_return = raw_return - 2 * (SLIPPAGE_BPS / 10000)
+    # Direction-aware correctness — must match price_agent.compute_outcome()
+    correct = (net_return < 0) if action == "AVOID_CHASE" else (net_return > 0)
     return {
         "entry_date":   entry_date.isoformat(),
         "entry_px":     entry_px,
         "exit_px":      exit_px,
         "raw_return":   raw_return,
         "net_return":   net_return,
-        "correct":      net_return > 0,    # WATCH = directional bullish bias in v1
+        "correct":      correct,
     }
 
 
@@ -618,7 +623,7 @@ def replay_day(day_start: datetime, day_end: datetime, all_events: list[dict],
             )
         except Exception:
             continue
-        outcome = realized_outcome(ticker, sig_time, horizon_days=1)
+        outcome = realized_outcome(ticker, sig_time, horizon_days=1, action=action)
         if outcome is None:
             continue
 
