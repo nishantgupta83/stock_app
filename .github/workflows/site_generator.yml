@@ -62,5 +62,7 @@ jobs:
           protocol:        ftps
           port:            21
           local-dir:       ./dist/
-          server-dir:      /stock_app/
+          # FTP sub-account "support" is chrooted to /public_html/stock_app/,
+          # so server-dir must be ./ (not /stock_app/, which double-nests).
+          server-dir:      ./
           dangerous-clean-slate: false
