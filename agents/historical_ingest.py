@@ -182,7 +182,7 @@ def ingest_earnings() -> tuple[int, int]:
         print(f"[earnings] no rows to insert ({n_with_data}/{len(tickers)} returned data)")
         return n_with_data, 0
 
-    inserted = _bulk_insert("stock_normalized_events", rows)
+    inserted = _bulk_insert("stock_normalized_events", rows, on_conflict="dedupe_key")
     print(f"[earnings] DONE — {n_with_data}/{len(tickers)} tickers had data, "
           f"{len(rows)} rows submitted, {inserted} new (dups ignored)")
     return n_with_data, inserted
@@ -248,7 +248,9 @@ def ingest_prices() -> tuple[int, int]:
         return n_with_data, 0
 
     # Bulk insert in chunks of 1000 — Supabase REST has a payload size cap.
-    inserted = _bulk_insert("stock_raw_prices", rows, chunk=1000)
+    # Conflict target = the (ticker, ts, source) unique constraint from 0001.
+    inserted = _bulk_insert("stock_raw_prices", rows, chunk=1000,
+                            on_conflict="ticker,ts,source")
     print(f"[prices] DONE — {n_with_data}/{len(tickers)} tickers had data, "
           f"{len(rows)} rows submitted, {inserted} new (dups ignored)")
     return n_with_data, inserted
@@ -270,11 +272,17 @@ def _safe_int(v) -> int | None:
     return int(v)
 
 
-def _bulk_insert(table: str, rows: list[dict], chunk: int = 500) -> int:
-    """POST in chunks to avoid Supabase REST payload limit. Returns total submitted
-    (Supabase doesn't tell us how many were skipped as duplicates with ignore-duplicates)."""
+def _bulk_insert(table: str, rows: list[dict], chunk: int = 500,
+                 on_conflict: str | None = None) -> int:
+    """POST in chunks. `on_conflict` targets a non-PK unique constraint for
+    Prefer: resolution=ignore-duplicates — required for partial unique indexes
+    like stock_normalized_events.dedupe_key (PostgREST otherwise tries the PK
+    and falls through to a 409). Returns total submitted (Supabase doesn't
+    report how many of those were skipped as duplicates)."""
     total = 0
     url = f"{SUPABASE_URL}/rest/v1/{table}"
+    if on_conflict:
+        url += f"?on_conflict={on_conflict}"
     for i in range(0, len(rows), chunk):
         batch = rows[i:i+chunk]
         r = requests.post(url, headers=HEADERS_SB, json=batch, timeout=60)

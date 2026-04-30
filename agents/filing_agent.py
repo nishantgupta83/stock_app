@@ -216,7 +216,10 @@ def emit_normalized_events(filings: list[dict], ticker: str) -> int:
         })
     if not payload:
         return 0
-    url = f"{SUPABASE_URL}/rest/v1/stock_normalized_events"
+    # on_conflict targets the partial unique index on dedupe_key (added in 0004).
+    # Without this, PostgREST defaults to PK conflict resolution and the
+    # ignore-duplicates Prefer header silently fails to suppress 409s.
+    url = f"{SUPABASE_URL}/rest/v1/stock_normalized_events?on_conflict=dedupe_key"
     r = requests.post(url, headers=HEADERS_SB, json=payload, timeout=30)
     if r.status_code not in (200, 201, 204):
         print(f"  events insert {r.status_code}: {r.text}", file=sys.stderr)
