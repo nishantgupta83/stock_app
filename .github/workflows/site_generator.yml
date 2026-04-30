@@ -61,4 +61,4 @@ jobs:
           FTP_PATH: ${{ secrets.HOSTINGER_FTP_PATH }}
         run: |
           sudo apt-get install -q -y lftp
-          lftp -c "set ftp:ssl-allow no; set net:timeout 30; open -u $FTP_USER,$FTP_PASS ftp://$FTP_HOST; mirror -R --delete --verbose dist/ $FTP_PATH"
+          lftp -e "set ftp:ssl-allow no; set net:timeout 30; set net:max-retries 3; open ftp://$FTP_HOST; user $FTP_USER $FTP_PASS; mirror -R --delete dist/ $FTP_PATH; quit"
