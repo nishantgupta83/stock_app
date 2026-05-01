@@ -11,6 +11,8 @@
   --amber: #ffbf00;
   --sage: #8db580;
   --sky: #4ec5e8;
+  --orange: #e89c5a;
+  --purple: #9a7fe8;
 }
 * { box-sizing: border-box; }
 body {
@@ -104,6 +106,7 @@ td.center { text-align: center; }
 .tag.WATCH       { background: rgba(46,196,182,0.15); color: var(--teal); }
 .tag.RESEARCH    { background: rgba(255,191,0,0.15);  color: var(--amber); }
 .tag.AVOID_CHASE { background: rgba(255,107,107,0.15); color: var(--coral); }
+.tag.CHASE_RISK  { background: rgba(255,107,107,0.15); color: var(--coral); }
 .tag.suppressed  { background: var(--panel-2); color: var(--muted); }
 .tag.candidate   { background: rgba(78,197,232,0.15); color: var(--sky); }
 .tag.sent        { background: rgba(46,196,182,0.15); color: var(--teal); }
@@ -112,7 +115,12 @@ td.center { text-align: center; }
 .tag.agent-truth_social { background: rgba(255,191,0,0.15); color: var(--amber); }
 .tag.agent-thesis       { background: rgba(46,196,182,0.15); color: var(--teal); }
 .tag.agent-news         { background: rgba(141,181,128,0.15); color: var(--sage); }
+.tag.agent-earnings     { background: rgba(232,156,90,0.15); color: var(--orange); }
 .tag.agent-flows        { background: rgba(255,107,107,0.15); color: var(--coral); }
+.tag.agent-price        { background: rgba(154,127,232,0.15); color: var(--purple); }
+.tag.agent-backtester   { background: rgba(154,127,232,0.15); color: var(--purple); }
+.tag.agent-site_generator { background: rgba(156,156,156,0.15); color: var(--muted); }
+.tag.agent-source_review { background: rgba(156,156,156,0.15); color: var(--muted); }
 
 .filters {
   background: var(--panel);

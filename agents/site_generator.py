@@ -1,15 +1,15 @@
 """
 Static site generator.
 
-Pulls data from Supabase, renders 5 HTML pages + CSS via Jinja2 into dist/.
-The dist/ branch is then committed by the workflow for user FTP upload.
+Pulls data from Supabase, renders static HTML pages + CSS via Jinja2 into dist/.
+The workflow deploys dist/ to Hostinger by FTPS.
 
 Run via .github/workflows/site_generator.yml on */15 cron.
 """
 from __future__ import annotations
 
-import json
 import os
+import re
 import shutil
 import sys
 from collections import Counter, defaultdict
@@ -39,7 +39,10 @@ HEADERS_SB = {
 }
 
 # Known agent inventory — drives the agents tab even if agent has no signals yet
-KNOWN_AGENTS = ["filing", "truth_social", "thesis", "telegram_dispatcher", "news", "flows", "price"]
+KNOWN_AGENTS = [
+    "filing", "news", "truth_social", "thesis", "earnings", "price",
+    "backtester", "site_generator", "source_review", "telegram_dispatcher",
+]
 
 # Maps short display name → job_runs agent string (fixes last_seen showing "—")
 _JOB_NAME = {
@@ -47,7 +50,10 @@ _JOB_NAME = {
     "truth_social":        "truth_social_agent",
     "thesis":              "thesis_agent",
     "news":                "news_agent",
+    "earnings":            "earnings_agent",
     "price":               "price_agent",
+    "backtester":          "backtester",
+    "source_review":       "source_review_agent",
     "telegram_dispatcher": "telegram_dispatcher",
     "flows":               "flows_agent",
     "site_generator":      "site_generator",
@@ -60,6 +66,78 @@ def sb_get(path: str, params: dict | None = None) -> list[dict]:
         print(f"  SB {path} {r.status_code}: {r.text[:200]}", file=sys.stderr)
         return []
     return r.json()
+
+
+_SENSITIVE_RE = re.compile(
+    r"(eyJ[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+)"
+    r"|((?:apikey|authorization|bearer|token|password|passwd|secret|service_key)"
+    r"\s*[:=]\s*)[^\s,;'\"]+",
+    re.I,
+)
+
+
+def redact_sensitive(value: object) -> str:
+    """Bound debug text before it is published to the static site."""
+    text = "" if value is None else str(value)
+    text = _SENSITIVE_RE.sub(lambda m: "[REDACTED]" if m.group(1) else f"{m.group(2)}[REDACTED]", text)
+    return text[:500]
+
+
+def public_event(row: dict) -> dict:
+    """Return a payload-minimized event safe for the public static dashboard."""
+    payload = row.get("payload") or {}
+    et = row.get("event_type") or ""
+    allowed: dict = {}
+    if et == "news_article":
+        allowed = {
+            "headline": payload.get("headline"),
+            "url": payload.get("url"),
+            "source": payload.get("source"),
+            "direction_prior": payload.get("direction_prior"),
+        }
+    elif et == "truth_social_post":
+        allowed = {
+            "rule_label": payload.get("rule_label"),
+            "direction_prior": payload.get("direction_prior"),
+            "post_excerpt": payload.get("post_excerpt"),
+            "url": payload.get("url"),
+        }
+    elif et == "8k_material_event":
+        allowed = {
+            "form_type": payload.get("form_type"),
+            "primary_doc_url": payload.get("primary_doc_url"),
+            "primary_doc_desc": payload.get("primary_doc_desc"),
+            "8k_items": payload.get("8k_items"),
+        }
+    elif et.startswith("filing_"):
+        allowed = {
+            "form_type": payload.get("form_type"),
+            "primary_doc_url": payload.get("primary_doc_url"),
+            "primary_doc_desc": payload.get("primary_doc_desc"),
+            "matched_keyword": payload.get("matched_keyword"),
+            "direction_prior": payload.get("direction_prior"),
+        }
+    elif et == "earnings_release":
+        allowed = {
+            "actual_eps": payload.get("actual_eps"),
+            "estimated_eps": payload.get("estimated_eps"),
+            "surprise_pct": payload.get("surprise_pct"),
+        }
+    elif et == "momentum":
+        allowed = {
+            "ticker_return_pct": payload.get("ticker_return_pct"),
+            "spy_return_pct": payload.get("spy_return_pct"),
+            "rel_strength_pct": payload.get("rel_strength_pct"),
+            "lookback_days": payload.get("lookback_days"),
+        }
+    else:
+        allowed = {
+            "rule_label": payload.get("rule_label"),
+            "direction_prior": payload.get("direction_prior"),
+        }
+    clean = {k: redact_sensitive(v) if isinstance(v, str) else v
+             for k, v in allowed.items() if v is not None}
+    return {**row, "payload": clean}
 
 
 # ============================================================
@@ -79,15 +157,25 @@ def fetch_signals(limit: int = 500) -> list[dict]:
         r["score"] = float(r.get("score") or 0)
         r["status_v2"] = r.get("status_v2") or "candidate"
         r["action"] = r.get("action") or "RESEARCH"
+        if isinstance(wt, dict) and wt.get("display_action"):
+            r["display_action"] = wt["display_action"]
+        else:
+            r["display_action"] = r["action"]
+        bd = r.get("score_breakdown") or {}
+        if isinstance(bd, dict) and isinstance(bd.get("items"), list):
+            for item in bd["items"]:
+                if isinstance(item, dict) and item.get("detail"):
+                    item["detail"] = redact_sensitive(item["detail"])
     return rows
 
 
 def fetch_recent_events(limit: int = 200) -> list[dict]:
-    return sb_get("stock_normalized_events", {
+    rows = sb_get("stock_normalized_events", {
         "select": "id,ticker,event_type,event_subtype,event_at,severity,payload",
         "order":  "event_at.desc",
         "limit":  str(limit),
     })
+    return [public_event(r) for r in rows]
 
 
 def fetch_agent_freshness() -> list[dict]:
@@ -95,11 +183,14 @@ def fetch_agent_freshness() -> list[dict]:
 
 
 def fetch_recent_failures(limit: int = 10) -> list[dict]:
-    return sb_get("stock_dead_letter_events", {
+    rows = sb_get("stock_dead_letter_events", {
         "select": "occurred_at,agent,reason,detail",
         "order":  "occurred_at.desc",
         "limit":  str(limit),
     })
+    for row in rows:
+        row["detail"] = redact_sensitive(row.get("detail"))
+    return rows
 
 
 def fetch_latest_agent_weights() -> dict[str, dict]:
@@ -294,7 +385,7 @@ def fetch_events_for_tickers(tickers: list[str], days: int = 180) -> dict[str, l
     for r in rows:
         ticker = r.get("ticker")
         if ticker in result:
-            result[ticker].append(r)
+            result[ticker].append(public_event(r))
     return result
 
 
@@ -461,6 +552,29 @@ def render_all() -> int:
             if f.is_file():
                 shutil.copy(f, vendor_dst / f.name)
 
+    # .htaccess: Hostinger LiteSpeed defaults to a strict CSP that blocks BOTH
+    # external scripts AND inline <script> blocks. Vendoring chart.js fixes the
+    # first; this header override fixes the second. We restrict to 'self' and
+    # 'unsafe-inline' for scripts (no external CDN trust). connect-src stays
+    # 'self' so Supabase/external POSTs from the browser would be blocked
+    # (we never make any from the rendered HTML — all data is pre-baked).
+    (DIST_DIR / ".htaccess").write_text(
+        "<IfModule mod_headers.c>\n"
+        "    # Override the platform-default Content-Security-Policy. The dashboard\n"
+        "    # is fully pre-rendered and uses inline scripts to bind data to\n"
+        "    # Chart.js; without 'unsafe-inline' those blocks are dropped silently.\n"
+        "    Header always set Content-Security-Policy \"default-src 'self'; "
+        "script-src 'self' 'unsafe-inline'; "
+        "style-src 'self' 'unsafe-inline'; "
+        "img-src 'self' data:; "
+        "font-src 'self'; "
+        "connect-src 'self'; "
+        "frame-ancestors 'self'; "
+        "base-uri 'self'; "
+        "form-action 'self';\"\n"
+        "</IfModule>\n"
+    )
+
     # Dashboard
     (DIST_DIR / "index.html").write_text(env.get_template("index.html.j2").render(
         **common,
@@ -483,7 +597,7 @@ def render_all() -> int:
         **common,
         title="Signals", active="signals",
         distinct_agents=distinct_agents,
-        signals_json=json.dumps(signals, default=str),
+        signals_json=signals,
     ))
 
     # Events
@@ -491,7 +605,7 @@ def render_all() -> int:
         **common,
         title="Events", active="events",
         distinct_types=distinct_types,
-        events_json=json.dumps(events, default=str),
+        events_json=events,
     ))
 
     # Agents
@@ -513,7 +627,7 @@ def render_all() -> int:
     (DIST_DIR / "learning.html").write_text(env.get_template("learning.html.j2").render(
         **common,
         title="Learning", active="learning",
-        weight_history_json=json.dumps(weight_hist, default=str),
+        weight_history_json=weight_hist,
         audit_rows=audit_rows,
         signals_by_id={s["id"]: s for s in signals},
     ))
@@ -539,9 +653,9 @@ def render_all() -> int:
             active="signals",
             root_path="../",
             ticker=ticker,
-            price_json=json.dumps(price_data, default=str),
-            signals_json=json.dumps(ticker_sigs, default=str),
-            events_json=json.dumps(events_for_ticker, default=str),
+            price_json=price_data,
+            signals_json=ticker_sigs,
+            events_json=events_for_ticker,
         ))
     shutil.copy(DIST_DIR / "styles.css", ticker_dir / "styles.css")
 
@@ -563,7 +677,7 @@ def render_all() -> int:
             root_path="../",
             sig=sig,
             related=related,
-            SITE_BASE="https://market.hub4apps.com",
+            SITE_BASE="https://hub4apps.com/stock_app",
         ))
     # Copy styles.css into alert/ so relative links work when opened standalone
     shutil.copy(DIST_DIR / "styles.css", alert_dir / "styles.css")

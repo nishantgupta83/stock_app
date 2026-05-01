@@ -4,7 +4,7 @@ Price agent — EOD learning loop (Phase 5).
 Runs every weekday at 21:30 UTC (4:30 PM ET, after US market close).
 
 Pipeline:
-  1. Fetch live signals (status_v2 IN candidate/sent) whose horizon has expired.
+  1. Fetch live signals (status_v2 IN candidate/sent/suppressed) whose horizon has expired.
   2. Fetch entry price (close on fired_at date) and exit price (close on exit date).
   3. Compute realized return and correctness (direction-aware).
   4. Write stock_forecast_audit row.
@@ -103,7 +103,7 @@ def sb_upsert(path: str, rows: list[dict], on_conflict: str) -> bool:
 def fetch_mature_signals() -> list[dict]:
     """Return live signals whose horizon_days have fully elapsed (entry+horizon <= yesterday)."""
     rows = sb_get("stock_signals", {
-        "status_v2": "in.(candidate,sent)",
+        "status_v2": "in.(candidate,sent,suppressed)",
         "select":    "id,ticker,fired_at,action,direction,horizon_days,score,weight_at_time",
         "order":     "fired_at.asc",
         "limit":     "500",
@@ -179,7 +179,10 @@ def get_close_on_or_after(closes: dict[date, float], target: date) -> Optional[f
 def compute_outcome(signal: dict, closes: dict[date, float]) -> dict | None:
     """
     Returns {entry_price, exit_price, net_return, correct} or None if prices unavailable.
-    correct is direction-aware: AVOID_CHASE (bearish) is correct when price falls.
+    correct is direction-aware:
+      - AVOID_CHASE is bearish and correct when price falls.
+      - CHASE_RISK warns against chasing upside and is correct when no further
+        positive follow-through occurs over the audited horizon.
     """
     entry = get_close_on_or_after(closes, signal["_fired_date"])
     exit_ = get_close_on_or_after(closes, signal["_exit_date"])
@@ -187,9 +190,12 @@ def compute_outcome(signal: dict, closes: dict[date, float]) -> dict | None:
         return None
     net_return = (exit_ - entry) / entry
     action = signal.get("action") or "RESEARCH"
-    # Bearish signals (AVOID_CHASE) are correct when price drops
+    # Bearish signals (AVOID_CHASE) are correct when price drops.
+    # CHASE_RISK is a caution label: correct if the post-alert move is flat/down.
     if action == "AVOID_CHASE":
         correct = net_return < 0
+    elif action == "CHASE_RISK":
+        correct = net_return <= 0
     else:
         correct = net_return > 0
     return {
@@ -331,6 +337,9 @@ def main() -> int:
         audited = already_audited([s["id"] for s in signals])
         pending = [s for s in signals if s["id"] not in audited]
         print(f"  {len(audited)} already audited, {len(pending)} to process")
+        for sig in signals:
+            if sig["id"] in audited:
+                close_signal(sig["id"])
 
         results = []
         for sig in pending:

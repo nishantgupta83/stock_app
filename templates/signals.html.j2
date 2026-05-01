@@ -15,6 +15,7 @@
     <option>WATCH</option>
     <option>RESEARCH</option>
     <option>AVOID_CHASE</option>
+    <option>CHASE_RISK</option>
   </select>
   <label>Status</label>
   <select id="f-status" onchange="render()">
@@ -48,7 +49,7 @@
 </table>
 <div id="empty" class="empty" style="display:none">No signals match the current filter.</div>
 
-<script id="data" type="application/json">{{ signals_json|safe }}</script>
+<script id="data" type="application/json">{{ signals_json|tojson }}</script>
 <script>
 // HTML-escape any string that could contain user-controlled content
 // (ticker fields, evidence summaries, agent names, status values).
@@ -71,7 +72,8 @@ function render() {
   let n = 0;
   for (const r of DATA) {
     if (fA && !(r.agents || []).includes(fA)) continue;
-    if (fAct && r.action !== fAct) continue;
+    const action = r.display_action || r.action;
+    if (fAct && action !== fAct) continue;
     if (fS && r.status_v2 !== fS) continue;
     if (r.score < fSc) continue;
     if (fT && r.ticker.toUpperCase().indexOf(fT) === -1) continue;
@@ -80,7 +82,7 @@ function render() {
     tr.innerHTML =
       `<td>${esc((r.fired_at || '').substring(0,16))}</td>` +
       `<td><strong>${esc(r.ticker)}</strong></td>` +
-      `<td><span class="tag ${esc(r.action)}">${esc(r.action)}</span></td>` +
+      `<td><span class="tag ${esc(action)}">${esc(action)}</span></td>` +
       `<td class="num">${Math.round(r.score)}</td>` +
       `<td>${esc(r.evidence_summary)}</td>` +
       `<td>${(r.agents || []).map(a => `<span class="tag agent-${esc(a)}">${esc(a)}</span>`).join(' ')}</td>` +

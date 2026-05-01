@@ -200,7 +200,7 @@ def emit_truth_events(posts: list[dict]) -> int:
     if not rows:
         return 0
     r = requests.post(
-        f"{SUPABASE_URL}/rest/v1/stock_normalized_events",
+        f"{SUPABASE_URL}/rest/v1/stock_normalized_events?on_conflict=dedupe_key",
         headers=HEADERS_SB, json=rows, timeout=20,
     )
     if r.status_code not in (200, 201, 204):

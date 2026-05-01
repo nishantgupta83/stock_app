@@ -1,10 +1,11 @@
 {% extends "_layout.html.j2" %}
 {% block content %}
-{% set action_class = sig.action if sig.action else "RESEARCH" %}
+{% set action_label = sig.display_action or sig.action or "RESEARCH" %}
+{% set action_class = action_label %}
 <div style="display:flex;align-items:center;gap:12px;margin-bottom:16px">
-  <span style="font-size:2rem">{% if sig.action=='WATCH' %}🟢{% elif sig.action=='AVOID_CHASE' %}🔴{% else %}🟡{% endif %}</span>
+  <span style="font-size:2rem">{% if action_label=='WATCH' %}🟢{% elif action_label in ['AVOID_CHASE','CHASE_RISK'] %}🔴{% else %}🟡{% endif %}</span>
   <div>
-    <h2 style="margin:0">{{ sig.ticker }} &middot; <span class="tag {{ action_class }}">{{ sig.action }}</span></h2>
+    <h2 style="margin:0">{{ sig.ticker }} &middot; <span class="tag {{ action_class }}">{{ action_label }}</span></h2>
     <div style="color:var(--muted);font-size:12px">{{ sig.fired_at[:19]|replace("T"," ") }} UTC &middot; score {{ sig.score|round|int }}/100 &middot; {{ sig.model_version }}</div>
   </div>
 </div>
@@ -22,8 +23,8 @@
   </div>
   <div class="card">
     <div class="label">Horizon</div>
-    <div class="value">{{ "1d" if sig.horizon_days == 1 else "15m" }}</div>
-    <div class="sub">default entry next open</div>
+    <div class="value">{{ sig.horizon_days or 1 }}d</div>
+    <div class="sub">daily-close audit horizon</div>
   </div>
   <div class="card">
     <div class="label">Direction</div>
@@ -36,7 +37,7 @@
 <p style="font-size:14px">{{ sig.evidence_summary }}</p>
 
 <h3>Score breakdown</h3>
-{% set bd = sig.score_breakdown.items if sig.score_breakdown else [] %}
+{% set bd = sig.score_breakdown.get("items", []) if sig.score_breakdown else [] %}
 {% if bd %}
 <table>
   <thead>

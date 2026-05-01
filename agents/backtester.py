@@ -56,10 +56,10 @@ from thesis_agent import (   # type: ignore
 
 
 # ============================================================
-# Extended scoring rubric — earnings + momentum
-# These rules don't exist in live thesis_agent yet (no earnings/momentum
-# agent shipped). Backtester scores them here so we can decide whether
-# to wire them up live based on results. Documented as v1.1-extension.
+# Historical scoring notes — earnings + momentum
+# Live thesis_agent now scores earnings and momentum directly. Backtester keeps
+# this helper for reference, but score_evidence() below intentionally delegates
+# to the live scorer so replay and production cannot drift.
 # Hedge fund pattern reference:
 #   - Bernard & Thomas (1989) on PEAD
 #   - Fama-French (1992) on momentum
@@ -116,10 +116,8 @@ def _score_earnings_momentum(events: list[dict]) -> tuple[float, list[dict]]:
 
 
 def score_evidence(events: list[dict]) -> tuple[float, list[dict]]:
-    """Combined scorer: live filings/truth rubric + extended earnings/momentum."""
-    s1, b1 = _score_filings_truth(events)
-    s2, b2 = _score_earnings_momentum(events)
-    return s1 + s2, b1 + b2
+    """Use the live scorer so backtest and production stay aligned."""
+    return _score_filings_truth(events)
 
 SUPABASE_URL = os.environ["SUPABASE_URL"].rstrip("/")
 SUPABASE_KEY = os.environ["SUPABASE_SERVICE_KEY"]
@@ -372,7 +370,12 @@ def realized_outcome(ticker: str, signal_time: datetime, horizon_days: int = 1,
     # Subtract slippage on both sides (entry buy, exit sell)
     net_return = raw_return - 2 * (SLIPPAGE_BPS / 10000)
     # Direction-aware correctness — must match price_agent.compute_outcome()
-    correct = (net_return < 0) if action == "AVOID_CHASE" else (net_return > 0)
+    if action == "AVOID_CHASE":
+        correct = net_return < 0
+    elif action == "CHASE_RISK":
+        correct = net_return <= 0
+    else:
+        correct = net_return > 0
     return {
         "entry_date":   entry_date.isoformat(),
         "entry_px":     entry_px,
@@ -587,13 +590,16 @@ def cluster_events_by_window(events: list[dict], window_min: int = 2880) -> dict
 def replay_day(day_start: datetime, day_end: datetime, all_events: list[dict],
                agent_state: dict[str, dict]) -> list[dict]:
     """Replay one calendar day. Returns list of signals fired with realized outcomes."""
-    # Take only events in this day's window
-    day_events = [e for e in all_events
-                  if day_start.isoformat() <= e["event_at"] < day_end.isoformat()]
-    if not day_events:
+    # Include the prior cluster window so an after-market earnings event and the
+    # next-day 8-K can join naturally. Fire only clusters whose last event lands
+    # inside this day, which avoids look-ahead and duplicate firing.
+    context_start = day_start - timedelta(minutes=2880)
+    context_events = [e for e in all_events
+                      if context_start.isoformat() <= e["event_at"] < day_end.isoformat()]
+    if not context_events:
         return []
 
-    clusters = cluster_events_by_window(day_events)
+    clusters = cluster_events_by_window(context_events)
     fired = []
 
     for (ticker, bucket_iso), ev_list in clusters.items():
@@ -622,6 +628,8 @@ def replay_day(day_start: datetime, day_end: datetime, all_events: list[dict],
                 for e in ev_list
             )
         except Exception:
+            continue
+        if not (day_start <= sig_time < day_end):
             continue
         outcome = realized_outcome(ticker, sig_time, horizon_days=1, action=action)
         if outcome is None:

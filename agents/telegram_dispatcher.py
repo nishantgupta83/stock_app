@@ -27,7 +27,7 @@ HEADERS_SB = {
 }
 
 EMOJI = {"WATCH": "🟢", "RESEARCH": "🟡", "AVOID_CHASE": "🔴"}
-SITE_BASE = "https://market.hub4apps.com"   # Phase 2 will populate; harmless if 404 for now
+SITE_BASE = "https://hub4apps.com/stock_app"
 
 
 def fetch_signal(signal_id: int) -> dict | None:

@@ -8,7 +8,7 @@ and learns from outcomes via per-agent EMA weights.
 **Design doc:** [`docs/market-intelligence-platform-design.md`](docs/market-intelligence-platform-design.md)
 **Phase 0 setup:** [`docs/PHASE0_CHECKLIST.md`](docs/PHASE0_CHECKLIST.md)
 
-> **Paper-trading vocabulary only.** The bot says **WATCH / RESEARCH / AVOID_CHASE** — never
+> **Paper-trading vocabulary only.** The bot says **WATCH / RESEARCH / AVOID_CHASE / CHASE_RISK** — never
 > "BUY" or "SELL" — until 60 days of paper trading hits the §17.6 graduation thresholds.
 > Educational use; not financial advice.
 
@@ -22,18 +22,18 @@ and learns from outcomes via per-agent EMA weights.
 | Static frontend | Hostinger shared hosting (FTPS auto-deploy) | already paid |
 | Domain | hub4apps.com | already paid |
 
-## Pipeline (8 agents, all on GitHub Actions cron)
+## Pipeline (9 GitHub Actions jobs)
 
 | Agent | Schedule | What it does |
 |---|---|---|
 | `filing_agent`        | `*/5 * * * *`     | EDGAR → 8-K (with item parsing), 10-K/Q, Form 4, 13D/G, S-3 → `stock_raw_filings` + `stock_normalized_events` |
 | `news_agent`          | `*/5 * * * *`     | CNBC / MarketWatch / AP RSS → ticker mention + sentiment classifier → `stock_normalized_events` |
 | `truth_social_agent`  | `*/5 * * * *`     | Trump Truth Social RSS → keyword router → `stock_normalized_events` |
-| `thesis_agent`        | `*/5 * * * *`     | Cluster rule (≥2 distinct agents within 5-day window) → 100-pt weighted score → action → Telegram dispatch. Reads live `stock_agent_weights` to amplify reliable agents and dampen chronically-wrong ones. Includes chase-risk downgrade if price already moved >5% since cluster start. |
+| `thesis_agent`        | `*/5 * * * *`     | Cluster rule (≥2 distinct agents within 5-minute bucket, with narrow high-severity exceptions) → 100-pt weighted score → action → Telegram dispatch. Reads live `stock_agent_weights` to amplify reliable agents and dampen chronically-wrong ones. Includes chase-risk downgrade if price already moved >5% since cluster start. |
 | `earnings_agent`      | weekly Sun 12:00 UTC | yfinance earnings dates per stock → upcoming + recently-released into `stock_normalized_events` |
 | `price_agent`         | weekday 21:30 UTC | yfinance EOD closes → outcome audit → EMA weight update per agent → digest |
 | `backtester`          | manual / weekly   | 180-day replay (filings + earnings + momentum) → Sharpe, precision, calibration metrics |
-| `site_generator`      | `*/15 * * * *`    | Supabase → Jinja2 HTML → `dist` branch + FTPS auto-deploy to Hostinger |
+| `site_generator`      | `*/15 * * * *`    | Supabase → Jinja2 HTML → FTPS auto-deploy to Hostinger |
 | `source_review_agent` | `0 13 1 * *`      | Monthly health check on every external feed → Telegram digest |
 
 ### One-time helper
@@ -64,7 +64,7 @@ table) and per-alert detail pages under `/alert/{id}.html` for the link in every
 ├── agents/                     One Python file per agent
 ├── .github/workflows/          One YAML per agent (cron-scheduled)
 ├── templates/                  Jinja2 for static-site generator
-└── dist/                       Generated HTML (also published to dist branch)
+└── dist/                       Generated HTML (deployed by FTPS; not committed)
 ```
 
 ## SQL migrations (run in order in Supabase SQL Editor)
@@ -75,6 +75,7 @@ table) and per-alert detail pages under `/alert/{id}.html` for the link in every
 - `sql/0004_ops_tables.sql`
 - `sql/0005_extend_status_and_data_sources.sql` — `status_v2='backtest'` + data sources registry
 - `sql/0006_add_closed_status.sql` — `status_v2='closed'` for matured signals (price_agent loop)
+- `sql/0007_allow_chase_risk.sql` — `action='CHASE_RISK'` plus latest signal status constraint
 
 ## GitHub Actions secrets
 
@@ -92,10 +93,9 @@ table) and per-alert detail pages under `/alert/{id}.html` for the link in every
 
 Pinned in `.github/workflows/site_generator.yml`:
 
-- **server:** `srv1847.hstgr.io` (the actual TLS-cert hostname for our shared host —
-  using the bare IP fails SSL verification because the cert is for `*.hstgr.io`)
+- **server:** `ftp.hub4apps.com`
 - **port:** `21` with `protocol: ftps` (Hostinger requires explicit TLS; plain FTP returns 530)
-- **server-dir:** `/public_html/stock_app/` (absolute path within the FTP user's chroot)
+- **server-dir:** `./` because the `u832160935.stock_app` FTP user is chrooted directly at `/public_html/stock_app/`
 - **dangerous-clean-slate:** `false` (never wipe the deploy target)
 
 ### Choosing an FTP user
@@ -104,17 +104,18 @@ The deploy needs **write permission to `/public_html/stock_app/`**. Two options:
 
 | Option | User | Pros | Cons |
 |---|---|---|---|
-| Sub-account | `u832160935.support` | Least-privilege, scoped chroot | Hostinger creates the chroot at the user's home, **not** inside `public_html` even when you pick that path in the UI. Requires the served folder to be set to `0775` so the sub-account can traverse and write into it. |
+| Sub-account | `u832160935.stock_app` | Least-privilege, scoped chroot directly at the served folder | Must keep `server-dir: ./` because this user already lands inside `/public_html/stock_app/`. |
 | Main account | `u832160935` | Always has write access everywhere | Wider blast radius if the deploy ever misbehaves; some Hostinger plans disable FTPS on the main account |
 
-We currently run on the sub-account with `0775` on `/public_html/stock_app/`.
+We currently run on the scoped `u832160935.stock_app` sub-account.
 
 ### CSP gotcha — vendor JS locally
 
 Hostinger LiteSpeed sends a default `Content-Security-Policy: ... script-src 'self'` header.
-External CDNs (jsdelivr, cdnjs) are blocked, so the dashboard's Chart.js and the annotation
-plugin live in `templates/vendor/` and ship to `dist/vendor/` on every deploy. Templates
-reference them via relative paths (`vendor/chart.umd.min.js`).
+External CDNs and inline chart-binding scripts are blocked unless overridden, so the dashboard
+vendors Chart.js in `templates/vendor/` and writes a generated `.htaccess` that restricts assets
+to `self` while allowing the current inline scripts. JSON embedded in pages is emitted with
+Jinja `tojson`, not raw `|safe`.
 
 ## Bootstrap order (cold start)
 

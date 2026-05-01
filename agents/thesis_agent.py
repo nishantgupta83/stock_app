@@ -13,7 +13,8 @@ v1 active rubric rows:
   +10 new SC 13G
   +15 Truth Social mapping
   +0..+20 filing severity uplift  (severity 1 → +0, 4 → +20)
-  -10 staleness (event > 15 min old at scoring time)
+  +5..+40 earnings beat/miss magnitude (direction handled separately)
+  -10 staleness for short-lived social/news events
 
 Cluster rule:
   Need ≥2 distinct source agents within a 5-min window.
@@ -322,14 +323,50 @@ def score_evidence(events: list[dict],
                 add("news_bearish", 12, e["id"], e.get("event_subtype") or "")
             else:
                 add("news_neutral", 5, e["id"], e.get("event_subtype") or "")
-        # S-3 shelf registration = dilution headwind — score negatively
+        # S-3 shelf registration = dilution headwind. Score measures evidence
+        # strength; signal_direction() decides whether that evidence is bearish.
         elif et in ("filing_s-3", "filing_s-3/a"):
-            add("s3_dilution_risk", -8, e["id"])
+            add("s3_dilution_risk", 12, e["id"])
         # 8-K-flavored dilution (PIPE, ATM, warrant issuance, registered direct) —
         # filing_agent.looks_like_dilution emits this alongside the primary 8-K.
         # Symmetric magnitude so AVOID_CHASE clusters can reach threshold.
         elif et == "filing_dilution":
             add("dilution_8k", 12, e["id"], (e.get("payload") or {}).get("matched_keyword", ""))
+        # Earnings releases are live events now. Beats and misses both add
+        # evidence strength; direction is computed separately below.
+        elif et == "earnings_release":
+            sub = e.get("event_subtype") or "scheduled"
+            payload = e.get("payload") or {}
+            surprise_pct = payload.get("surprise_pct")
+            try:
+                surprise_val = float(surprise_pct) if surprise_pct is not None else None
+            except (TypeError, ValueError):
+                surprise_val = None
+            surprise = abs(surprise_val) if surprise_val is not None else 0.0
+            if sub == "beat":
+                pts = 50 if surprise >= 10 else 35 if surprise >= 3 else 15
+                add("earnings_beat", pts, e["id"], f"+{surprise_val:.1f}% vs est" if surprise_val is not None else "")
+            elif sub == "miss":
+                pts = 50 if surprise >= 10 else 35 if surprise >= 3 else 15
+                add("earnings_miss", pts, e["id"], f"{surprise_val:.1f}% vs est" if surprise_val is not None else "")
+            elif sub == "inline":
+                add("earnings_inline", 5, e["id"])
+            else:
+                add("earnings_scheduled", 5, e["id"])
+        elif et == "momentum":
+            payload = e.get("payload") or {}
+            try:
+                rs = float(payload.get("rel_strength_pct") or 0)
+            except (TypeError, ValueError):
+                rs = 0.0
+            if rs > 10:
+                add("momentum_strong_long", 25, e["id"], f"+{rs:.1f}% vs SPY 20d")
+            elif rs > 5:
+                add("momentum_moderate_long", 15, e["id"], f"+{rs:.1f}% vs SPY 20d")
+            elif rs < -10:
+                add("momentum_strong_short", 20, e["id"], f"{rs:.1f}% vs SPY 20d")
+            elif rs < -5:
+                add("momentum_moderate_short", 10, e["id"], f"{rs:.1f}% vs SPY 20d")
         # Other filings carry only the severity component
         elif et.startswith("filing_") and sev > 0:
             add(f"filing_other_sev{sev}", min(15, sev * 4), e["id"])
@@ -388,6 +425,8 @@ def cluster_passes(events: list[dict]) -> tuple[bool, str]:
             return True, "exception:sc_13d"
         if et == "8k_material_event" and sev >= 3:
             return True, "exception:8k_sev3"
+        if et == "earnings_release" and sev >= 4:
+            return True, "exception:earnings_sev4"
     return False, "single_source_no_exception"
 
 
@@ -407,6 +446,17 @@ def signal_direction(events: list[dict]) -> str:
         elif et == "news_article":
             if d == "short": bear += 1
             elif d == "long": bull += 1
+        elif et == "earnings_release":
+            sub = e.get("event_subtype") or ""
+            if sub == "miss": bear += 1
+            elif sub == "beat": bull += 1
+        elif et == "momentum":
+            try:
+                rs = float((e.get("payload") or {}).get("rel_strength_pct") or 0)
+            except (TypeError, ValueError):
+                rs = 0.0
+            if rs < -5: bear += 1
+            elif rs > 5: bull += 1
     if bear > bull:  return "bearish"
     if bull > 0:     return "bullish"
     return "neutral"
@@ -421,9 +471,8 @@ def action_for(score: float, direction: str) -> str:
 
 
 def horizon_for(events: list[dict]) -> str:
-    # Filings → 1d default. Truth Social → 15m. Position changes → 5d.
-    if any(e["event_type"] == "truth_social_post" for e in events):
-        return "15m"
+    # Daily closes are the only audited live price source in v1, so every live
+    # signal uses a 1d paper-trading horizon until intraday prices are added.
     if any(e["event_type"].startswith("filing_") or e["event_type"] == "8k_material_event" for e in events):
         return "1d"
     return "1d"
@@ -443,6 +492,10 @@ def evidence_summary(events: list[dict]) -> str:
         parts.append("Trump post")
     if by_type.get("news_article"):
         parts.append(f"news ({by_type['news_article']})")
+    if by_type.get("earnings_release"):
+        parts.append("earnings")
+    if by_type.get("momentum"):
+        parts.append("momentum")
     if by_type.get("filing_4"):
         parts.append(f"{by_type['filing_4']}× Form 4")
     for f in ("filing_13d", "filing_13g"):
@@ -458,7 +511,8 @@ def evidence_summary(events: list[dict]) -> str:
 
 def write_signal(ticker: str, score: float, action: str, direction: str,
                  breakdown: list[dict], events: list[dict], dedupe_key: str,
-                 agent_weights: dict[str, float] | None = None) -> int | None:
+                 agent_weights: dict[str, float] | None = None,
+                 fallback_action: str | None = None) -> int | None:
     weights = agent_weights or {}
     cluster_agents = list({source_agent_for(e) for e in events})
     payload = {
@@ -489,6 +543,26 @@ def write_signal(ticker: str, score: float, action: str, direction: str,
         f"{SUPABASE_URL}/rest/v1/stock_signals",
         headers=headers, json=payload, timeout=15,
     )
+    if r.status_code not in (200, 201) or not r.json():
+        if action == "CHASE_RISK" and fallback_action in ("WATCH", "RESEARCH"):
+            payload["action"] = fallback_action
+            wt = payload["weight_at_time"]
+            if isinstance(wt, dict):
+                wt["display_action"] = "CHASE_RISK"
+                wt["schema_fallback_action"] = fallback_action
+            r = requests.post(
+                f"{SUPABASE_URL}/rest/v1/stock_signals",
+                headers=headers, json=payload, timeout=15,
+            )
+            if r.status_code in (200, 201) and r.json():
+                print("  CHASE_RISK action rejected by DB; stored fallback action until sql/0007 is applied",
+                      file=sys.stderr)
+            else:
+                print(f"  signal insert {r.status_code}: {r.text}", file=sys.stderr)
+                return None
+        else:
+            print(f"  signal insert {r.status_code}: {r.text}", file=sys.stderr)
+            return None
     if r.status_code not in (200, 201) or not r.json():
         print(f"  signal insert {r.status_code}: {r.text}", file=sys.stderr)
         return None
@@ -628,6 +702,7 @@ def main() -> int:
                 breakdown=cand["breakdown"], events=cand["events"],
                 dedupe_key=cand["dedupe_key"],
                 agent_weights=agent_weights,
+                fallback_action=cand.get("original_action"),
             )
             if sig_id is None:
                 continue

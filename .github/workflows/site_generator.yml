@@ -1,10 +1,9 @@
 name: site_generator
 
 # Generates static HTML dashboard from Supabase data.
-# Commits to dist/ branch AND auto-deploys to Hostinger via FTP.
-# Requires secrets: HOSTINGER_FTP_HOST, HOSTINGER_FTP_USER, HOSTINGER_FTP_PASS, HOSTINGER_FTP_PATH
-# Safety: only uses repo secrets and GITHUB_RUN_NUMBER (always numeric) — no
-# untrusted PR/issue inputs are interpolated into shell.
+# Auto-deploys generated dist/ to Hostinger via FTPS.
+# Requires secrets: HOSTINGER_FTP_USER, HOSTINGER_FTP_PASS
+# Safety: no untrusted PR/issue inputs are interpolated into shell.
 
 on:
   schedule:
@@ -20,7 +19,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 8
     permissions:
-      contents: write
+      contents: read
     steps:
       - uses: actions/checkout@v4
 
@@ -37,21 +36,6 @@ jobs:
           SUPABASE_URL:         ${{ secrets.SUPABASE_URL }}
           SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
         run: python agents/site_generator.py
-
-      - name: Publish dist/ to dist branch
-        env:
-          GH_TOKEN:   ${{ secrets.GITHUB_TOKEN }}
-          RUN_NUMBER: ${{ github.run_number }}
-          REPO:       ${{ github.repository }}
-        run: |
-          cd dist
-          git init -q
-          git checkout -q -b dist
-          git config user.name  "github-actions[bot]"
-          git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add .
-          git commit -q -m "site: $RUN_NUMBER" --allow-empty
-          git push -q -f "https://x-access-token:$GH_TOKEN@github.com/$REPO.git" dist:dist
 
       - name: Deploy to Hostinger via FTPS
         uses: SamKirkland/FTP-Deploy-Action@v4.3.5

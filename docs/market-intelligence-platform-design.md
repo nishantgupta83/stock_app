@@ -5,11 +5,11 @@ Date: 2026-04-26
 Owner: Nishant
 Supersedes: v1 (paid-stack assumptions: Supabase Pro, Polygon, Next.js on Hostinger Node)
 
-> **Current state (2026-04-30):** 8 cron agents + a one-time backfill helper, all live.
+> **Current state (2026-05-01):** 9 GitHub Actions jobs + a one-time backfill helper, all live.
 > Signal vocabulary: WATCH / RESEARCH / AVOID_CHASE / CHASE_RISK (the last is a downgrade
 > when price already moved >5% since the cluster's earliest event — recorded but not pushed).
 > Static dashboard auto-deploys to hub4apps.com/stock_app/ via FTPS every 15 min, with
-> Chart.js vendored locally to satisfy Hostinger LiteSpeed's `script-src 'self'` CSP.
+> Chart.js vendored locally and a generated `.htaccess` CSP override for Hostinger LiteSpeed.
 >
 > Learning loop is closed end-to-end: `price_agent` (weekday EOD) audits matured signals
 > against actual prices and writes per-agent EMA weights to `stock_agent_weights`;
@@ -46,7 +46,7 @@ The reliable version of this project is a market-intelligence and decision-suppo
 - a human-in-the-loop decision process via Telegram alerts
 - a learning loop that measures precision, calibration, drawdown, and risk-adjusted return instead of raw directional accuracy
 
-**v2 is constrained to $0 recurring cost.** The product surface is **Telegram push alerts**; the website at `hub4apps.com` is a **static, read-only audit page** that you will publish to Hostinger manually. All compute runs on **GitHub Actions** (public repo = unlimited free minutes). All data lives in **Supabase Free** (500 MB DB).
+**v2 is constrained to $0 recurring cost.** The product surface is **Telegram push alerts**; the website at `hub4apps.com/stock_app/` is a **static, read-only audit page** auto-deployed to Hostinger by FTPS. All compute runs on **GitHub Actions** (public repo = unlimited free minutes). All data lives in **Supabase Free** (500 MB DB).
 
 This system should help you:
 
@@ -153,7 +153,7 @@ A Telegram-first private intelligence assistant that watches market-moving equit
 ### 4.3 Product positioning
 
 - **Primary UI:** Telegram alerts on your phone.
-- **Secondary UI:** Static HTML audit page at `market.hub4apps.com` (manually published).
+- **Secondary UI:** Static HTML audit page at `hub4apps.com/stock_app/` (auto-deployed by FTPS).
 - **Not a public "AI picks" website.**
 
 **The alert payload is the product.** Everything upstream exists to produce a 5-line, lock-screen-actionable message. The website exists only to prove the audit trail.
@@ -187,14 +187,15 @@ V1 should not:
 
 ```
 GitHub Actions (cron schedules)
-  ├─ truth_social_agent  every 1 min (mkt hrs)
-  ├─ filing_agent        every 2 min
-  ├─ news_agent          every 3 min
-  ├─ price_agent         every 5 min (mkt hrs)
+  ├─ filing_agent        every 5 min
+  ├─ news_agent          every 5 min
+  ├─ truth_social_agent  every 5 min
   ├─ thesis_agent        every 5 min
-  ├─ eod_reconcile       16:15 ET daily
-  ├─ weekly_review       Sun 09:00 ET
-  └─ static_site_publish every 15 min
+  ├─ earnings_agent      weekly
+  ├─ price_agent         weekday EOD
+  ├─ backtester          weekly/manual
+  ├─ source_review_agent monthly
+  └─ site_generator      every 15 min
                 │
                 ▼
          Supabase Free
@@ -220,7 +221,7 @@ GitHub Actions (cron schedules)
                          │
                          ▼
                 Static HTML regenerated
-                → user uploads to Hostinger manually
+                → deployed to Hostinger by FTPS
 ```
 
 ### 6.1 Architecture layers
@@ -237,7 +238,7 @@ GitHub Actions (cron schedules)
 
 **F. Telegram dispatcher** — formats payload, applies risk + dedupe + daily-cap gate, posts to user's chat.
 
-**G. Static site generator** — renders `index.html` + per-alert pages from Supabase; user uploads to Hostinger.
+**G. Static site generator** — renders the full dashboard from Supabase and deploys to Hostinger via FTPS.
 
 ## 7. Multi-Agent Design
 
@@ -250,7 +251,7 @@ Maintain the active watchlist; rank symbols by index weight, liquidity, event de
 Watch EDGAR for new filings (8-K, 10-Q, 10-K, Form 4, 13D/G, S-3). Extract events, severity score, key entities/numbers.
 
 ### 7.3 News Agent
-Ingest breaking company and macro news via RSS + Finnhub free. Dedupe syndicated articles, map to symbols, classify catalyst type, estimate novelty.
+Ingest breaking company and macro news via free RSS feeds. Dedupe syndicated articles, map to symbols, classify catalyst type, estimate novelty.
 
 ### 7.4 Price-Action Agent
 Monitor gaps, breakouts, failed breakouts, volatility spikes, relative strength changes. Compare move vs sector and index. Flag dislocations without explanatory news.
@@ -261,7 +262,7 @@ Block low-quality or dangerous setups: no illiquid names, no fraud-investigated 
 ### 7.6 Thesis Agent
 Combine evidence from filings, news, market action, fundamentals, and Truth Social into a single scorecard: thesis summary, bull/bear case, key evidence, invalidation signals, confidence band.
 
-Fires only when ≥1 evidence row appears for a symbol within a 5-min window. This is the **only step that may use an LLM**, and only for summarization — never for the probability itself.
+Fires only when the cluster rule passes: at least two distinct source agents in the window, or a narrow high-severity exception. This step is deterministic in v1; no LLM is used for probability.
 
 ### 7.7 Reconciliation Agent
 Compare forecast vs realized outcome at end of day. Identify false positives, false negatives, late alerts, overconfident predictions. Outputs: calibration report, drift report, retraining candidate set.
@@ -322,12 +323,10 @@ ETFs and mutual funds belong in the pipeline as a **positioning / flow signal**,
 | Source | Free quota | Use |
 |---|---|---|
 | SEC EDGAR | 10 req/sec, requires User-Agent header | Filings (8-K, 10-Q, Form 4, 13D/G) |
-| Finnhub Free | 60 req/min | Real-time quotes, company news |
-| yfinance | unofficial, throttled | Historical bars, fallback prices |
-| RSS (Reuters, CNBC, WSJ headlines, SEC press releases) | unlimited | Headline news |
+| yfinance | unofficial, throttled | Daily bars, earnings dates, backtest prices |
+| RSS (CNBC, MarketWatch, Seeking Alpha market currents) | unlimited | Headline news |
 | trumpstruth.org RSS | unlimited | Trump posts (primary) |
 | truthbrush | gray ToS | Trump posts (fallback) |
-| FRED API | unlimited with free key | Macro series for weekly review |
 
 **Removed from v1:** Polygon Stocks ($29/mo), Alpha Vantage paid tiers, NewsAPI paid. These can return if budget allows, but v2 must stand on its own at $0.
 
@@ -481,37 +480,46 @@ Roles: `admin`, `analyst`, `viewer`. Private by default. Service keys only in Gi
 
 ### 12.1 Deployment target
 
-- Domain: `hub4apps.com`, subdomain `market.hub4apps.com`.
-- Posture: private (basic auth via `.htaccess`) for first 60 days.
+- Domain: `https://hub4apps.com/stock_app/`.
+- Posture: static read-only audit dashboard. Generated pages are sanitized before publish; secrets and raw dead-letter payloads must never be rendered.
 - **Hostinger plan does not support JS/Node.** No Next.js, no React, no SSR.
 
 ### 12.2 Generation
 
-- `static_site_publish` GitHub Action runs every 15 minutes.
+- `site_generator.yml` GitHub Action runs every 15 minutes.
 - Python + Jinja2 templates render:
-  - `index.html` — recent alerts, agent weights, EOD calibration summary
-  - `alert/<id>.html` — full thesis page per alert
-  - `weights.html` — current per-agent accuracy + weights
-  - `journal.html` — paper trade log
-- Output committed to a `dist/` branch in the repo.
+  - `index.html` — recent signals, agent health, pre-signal candidates
+  - `signals.html` — filterable signal table
+  - `events.html` — sanitized normalized event stream
+  - `agents.html` — agent weights and redacted failure log
+  - `backtest.html` — latest replay metrics
+  - `learning.html` — agent-weight timeline and forecast audit
+  - `ticker/<ticker>.html` — 180-day price chart with filing/earnings/news overlays
+  - `alert/<id>.html` — full thesis page per Telegram alert
+- Output is deployed to Hostinger via FTPS. It is no longer force-pushed to a public `dist` branch.
 
 ### 12.3 Auto-refresh
 
-`<meta http-equiv="refresh" content="60">` on `index.html`. No JS needed.
+`<meta http-equiv="refresh" content="900">` on every page via the shared layout.
 
-### 12.4 Manual publish to Hostinger
+### 12.4 Hostinger FTPS publish
 
-1. User pulls latest from `dist/` branch (or downloads ZIP from GitHub).
-2. User uploads `index.html` + `alert/` + `weights.html` + `journal.html` to Hostinger via File Manager or FTP client.
-3. Done. Optional: cron + cURL on user's laptop to automate later.
+`site_generator.yml` deploys `./dist/` with `SamKirkland/FTP-Deploy-Action`.
+
+- Server: `ftp.hub4apps.com`
+- Protocol: explicit FTPS on port `21`
+- Server directory: `./` because the scoped FTP user is chrooted directly at `/public_html/stock_app/`
+- `dangerous-clean-slate: false`
 
 ### 12.5 Pages
 
-- **Dashboard:** top recent alerts, market regime summary, today's key filings/news, latest Trump post.
-- **Alert detail:** full thesis, evidence rows, agent weights at firing time, predicted vs realized once EOD done.
-- **Weights:** per-agent accuracy EMA, current weight, last 30-day trajectory.
-- **Reconciliation:** today's wins/misses, late alerts, overconfident alerts, drift summary.
-- **Journal:** what you did (Bought/Sold/Skipped), what system said, outcome.
+- **Dashboard:** recent signals, agent health, evidence building toward a signal.
+- **Signals:** full filterable signal history.
+- **Events:** sanitized event stream from filings, news, Truth Social, earnings, and momentum.
+- **Agents:** current learned weights, heartbeats, redacted failure log.
+- **Backtest:** latest 180-day replay metrics.
+- **Learning:** agent-weight evolution and live/backtest audit rows.
+- **Ticker pages:** 180-day price with event overlays and "Big Moves" candidate-cause table.
 
 ## 13. Hosting
 
@@ -535,13 +543,14 @@ Do not introduce a paid component until §19 calibration targets are met for 60 
 |---|---|---|
 | `truth_social_agent.yml` | `*/5 * * * *` | Poll Trump posts (RSS) — see note below for sub-5-min option |
 | `filing_agent.yml` | `*/5 * * * *` | EDGAR poll |
-| `news_agent.yml` | `*/5 * * * *` | RSS + Finnhub news |
-| `price_agent.yml` | `*/5 13-21 * * 1-5` UTC (mkt hrs ET) | Quote refresh |
+| `news_agent.yml` | `*/5 * * * *` | CNBC / MarketWatch / AP RSS classifier |
+| `earnings_agent.yml` | `0 12 * * 0` | Refresh upcoming/recent earnings events |
 | `thesis_agent.yml` | `*/5 * * * *` | Join evidence, score, dispatch Telegram |
-| `eod_reconcile.yml` | `15 21 * * 1-5` UTC (16:15 ET) | Score + weight update |
-| `weekly_review.yml` | `0 14 * * 0` UTC (09:00 ET Sun) | Macro regression + retrain |
-| `static_site_publish.yml` | `*/15 * * * *` | Regenerate `dist/` HTML |
-| `retention_cleanup.yml` | `0 5 * * 0` UTC | Archive raw tables >90d |
+| `price_agent.yml` | `30 21 * * 1-5` UTC | EOD close audit + EMA weight update |
+| `backtester.yml` | weekly/manual | 180-day replay + calibration metrics |
+| `site_generator.yml` | `*/15 * * * *` | Regenerate HTML and deploy by FTPS |
+| `source_review_agent.yml` | `0 13 1 * *` | Monthly external-feed health check |
+| `historical_ingest.yml` | manual only | One-time EDGAR/earnings/prices backfill |
 
 **Sub-5-min polling option (Truth Social only):** if 5 minutes proves too slow for tariff/Fed posts, move `truth_social_agent` to a **Supabase scheduled Edge Function** (pg_cron + pg_net), which supports minute-level scheduling on the free tier. Keep the rest on GitHub Actions for simplicity. Phase 1 ships everything on GitHub at `*/5`; the migration to Edge Functions happens only if measured latency on Trump posts is the bottleneck.
 
@@ -549,7 +558,7 @@ Do not introduce a paid component until §19 calibration targets are met for 60 
 
 Constraints:
 - Keep each workflow short and idempotent.
-- Store all secrets (Supabase service key, Telegram bot token, Finnhub key, FRED key) as GitHub Actions secrets.
+- Store all secrets (Supabase service key, Telegram bot token, Hostinger FTPS password) as GitHub Actions secrets.
 - Use concurrency groups to prevent overlapping runs of the same agent.
 
 ## 15. Reliability and Risk Controls
@@ -632,17 +641,18 @@ Reliable means:
 
 ### 17.3 Alert payload (locked format) — v1 epistemic vocabulary
 
-The bot **does not say BUY or SELL** until the system has earned that vocabulary (see §17.6 graduation rule). v1 uses three epistemic actions:
+The bot **does not say BUY or SELL** until the system has earned that vocabulary (see §17.6 graduation rule). v1 uses four epistemic actions:
 
 - 🟢 `WATCH` — score ≥ 70. Multiple agents agree something material happened. Do your own research before acting.
 - 🟡 `RESEARCH` — score 50-69. One strong signal but uncorroborated, or strong signal already partially priced in.
-- 🔴 `AVOID_CHASE` — price has already run ≥2% in the alert direction before the system saw it. Do not enter; opportunity cost > expected edge.
+- 🔴 `AVOID_CHASE` — bearish score ≥ 50 from dilution, miss, downgrade, bearish news, or similar evidence. Treat as a caution/research item, not a short recommendation.
+- 🔴 `CHASE_RISK` — would-be WATCH/RESEARCH where price already moved >5% since the cluster's earliest event. Recorded and audited, but not pushed to Telegram.
 
 ```
 🟢 NVDA · WATCH · score 74/100
 New 8-K detected 3m ago: buyback authorization disclosed.
 Confidence: 0.78 · Horizon: 1d
-Tap for thesis →  https://market.hub4apps.com/alert/<id>.html
+Tap for thesis →  https://hub4apps.com/stock_app/alert/<id>.html
 ```
 
 Required fields (alert does not fire if any missing): `action`, `score`, `confidence`, `evidence_summary` (≤80 chars), `horizon`, `signal_id`.
@@ -668,7 +678,7 @@ Start with polling. Switch to Edge Function if needed.
 
 ### 17.6 Graduation rule — when the bot earns BUY/SELL
 
-The bot graduates from `WATCH/RESEARCH/AVOID_CHASE` to `BUY/SELL/TRIM` only when **all** of the following are true over a 60-day rolling paper-trading window:
+The bot graduates from `WATCH/RESEARCH/AVOID_CHASE/CHASE_RISK` to `BUY/SELL/TRIM` only when **all** of the following are true over a 60-day rolling paper-trading window:
 
 - Precision@5 daily alerts ≥ 55%
 - Brier score ≤ 0.22
@@ -689,12 +699,14 @@ This rubric is the v1 thesis function. It is fully transparent — every point o
 | New SC 13G | Passive holder crossing 5% | +10 | yes |
 | Form 4 cluster | ≥3 insider trades same direction in 5 trading days | +12 (buy) / -12 (sell) | later (Phase 2) |
 | Filing severity uplift | Parser flags Item 1.01, 2.01, 5.02-material, 7.01 | +0 to +20 | yes |
-| Confirming news | Same symbol gets credible RSS article within 30 min | +15 | later |
+| Confirming news | Same symbol gets credible RSS article within 30 min | +12 | yes |
+| Earnings beat/miss | Reported EPS vs estimate, scored by surprise magnitude | +15 to +50 | yes |
+| S-3 / dilution signal | Shelf or financing-flavored filing | +12 evidence strength, bearish direction | yes |
 | Price/volume confirmation | Relative volume > 2× 20-day avg, or unexplained gap > 1% | +15 | later |
 | Sector confirmation | Symbol outperforms its sector ETF by ≥ 1% on the day | +10 | later |
 | Truth Social mapping | Post explicitly maps to this ticker (per §7.9 table) | +15 | yes |
 | Staleness penalty | Event detected > 15 min after public time | -10 | yes |
-| Chase penalty | Price already moved ≥ 2% in alert direction | -15 | later |
+| Chase-risk downgrade | Bullish WATCH/RESEARCH already moved >5% since earliest event | CHASE_RISK | yes |
 | Liquidity penalty | Wide spread, halt, or ADV < $10M | -20 | later |
 
 **Thresholds:**
@@ -705,9 +717,9 @@ This rubric is the v1 thesis function. It is fully transparent — every point o
 | 50-69 | `RESEARCH` | sent (subject to alert-fatigue governor) |
 | < 50 | suppress | logged only, no push |
 
-**Cluster requirement** (from §15.3): even if score ≥ 70, the alert does not fire unless evidence comes from at least 2 distinct source agents. The narrow exception is SC 13D and 8-K Item 1.01 with severity 4 — those can fire alone because the event itself is rare and self-validating.
+**Cluster requirement** (from §15.3): even if score ≥ 70, the alert does not fire unless evidence comes from at least 2 distinct source agents. The narrow exceptions are SC 13D, high-severity 8-K, and high-severity earnings release — those can fire alone because the event itself is rare or self-validating.
 
-**Phase 1 active rules:** the rows marked "yes" above are everything the v1 thesis_agent needs. The "later" rows turn on as their source agents come online (news, price, Form 4 cluster).
+**Phase 1 active rules:** the rows marked "yes" above are live. The "later" rows turn on as their source agents come online.
 
 ## 18. Delivery Roadmap
 
@@ -727,18 +739,17 @@ This rubric is the v1 thesis function. It is fully transparent — every point o
 - Event normalization for filings + Truth Social.
 - Baseline LightGBM model trained on synthetic + first 2 weeks of live data.
 - Risk engine + confidence scoring.
-- `static_site_publish.yml` generates `index.html` + alert pages → `dist/` branch.
-- User uploads to Hostinger.
+- `site_generator.yml` generates the full static dashboard and deploys it to Hostinger by FTPS.
 
 ### Phase 3 — Reconciliation, Backtesting, Adaptive Weights (2 weeks)
-- `eod_reconcile.yml` computes outcomes, updates `agent_weights`.
+- `price_agent.yml` computes EOD outcomes and updates `stock_agent_weights`.
 - Forecast audit tables.
-- Backtest engine with walk-forward validation.
+- `backtester.yml` runs the 180-day replay and calibration summary.
 - Inline buttons → `paper_trades`.
 
 ### Phase 4 — Weekly Macro Review (1 week)
-- `weekly_review.yml` runs logistic regression with macro features.
-- Champion/challenger model promotion logic.
+- `source_review_agent.yml` checks feed health monthly.
+- Optional future macro/champion-challenger work stays gated behind paper-trading results.
 
 ### Phase 5 — Hardening (ongoing)
 - Monitoring, dedupe tuning, source expansion, model governance, performance tuning.

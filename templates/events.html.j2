@@ -30,7 +30,7 @@
 </table>
 <div id="empty" class="empty" style="display:none">No events match.</div>
 
-<script id="data" type="application/json">{{ events_json|safe }}</script>
+<script id="data" type="application/json">{{ events_json|tojson }}</script>
 <script>
 // HTML-escape — Trump post payloads contain raw HTML, must never reach innerHTML unescaped.
 function esc(s) {

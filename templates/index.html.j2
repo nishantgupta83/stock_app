@@ -33,10 +33,11 @@
   </thead>
   <tbody>
     {% for s in recent_signals %}
+    {% set action = s.display_action or s.action %}
     <tr>
       <td>{{ s.fired_at[:16] }}</td>
       <td><strong>{{ s.ticker }}</strong></td>
-      <td><span class="tag {{ s.action }}">{{ s.action }}</span></td>
+      <td><span class="tag {{ action }}">{{ action }}</span></td>
       <td class="num">
         {{ s.score|int }}
         <span class="score-bar"><span class="fill" style="width: {{ (s.score|float / 100 * 100)|round|int }}%"></span></span>

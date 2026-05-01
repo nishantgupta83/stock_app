@@ -24,9 +24,10 @@
   <tbody>
     {% for a in audit_rows %}
     {% set sig = signals_by_id.get(a.signal_id) %}
+    {% set action = (sig.display_action or sig.action) if sig else "—" %}
     <tr>
       <td><strong>{% if sig %}<a href="ticker/{{ sig.ticker }}.html" style="color:var(--ok)">{{ sig.ticker }}</a>{% else %}—{% endif %}</strong></td>
-      <td>{% if sig %}<span class="tag {{ sig.action }}">{{ sig.action }}</span>{% else %}—{% endif %}</td>
+      <td>{% if sig %}<span class="tag {{ action }}">{{ action }}</span>{% else %}—{% endif %}</td>
       <td class="num">{% if sig %}{{ sig.score|int }}{% else %}—{% endif %}</td>
       <td style="font-size:12px">{% if sig %}{{ sig.fired_at[:16]|replace("T"," ") }}{% else %}—{% endif %}</td>
       <td style="font-size:12px">{{ (a.realized_at or "")[:10] }}</td>
@@ -44,7 +45,7 @@
 {% endif %}
 
 <script src="{{ root_path | default('') }}vendor/chart.umd.min.js"></script>
-<script id="wdata" type="application/json">{{ weight_history_json|safe }}</script>
+<script id="wdata" type="application/json">{{ weight_history_json|tojson }}</script>
 <script>
 const raw = JSON.parse(document.getElementById('wdata').textContent);
 

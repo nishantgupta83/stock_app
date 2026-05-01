@@ -45,15 +45,21 @@ def fetch_tradeable_tickers() -> list[str]:
 
 
 def emit_earnings(rows: list[dict]) -> int:
-    """Bulk insert with on_conflict=dedupe_key so re-runs silently dedupe."""
+    """Bulk upsert with on_conflict=dedupe_key.
+
+    Earnings start as "scheduled" rows, then later become beat/miss/inline rows.
+    Use merge-duplicates so the recurring refresh updates the existing event
+    instead of leaving stale scheduled data forever.
+    """
     if not rows:
         return 0
     url = f"{SUPABASE_URL}/rest/v1/stock_normalized_events?on_conflict=dedupe_key"
+    headers = {**HEADERS_SB, "Prefer": "resolution=merge-duplicates,return=minimal"}
     inserted = 0
     chunk = 500
     for i in range(0, len(rows), chunk):
         batch = rows[i:i+chunk]
-        r = requests.post(url, headers=HEADERS_SB, json=batch, timeout=30)
+        r = requests.post(url, headers=headers, json=batch, timeout=30)
         if r.status_code in (200, 201, 204):
             inserted += len(batch)
         else:

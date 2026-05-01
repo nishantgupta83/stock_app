@@ -182,7 +182,7 @@ def ingest_earnings() -> tuple[int, int]:
         print(f"[earnings] no rows to insert ({n_with_data}/{len(tickers)} returned data)")
         return n_with_data, 0
 
-    inserted = _bulk_insert("stock_normalized_events", rows, on_conflict="dedupe_key")
+    inserted = _bulk_insert("stock_normalized_events", rows, on_conflict="dedupe_key", merge=True)
     print(f"[earnings] DONE — {n_with_data}/{len(tickers)} tickers had data, "
           f"{len(rows)} rows submitted, {inserted} new (dups ignored)")
     return n_with_data, inserted
@@ -273,7 +273,7 @@ def _safe_int(v) -> int | None:
 
 
 def _bulk_insert(table: str, rows: list[dict], chunk: int = 500,
-                 on_conflict: str | None = None) -> int:
+                 on_conflict: str | None = None, merge: bool = False) -> int:
     """POST in chunks. `on_conflict` targets a non-PK unique constraint for
     Prefer: resolution=ignore-duplicates — required for partial unique indexes
     like stock_normalized_events.dedupe_key (PostgREST otherwise tries the PK
@@ -283,9 +283,12 @@ def _bulk_insert(table: str, rows: list[dict], chunk: int = 500,
     url = f"{SUPABASE_URL}/rest/v1/{table}"
     if on_conflict:
         url += f"?on_conflict={on_conflict}"
+    headers = HEADERS_SB
+    if merge:
+        headers = {**HEADERS_SB, "Prefer": "resolution=merge-duplicates,return=minimal"}
     for i in range(0, len(rows), chunk):
         batch = rows[i:i+chunk]
-        r = requests.post(url, headers=HEADERS_SB, json=batch, timeout=60)
+        r = requests.post(url, headers=headers, json=batch, timeout=60)
         if r.status_code in (200, 201, 204):
             total += len(batch)
         else:

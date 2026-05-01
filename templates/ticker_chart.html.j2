@@ -57,9 +57,9 @@
 
 <script src="{{ root_path | default('') }}vendor/chart.umd.min.js"></script>
 <script src="{{ root_path | default('') }}vendor/chartjs-plugin-annotation.min.js"></script>
-<script id="pdata" type="application/json">{{ price_json|safe }}</script>
-<script id="sdata" type="application/json">{{ signals_json|safe }}</script>
-<script id="edata" type="application/json">{{ events_json|safe }}</script>
+<script id="pdata" type="application/json">{{ price_json|tojson }}</script>
+<script id="sdata" type="application/json">{{ signals_json|tojson }}</script>
+<script id="edata" type="application/json">{{ events_json|tojson }}</script>
 <script>
 const prices  = JSON.parse(document.getElementById('pdata').textContent);
 const signals = JSON.parse(document.getElementById('sdata').textContent);
@@ -114,12 +114,13 @@ signals.forEach((sig, i) => {
   const firedDate = (sig.fired_at || '').substring(0, 10);
   const idx = dateToIdx[firedDate];
   if (idx === undefined) return;
-  const isAvoid = sig.action === 'AVOID_CHASE';
-  const color   = sig.action === 'WATCH' ? '#4caf93' : isAvoid ? '#e85a5a' : '#e8c15a';
+  const action = sig.display_action || sig.action;
+  const isAvoid = action === 'AVOID_CHASE' || action === 'CHASE_RISK';
+  const color   = action === 'WATCH' ? '#4caf93' : isAvoid ? '#e85a5a' : '#e8c15a';
   annotations['sig_' + i] = {
     type: 'point', xValue: firedDate, yValue: closes[idx],
     backgroundColor: color, radius: 9, borderColor: '#fff', borderWidth: 2,
-    label: { display: true, content: sig.action + ' ' + Math.round(sig.score || 0),
+    label: { display: true, content: action + ' ' + Math.round(sig.score || 0),
              position: isAvoid ? 'end' : 'start', color: '#fff',
              backgroundColor: color, font: { size: 10 } },
   };
@@ -263,8 +264,9 @@ if (signals.length === 0) {
       return c;
     }
     const actionSpan = document.createElement('span');
-    actionSpan.className = 'tag ' + (s.action || '');
-    actionSpan.textContent = s.action || '';
+    const action = s.display_action || s.action || '';
+    actionSpan.className = 'tag ' + action;
+    actionSpan.textContent = action;
     const statusSpan = document.createElement('span');
     statusSpan.className = 'tag ' + (s.status_v2 || '');
     statusSpan.textContent = s.status_v2 || '';
