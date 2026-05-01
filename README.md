@@ -85,22 +85,49 @@ table) and per-alert detail pages under `/alert/{id}.html` for the link in every
 | `EDGAR_USER_AGENT`     | filing_agent, historical_ingest | required by SEC fair-access policy |
 | `TELEGRAM_BOT_TOKEN`   | thesis_agent, price_agent | bot via @BotFather |
 | `TELEGRAM_CHAT_ID`     | thesis_agent, price_agent | private chat id |
-| `HOSTINGER_FTP_USER`   | site_generator | FTPS sub-account, scoped to `/stock_app/` |
+| `HOSTINGER_FTP_USER`   | site_generator | FTPS user — see deployment notes below |
 | `HOSTINGER_FTP_PASS`   | site_generator | FTPS password |
 
-> The Hostinger FTP server is hardcoded to `ftp.hub4apps.com` and the upload path to `/stock_app/`
-> in `.github/workflows/site_generator.yml`. The FTP sub-account is scoped to that folder so
-> `dangerous-clean-slate: false` plus the scoped chroot guarantees the deploy can never touch
-> any other site on the account.
+## Deployment notes — Hostinger FTPS
+
+Pinned in `.github/workflows/site_generator.yml`:
+
+- **server:** `srv1847.hstgr.io` (the actual TLS-cert hostname for our shared host —
+  using the bare IP fails SSL verification because the cert is for `*.hstgr.io`)
+- **port:** `21` with `protocol: ftps` (Hostinger requires explicit TLS; plain FTP returns 530)
+- **server-dir:** `/public_html/stock_app/` (absolute path within the FTP user's chroot)
+- **dangerous-clean-slate:** `false` (never wipe the deploy target)
+
+### Choosing an FTP user
+
+The deploy needs **write permission to `/public_html/stock_app/`**. Two options:
+
+| Option | User | Pros | Cons |
+|---|---|---|---|
+| Sub-account | `u832160935.support` | Least-privilege, scoped chroot | Hostinger creates the chroot at the user's home, **not** inside `public_html` even when you pick that path in the UI. Requires the served folder to be set to `0775` so the sub-account can traverse and write into it. |
+| Main account | `u832160935` | Always has write access everywhere | Wider blast radius if the deploy ever misbehaves; some Hostinger plans disable FTPS on the main account |
+
+We currently run on the sub-account with `0775` on `/public_html/stock_app/`.
+
+### CSP gotcha — vendor JS locally
+
+Hostinger LiteSpeed sends a default `Content-Security-Policy: ... script-src 'self'` header.
+External CDNs (jsdelivr, cdnjs) are blocked, so the dashboard's Chart.js and the annotation
+plugin live in `templates/vendor/` and ship to `dist/vendor/` on every deploy. Templates
+reference them via relative paths (`vendor/chart.umd.min.js`).
 
 ## Bootstrap order (cold start)
 
 1. Apply all `sql/*.sql` migrations in Supabase
 2. Add the secrets above
-3. Push to `main` — every cron-scheduled workflow starts running
-4. Run `historical_ingest.yml` once with `sections=all` (6-month backfill)
-5. Run `backtester.yml` once to populate `stock_agent_weights` and `stock_forecast_audit`
-6. Wait one `*/15` cycle for `site_generator` to render and deploy
+3. In Hostinger: create FTP sub-account, then `chmod 775 /public_html/stock_app/`
+   (or just use the main FTP account — see deployment notes above)
+4. Push to `main` — every cron-scheduled workflow starts running
+5. Run `historical_ingest.yml` once with `sections=all` (6-month backfill)
+6. Run `backtester.yml` once to populate `stock_agent_weights` and `stock_forecast_audit`
+7. Wait one `*/15` cycle for `site_generator` to render and deploy
+8. After a few weeks of live signals, `price_agent`'s EMA loop populates per-agent weights
+   that `thesis_agent` then uses to amplify reliable agents
 
 ## Security note
 

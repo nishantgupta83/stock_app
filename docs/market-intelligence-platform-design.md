@@ -5,12 +5,34 @@ Date: 2026-04-26
 Owner: Nishant
 Supersedes: v1 (paid-stack assumptions: Supabase Pro, Polygon, Next.js on Hostinger Node)
 
-> **Current state (2026-04-29):** 8 agents live on GitHub Actions cron. Signal vocabulary is
-> WATCH / RESEARCH / **AVOID_CHASE** (added in Phase 4B). Static dashboard auto-deploys to
-> hub4apps.com/stock_app/ via FTPS every 15 min (Phase 5). EOD `price_agent` reconciles signals
-> against actual prices and updates per-agent EMA weights — the learning loop is closed.
-> Sections of this doc that predate those phases (notably §7.5 Price-Action Agent, §7.7
-> Reconciliation Agent) describe future work; the live agent inventory is in `README.md`.
+> **Current state (2026-04-30):** 8 cron agents + a one-time backfill helper, all live.
+> Signal vocabulary: WATCH / RESEARCH / AVOID_CHASE / CHASE_RISK (the last is a downgrade
+> when price already moved >5% since the cluster's earliest event — recorded but not pushed).
+> Static dashboard auto-deploys to hub4apps.com/stock_app/ via FTPS every 15 min, with
+> Chart.js vendored locally to satisfy Hostinger LiteSpeed's `script-src 'self'` CSP.
+>
+> Learning loop is closed end-to-end: `price_agent` (weekday EOD) audits matured signals
+> against actual prices and writes per-agent EMA weights to `stock_agent_weights`;
+> `thesis_agent` reads those weights on every run and applies them per source-agent so
+> chronically-wrong agents are dampened and reliable ones amplified. Snapshots of the
+> weights actually used are persisted in `stock_signals.weight_at_time` for audit.
+>
+> Recent additions worth noting (not yet woven into the v2 narrative below):
+> - 8-K dilution detection via EDGAR's `primaryDocDescription` (PIPE / underwriting /
+>   warrant / registered direct keywords) → emits a parallel `filing_dilution` event with
+>   `direction_prior=short`
+> - Recurring `earnings_agent` (weekly Sunday) keeps yfinance earnings dates fresh
+>   in `stock_normalized_events`
+> - Per-ticker chart pages render 180 days of price + filing/earnings event dots and a
+>   "Big Moves" table (any |daily return| > 5% with the prior 2-day events as candidate causes)
+>
+> Sections of this doc that predate those changes (notably §7.5 Price-Action Agent and
+> §7.7 Reconciliation Agent) describe future work; the live agent inventory is in `README.md`.
+>
+> **Roadmap parking lot:** hybrid keyword + LLM (Haiku) classifier for news/Truth Social
+> sentiment routing — keeps the deterministic keyword path for known patterns and falls
+> through to an LLM call for novel events (Iran/Hormuz/blockade-style topics that surface
+> weekly). Bounded cost (~$0.10/month at current volume), zero ongoing keyword maintenance.
 
 ## 1. Executive Summary
 
