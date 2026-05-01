@@ -62,10 +62,8 @@ jobs:
           protocol:        ftps
           port:            21
           local-dir:       ./dist/
-          # The FTP sub-account "support" is chrooted to /home/u832160935/, not
-          # inside public_html. Confirmed by Hostinger's own DO_NOT_UPLOAD_HERE
-          # marker file at the chroot root and the live folder layout. So the
-          # absolute path inside the chroot to the served folder is
-          # /public_html/stock_app/. Anything else lands outside the web root.
-          server-dir:      /public_html/stock_app/
+          # FTP user u832160935.u832160935_stock_app is chrooted one level above
+          # the stock_app folder (verified by curl: `ftp://.../stock_app/` lists
+          # the synced files). So writes go into /stock_app/ from the chroot.
+          server-dir:      /stock_app/
           dangerous-clean-slate: false
