@@ -62,8 +62,8 @@ jobs:
           protocol:        ftps
           port:            21
           local-dir:       ./dist/
-          # FTP user u832160935.u832160935_stock_app is chrooted one level above
-          # the stock_app folder (verified by curl: `ftp://.../stock_app/` lists
-          # the synced files). So writes go into /stock_app/ from the chroot.
-          server-dir:      /stock_app/
+          # FTP user u832160935.stock_app is chrooted DIRECTLY at the served
+          # folder /public_html/stock_app/. Verified by curl listing showing
+          # index.html / styles.css at the FTP root. So server-dir is ./.
+          server-dir:      ./
           dangerous-clean-slate: false
