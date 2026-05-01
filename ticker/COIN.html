@@ -1,0 +1,328 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta http-equiv="refresh" content="900">  <!-- self-refresh every 15 min -->
+  <title>COIN · Chart · Hub4Apps Market Intel</title>
+  
+  <link rel="stylesheet" href="../styles.css">
+</head>
+<body>
+  <header>
+    <div class="brand">
+      <span class="logo">📈</span>
+      <h1>Hub4Apps Market Intel</h1>
+      <span class="subtitle">private · educational · not financial advice</span>
+    </div>
+    <nav>
+      <a href="../index.html"     class="">Dashboard</a>
+      <a href="../signals.html"   class="active">Signals</a>
+      <a href="../events.html"    class="">Events</a>
+      <a href="../agents.html"    class="">Agents</a>
+      <a href="../backtest.html"  class="">Backtest</a>
+      <a href="../learning.html"  class="">Learning</a>
+    </nav>
+    <div class="meta">
+      <span>generated 2026-05-01 21:38 UTC</span>
+    </div>
+  </header>
+  <main>
+    
+<div style="display:flex;align-items:center;gap:12px;margin-bottom:8px">
+  <h2 style="margin:0">COIN</h2>
+  <span style="color:var(--muted);font-size:13px">180-day price · events overlaid · big-move explanations</span>
+</div>
+
+<div style="font-size:12px;color:var(--muted);margin-bottom:8px">
+  Legend:
+  <span style="color:#7ab8d9">━ price</span> ·
+  <span style="color:#5a8fd9">● filing</span> ·
+  <span style="color:#e89c5a">● earnings</span> ·
+  <span style="color:#9c9c9c">● momentum</span> ·
+  <span style="color:#4caf93">● WATCH</span> /
+  <span style="color:#e8c15a">● RESEARCH</span> /
+  <span style="color:#e85a5a">● AVOID_CHASE</span>
+</div>
+
+<canvas id="priceChart" height="80"></canvas>
+
+<h3 style="margin-top:28px">Big moves <span style="color:var(--muted);font-size:13px;font-weight:normal">— days the close moved &gt; 5%, with events from the prior 2 trading days as candidate causes (correlation, not causation)</span></h3>
+<table id="bigMovesTable">
+  <thead>
+    <tr>
+      <th>Date</th>
+      <th class="num">Move</th>
+      <th class="num">Close</th>
+      <th>Events in prior 2 trading days</th>
+    </tr>
+  </thead>
+  <tbody id="bigMovesRows"></tbody>
+</table>
+<div id="noBigMoves" class="empty" style="display:none">No daily moves &gt;5% in the last 180 days for COIN.</div>
+
+<h3 style="margin-top:28px">Signal log — COIN</h3>
+<table id="sigTable">
+  <thead>
+    <tr>
+      <th>Fired (UTC)</th>
+      <th>Action</th>
+      <th class="num">Score</th>
+      <th>Summary</th>
+      <th>Status</th>
+      <th class="num">Return</th>
+      <th>Outcome</th>
+    </tr>
+  </thead>
+  <tbody id="sigRows"></tbody>
+</table>
+<div id="noSigs" class="empty" style="display:none">No signals fired for COIN in the last 180 days.</div>
+
+<div style="margin-top:24px">
+  <a href="../signals.html" style="color:var(--ok)">&larr; All signals</a>
+  &nbsp;&nbsp;
+  <a href="../learning.html" style="color:var(--ok)">Learning timeline &rarr;</a>
+</div>
+
+<script src="../vendor/chart.umd.min.js"></script>
+<script src="../vendor/chartjs-plugin-annotation.min.js"></script>
+<script id="pdata" type="application/json">[{"date": "2025-11-03", "close": 330.42}, {"date": "2025-11-04", "close": 307.32}, {"date": "2025-11-05", "close": 319.3}, {"date": "2025-11-06", "close": 295.22}, {"date": "2025-11-07", "close": 309.14}, {"date": "2025-11-10", "close": 317.93}, {"date": "2025-11-11", "close": 304.01}, {"date": "2025-11-12", "close": 304.0}, {"date": "2025-11-13", "close": 283.14}, {"date": "2025-11-14", "close": 284.0}, {"date": "2025-11-17", "close": 263.95}, {"date": "2025-11-18", "close": 261.79}, {"date": "2025-11-19", "close": 257.29}, {"date": "2025-11-20", "close": 238.16}, {"date": "2025-11-21", "close": 240.41}, {"date": "2025-11-24", "close": 255.97}, {"date": "2025-11-25", "close": 254.12}, {"date": "2025-11-26", "close": 264.97}, {"date": "2025-11-28", "close": 272.82}, {"date": "2025-12-01", "close": 259.84}, {"date": "2025-12-02", "close": 263.26}, {"date": "2025-12-03", "close": 276.92}, {"date": "2025-12-04", "close": 274.05}, {"date": "2025-12-05", "close": 269.73}, {"date": "2025-12-08", "close": 274.2}, {"date": "2025-12-09", "close": 277.36}, {"date": "2025-12-10", "close": 275.09}, {"date": "2025-12-11", "close": 269.02}, {"date": "2025-12-12", "close": 267.46}, {"date": "2025-12-15", "close": 250.42}, {"date": "2025-12-16", "close": 252.61}, {"date": "2025-12-17", "close": 244.19}, {"date": "2025-12-18", "close": 239.2}, {"date": "2025-12-19", "close": 245.12}, {"date": "2025-12-22", "close": 247.9}, {"date": "2025-12-23", "close": 242.3}, {"date": "2025-12-24", "close": 239.73}, {"date": "2025-12-26", "close": 236.9}, {"date": "2025-12-29", "close": 233.77}, {"date": "2025-12-30", "close": 231.6}, {"date": "2025-12-31", "close": 226.14}, {"date": "2026-01-02", "close": 236.53}, {"date": "2026-01-05", "close": 254.92}, {"date": "2026-01-06", "close": 250.56}, {"date": "2026-01-07", "close": 245.93}, {"date": "2026-01-08", "close": 245.59}, {"date": "2026-01-09", "close": 240.78}, {"date": "2026-01-12", "close": 242.98}, {"date": "2026-01-13", "close": 252.69}, {"date": "2026-01-14", "close": 255.86}, {"date": "2026-01-15", "close": 239.28}, {"date": "2026-01-16", "close": 241.15}, {"date": "2026-01-20", "close": 227.73}, {"date": "2026-01-21", "close": 226.93}, {"date": "2026-01-22", "close": 223.14}, {"date": "2026-01-23", "close": 216.95}, {"date": "2026-01-26", "close": 213.48}, {"date": "2026-01-27", "close": 210.83}, {"date": "2026-01-28", "close": 209.43}, {"date": "2026-01-29", "close": 199.18}, {"date": "2026-01-30", "close": 194.74}, {"date": "2026-02-02", "close": 187.86}, {"date": "2026-02-03", "close": 179.66}, {"date": "2026-02-04", "close": 168.62}, {"date": "2026-02-05", "close": 146.12}, {"date": "2026-02-06", "close": 165.12}, {"date": "2026-02-09", "close": 167.25}, {"date": "2026-02-10", "close": 162.51}, {"date": "2026-02-11", "close": 153.2}, {"date": "2026-02-12", "close": 141.09}, {"date": "2026-02-13", "close": 164.32}, {"date": "2026-02-17", "close": 166.02}, {"date": "2026-02-18", "close": 164.05}, {"date": "2026-02-19", "close": 165.94}, {"date": "2026-02-20", "close": 171.35}, {"date": "2026-02-23", "close": 160.24}, {"date": "2026-02-24", "close": 162.03}, {"date": "2026-02-25", "close": 183.94}, {"date": "2026-02-26", "close": 181.06}, {"date": "2026-02-27", "close": 175.85}, {"date": "2026-03-02", "close": 185.24}, {"date": "2026-03-03", "close": 182.36}, {"date": "2026-03-04", "close": 208.93}, {"date": "2026-03-05", "close": 205.71}, {"date": "2026-03-06", "close": 197.22}, {"date": "2026-03-09", "close": 199.79}, {"date": "2026-03-10", "close": 196.52}, {"date": "2026-03-11", "close": 198.63}, {"date": "2026-03-12", "close": 193.23}, {"date": "2026-03-13", "close": 195.53}, {"date": "2026-03-16", "close": 203.32}, {"date": "2026-03-17", "close": 210.23}, {"date": "2026-03-18", "close": 202.29}, {"date": "2026-03-19", "close": 202.91}, {"date": "2026-03-20", "close": 197.5}, {"date": "2026-03-23", "close": 200.62}, {"date": "2026-03-24", "close": 181.04}, {"date": "2026-03-25", "close": 181.1}, {"date": "2026-03-26", "close": 173.38}, {"date": "2026-03-27", "close": 161.14}, {"date": "2026-03-30", "close": 160.79}, {"date": "2026-03-31", "close": 174.61}, {"date": "2026-04-01", "close": 172.99}, {"date": "2026-04-02", "close": 171.46}, {"date": "2026-04-06", "close": 174.79}, {"date": "2026-04-07", "close": 175.18}, {"date": "2026-04-08", "close": 175.09}, {"date": "2026-04-09", "close": 169.02}, {"date": "2026-04-10", "close": 167.85}, {"date": "2026-04-13", "close": 174.53}, {"date": "2026-04-14", "close": 184.41}, {"date": "2026-04-15", "close": 195.9}, {"date": "2026-04-16", "close": 199.83}, {"date": "2026-04-17", "close": 206.33}, {"date": "2026-04-20", "close": 211.63}, {"date": "2026-04-21", "close": 195.95}, {"date": "2026-04-22", "close": 206.24}, {"date": "2026-04-23", "close": 197.93}, {"date": "2026-04-24", "close": 199.77}, {"date": "2026-04-27", "close": 196.68}, {"date": "2026-04-28", "close": 194.1}, {"date": "2026-04-29", "close": 181.73}]</script>
+<script id="sdata" type="application/json">[]</script>
+<script id="edata" type="application/json">[{"ticker": "COIN", "event_type": "earnings_release", "event_subtype": "miss", "event_at": "2026-02-12T21:00:00+00:00", "severity": 4, "payload": {"actual_eps": -2.49, "surprise_pct": -364.89, "estimated_eps": 0.94}}, {"ticker": "COIN", "event_type": "earnings_release", "event_subtype": "scheduled", "event_at": "2026-05-07T20:00:00+00:00", "severity": 2, "payload": {"actual_eps": null, "surprise_pct": null, "estimated_eps": 0.23}}]</script>
+<script>
+const prices  = JSON.parse(document.getElementById('pdata').textContent);
+const signals = JSON.parse(document.getElementById('sdata').textContent);
+const events  = JSON.parse(document.getElementById('edata').textContent);
+
+// ── Date axis (one entry per available trading day) ──────────────
+const labels = prices.map(p => p.date);
+const closes = prices.map(p => p.close);
+const dateToIdx = {};
+labels.forEach((d, i) => { dateToIdx[d] = i; });
+
+// ── Event-type → display config ──────────────────────────────────
+function eventBucket(et) {
+  if (!et) return 'other';
+  if (et === '8k_material_event' || et.indexOf('filing_') === 0) return 'filing';
+  if (et === 'earnings_release' || et === 'earnings_pre' || et === 'earnings_post') return 'earnings';
+  if (et === 'momentum') return 'momentum';
+  if (et === 'news_article') return 'news';
+  if (et === 'truth_social_post') return 'social';
+  return 'other';
+}
+const BUCKET_COLOR = {
+  filing:   '#5a8fd9',
+  earnings: '#e89c5a',
+  momentum: '#9c9c9c',
+  news:     '#a07acc',
+  social:   '#d97a8f',
+  other:    '#888888',
+};
+
+// ── Build chart annotations: one dot per event + one dot per signal ──
+const annotations = {};
+
+// Events as small dots on the price line
+events.forEach((e, i) => {
+  const eventDate = (e.event_at || '').substring(0, 10);
+  const idx = dateToIdx[eventDate];
+  if (idx === undefined) return;
+  const bucket = eventBucket(e.event_type);
+  annotations['ev_' + i] = {
+    type: 'point',
+    xValue: eventDate,
+    yValue: closes[idx],
+    backgroundColor: BUCKET_COLOR[bucket],
+    radius: 4,
+    borderWidth: 0,
+  };
+});
+
+// Signals as larger labeled dots (drawn on top because they're added after)
+signals.forEach((sig, i) => {
+  const firedDate = (sig.fired_at || '').substring(0, 10);
+  const idx = dateToIdx[firedDate];
+  if (idx === undefined) return;
+  const isAvoid = sig.action === 'AVOID_CHASE';
+  const color   = sig.action === 'WATCH' ? '#4caf93' : isAvoid ? '#e85a5a' : '#e8c15a';
+  annotations['sig_' + i] = {
+    type: 'point', xValue: firedDate, yValue: closes[idx],
+    backgroundColor: color, radius: 9, borderColor: '#fff', borderWidth: 2,
+    label: { display: true, content: sig.action + ' ' + Math.round(sig.score || 0),
+             position: isAvoid ? 'end' : 'start', color: '#fff',
+             backgroundColor: color, font: { size: 10 } },
+  };
+  const audit = sig._audit;
+  if (audit) {
+    const exitIdx = Math.min(idx + (sig.horizon_days || 1), labels.length - 1);
+    annotations['shade_' + i] = {
+      type: 'box', xMin: firedDate, xMax: labels[exitIdx],
+      backgroundColor: audit.correct ? '#4caf9322' : '#e85a5a22', borderWidth: 0,
+    };
+  }
+});
+
+new Chart(document.getElementById('priceChart'), {
+  type: 'line',
+  data: {
+    labels,
+    datasets: [{ label: 'COIN Close', data: closes, borderColor: '#7ab8d9',
+                 backgroundColor: '#7ab8d911', tension: 0.2, pointRadius: 0, fill: true }],
+  },
+  options: {
+    responsive: true,
+    scales: {
+      x: { ticks: { maxTicksLimit: 12 } },
+      y: { ticks: { callback: v => '$' + v.toFixed(0) } },
+    },
+    plugins: {
+      legend: { display: false },
+      annotation: { annotations },
+      tooltip: { callbacks: { label: ctx => '$' + ctx.parsed.y.toFixed(2) } },
+    }
+  }
+});
+
+// ── Big Moves table — find days with |daily return| > 5%, list nearby events ──
+function eventLabel(e) {
+  const p = e.payload || {};
+  if (e.event_type === '8k_material_event') {
+    const items = p['8k_items'] ? ' [items: ' + p['8k_items'] + ']' : '';
+    return '8-K' + items;
+  }
+  if (e.event_type === 'earnings_release') {
+    const sub = e.event_subtype || 'earnings';
+    const surp = (p.surprise_pct != null) ? ' (' + Number(p.surprise_pct).toFixed(1) + '%)' : '';
+    return 'Earnings ' + sub + surp;
+  }
+  if (e.event_type === 'momentum') {
+    const rs = p.rel_strength_pct;
+    return 'Momentum' + (rs != null ? ' ' + Number(rs).toFixed(1) + '% vs SPY' : '');
+  }
+  if (e.event_type && e.event_type.indexOf('filing_') === 0) {
+    return p.form_type || e.event_type.replace('filing_', '').toUpperCase();
+  }
+  if (e.event_type === 'news_article') return p.headline || 'News';
+  return e.event_type;
+}
+
+// HTML-escape — payloads may contain raw text from RSS, must never reach innerHTML unescaped.
+function esc(s) {
+  if (s === null || s === undefined) return '';
+  return String(s).replace(/[&<>"']/g, c => ({
+    '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'
+  }[c]));
+}
+
+const bigMoves = [];
+for (let i = 1; i < prices.length; i++) {
+  const prev = prices[i - 1].close;
+  const cur  = prices[i].close;
+  if (!prev || !cur) continue;
+  const ret  = (cur - prev) / prev;
+  if (Math.abs(ret) < 0.05) continue;
+
+  // Find events in the prior 2 trading days (i-2 to i, inclusive of move day itself)
+  const lowDateIdx  = Math.max(0, i - 2);
+  const highDateIdx = i;
+  const lowDate  = prices[lowDateIdx].date;
+  const highDate = prices[highDateIdx].date;
+  const nearby = events.filter(e => {
+    const d = (e.event_at || '').substring(0, 10);
+    return d >= lowDate && d <= highDate;
+  });
+  bigMoves.push({ date: prices[i].date, ret, close: cur, nearby });
+}
+
+const bigMovesBody = document.getElementById('bigMovesRows');
+if (bigMoves.length === 0) {
+  document.getElementById('noBigMoves').style.display = 'block';
+  document.getElementById('bigMovesTable').style.display = 'none';
+} else {
+  // Most recent first
+  bigMoves.reverse();
+  for (const m of bigMoves) {
+    const tr = document.createElement('tr');
+    const tdDate  = document.createElement('td'); tdDate.textContent = m.date;
+    const tdMove  = document.createElement('td'); tdMove.className = 'num';
+    tdMove.textContent = (m.ret * 100).toFixed(2) + '%';
+    tdMove.style.color = m.ret > 0 ? 'var(--ok)' : 'var(--bad)';
+    const tdClose = document.createElement('td'); tdClose.className = 'num';
+    tdClose.textContent = '$' + m.close.toFixed(2);
+    const tdEv    = document.createElement('td');
+    if (m.nearby.length === 0) {
+      tdEv.style.color = 'var(--muted)';
+      tdEv.textContent = '— no tracked events';
+    } else {
+      m.nearby.forEach((e, idx) => {
+        const span = document.createElement('span');
+        span.className = 'tag agent-' + eventBucket(e.event_type);
+        span.textContent = eventLabel(e);
+        span.title = e.event_at;
+        tdEv.appendChild(span);
+        if (idx < m.nearby.length - 1) tdEv.appendChild(document.createTextNode(' '));
+      });
+    }
+    tr.appendChild(tdDate);
+    tr.appendChild(tdMove);
+    tr.appendChild(tdClose);
+    tr.appendChild(tdEv);
+    bigMovesBody.appendChild(tr);
+  }
+}
+
+// ── Signal table (unchanged from prior version, DOM-built) ──────
+const tbody = document.getElementById('sigRows');
+if (signals.length === 0) {
+  document.getElementById('noSigs').style.display = 'block';
+  document.getElementById('sigTable').style.display = 'none';
+} else {
+  for (const s of signals) {
+    const a  = s._audit || {};
+    const tr = document.createElement('tr');
+    function td(text, cls) {
+      const c = document.createElement('td');
+      if (cls) c.className = cls;
+      c.textContent = text;
+      return c;
+    }
+    function tdHTML(node) {
+      const c = document.createElement('td');
+      c.appendChild(node);
+      return c;
+    }
+    const actionSpan = document.createElement('span');
+    actionSpan.className = 'tag ' + (s.action || '');
+    actionSpan.textContent = s.action || '';
+    const statusSpan = document.createElement('span');
+    statusSpan.className = 'tag ' + (s.status_v2 || '');
+    statusSpan.textContent = s.status_v2 || '';
+    const retTd = document.createElement('td');
+    retTd.className = 'num';
+    if (a.realized_return != null) {
+      retTd.textContent = (a.realized_return * 100).toFixed(2) + '%';
+      retTd.style.color = a.realized_return > 0 ? 'var(--ok)' : 'var(--bad)';
+    } else { retTd.textContent = '—'; }
+    const okTd = document.createElement('td');
+    okTd.style.textAlign = 'center';
+    okTd.textContent = a.correct === true ? '✅' : a.correct === false ? '❌' : '—';
+    tr.appendChild(td((s.fired_at||'').substring(0,16), 'fired'));
+    tr.appendChild(tdHTML(actionSpan));
+    tr.appendChild(td(String(Math.round(s.score||0)), 'num'));
+    tr.appendChild(td(s.evidence_summary || '', 'summary'));
+    tr.appendChild(tdHTML(statusSpan));
+    tr.appendChild(retTd);
+    tr.appendChild(okTd);
+    tbody.appendChild(tr);
+  }
+}
+</script>
+
+  </main>
+  <footer>
+    <p>v1 paper-trading vocabulary: <strong>WATCH</strong> / <strong>RESEARCH</strong> / <strong>AVOID_CHASE</strong>.
+    The bot does not say BUY or SELL until 60 days of paper-trading hits the §17.6 graduation thresholds.</p>
+    <p>Data: SEC EDGAR · trumpstruth.org RSS · yfinance. Free-tier stack: GitHub Actions + Supabase Free + Hostinger static.</p>
+  </footer>
+</body>
+</html>

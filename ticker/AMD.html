@@ -1,0 +1,328 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta http-equiv="refresh" content="900">  <!-- self-refresh every 15 min -->
+  <title>AMD · Chart · Hub4Apps Market Intel</title>
+  
+  <link rel="stylesheet" href="../styles.css">
+</head>
+<body>
+  <header>
+    <div class="brand">
+      <span class="logo">📈</span>
+      <h1>Hub4Apps Market Intel</h1>
+      <span class="subtitle">private · educational · not financial advice</span>
+    </div>
+    <nav>
+      <a href="../index.html"     class="">Dashboard</a>
+      <a href="../signals.html"   class="active">Signals</a>
+      <a href="../events.html"    class="">Events</a>
+      <a href="../agents.html"    class="">Agents</a>
+      <a href="../backtest.html"  class="">Backtest</a>
+      <a href="../learning.html"  class="">Learning</a>
+    </nav>
+    <div class="meta">
+      <span>generated 2026-05-01 21:38 UTC</span>
+    </div>
+  </header>
+  <main>
+    
+<div style="display:flex;align-items:center;gap:12px;margin-bottom:8px">
+  <h2 style="margin:0">AMD</h2>
+  <span style="color:var(--muted);font-size:13px">180-day price · events overlaid · big-move explanations</span>
+</div>
+
+<div style="font-size:12px;color:var(--muted);margin-bottom:8px">
+  Legend:
+  <span style="color:#7ab8d9">━ price</span> ·
+  <span style="color:#5a8fd9">● filing</span> ·
+  <span style="color:#e89c5a">● earnings</span> ·
+  <span style="color:#9c9c9c">● momentum</span> ·
+  <span style="color:#4caf93">● WATCH</span> /
+  <span style="color:#e8c15a">● RESEARCH</span> /
+  <span style="color:#e85a5a">● AVOID_CHASE</span>
+</div>
+
+<canvas id="priceChart" height="80"></canvas>
+
+<h3 style="margin-top:28px">Big moves <span style="color:var(--muted);font-size:13px;font-weight:normal">— days the close moved &gt; 5%, with events from the prior 2 trading days as candidate causes (correlation, not causation)</span></h3>
+<table id="bigMovesTable">
+  <thead>
+    <tr>
+      <th>Date</th>
+      <th class="num">Move</th>
+      <th class="num">Close</th>
+      <th>Events in prior 2 trading days</th>
+    </tr>
+  </thead>
+  <tbody id="bigMovesRows"></tbody>
+</table>
+<div id="noBigMoves" class="empty" style="display:none">No daily moves &gt;5% in the last 180 days for AMD.</div>
+
+<h3 style="margin-top:28px">Signal log — AMD</h3>
+<table id="sigTable">
+  <thead>
+    <tr>
+      <th>Fired (UTC)</th>
+      <th>Action</th>
+      <th class="num">Score</th>
+      <th>Summary</th>
+      <th>Status</th>
+      <th class="num">Return</th>
+      <th>Outcome</th>
+    </tr>
+  </thead>
+  <tbody id="sigRows"></tbody>
+</table>
+<div id="noSigs" class="empty" style="display:none">No signals fired for AMD in the last 180 days.</div>
+
+<div style="margin-top:24px">
+  <a href="../signals.html" style="color:var(--ok)">&larr; All signals</a>
+  &nbsp;&nbsp;
+  <a href="../learning.html" style="color:var(--ok)">Learning timeline &rarr;</a>
+</div>
+
+<script src="../vendor/chart.umd.min.js"></script>
+<script src="../vendor/chartjs-plugin-annotation.min.js"></script>
+<script id="pdata" type="application/json">[{"date": "2025-11-03", "close": 259.65}, {"date": "2025-11-04", "close": 250.05}, {"date": "2025-11-05", "close": 256.33}, {"date": "2025-11-06", "close": 237.7}, {"date": "2025-11-07", "close": 233.54}, {"date": "2025-11-10", "close": 243.98}, {"date": "2025-11-11", "close": 237.52}, {"date": "2025-11-12", "close": 258.89}, {"date": "2025-11-13", "close": 247.96}, {"date": "2025-11-14", "close": 246.81}, {"date": "2025-11-17", "close": 240.52}, {"date": "2025-11-18", "close": 230.29}, {"date": "2025-11-19", "close": 223.55}, {"date": "2025-11-20", "close": 206.02}, {"date": "2025-11-21", "close": 203.78}, {"date": "2025-11-24", "close": 215.05}, {"date": "2025-11-25", "close": 206.13}, {"date": "2025-11-26", "close": 214.24}, {"date": "2025-11-28", "close": 217.53}, {"date": "2025-12-01", "close": 219.76}, {"date": "2025-12-02", "close": 215.24}, {"date": "2025-12-03", "close": 217.6}, {"date": "2025-12-04", "close": 215.98}, {"date": "2025-12-05", "close": 217.97}, {"date": "2025-12-08", "close": 221.11}, {"date": "2025-12-09", "close": 221.62}, {"date": "2025-12-10", "close": 221.42}, {"date": "2025-12-11", "close": 221.43}, {"date": "2025-12-12", "close": 210.78}, {"date": "2025-12-15", "close": 207.58}, {"date": "2025-12-16", "close": 209.17}, {"date": "2025-12-17", "close": 198.11}, {"date": "2025-12-18", "close": 201.06}, {"date": "2025-12-19", "close": 213.43}, {"date": "2025-12-22", "close": 214.95}, {"date": "2025-12-23", "close": 214.9}, {"date": "2025-12-24", "close": 215.04}, {"date": "2025-12-26", "close": 214.99}, {"date": "2025-12-29", "close": 215.61}, {"date": "2025-12-30", "close": 215.34}, {"date": "2025-12-31", "close": 214.16}, {"date": "2026-01-02", "close": 223.47}, {"date": "2026-01-05", "close": 221.08}, {"date": "2026-01-06", "close": 214.35}, {"date": "2026-01-07", "close": 210.02}, {"date": "2026-01-08", "close": 204.68}, {"date": "2026-01-09", "close": 203.17}, {"date": "2026-01-12", "close": 207.69}, {"date": "2026-01-13", "close": 220.97}, {"date": "2026-01-14", "close": 223.6}, {"date": "2026-01-15", "close": 227.92}, {"date": "2026-01-16", "close": 231.83}, {"date": "2026-01-20", "close": 231.92}, {"date": "2026-01-21", "close": 249.8}, {"date": "2026-01-22", "close": 253.73}, {"date": "2026-01-23", "close": 259.68}, {"date": "2026-01-26", "close": 251.31}, {"date": "2026-01-27", "close": 252.03}, {"date": "2026-01-28", "close": 252.74}, {"date": "2026-01-29", "close": 252.18}, {"date": "2026-01-30", "close": 236.73}, {"date": "2026-02-02", "close": 246.27}, {"date": "2026-02-03", "close": 242.11}, {"date": "2026-02-04", "close": 200.19}, {"date": "2026-02-05", "close": 192.5}, {"date": "2026-02-06", "close": 208.44}, {"date": "2026-02-09", "close": 216.0}, {"date": "2026-02-10", "close": 213.57}, {"date": "2026-02-11", "close": 213.58}, {"date": "2026-02-12", "close": 205.94}, {"date": "2026-02-13", "close": 207.32}, {"date": "2026-02-17", "close": 203.08}, {"date": "2026-02-18", "close": 200.12}, {"date": "2026-02-19", "close": 203.37}, {"date": "2026-02-20", "close": 200.15}, {"date": "2026-02-23", "close": 196.6}, {"date": "2026-02-24", "close": 213.84}, {"date": "2026-02-25", "close": 210.86}, {"date": "2026-02-26", "close": 203.68}, {"date": "2026-02-27", "close": 200.21}, {"date": "2026-03-02", "close": 198.62}, {"date": "2026-03-03", "close": 190.95}, {"date": "2026-03-04", "close": 202.07}, {"date": "2026-03-05", "close": 199.45}, {"date": "2026-03-06", "close": 192.43}, {"date": "2026-03-09", "close": 202.68}, {"date": "2026-03-10", "close": 203.23}, {"date": "2026-03-11", "close": 204.83}, {"date": "2026-03-12", "close": 197.74}, {"date": "2026-03-13", "close": 193.39}, {"date": "2026-03-16", "close": 196.58}, {"date": "2026-03-17", "close": 196.31}, {"date": "2026-03-18", "close": 199.46}, {"date": "2026-03-19", "close": 205.27}, {"date": "2026-03-20", "close": 201.33}, {"date": "2026-03-23", "close": 202.68}, {"date": "2026-03-24", "close": 205.37}, {"date": "2026-03-25", "close": 220.27}, {"date": "2026-03-26", "close": 203.77}, {"date": "2026-03-27", "close": 201.99}, {"date": "2026-03-30", "close": 196.04}, {"date": "2026-03-31", "close": 203.43}, {"date": "2026-04-01", "close": 210.21}, {"date": "2026-04-02", "close": 217.5}, {"date": "2026-04-06", "close": 220.18}, {"date": "2026-04-07", "close": 221.53}, {"date": "2026-04-08", "close": 231.82}, {"date": "2026-04-09", "close": 236.64}, {"date": "2026-04-10", "close": 245.04}, {"date": "2026-04-13", "close": 246.83}, {"date": "2026-04-14", "close": 255.07}, {"date": "2026-04-15", "close": 258.12}, {"date": "2026-04-16", "close": 278.26}, {"date": "2026-04-17", "close": 278.39}, {"date": "2026-04-20", "close": 274.95}, {"date": "2026-04-21", "close": 284.49}, {"date": "2026-04-22", "close": 303.46}, {"date": "2026-04-23", "close": 305.33}, {"date": "2026-04-24", "close": 347.81}, {"date": "2026-04-27", "close": 334.63}, {"date": "2026-04-28", "close": 323.21}, {"date": "2026-04-29", "close": 337.11}]</script>
+<script id="sdata" type="application/json">[{"id": 25, "ticker": "AMD", "fired_at": "2026-02-03T23:14:52+00:00", "action": "WATCH", "score": 87.0, "confidence": 0.87, "evidence_summary": "new 8-K beat", "status_v2": "backtest", "model_version": "rubric-v1.1-backtest-multisource", "weight_at_time": {"mode": "multi_source_research_grade", "agents": ["earnings", "filing"]}, "score_breakdown": null, "direction": "bullish", "horizon_days": 1, "agents": ["earnings", "filing"], "_audit": {"signal_id": 25, "horizon_days": 1, "realized_return": -0.069884, "realized_at": "2026-02-04T20:00:00+00:00", "correct": false}}, {"id": 8, "ticker": "AMD", "fired_at": "2025-11-04T23:07:50+00:00", "action": "WATCH", "score": 87.0, "confidence": 0.87, "evidence_summary": "new 8-K beat", "status_v2": "backtest", "model_version": "rubric-v1.1-backtest-multisource", "weight_at_time": {"mode": "multi_source_research_grade", "agents": ["earnings", "filing"]}, "score_breakdown": null, "direction": "bullish", "horizon_days": 1, "agents": ["earnings", "filing"], "_audit": {"signal_id": 8, "horizon_days": 1, "realized_return": 0.052815, "realized_at": "2025-11-05T20:00:00+00:00", "correct": true}}]</script>
+<script id="edata" type="application/json">[{"ticker": "AMD", "event_type": "earnings_release", "event_subtype": "beat", "event_at": "2025-11-04T21:00:00+00:00", "severity": 2, "payload": {"actual_eps": 1.2, "surprise_pct": 2.48, "estimated_eps": 1.17}}, {"ticker": "AMD", "event_type": "8k_material_event", "event_subtype": null, "event_at": "2025-11-04T21:16:10+00:00", "severity": 3, "payload": {"form_type": "8-K", "primary_doc_url": "https://www.sec.gov/Archives/edgar/data/2488/000000248825000163/amd-20251104.htm", "accession_number": "0000002488-25-000163"}}, {"ticker": "AMD", "event_type": "filing_10-q", "event_subtype": null, "event_at": "2025-11-04T23:07:50+00:00", "severity": 1, "payload": {"form_type": "10-Q", "primary_doc_url": "https://www.sec.gov/Archives/edgar/data/2488/000000248825000166/amd-20250927.htm", "accession_number": "0000002488-25-000166"}}, {"ticker": "AMD", "event_type": "filing_4", "event_subtype": null, "event_at": "2025-11-18T21:09:29+00:00", "severity": 1, "payload": {"form_type": "4", "primary_doc_url": "https://www.sec.gov/Archives/edgar/data/2488/000000248825000168/xslF345X05/wk-form4_1763500164.xml", "accession_number": "0000002488-25-000168"}}, {"ticker": "AMD", "event_type": "filing_4", "event_subtype": null, "event_at": "2025-11-21T21:11:57+00:00", "severity": 1, "payload": {"form_type": "4", "primary_doc_url": "https://www.sec.gov/Archives/edgar/data/2488/000000248825000171/xslF345X05/wk-form4_1763759513.xml", "accession_number": "0000002488-25-000171"}}, {"ticker": "AMD", "event_type": "filing_4", "event_subtype": null, "event_at": "2025-11-26T21:08:22+00:00", "severity": 1, "payload": {"form_type": "4", "primary_doc_url": "https://www.sec.gov/Archives/edgar/data/2488/000000248825000173/xslF345X05/wk-form4_1764191298.xml", "accession_number": "0000002488-25-000173"}}, {"ticker": "AMD", "event_type": "filing_4", "event_subtype": null, "event_at": "2025-11-28T21:13:16+00:00", "severity": 1, "payload": {"form_type": "4", "primary_doc_url": "https://www.sec.gov/Archives/edgar/data/2488/000000248825000175/xslF345X05/wk-form4_1764364393.xml", "accession_number": "0000002488-25-000175"}}, {"ticker": "AMD", "event_type": "filing_4", "event_subtype": null, "event_at": "2025-12-04T21:11:27+00:00", "severity": 1, "payload": {"form_type": "4", "primary_doc_url": "https://www.sec.gov/Archives/edgar/data/2488/000000248825000177/xslF345X05/wk-form4_1764882685.xml", "accession_number": "0000002488-25-000177"}}, {"ticker": "AMD", "event_type": "filing_4", "event_subtype": null, "event_at": "2025-12-08T21:07:36+00:00", "severity": 1, "payload": {"form_type": "4", "primary_doc_url": "https://www.sec.gov/Archives/edgar/data/2488/000176824825000004/xslF345X05/wk-form4_1765228052.xml", "accession_number": "0001768248-25-000004"}}, {"ticker": "AMD", "event_type": "filing_4", "event_subtype": null, "event_at": "2025-12-12T21:18:36+00:00", "severity": 1, "payload": {"form_type": "4", "primary_doc_url": "https://www.sec.gov/Archives/edgar/data/2488/000000248825000179/xslF345X05/wk-form4_1765574313.xml", "accession_number": "0000002488-25-000179"}}, {"ticker": "AMD", "event_type": "8k_material_event", "event_subtype": null, "event_at": "2025-12-15T21:12:11+00:00", "severity": 3, "payload": {"form_type": "8-K", "primary_doc_url": "https://www.sec.gov/Archives/edgar/data/2488/000000248825000182/amd-20251212.htm", "accession_number": "0000002488-25-000182"}}, {"ticker": "AMD", "event_type": "8k_material_event", "event_subtype": null, "event_at": "2026-01-20T21:19:32+00:00", "severity": 3, "payload": {"form_type": "8-K", "primary_doc_url": "https://www.sec.gov/Archives/edgar/data/2488/000000248826000002/amd-20260116.htm", "accession_number": "0000002488-26-000002"}}, {"ticker": "AMD", "event_type": "filing_4", "event_subtype": null, "event_at": "2026-01-20T21:27:27+00:00", "severity": 1, "payload": {"form_type": "4", "primary_doc_url": "https://www.sec.gov/Archives/edgar/data/2488/000000248826000004/xslF345X05/wk-form4_1768944444.xml", "accession_number": "0000002488-26-000004"}}, {"ticker": "AMD", "event_type": "filing_4", "event_subtype": null, "event_at": "2026-01-20T21:37:18+00:00", "severity": 1, "payload": {"form_type": "4", "primary_doc_url": "https://www.sec.gov/Archives/edgar/data/2488/000000248826000006/xslF345X05/wk-form4_1768945035.xml", "accession_number": "0000002488-26-000006"}}, {"ticker": "AMD", "event_type": "filing_4", "event_subtype": null, "event_at": "2026-01-21T21:21:39+00:00", "severity": 1, "payload": {"form_type": "4", "primary_doc_url": "https://www.sec.gov/Archives/edgar/data/2488/000000248826000010/xslF345X05/wk-form4_1769030496.xml", "accession_number": "0000002488-26-000010"}}, {"ticker": "AMD", "event_type": "earnings_release", "event_subtype": "beat", "event_at": "2026-02-03T21:00:00+00:00", "severity": 4, "payload": {"actual_eps": 1.53, "surprise_pct": 15.98, "estimated_eps": 1.32}}, {"ticker": "AMD", "event_type": "8k_material_event", "event_subtype": null, "event_at": "2026-02-03T21:16:18+00:00", "severity": 3, "payload": {"form_type": "8-K", "primary_doc_url": "https://www.sec.gov/Archives/edgar/data/2488/000000248826000014/amd-20260203.htm", "accession_number": "0000002488-26-000014"}}, {"ticker": "AMD", "event_type": "filing_10-k", "event_subtype": null, "event_at": "2026-02-03T23:14:52+00:00", "severity": 1, "payload": {"form_type": "10-K", "primary_doc_url": "https://www.sec.gov/Archives/edgar/data/2488/000000248826000018/amd-20251227.htm", "accession_number": "0000002488-26-000018"}}, {"ticker": "AMD", "event_type": "filing_4", "event_subtype": null, "event_at": "2026-02-13T21:11:43+00:00", "severity": 1, "payload": {"form_type": "4", "primary_doc_url": "https://www.sec.gov/Archives/edgar/data/2488/000000248826000024/xslF345X05/wk-form4_1771017100.xml", "accession_number": "0000002488-26-000024"}}, {"ticker": "AMD", "event_type": "filing_4", "event_subtype": null, "event_at": "2026-02-13T21:20:51+00:00", "severity": 1, "payload": {"form_type": "4", "primary_doc_url": "https://www.sec.gov/Archives/edgar/data/2488/000000248826000026/xslF345X05/wk-form4_1771017649.xml", "accession_number": "0000002488-26-000026"}}, {"ticker": "AMD", "event_type": "8k_material_event", "event_subtype": null, "event_at": "2026-02-17T21:21:24+00:00", "severity": 3, "payload": {"form_type": "8-K", "primary_doc_url": "https://www.sec.gov/Archives/edgar/data/2488/000000248826000029/amd-20260210.htm", "accession_number": "0000002488-26-000029"}}, {"ticker": "AMD", "event_type": "filing_4", "event_subtype": null, "event_at": "2026-02-18T21:17:55+00:00", "severity": 1, "payload": {"form_type": "4", "primary_doc_url": "https://www.sec.gov/Archives/edgar/data/2488/000000248826000031/xslF345X05/wk-form4_1771449472.xml", "accession_number": "0000002488-26-000031"}}, {"ticker": "AMD", "event_type": "filing_4", "event_subtype": null, "event_at": "2026-02-18T21:20:27+00:00", "severity": 1, "payload": {"form_type": "4", "primary_doc_url": "https://www.sec.gov/Archives/edgar/data/2488/000000248826000033/xslF345X05/wk-form4_1771449622.xml", "accession_number": "0000002488-26-000033"}}, {"ticker": "AMD", "event_type": "filing_4", "event_subtype": null, "event_at": "2026-02-18T21:24:34+00:00", "severity": 1, "payload": {"form_type": "4", "primary_doc_url": "https://www.sec.gov/Archives/edgar/data/2488/000000248826000035/xslF345X05/wk-form4_1771449870.xml", "accession_number": "0000002488-26-000035"}}, {"ticker": "AMD", "event_type": "filing_4", "event_subtype": null, "event_at": "2026-02-18T21:28:06+00:00", "severity": 1, "payload": {"form_type": "4", "primary_doc_url": "https://www.sec.gov/Archives/edgar/data/2488/000000248826000037/xslF345X05/wk-form4_1771450082.xml", "accession_number": "0000002488-26-000037"}}, {"ticker": "AMD", "event_type": "filing_4", "event_subtype": null, "event_at": "2026-02-18T21:39:47+00:00", "severity": 1, "payload": {"form_type": "4", "primary_doc_url": "https://www.sec.gov/Archives/edgar/data/2488/000000248826000039/xslF345X05/wk-form4_1771450784.xml", "accession_number": "0000002488-26-000039"}}, {"ticker": "AMD", "event_type": "filing_4", "event_subtype": null, "event_at": "2026-02-20T21:05:40+00:00", "severity": 1, "payload": {"form_type": "4", "primary_doc_url": "https://www.sec.gov/Archives/edgar/data/2488/000000248826000042/xslF345X05/wk-form4_1771621537.xml", "accession_number": "0000002488-26-000042"}}, {"ticker": "AMD", "event_type": "8k_material_event", "event_subtype": null, "event_at": "2026-02-24T12:01:06+00:00", "severity": 3, "payload": {"form_type": "8-K", "primary_doc_url": "https://www.sec.gov/Archives/edgar/data/2488/000000248826000045/amd-20260223.htm", "accession_number": "0000002488-26-000045"}}, {"ticker": "AMD", "event_type": "filing_4", "event_subtype": null, "event_at": "2026-02-26T22:34:59+00:00", "severity": 1, "payload": {"form_type": "4", "primary_doc_url": "https://www.sec.gov/Archives/edgar/data/2488/000000248826000047/xslF345X05/wk-form4_1772145296.xml", "accession_number": "0000002488-26-000047"}}, {"ticker": "AMD", "event_type": "filing_4", "event_subtype": null, "event_at": "2026-03-03T21:13:03+00:00", "severity": 1, "payload": {"form_type": "4", "primary_doc_url": "https://www.sec.gov/Archives/edgar/data/2488/000000248826000050/xslF345X05/wk-form4_1772572381.xml", "accession_number": "0000002488-26-000050"}}, {"ticker": "AMD", "event_type": "filing_4", "event_subtype": null, "event_at": "2026-03-03T21:15:06+00:00", "severity": 1, "payload": {"form_type": "4", "primary_doc_url": "https://www.sec.gov/Archives/edgar/data/2488/000000248826000052/xslF345X05/wk-form4_1772572498.xml", "accession_number": "0000002488-26-000052"}}, {"ticker": "AMD", "event_type": "filing_4", "event_subtype": null, "event_at": "2026-03-06T21:13:28+00:00", "severity": 1, "payload": {"form_type": "4", "primary_doc_url": "https://www.sec.gov/Archives/edgar/data/2488/000000248826000054/xslF345X05/wk-form4_1772831605.xml", "accession_number": "0000002488-26-000054"}}, {"ticker": "AMD", "event_type": "filing_4", "event_subtype": null, "event_at": "2026-03-13T20:07:18+00:00", "severity": 1, "payload": {"form_type": "4", "primary_doc_url": "https://www.sec.gov/Archives/edgar/data/2488/000000248826000056/xslF345X05/wk-form4_1773432436.xml", "accession_number": "0000002488-26-000056"}}, {"ticker": "AMD", "event_type": "filing_4", "event_subtype": null, "event_at": "2026-03-16T20:48:06+00:00", "severity": 1, "payload": {"form_type": "4", "primary_doc_url": "https://www.sec.gov/Archives/edgar/data/2488/000000248826000058/xslF345X05/wk-form4_1773694083.xml", "accession_number": "0000002488-26-000058"}}, {"ticker": "AMD", "event_type": "filing_4", "event_subtype": null, "event_at": "2026-03-18T20:16:11+00:00", "severity": 1, "payload": {"form_type": "4", "primary_doc_url": "https://www.sec.gov/Archives/edgar/data/2488/000000248826000060/xslF345X06/wk-form4_1773864967.xml", "accession_number": "0000002488-26-000060"}}, {"ticker": "AMD", "event_type": "filing_4", "event_subtype": null, "event_at": "2026-04-08T20:12:07+00:00", "severity": 1, "payload": {"form_type": "4", "primary_doc_url": "https://www.sec.gov/Archives/edgar/data/2488/000000248826000064/xslF345X06/wk-form4_1775679123.xml", "accession_number": "0000002488-26-000064"}}, {"ticker": "AMD", "event_type": "filing_4", "event_subtype": null, "event_at": "2026-04-17T20:11:52+00:00", "severity": 1, "payload": {"form_type": "4", "primary_doc_url": "https://www.sec.gov/Archives/edgar/data/2488/000000248826000066/xslF345X06/wk-form4_1776456710.xml", "accession_number": "0000002488-26-000066"}}, {"ticker": "AMD", "event_type": "truth_social_post", "event_subtype": "direct_mention_amd", "event_at": "2026-04-22T15:34:26+00:00", "severity": 2, "payload": {"url": "https://trumpstruth.org/statuses/37986", "post_id": "https://trumpstruth.org/statuses/37986", "rule_label": "direct_mention_amd", "post_excerpt": "<p>Time for the grown-ups to pull the plug on Mamdani\u2019s fiscal fantasies: <a href=\"https://nypost.com/2026/03/19/opinion/time-for-the-grown-ups-to-halt-mamdanis-fiscal-fantasies/\" rel=\"nofollow noopen", "direction_prior": "neutral"}}, {"ticker": "AMD", "event_type": "news_article", "event_subtype": "neutral", "event_at": "2026-04-27T13:21:04+00:00", "severity": 2, "payload": {"url": "https://www.cnbc.com/2026/04/27/biggest-analyst-calls-monday-like-nvidia.html", "source": "cnbc_markets", "headline": "Here are Monday's biggest analyst calls: Nvidia, Apple, Tesla, Micron, AMD, DoorDash, CrowdStrike & more", "article_id": "c5663991d673c5bf6e94ef94", "direction_prior": "neutral"}}, {"ticker": "AMD", "event_type": "filing_4", "event_subtype": null, "event_at": "2026-04-28T16:12:11+00:00", "severity": 1, "payload": {"form_type": "4", "primary_doc_url": "https://www.sec.gov/Archives/edgar/data/2488/000000248826000068/xslF345X06/wk-form4_1777407129.xml", "accession_number": "0000002488-26-000068"}}, {"ticker": "AMD", "event_type": "earnings_release", "event_subtype": "scheduled", "event_at": "2026-05-05T20:00:00+00:00", "severity": 2, "payload": {"actual_eps": null, "surprise_pct": null, "estimated_eps": 1.29}}]</script>
+<script>
+const prices  = JSON.parse(document.getElementById('pdata').textContent);
+const signals = JSON.parse(document.getElementById('sdata').textContent);
+const events  = JSON.parse(document.getElementById('edata').textContent);
+
+// ── Date axis (one entry per available trading day) ──────────────
+const labels = prices.map(p => p.date);
+const closes = prices.map(p => p.close);
+const dateToIdx = {};
+labels.forEach((d, i) => { dateToIdx[d] = i; });
+
+// ── Event-type → display config ──────────────────────────────────
+function eventBucket(et) {
+  if (!et) return 'other';
+  if (et === '8k_material_event' || et.indexOf('filing_') === 0) return 'filing';
+  if (et === 'earnings_release' || et === 'earnings_pre' || et === 'earnings_post') return 'earnings';
+  if (et === 'momentum') return 'momentum';
+  if (et === 'news_article') return 'news';
+  if (et === 'truth_social_post') return 'social';
+  return 'other';
+}
+const BUCKET_COLOR = {
+  filing:   '#5a8fd9',
+  earnings: '#e89c5a',
+  momentum: '#9c9c9c',
+  news:     '#a07acc',
+  social:   '#d97a8f',
+  other:    '#888888',
+};
+
+// ── Build chart annotations: one dot per event + one dot per signal ──
+const annotations = {};
+
+// Events as small dots on the price line
+events.forEach((e, i) => {
+  const eventDate = (e.event_at || '').substring(0, 10);
+  const idx = dateToIdx[eventDate];
+  if (idx === undefined) return;
+  const bucket = eventBucket(e.event_type);
+  annotations['ev_' + i] = {
+    type: 'point',
+    xValue: eventDate,
+    yValue: closes[idx],
+    backgroundColor: BUCKET_COLOR[bucket],
+    radius: 4,
+    borderWidth: 0,
+  };
+});
+
+// Signals as larger labeled dots (drawn on top because they're added after)
+signals.forEach((sig, i) => {
+  const firedDate = (sig.fired_at || '').substring(0, 10);
+  const idx = dateToIdx[firedDate];
+  if (idx === undefined) return;
+  const isAvoid = sig.action === 'AVOID_CHASE';
+  const color   = sig.action === 'WATCH' ? '#4caf93' : isAvoid ? '#e85a5a' : '#e8c15a';
+  annotations['sig_' + i] = {
+    type: 'point', xValue: firedDate, yValue: closes[idx],
+    backgroundColor: color, radius: 9, borderColor: '#fff', borderWidth: 2,
+    label: { display: true, content: sig.action + ' ' + Math.round(sig.score || 0),
+             position: isAvoid ? 'end' : 'start', color: '#fff',
+             backgroundColor: color, font: { size: 10 } },
+  };
+  const audit = sig._audit;
+  if (audit) {
+    const exitIdx = Math.min(idx + (sig.horizon_days || 1), labels.length - 1);
+    annotations['shade_' + i] = {
+      type: 'box', xMin: firedDate, xMax: labels[exitIdx],
+      backgroundColor: audit.correct ? '#4caf9322' : '#e85a5a22', borderWidth: 0,
+    };
+  }
+});
+
+new Chart(document.getElementById('priceChart'), {
+  type: 'line',
+  data: {
+    labels,
+    datasets: [{ label: 'AMD Close', data: closes, borderColor: '#7ab8d9',
+                 backgroundColor: '#7ab8d911', tension: 0.2, pointRadius: 0, fill: true }],
+  },
+  options: {
+    responsive: true,
+    scales: {
+      x: { ticks: { maxTicksLimit: 12 } },
+      y: { ticks: { callback: v => '$' + v.toFixed(0) } },
+    },
+    plugins: {
+      legend: { display: false },
+      annotation: { annotations },
+      tooltip: { callbacks: { label: ctx => '$' + ctx.parsed.y.toFixed(2) } },
+    }
+  }
+});
+
+// ── Big Moves table — find days with |daily return| > 5%, list nearby events ──
+function eventLabel(e) {
+  const p = e.payload || {};
+  if (e.event_type === '8k_material_event') {
+    const items = p['8k_items'] ? ' [items: ' + p['8k_items'] + ']' : '';
+    return '8-K' + items;
+  }
+  if (e.event_type === 'earnings_release') {
+    const sub = e.event_subtype || 'earnings';
+    const surp = (p.surprise_pct != null) ? ' (' + Number(p.surprise_pct).toFixed(1) + '%)' : '';
+    return 'Earnings ' + sub + surp;
+  }
+  if (e.event_type === 'momentum') {
+    const rs = p.rel_strength_pct;
+    return 'Momentum' + (rs != null ? ' ' + Number(rs).toFixed(1) + '% vs SPY' : '');
+  }
+  if (e.event_type && e.event_type.indexOf('filing_') === 0) {
+    return p.form_type || e.event_type.replace('filing_', '').toUpperCase();
+  }
+  if (e.event_type === 'news_article') return p.headline || 'News';
+  return e.event_type;
+}
+
+// HTML-escape — payloads may contain raw text from RSS, must never reach innerHTML unescaped.
+function esc(s) {
+  if (s === null || s === undefined) return '';
+  return String(s).replace(/[&<>"']/g, c => ({
+    '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'
+  }[c]));
+}
+
+const bigMoves = [];
+for (let i = 1; i < prices.length; i++) {
+  const prev = prices[i - 1].close;
+  const cur  = prices[i].close;
+  if (!prev || !cur) continue;
+  const ret  = (cur - prev) / prev;
+  if (Math.abs(ret) < 0.05) continue;
+
+  // Find events in the prior 2 trading days (i-2 to i, inclusive of move day itself)
+  const lowDateIdx  = Math.max(0, i - 2);
+  const highDateIdx = i;
+  const lowDate  = prices[lowDateIdx].date;
+  const highDate = prices[highDateIdx].date;
+  const nearby = events.filter(e => {
+    const d = (e.event_at || '').substring(0, 10);
+    return d >= lowDate && d <= highDate;
+  });
+  bigMoves.push({ date: prices[i].date, ret, close: cur, nearby });
+}
+
+const bigMovesBody = document.getElementById('bigMovesRows');
+if (bigMoves.length === 0) {
+  document.getElementById('noBigMoves').style.display = 'block';
+  document.getElementById('bigMovesTable').style.display = 'none';
+} else {
+  // Most recent first
+  bigMoves.reverse();
+  for (const m of bigMoves) {
+    const tr = document.createElement('tr');
+    const tdDate  = document.createElement('td'); tdDate.textContent = m.date;
+    const tdMove  = document.createElement('td'); tdMove.className = 'num';
+    tdMove.textContent = (m.ret * 100).toFixed(2) + '%';
+    tdMove.style.color = m.ret > 0 ? 'var(--ok)' : 'var(--bad)';
+    const tdClose = document.createElement('td'); tdClose.className = 'num';
+    tdClose.textContent = '$' + m.close.toFixed(2);
+    const tdEv    = document.createElement('td');
+    if (m.nearby.length === 0) {
+      tdEv.style.color = 'var(--muted)';
+      tdEv.textContent = '— no tracked events';
+    } else {
+      m.nearby.forEach((e, idx) => {
+        const span = document.createElement('span');
+        span.className = 'tag agent-' + eventBucket(e.event_type);
+        span.textContent = eventLabel(e);
+        span.title = e.event_at;
+        tdEv.appendChild(span);
+        if (idx < m.nearby.length - 1) tdEv.appendChild(document.createTextNode(' '));
+      });
+    }
+    tr.appendChild(tdDate);
+    tr.appendChild(tdMove);
+    tr.appendChild(tdClose);
+    tr.appendChild(tdEv);
+    bigMovesBody.appendChild(tr);
+  }
+}
+
+// ── Signal table (unchanged from prior version, DOM-built) ──────
+const tbody = document.getElementById('sigRows');
+if (signals.length === 0) {
+  document.getElementById('noSigs').style.display = 'block';
+  document.getElementById('sigTable').style.display = 'none';
+} else {
+  for (const s of signals) {
+    const a  = s._audit || {};
+    const tr = document.createElement('tr');
+    function td(text, cls) {
+      const c = document.createElement('td');
+      if (cls) c.className = cls;
+      c.textContent = text;
+      return c;
+    }
+    function tdHTML(node) {
+      const c = document.createElement('td');
+      c.appendChild(node);
+      return c;
+    }
+    const actionSpan = document.createElement('span');
+    actionSpan.className = 'tag ' + (s.action || '');
+    actionSpan.textContent = s.action || '';
+    const statusSpan = document.createElement('span');
+    statusSpan.className = 'tag ' + (s.status_v2 || '');
+    statusSpan.textContent = s.status_v2 || '';
+    const retTd = document.createElement('td');
+    retTd.className = 'num';
+    if (a.realized_return != null) {
+      retTd.textContent = (a.realized_return * 100).toFixed(2) + '%';
+      retTd.style.color = a.realized_return > 0 ? 'var(--ok)' : 'var(--bad)';
+    } else { retTd.textContent = '—'; }
+    const okTd = document.createElement('td');
+    okTd.style.textAlign = 'center';
+    okTd.textContent = a.correct === true ? '✅' : a.correct === false ? '❌' : '—';
+    tr.appendChild(td((s.fired_at||'').substring(0,16), 'fired'));
+    tr.appendChild(tdHTML(actionSpan));
+    tr.appendChild(td(String(Math.round(s.score||0)), 'num'));
+    tr.appendChild(td(s.evidence_summary || '', 'summary'));
+    tr.appendChild(tdHTML(statusSpan));
+    tr.appendChild(retTd);
+    tr.appendChild(okTd);
+    tbody.appendChild(tr);
+  }
+}
+</script>
+
+  </main>
+  <footer>
+    <p>v1 paper-trading vocabulary: <strong>WATCH</strong> / <strong>RESEARCH</strong> / <strong>AVOID_CHASE</strong>.
+    The bot does not say BUY or SELL until 60 days of paper-trading hits the §17.6 graduation thresholds.</p>
+    <p>Data: SEC EDGAR · trumpstruth.org RSS · yfinance. Free-tier stack: GitHub Actions + Supabase Free + Hostinger static.</p>
+  </footer>
+</body>
+</html>

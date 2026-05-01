@@ -1,0 +1,328 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta http-equiv="refresh" content="900">  <!-- self-refresh every 15 min -->
+  <title>GOOGL · Chart · Hub4Apps Market Intel</title>
+  
+  <link rel="stylesheet" href="../styles.css">
+</head>
+<body>
+  <header>
+    <div class="brand">
+      <span class="logo">📈</span>
+      <h1>Hub4Apps Market Intel</h1>
+      <span class="subtitle">private · educational · not financial advice</span>
+    </div>
+    <nav>
+      <a href="../index.html"     class="">Dashboard</a>
+      <a href="../signals.html"   class="active">Signals</a>
+      <a href="../events.html"    class="">Events</a>
+      <a href="../agents.html"    class="">Agents</a>
+      <a href="../backtest.html"  class="">Backtest</a>
+      <a href="../learning.html"  class="">Learning</a>
+    </nav>
+    <div class="meta">
+      <span>generated 2026-05-01 21:38 UTC</span>
+    </div>
+  </header>
+  <main>
+    
+<div style="display:flex;align-items:center;gap:12px;margin-bottom:8px">
+  <h2 style="margin:0">GOOGL</h2>
+  <span style="color:var(--muted);font-size:13px">180-day price · events overlaid · big-move explanations</span>
+</div>
+
+<div style="font-size:12px;color:var(--muted);margin-bottom:8px">
+  Legend:
+  <span style="color:#7ab8d9">━ price</span> ·
+  <span style="color:#5a8fd9">● filing</span> ·
+  <span style="color:#e89c5a">● earnings</span> ·
+  <span style="color:#9c9c9c">● momentum</span> ·
+  <span style="color:#4caf93">● WATCH</span> /
+  <span style="color:#e8c15a">● RESEARCH</span> /
+  <span style="color:#e85a5a">● AVOID_CHASE</span>
+</div>
+
+<canvas id="priceChart" height="80"></canvas>
+
+<h3 style="margin-top:28px">Big moves <span style="color:var(--muted);font-size:13px;font-weight:normal">— days the close moved &gt; 5%, with events from the prior 2 trading days as candidate causes (correlation, not causation)</span></h3>
+<table id="bigMovesTable">
+  <thead>
+    <tr>
+      <th>Date</th>
+      <th class="num">Move</th>
+      <th class="num">Close</th>
+      <th>Events in prior 2 trading days</th>
+    </tr>
+  </thead>
+  <tbody id="bigMovesRows"></tbody>
+</table>
+<div id="noBigMoves" class="empty" style="display:none">No daily moves &gt;5% in the last 180 days for GOOGL.</div>
+
+<h3 style="margin-top:28px">Signal log — GOOGL</h3>
+<table id="sigTable">
+  <thead>
+    <tr>
+      <th>Fired (UTC)</th>
+      <th>Action</th>
+      <th class="num">Score</th>
+      <th>Summary</th>
+      <th>Status</th>
+      <th class="num">Return</th>
+      <th>Outcome</th>
+    </tr>
+  </thead>
+  <tbody id="sigRows"></tbody>
+</table>
+<div id="noSigs" class="empty" style="display:none">No signals fired for GOOGL in the last 180 days.</div>
+
+<div style="margin-top:24px">
+  <a href="../signals.html" style="color:var(--ok)">&larr; All signals</a>
+  &nbsp;&nbsp;
+  <a href="../learning.html" style="color:var(--ok)">Learning timeline &rarr;</a>
+</div>
+
+<script src="../vendor/chart.umd.min.js"></script>
+<script src="../vendor/chartjs-plugin-annotation.min.js"></script>
+<script id="pdata" type="application/json">[{"date": "2025-11-03", "close": 283.72}, {"date": "2025-11-04", "close": 277.54}, {"date": "2025-11-05", "close": 284.31}, {"date": "2025-11-06", "close": 284.75}, {"date": "2025-11-07", "close": 278.83}, {"date": "2025-11-10", "close": 290.1}, {"date": "2025-11-11", "close": 291.31}, {"date": "2025-11-12", "close": 286.71}, {"date": "2025-11-13", "close": 278.57}, {"date": "2025-11-14", "close": 276.41}, {"date": "2025-11-17", "close": 285.02}, {"date": "2025-11-18", "close": 284.28}, {"date": "2025-11-19", "close": 292.81}, {"date": "2025-11-20", "close": 289.45}, {"date": "2025-11-21", "close": 299.66}, {"date": "2025-11-24", "close": 318.58}, {"date": "2025-11-25", "close": 323.44}, {"date": "2025-11-26", "close": 319.95}, {"date": "2025-11-28", "close": 320.18}, {"date": "2025-12-01", "close": 314.89}, {"date": "2025-12-02", "close": 315.81}, {"date": "2025-12-03", "close": 319.63}, {"date": "2025-12-04", "close": 317.62}, {"date": "2025-12-05", "close": 321.27}, {"date": "2025-12-08", "close": 313.72}, {"date": "2025-12-09", "close": 317.08}, {"date": "2025-12-10", "close": 320.21}, {"date": "2025-12-11", "close": 312.43}, {"date": "2025-12-12", "close": 309.29}, {"date": "2025-12-15", "close": 308.22}, {"date": "2025-12-16", "close": 306.57}, {"date": "2025-12-17", "close": 296.72}, {"date": "2025-12-18", "close": 302.46}, {"date": "2025-12-19", "close": 307.16}, {"date": "2025-12-22", "close": 309.78}, {"date": "2025-12-23", "close": 314.35}, {"date": "2025-12-24", "close": 314.09}, {"date": "2025-12-26", "close": 313.51}, {"date": "2025-12-29", "close": 313.56}, {"date": "2025-12-30", "close": 313.85}, {"date": "2025-12-31", "close": 313.0}, {"date": "2026-01-02", "close": 315.15}, {"date": "2026-01-05", "close": 316.54}, {"date": "2026-01-06", "close": 314.34}, {"date": "2026-01-07", "close": 321.98}, {"date": "2026-01-08", "close": 325.44}, {"date": "2026-01-09", "close": 328.57}, {"date": "2026-01-12", "close": 331.86}, {"date": "2026-01-13", "close": 335.97}, {"date": "2026-01-14", "close": 335.84}, {"date": "2026-01-15", "close": 332.78}, {"date": "2026-01-16", "close": 330.0}, {"date": "2026-01-20", "close": 322.0}, {"date": "2026-01-21", "close": 328.38}, {"date": "2026-01-22", "close": 330.54}, {"date": "2026-01-23", "close": 327.93}, {"date": "2026-01-26", "close": 333.26}, {"date": "2026-01-27", "close": 334.55}, {"date": "2026-01-28", "close": 336.01}, {"date": "2026-01-29", "close": 338.25}, {"date": "2026-01-30", "close": 338.0}, {"date": "2026-02-02", "close": 343.69}, {"date": "2026-02-03", "close": 339.71}, {"date": "2026-02-04", "close": 333.04}, {"date": "2026-02-05", "close": 331.25}, {"date": "2026-02-06", "close": 322.86}, {"date": "2026-02-09", "close": 324.32}, {"date": "2026-02-10", "close": 318.58}, {"date": "2026-02-11", "close": 310.96}, {"date": "2026-02-12", "close": 309.0}, {"date": "2026-02-13", "close": 305.72}, {"date": "2026-02-17", "close": 302.02}, {"date": "2026-02-18", "close": 303.33}, {"date": "2026-02-19", "close": 302.85}, {"date": "2026-02-20", "close": 314.98}, {"date": "2026-02-23", "close": 311.49}, {"date": "2026-02-24", "close": 310.9}, {"date": "2026-02-25", "close": 312.9}, {"date": "2026-02-26", "close": 307.38}, {"date": "2026-02-27", "close": 311.76}, {"date": "2026-03-02", "close": 306.52}, {"date": "2026-03-03", "close": 303.58}, {"date": "2026-03-04", "close": 303.13}, {"date": "2026-03-05", "close": 300.88}, {"date": "2026-03-06", "close": 298.52}, {"date": "2026-03-09", "close": 306.36}, {"date": "2026-03-10", "close": 307.04}, {"date": "2026-03-11", "close": 308.7}, {"date": "2026-03-12", "close": 303.55}, {"date": "2026-03-13", "close": 302.28}, {"date": "2026-03-16", "close": 305.56}, {"date": "2026-03-17", "close": 310.92}, {"date": "2026-03-18", "close": 307.69}, {"date": "2026-03-19", "close": 307.13}, {"date": "2026-03-20", "close": 301.0}, {"date": "2026-03-23", "close": 302.06}, {"date": "2026-03-24", "close": 290.44}, {"date": "2026-03-25", "close": 290.93}, {"date": "2026-03-26", "close": 280.92}, {"date": "2026-03-27", "close": 274.34}, {"date": "2026-03-30", "close": 273.5}, {"date": "2026-03-31", "close": 287.56}, {"date": "2026-04-01", "close": 297.39}, {"date": "2026-04-02", "close": 295.77}, {"date": "2026-04-06", "close": 299.99}, {"date": "2026-04-07", "close": 305.46}, {"date": "2026-04-08", "close": 317.32}, {"date": "2026-04-09", "close": 318.49}, {"date": "2026-04-10", "close": 317.24}, {"date": "2026-04-13", "close": 321.31}, {"date": "2026-04-14", "close": 332.91}, {"date": "2026-04-15", "close": 337.12}, {"date": "2026-04-16", "close": 336.02}, {"date": "2026-04-17", "close": 341.68}, {"date": "2026-04-20", "close": 337.42}, {"date": "2026-04-21", "close": 332.29}, {"date": "2026-04-22", "close": 339.32}, {"date": "2026-04-23", "close": 338.89}, {"date": "2026-04-24", "close": 344.4}, {"date": "2026-04-27", "close": 350.34}, {"date": "2026-04-28", "close": 349.78}, {"date": "2026-04-29", "close": 349.94}]</script>
+<script id="sdata" type="application/json">[{"id": 30, "ticker": "GOOGL", "fired_at": "2026-04-10T20:48:17+00:00", "action": "RESEARCH", "score": 51.0, "confidence": 0.51, "evidence_summary": "new 8-K; 4\u00d7 Form 4", "status_v2": "backtest", "model_version": "rubric-v1.1-backtest-multisource", "weight_at_time": {"mode": "multi_source_research_grade", "agents": ["filing"]}, "score_breakdown": null, "direction": "bullish", "horizon_days": 1, "agents": ["filing"], "_audit": {"signal_id": 30, "horizon_days": 1, "realized_return": 0.012149, "realized_at": "2026-04-13T20:00:00+00:00", "correct": true}}, {"id": 27, "ticker": "GOOGL", "fired_at": "2026-02-04T21:01:37+00:00", "action": "RESEARCH", "score": 68.0, "confidence": 0.68, "evidence_summary": "new 8-K beat", "status_v2": "backtest", "model_version": "rubric-v1.1-backtest-multisource", "weight_at_time": {"mode": "multi_source_research_grade", "agents": ["earnings", "filing"]}, "score_breakdown": null, "direction": "bullish", "horizon_days": 1, "agents": ["earnings", "filing"], "_audit": {"signal_id": 27, "horizon_days": 1, "realized_return": 0.059951, "realized_at": "2026-02-05T20:00:00+00:00", "correct": true}}]</script>
+<script id="edata" type="application/json">[{"ticker": "GOOGL", "event_type": "filing_4", "event_subtype": null, "event_at": "2025-11-03T21:27:07+00:00", "severity": 1, "payload": {"form_type": "4", "primary_doc_url": "https://www.sec.gov/Archives/edgar/data/1652044/000119312525262627/xslF345X05/ownership.xml", "accession_number": "0001193125-25-262627"}}, {"ticker": "GOOGL", "event_type": "filing_4", "event_subtype": null, "event_at": "2025-11-04T23:10:16+00:00", "severity": 1, "payload": {"form_type": "4", "primary_doc_url": "https://www.sec.gov/Archives/edgar/data/1652044/000119312525265136/xslF345X05/ownership.xml", "accession_number": "0001193125-25-265136"}}, {"ticker": "GOOGL", "event_type": "8k_material_event", "event_subtype": null, "event_at": "2025-11-06T21:47:26+00:00", "severity": 3, "payload": {"form_type": "8-K", "primary_doc_url": "https://www.sec.gov/Archives/edgar/data/1652044/000119312525269979/d56115d8k.htm", "accession_number": "0001193125-25-269979"}}, {"ticker": "GOOGL", "event_type": "filing_4", "event_subtype": null, "event_at": "2025-11-07T22:08:35+00:00", "severity": 1, "payload": {"form_type": "4", "primary_doc_url": "https://www.sec.gov/Archives/edgar/data/1652044/000119312525272562/xslF345X05/ownership.xml", "accession_number": "0001193125-25-272562"}}, {"ticker": "GOOGL", "event_type": "filing_4", "event_subtype": null, "event_at": "2025-11-18T00:26:10+00:00", "severity": 1, "payload": {"form_type": "4", "primary_doc_url": "https://www.sec.gov/Archives/edgar/data/1652044/000119312525284951/xslF345X05/ownership.xml", "accession_number": "0001193125-25-284951"}}, {"ticker": "GOOGL", "event_type": "filing_4", "event_subtype": null, "event_at": "2025-11-19T21:27:08+00:00", "severity": 1, "payload": {"form_type": "4", "primary_doc_url": "https://www.sec.gov/Archives/edgar/data/1652044/000119312525288144/xslF345X05/ownership.xml", "accession_number": "0001193125-25-288144"}}, {"ticker": "GOOGL", "event_type": "filing_4", "event_subtype": null, "event_at": "2025-11-22T01:04:57+00:00", "severity": 1, "payload": {"form_type": "4", "primary_doc_url": "https://www.sec.gov/Archives/edgar/data/1652044/000119312525291724/xslF345X05/ownership.xml", "accession_number": "0001193125-25-291724"}}, {"ticker": "GOOGL", "event_type": "filing_4", "event_subtype": null, "event_at": "2025-11-27T00:24:36+00:00", "severity": 1, "payload": {"form_type": "4", "primary_doc_url": "https://www.sec.gov/Archives/edgar/data/1652044/000119312525300961/xslF345X05/ownership.xml", "accession_number": "0001193125-25-300961"}}, {"ticker": "GOOGL", "event_type": "filing_4", "event_subtype": null, "event_at": "2025-11-28T22:13:22+00:00", "severity": 1, "payload": {"form_type": "4", "primary_doc_url": "https://www.sec.gov/Archives/edgar/data/1652044/000119312525302626/xslF345X05/ownership.xml", "accession_number": "0001193125-25-302626"}}, {"ticker": "GOOGL", "event_type": "filing_4", "event_subtype": null, "event_at": "2025-12-02T23:14:46+00:00", "severity": 1, "payload": {"form_type": "4", "primary_doc_url": "https://www.sec.gov/Archives/edgar/data/1652044/000119312525305547/xslF345X05/ownership.xml", "accession_number": "0001193125-25-305547"}}, {"ticker": "GOOGL", "event_type": "filing_4", "event_subtype": null, "event_at": "2025-12-03T00:21:46+00:00", "severity": 1, "payload": {"form_type": "4", "primary_doc_url": "https://www.sec.gov/Archives/edgar/data/1652044/000119312525305621/xslF345X05/ownership.xml", "accession_number": "0001193125-25-305621"}}, {"ticker": "GOOGL", "event_type": "filing_4", "event_subtype": null, "event_at": "2025-12-05T23:41:19+00:00", "severity": 1, "payload": {"form_type": "4", "primary_doc_url": "https://www.sec.gov/Archives/edgar/data/1652044/000119312525310054/xslF345X05/ownership.xml", "accession_number": "0001193125-25-310054"}}, {"ticker": "GOOGL", "event_type": "filing_4", "event_subtype": null, "event_at": "2025-12-11T23:22:23+00:00", "severity": 1, "payload": {"form_type": "4", "primary_doc_url": "https://www.sec.gov/Archives/edgar/data/1652044/000119312525316370/xslF345X05/ownership.xml", "accession_number": "0001193125-25-316370"}}, {"ticker": "GOOGL", "event_type": "filing_4", "event_subtype": null, "event_at": "2025-12-18T00:05:19+00:00", "severity": 1, "payload": {"form_type": "4", "primary_doc_url": "https://www.sec.gov/Archives/edgar/data/1652044/000119312525323246/xslF345X05/ownership.xml", "accession_number": "0001193125-25-323246"}}, {"ticker": "GOOGL", "event_type": "filing_4", "event_subtype": null, "event_at": "2025-12-18T01:08:55+00:00", "severity": 1, "payload": {"form_type": "4", "primary_doc_url": "https://www.sec.gov/Archives/edgar/data/1652044/000119312525323314/xslF345X05/ownership.xml", "accession_number": "0001193125-25-323314"}}, {"ticker": "GOOGL", "event_type": "filing_4", "event_subtype": null, "event_at": "2025-12-18T01:51:08+00:00", "severity": 1, "payload": {"form_type": "4", "primary_doc_url": "https://www.sec.gov/Archives/edgar/data/1652044/000119312525323357/xslF345X05/ownership.xml", "accession_number": "0001193125-25-323357"}}, {"ticker": "GOOGL", "event_type": "filing_4", "event_subtype": null, "event_at": "2025-12-18T02:12:23+00:00", "severity": 1, "payload": {"form_type": "4", "primary_doc_url": "https://www.sec.gov/Archives/edgar/data/1652044/000119312525323394/xslF345X05/ownership.xml", "accession_number": "0001193125-25-323394"}}, {"ticker": "GOOGL", "event_type": "filing_4", "event_subtype": null, "event_at": "2025-12-18T02:26:10+00:00", "severity": 1, "payload": {"form_type": "4", "primary_doc_url": "https://www.sec.gov/Archives/edgar/data/1652044/000119312525323408/xslF345X05/ownership.xml", "accession_number": "0001193125-25-323408"}}, {"ticker": "GOOGL", "event_type": "filing_4", "event_subtype": null, "event_at": "2025-12-18T02:38:47+00:00", "severity": 1, "payload": {"form_type": "4", "primary_doc_url": "https://www.sec.gov/Archives/edgar/data/1652044/000119312525323423/xslF345X05/ownership.xml", "accession_number": "0001193125-25-323423"}}, {"ticker": "GOOGL", "event_type": "filing_4", "event_subtype": null, "event_at": "2025-12-18T02:51:44+00:00", "severity": 1, "payload": {"form_type": "4", "primary_doc_url": "https://www.sec.gov/Archives/edgar/data/1652044/000119312525323453/xslF345X05/ownership.xml", "accession_number": "0001193125-25-323453"}}, {"ticker": "GOOGL", "event_type": "filing_4", "event_subtype": null, "event_at": "2025-12-18T22:06:36+00:00", "severity": 1, "payload": {"form_type": "4", "primary_doc_url": "https://www.sec.gov/Archives/edgar/data/1652044/000119312525325042/xslF345X05/ownership.xml", "accession_number": "0001193125-25-325042"}}, {"ticker": "GOOGL", "event_type": "filing_4", "event_subtype": null, "event_at": "2025-12-18T22:13:55+00:00", "severity": 1, "payload": {"form_type": "4", "primary_doc_url": "https://www.sec.gov/Archives/edgar/data/1652044/000119312525325075/xslF345X05/ownership.xml", "accession_number": "0001193125-25-325075"}}, {"ticker": "GOOGL", "event_type": "filing_4", "event_subtype": null, "event_at": "2025-12-18T22:18:00+00:00", "severity": 1, "payload": {"form_type": "4", "primary_doc_url": "https://www.sec.gov/Archives/edgar/data/1652044/000119312525325094/xslF345X05/ownership.xml", "accession_number": "0001193125-25-325094"}}, {"ticker": "GOOGL", "event_type": "filing_4", "event_subtype": null, "event_at": "2025-12-18T22:25:47+00:00", "severity": 1, "payload": {"form_type": "4", "primary_doc_url": "https://www.sec.gov/Archives/edgar/data/1652044/000119312525325123/xslF345X05/ownership.xml", "accession_number": "0001193125-25-325123"}}, {"ticker": "GOOGL", "event_type": "filing_4", "event_subtype": null, "event_at": "2025-12-18T22:28:21+00:00", "severity": 1, "payload": {"form_type": "4", "primary_doc_url": "https://www.sec.gov/Archives/edgar/data/1652044/000119312525325129/xslF345X05/ownership.xml", "accession_number": "0001193125-25-325129"}}, {"ticker": "GOOGL", "event_type": "filing_4", "event_subtype": null, "event_at": "2025-12-30T23:09:00+00:00", "severity": 1, "payload": {"form_type": "4", "primary_doc_url": "https://www.sec.gov/Archives/edgar/data/1652044/000119312525337346/xslF345X05/ownership.xml", "accession_number": "0001193125-25-337346"}}, {"ticker": "GOOGL", "event_type": "filing_4", "event_subtype": null, "event_at": "2025-12-30T23:45:55+00:00", "severity": 1, "payload": {"form_type": "4", "primary_doc_url": "https://www.sec.gov/Archives/edgar/data/1652044/000119312525337386/xslF345X05/ownership.xml", "accession_number": "0001193125-25-337386"}}, {"ticker": "GOOGL", "event_type": "filing_4", "event_subtype": null, "event_at": "2025-12-31T00:48:13+00:00", "severity": 1, "payload": {"form_type": "4", "primary_doc_url": "https://www.sec.gov/Archives/edgar/data/1652044/000119312525337416/xslF345X05/ownership.xml", "accession_number": "0001193125-25-337416"}}, {"ticker": "GOOGL", "event_type": "filing_4", "event_subtype": null, "event_at": "2025-12-31T01:09:15+00:00", "severity": 1, "payload": {"form_type": "4", "primary_doc_url": "https://www.sec.gov/Archives/edgar/data/1652044/000119312525337426/xslF345X05/ownership.xml", "accession_number": "0001193125-25-337426"}}, {"ticker": "GOOGL", "event_type": "filing_4", "event_subtype": null, "event_at": "2025-12-31T02:20:32+00:00", "severity": 1, "payload": {"form_type": "4", "primary_doc_url": "https://www.sec.gov/Archives/edgar/data/1652044/000119312525337462/xslF345X05/ownership.xml", "accession_number": "0001193125-25-337462"}}, {"ticker": "GOOGL", "event_type": "filing_4", "event_subtype": null, "event_at": "2025-12-31T22:31:41+00:00", "severity": 1, "payload": {"form_type": "4", "primary_doc_url": "https://www.sec.gov/Archives/edgar/data/1652044/000119312525338435/xslF345X05/ownership.xml", "accession_number": "0001193125-25-338435"}}, {"ticker": "GOOGL", "event_type": "filing_4", "event_subtype": null, "event_at": "2025-12-31T23:23:29+00:00", "severity": 1, "payload": {"form_type": "4", "primary_doc_url": "https://www.sec.gov/Archives/edgar/data/1652044/000119312525338475/xslF345X05/ownership.xml", "accession_number": "0001193125-25-338475"}}, {"ticker": "GOOGL", "event_type": "filing_4", "event_subtype": null, "event_at": "2026-01-02T22:41:00+00:00", "severity": 1, "payload": {"form_type": "4", "primary_doc_url": "https://www.sec.gov/Archives/edgar/data/1652044/000119312526001121/xslF345X05/ownership.xml", "accession_number": "0001193125-26-001121"}}, {"ticker": "GOOGL", "event_type": "filing_4", "event_subtype": null, "event_at": "2026-01-08T23:06:10+00:00", "severity": 1, "payload": {"form_type": "4", "primary_doc_url": "https://www.sec.gov/Archives/edgar/data/1652044/000119312526007914/xslF345X05/ownership.xml", "accession_number": "0001193125-26-007914"}}, {"ticker": "GOOGL", "event_type": "filing_4", "event_subtype": null, "event_at": "2026-01-16T01:14:34+00:00", "severity": 1, "payload": {"form_type": "4", "primary_doc_url": "https://www.sec.gov/Archives/edgar/data/1652044/000119312526014378/xslF345X05/ownership.xml", "accession_number": "0001193125-26-014378"}}, {"ticker": "GOOGL", "event_type": "filing_4", "event_subtype": null, "event_at": "2026-01-16T01:18:13+00:00", "severity": 1, "payload": {"form_type": "4", "primary_doc_url": "https://www.sec.gov/Archives/edgar/data/1652044/000119312526014381/xslF345X05/ownership.xml", "accession_number": "0001193125-26-014381"}}, {"ticker": "GOOGL", "event_type": "filing_4", "event_subtype": null, "event_at": "2026-01-16T01:20:10+00:00", "severity": 1, "payload": {"form_type": "4", "primary_doc_url": "https://www.sec.gov/Archives/edgar/data/1652044/000119312526014384/xslF345X05/ownership.xml", "accession_number": "0001193125-26-014384"}}, {"ticker": "GOOGL", "event_type": "filing_4", "event_subtype": null, "event_at": "2026-01-16T01:23:30+00:00", "severity": 1, "payload": {"form_type": "4", "primary_doc_url": "https://www.sec.gov/Archives/edgar/data/1652044/000119312526014386/xslF345X05/ownership.xml", "accession_number": "0001193125-26-014386"}}, {"ticker": "GOOGL", "event_type": "filing_4", "event_subtype": null, "event_at": "2026-01-24T00:47:17+00:00", "severity": 1, "payload": {"form_type": "4", "primary_doc_url": "https://www.sec.gov/Archives/edgar/data/1652044/000119312526021420/xslF345X05/ownership.xml", "accession_number": "0001193125-26-021420"}}, {"ticker": "GOOGL", "event_type": "filing_4", "event_subtype": null, "event_at": "2026-01-28T01:46:53+00:00", "severity": 1, "payload": {"form_type": "4", "primary_doc_url": "https://www.sec.gov/Archives/edgar/data/1652044/000119312526025268/xslF345X05/ownership.xml", "accession_number": "0001193125-26-025268"}}, {"ticker": "GOOGL", "event_type": "filing_4", "event_subtype": null, "event_at": "2026-01-30T23:43:02+00:00", "severity": 1, "payload": {"form_type": "4", "primary_doc_url": "https://www.sec.gov/Archives/edgar/data/1652044/000116840426000007/xslF345X05/form4-01302026_110152.xml", "accession_number": "0001168404-26-000007"}}, {"ticker": "GOOGL", "event_type": "filing_4", "event_subtype": null, "event_at": "2026-01-31T00:52:51+00:00", "severity": 1, "payload": {"form_type": "4", "primary_doc_url": "https://www.sec.gov/Archives/edgar/data/1652044/000119312526032283/xslF345X05/ownership.xml", "accession_number": "0001193125-26-032283"}}, {"ticker": "GOOGL", "event_type": "filing_4", "event_subtype": null, "event_at": "2026-02-03T23:50:39+00:00", "severity": 1, "payload": {"form_type": "4", "primary_doc_url": "https://www.sec.gov/Archives/edgar/data/1652044/000119312526036148/xslF345X05/ownership.xml", "accession_number": "0001193125-26-036148"}}, {"ticker": "GOOGL", "event_type": "earnings_release", "event_subtype": "beat", "event_at": "2026-02-04T21:00:00+00:00", "severity": 3, "payload": {"actual_eps": 2.82, "surprise_pct": 7.01, "estimated_eps": 2.64}}, {"ticker": "GOOGL", "event_type": "8k_material_event", "event_subtype": null, "event_at": "2026-02-04T21:01:37+00:00", "severity": 3, "payload": {"form_type": "8-K", "primary_doc_url": "https://www.sec.gov/Archives/edgar/data/1652044/000165204426000012/goog-20260204.htm", "accession_number": "0001652044-26-000012"}}, {"ticker": "GOOGL", "event_type": "filing_10-k", "event_subtype": null, "event_at": "2026-02-05T02:56:03+00:00", "severity": 1, "payload": {"form_type": "10-K", "primary_doc_url": "https://www.sec.gov/Archives/edgar/data/1652044/000165204426000018/goog-20251231.htm", "accession_number": "0001652044-26-000018"}}, {"ticker": "GOOGL", "event_type": "filing_4", "event_subtype": null, "event_at": "2026-02-07T00:36:40+00:00", "severity": 1, "payload": {"form_type": "4", "primary_doc_url": "https://www.sec.gov/Archives/edgar/data/1652044/000119312526041594/xslF345X05/ownership.xml", "accession_number": "0001193125-26-041594"}}, {"ticker": "GOOGL", "event_type": "filing_4", "event_subtype": null, "event_at": "2026-02-13T00:19:00+00:00", "severity": 1, "payload": {"form_type": "4", "primary_doc_url": "https://www.sec.gov/Archives/edgar/data/1652044/000119312526049261/xslF345X05/ownership.xml", "accession_number": "0001193125-26-049261"}}, {"ticker": "GOOGL", "event_type": "8k_material_event", "event_subtype": null, "event_at": "2026-02-13T21:16:46+00:00", "severity": 3, "payload": {"form_type": "8-K", "primary_doc_url": "https://www.sec.gov/Archives/edgar/data/1652044/000119312526051423/d946885d8k.htm", "accession_number": "0001193125-26-051423"}}, {"ticker": "GOOGL", "event_type": "filing_4", "event_subtype": null, "event_at": "2026-02-18T01:24:00+00:00", "severity": 1, "payload": {"form_type": "4", "primary_doc_url": "https://www.sec.gov/Archives/edgar/data/1652044/000119312526055574/xslF345X05/ownership.xml", "accession_number": "0001193125-26-055574"}}, {"ticker": "GOOGL", "event_type": "filing_4", "event_subtype": null, "event_at": "2026-02-20T01:48:14+00:00", "severity": 1, "payload": {"form_type": "4", "primary_doc_url": "https://www.sec.gov/Archives/edgar/data/1652044/000119312526060024/xslF345X05/ownership.xml", "accession_number": "0001193125-26-060024"}}, {"ticker": "GOOGL", "event_type": "filing_4", "event_subtype": null, "event_at": "2026-02-20T22:14:05+00:00", "severity": 1, "payload": {"form_type": "4", "primary_doc_url": "https://www.sec.gov/Archives/edgar/data/1652044/000119312526061632/xslF345X05/ownership.xml", "accession_number": "0001193125-26-061632"}}, {"ticker": "GOOGL", "event_type": "filing_4", "event_subtype": null, "event_at": "2026-02-20T22:34:53+00:00", "severity": 1, "payload": {"form_type": "4", "primary_doc_url": "https://www.sec.gov/Archives/edgar/data/1652044/000119312526061707/xslF345X05/ownership.xml", "accession_number": "0001193125-26-061707"}}, {"ticker": "GOOGL", "event_type": "filing_4", "event_subtype": null, "event_at": "2026-02-26T00:17:50+00:00", "severity": 1, "payload": {"form_type": "4", "primary_doc_url": "https://www.sec.gov/Archives/edgar/data/1652044/000119312526072513/xslF345X05/ownership.xml", "accession_number": "0001193125-26-072513"}}, {"ticker": "GOOGL", "event_type": "filing_4", "event_subtype": null, "event_at": "2026-02-28T00:08:46+00:00", "severity": 1, "payload": {"form_type": "4", "primary_doc_url": "https://www.sec.gov/Archives/edgar/data/1652044/000119312526083604/xslF345X05/ownership.xml", "accession_number": "0001193125-26-083604"}}, {"ticker": "GOOGL", "event_type": "filing_4", "event_subtype": null, "event_at": "2026-03-03T00:27:29+00:00", "severity": 1, "payload": {"form_type": "4", "primary_doc_url": "https://www.sec.gov/Archives/edgar/data/1652044/000119312526086140/xslF345X05/ownership.xml", "accession_number": "0001193125-26-086140"}}, {"ticker": "GOOGL", "event_type": "filing_4", "event_subtype": null, "event_at": "2026-03-04T22:31:03+00:00", "severity": 1, "payload": {"form_type": "4", "primary_doc_url": "https://www.sec.gov/Archives/edgar/data/1652044/000119312526091912/xslF345X05/ownership.xml", "accession_number": "0001193125-26-091912"}}, {"ticker": "GOOGL", "event_type": "filing_4", "event_subtype": null, "event_at": "2026-03-04T22:31:50+00:00", "severity": 1, "payload": {"form_type": "4", "primary_doc_url": "https://www.sec.gov/Archives/edgar/data/1652044/000119312526091916/xslF345X05/ownership.xml", "accession_number": "0001193125-26-091916"}}, {"ticker": "GOOGL", "event_type": "8k_material_event", "event_subtype": null, "event_at": "2026-03-06T22:21:44+00:00", "severity": 3, "payload": {"form_type": "8-K", "primary_doc_url": "https://www.sec.gov/Archives/edgar/data/1652044/000165204426000026/goog-20260304.htm", "accession_number": "0001652044-26-000026"}}, {"ticker": "GOOGL", "event_type": "filing_4", "event_subtype": null, "event_at": "2026-03-06T22:43:01+00:00", "severity": 1, "payload": {"form_type": "4", "primary_doc_url": "https://www.sec.gov/Archives/edgar/data/1652044/000119312526097008/xslF345X05/ownership.xml", "accession_number": "0001193125-26-097008"}}, {"ticker": "GOOGL", "event_type": "filing_4", "event_subtype": null, "event_at": "2026-03-19T01:25:23+00:00", "severity": 1, "payload": {"form_type": "4", "primary_doc_url": "https://www.sec.gov/Archives/edgar/data/1652044/000119312526114804/xslF345X06/ownership.xml", "accession_number": "0001193125-26-114804"}}, {"ticker": "GOOGL", "event_type": "filing_4", "event_subtype": null, "event_at": "2026-03-19T01:39:47+00:00", "severity": 1, "payload": {"form_type": "4", "primary_doc_url": "https://www.sec.gov/Archives/edgar/data/1652044/000119312526114831/xslF345X06/ownership.xml", "accession_number": "0001193125-26-114831"}}, {"ticker": "GOOGL", "event_type": "filing_4", "event_subtype": null, "event_at": "2026-03-19T01:42:47+00:00", "severity": 1, "payload": {"form_type": "4", "primary_doc_url": "https://www.sec.gov/Archives/edgar/data/1652044/000119312526114840/xslF345X06/ownership.xml", "accession_number": "0001193125-26-114840"}}, {"ticker": "GOOGL", "event_type": "filing_4", "event_subtype": null, "event_at": "2026-03-19T01:43:20+00:00", "severity": 1, "payload": {"form_type": "4", "primary_doc_url": "https://www.sec.gov/Archives/edgar/data/1652044/000119312526114842/xslF345X06/ownership.xml", "accession_number": "0001193125-26-114842"}}, {"ticker": "GOOGL", "event_type": "filing_4", "event_subtype": null, "event_at": "2026-03-19T01:43:48+00:00", "severity": 1, "payload": {"form_type": "4", "primary_doc_url": "https://www.sec.gov/Archives/edgar/data/1652044/000119312526114844/xslF345X06/ownership.xml", "accession_number": "0001193125-26-114844"}}, {"ticker": "GOOGL", "event_type": "filing_4", "event_subtype": null, "event_at": "2026-03-19T01:44:19+00:00", "severity": 1, "payload": {"form_type": "4", "primary_doc_url": "https://www.sec.gov/Archives/edgar/data/1652044/000119312526114847/xslF345X06/ownership.xml", "accession_number": "0001193125-26-114847"}}, {"ticker": "GOOGL", "event_type": "filing_4", "event_subtype": null, "event_at": "2026-03-19T01:44:51+00:00", "severity": 1, "payload": {"form_type": "4", "primary_doc_url": "https://www.sec.gov/Archives/edgar/data/1652044/000119312526114850/xslF345X06/ownership.xml", "accession_number": "0001193125-26-114850"}}, {"ticker": "GOOGL", "event_type": "filing_4", "event_subtype": null, "event_at": "2026-03-19T01:45:18+00:00", "severity": 1, "payload": {"form_type": "4", "primary_doc_url": "https://www.sec.gov/Archives/edgar/data/1652044/000119312526114853/xslF345X06/ownership.xml", "accession_number": "0001193125-26-114853"}}, {"ticker": "GOOGL", "event_type": "filing_4", "event_subtype": null, "event_at": "2026-03-19T01:45:39+00:00", "severity": 1, "payload": {"form_type": "4", "primary_doc_url": "https://www.sec.gov/Archives/edgar/data/1652044/000119312526114855/xslF345X06/ownership.xml", "accession_number": "0001193125-26-114855"}}, {"ticker": "GOOGL", "event_type": "filing_4", "event_subtype": null, "event_at": "2026-03-19T01:48:35+00:00", "severity": 1, "payload": {"form_type": "4", "primary_doc_url": "https://www.sec.gov/Archives/edgar/data/1652044/000119312526114859/xslF345X06/ownership.xml", "accession_number": "0001193125-26-114859"}}, {"ticker": "GOOGL", "event_type": "filing_4", "event_subtype": null, "event_at": "2026-03-19T01:50:21+00:00", "severity": 1, "payload": {"form_type": "4", "primary_doc_url": "https://www.sec.gov/Archives/edgar/data/1652044/000119312526114868/xslF345X06/ownership.xml", "accession_number": "0001193125-26-114868"}}, {"ticker": "GOOGL", "event_type": "filing_4", "event_subtype": null, "event_at": "2026-03-19T01:50:43+00:00", "severity": 1, "payload": {"form_type": "4", "primary_doc_url": "https://www.sec.gov/Archives/edgar/data/1652044/000119312526114871/xslF345X06/ownership.xml", "accession_number": "0001193125-26-114871"}}, {"ticker": "GOOGL", "event_type": "filing_4", "event_subtype": null, "event_at": "2026-03-19T01:51:08+00:00", "severity": 1, "payload": {"form_type": "4", "primary_doc_url": "https://www.sec.gov/Archives/edgar/data/1652044/000119312526114872/xslF345X06/ownership.xml", "accession_number": "0001193125-26-114872"}}, {"ticker": "GOOGL", "event_type": "filing_4", "event_subtype": null, "event_at": "2026-03-27T22:59:56+00:00", "severity": 1, "payload": {"form_type": "4", "primary_doc_url": "https://www.sec.gov/Archives/edgar/data/1652044/000119312526129915/xslF345X06/ownership.xml", "accession_number": "0001193125-26-129915"}}, {"ticker": "GOOGL", "event_type": "filing_4", "event_subtype": null, "event_at": "2026-03-27T23:17:05+00:00", "severity": 1, "payload": {"form_type": "4", "primary_doc_url": "https://www.sec.gov/Archives/edgar/data/1652044/000119312526129937/xslF345X06/ownership.xml", "accession_number": "0001193125-26-129937"}}, {"ticker": "GOOGL", "event_type": "filing_4", "event_subtype": null, "event_at": "2026-03-27T23:33:06+00:00", "severity": 1, "payload": {"form_type": "4", "primary_doc_url": "https://www.sec.gov/Archives/edgar/data/1652044/000119312526129959/xslF345X06/ownership.xml", "accession_number": "0001193125-26-129959"}}, {"ticker": "GOOGL", "event_type": "filing_4", "event_subtype": null, "event_at": "2026-03-27T23:49:31+00:00", "severity": 1, "payload": {"form_type": "4", "primary_doc_url": "https://www.sec.gov/Archives/edgar/data/1652044/000119312526129971/xslF345X06/ownership.xml", "accession_number": "0001193125-26-129971"}}, {"ticker": "GOOGL", "event_type": "filing_4", "event_subtype": null, "event_at": "2026-03-27T23:59:27+00:00", "severity": 1, "payload": {"form_type": "4", "primary_doc_url": "https://www.sec.gov/Archives/edgar/data/1652044/000119312526129980/xslF345X06/ownership.xml", "accession_number": "0001193125-26-129980"}}, {"ticker": "GOOGL", "event_type": "filing_4", "event_subtype": null, "event_at": "2026-03-28T00:15:55+00:00", "severity": 1, "payload": {"form_type": "4", "primary_doc_url": "https://www.sec.gov/Archives/edgar/data/1652044/000119312526129999/xslF345X06/ownership.xml", "accession_number": "0001193125-26-129999"}}, {"ticker": "GOOGL", "event_type": "filing_4", "event_subtype": null, "event_at": "2026-04-01T00:39:05+00:00", "severity": 1, "payload": {"form_type": "4", "primary_doc_url": "https://www.sec.gov/Archives/edgar/data/1652044/000119312526135258/xslF345X06/ownership.xml", "accession_number": "0001193125-26-135258"}}, {"ticker": "GOOGL", "event_type": "filing_4", "event_subtype": null, "event_at": "2026-04-01T01:43:02+00:00", "severity": 1, "payload": {"form_type": "4", "primary_doc_url": "https://www.sec.gov/Archives/edgar/data/1652044/000119312526135334/xslF345X06/ownership.xml", "accession_number": "0001193125-26-135334"}}, {"ticker": "GOOGL", "event_type": "8k_material_event", "event_subtype": null, "event_at": "2026-04-02T20:18:28+00:00", "severity": 3, "payload": {"form_type": "8-K", "primary_doc_url": "https://www.sec.gov/Archives/edgar/data/1652044/000165204426000031/goog-20260330.htm", "accession_number": "0001652044-26-000031"}}, {"ticker": "GOOGL", "event_type": "filing_4", "event_subtype": null, "event_at": "2026-04-03T21:31:35+00:00", "severity": 1, "payload": {"form_type": "4", "primary_doc_url": "https://www.sec.gov/Archives/edgar/data/1652044/000119312526142372/xslF345X06/ownership.xml", "accession_number": "0001193125-26-142372"}}, {"ticker": "GOOGL", "event_type": "8k_material_event", "event_subtype": null, "event_at": "2026-04-10T20:16:53+00:00", "severity": 3, "payload": {"form_type": "8-K", "primary_doc_url": "https://www.sec.gov/Archives/edgar/data/1652044/000165204426000034/goog-20260407.htm", "accession_number": "0001652044-26-000034"}}, {"ticker": "GOOGL", "event_type": "filing_4", "event_subtype": null, "event_at": "2026-04-10T20:23:35+00:00", "severity": 1, "payload": {"form_type": "4", "primary_doc_url": "https://www.sec.gov/Archives/edgar/data/1652044/000119312526151329/xslF345X06/ownership.xml", "accession_number": "0001193125-26-151329"}}, {"ticker": "GOOGL", "event_type": "filing_4", "event_subtype": null, "event_at": "2026-04-10T20:29:41+00:00", "severity": 1, "payload": {"form_type": "4", "primary_doc_url": "https://www.sec.gov/Archives/edgar/data/1652044/000119312526151343/xslF345X06/ownership.xml", "accession_number": "0001193125-26-151343"}}, {"ticker": "GOOGL", "event_type": "filing_4", "event_subtype": null, "event_at": "2026-04-10T20:35:51+00:00", "severity": 1, "payload": {"form_type": "4", "primary_doc_url": "https://www.sec.gov/Archives/edgar/data/1652044/000119312526151366/xslF345X06/ownership.xml", "accession_number": "0001193125-26-151366"}}, {"ticker": "GOOGL", "event_type": "filing_4", "event_subtype": null, "event_at": "2026-04-10T20:48:17+00:00", "severity": 1, "payload": {"form_type": "4", "primary_doc_url": "https://www.sec.gov/Archives/edgar/data/1652044/000119312526151397/xslF345X06/ownership.xml", "accession_number": "0001193125-26-151397"}}, {"ticker": "GOOGL", "event_type": "filing_4", "event_subtype": null, "event_at": "2026-04-18T01:58:19+00:00", "severity": 1, "payload": {"form_type": "4", "primary_doc_url": "https://www.sec.gov/Archives/edgar/data/1652044/000119312526162189/xslF345X06/ownership.xml", "accession_number": "0001193125-26-162189"}}, {"ticker": "GOOGL", "event_type": "filing_4", "event_subtype": null, "event_at": "2026-04-28T21:54:54+00:00", "severity": 1, "payload": {"form_type": "4", "primary_doc_url": "https://www.sec.gov/Archives/edgar/data/1652044/000119312526188485/xslF345X06/ownership.xml", "accession_number": "0001193125-26-188485"}}, {"ticker": "GOOGL", "event_type": "filing_4", "event_subtype": null, "event_at": "2026-04-28T21:56:16+00:00", "severity": 1, "payload": {"form_type": "4", "primary_doc_url": "https://www.sec.gov/Archives/edgar/data/1652044/000119312526188490/xslF345X06/ownership.xml", "accession_number": "0001193125-26-188490"}}, {"ticker": "GOOGL", "event_type": "filing_4", "event_subtype": null, "event_at": "2026-04-28T21:56:30+00:00", "severity": 1, "payload": {"form_type": "4", "primary_doc_url": "https://www.sec.gov/Archives/edgar/data/1652044/000119312526188492/xslF345X06/ownership.xml", "accession_number": "0001193125-26-188492"}}, {"ticker": "GOOGL", "event_type": "8k_material_event", "event_subtype": null, "event_at": "2026-04-29T16:01:35+00:00", "severity": 3, "payload": {"8k_items": "2.02,9.01", "form_type": "8-K", "primary_doc_url": "https://www.sec.gov/Archives/edgar/data/1652044/000165204426000043/goog-20260429.htm", "accession_number": "0001652044-26-000043"}}, {"ticker": "GOOGL", "event_type": "news_article", "event_subtype": "neutral", "event_at": "2026-04-29T17:24:27+00:00", "severity": 2, "payload": {"url": "https://www.cnbc.com/2026/04/29/traders-brace-for-800-billion-in-earnings-related-stock-movement.html", "source": "cnbc_markets", "headline": "Traders brace for $800 billion in earnings-related stock movement", "article_id": "c4eddf083d972ece3321ade5", "direction_prior": "neutral"}}, {"ticker": "GOOGL", "event_type": "filing_4", "event_subtype": null, "event_at": "2026-04-29T19:10:37+00:00", "severity": 1, "payload": {"8k_items": "", "form_type": "4", "primary_doc_url": "https://www.sec.gov/Archives/edgar/data/1652044/000119312526192974/xslF345X06/ownership.xml", "accession_number": "0001193125-26-192974"}}, {"ticker": "GOOGL", "event_type": "earnings_release", "event_subtype": "beat", "event_at": "2026-04-29T20:00:00+00:00", "severity": 4, "payload": {"actual_eps": 5.11, "surprise_pct": 94.1, "estimated_eps": 2.63}}, {"ticker": "GOOGL", "event_type": "news_article", "event_subtype": "neutral", "event_at": "2026-04-29T23:23:54+00:00", "severity": 2, "payload": {"url": "https://www.cnbc.com/2026/04/29/why-alphabet-won-the-big-tech-earnings-night.html", "source": "cnbc_markets", "headline": "Why Alphabet won the Big Tech earnings night", "article_id": "029ada528a6f2fdf4566b0f7", "direction_prior": "neutral"}}, {"ticker": "GOOGL", "event_type": "filing_4", "event_subtype": null, "event_at": "2026-04-30T01:59:26+00:00", "severity": 1, "payload": {"8k_items": "", "form_type": "4", "primary_doc_url": "https://www.sec.gov/Archives/edgar/data/1652044/000119312526193335/xslF345X06/ownership.xml", "accession_number": "0001193125-26-193335"}}]</script>
+<script>
+const prices  = JSON.parse(document.getElementById('pdata').textContent);
+const signals = JSON.parse(document.getElementById('sdata').textContent);
+const events  = JSON.parse(document.getElementById('edata').textContent);
+
+// ── Date axis (one entry per available trading day) ──────────────
+const labels = prices.map(p => p.date);
+const closes = prices.map(p => p.close);
+const dateToIdx = {};
+labels.forEach((d, i) => { dateToIdx[d] = i; });
+
+// ── Event-type → display config ──────────────────────────────────
+function eventBucket(et) {
+  if (!et) return 'other';
+  if (et === '8k_material_event' || et.indexOf('filing_') === 0) return 'filing';
+  if (et === 'earnings_release' || et === 'earnings_pre' || et === 'earnings_post') return 'earnings';
+  if (et === 'momentum') return 'momentum';
+  if (et === 'news_article') return 'news';
+  if (et === 'truth_social_post') return 'social';
+  return 'other';
+}
+const BUCKET_COLOR = {
+  filing:   '#5a8fd9',
+  earnings: '#e89c5a',
+  momentum: '#9c9c9c',
+  news:     '#a07acc',
+  social:   '#d97a8f',
+  other:    '#888888',
+};
+
+// ── Build chart annotations: one dot per event + one dot per signal ──
+const annotations = {};
+
+// Events as small dots on the price line
+events.forEach((e, i) => {
+  const eventDate = (e.event_at || '').substring(0, 10);
+  const idx = dateToIdx[eventDate];
+  if (idx === undefined) return;
+  const bucket = eventBucket(e.event_type);
+  annotations['ev_' + i] = {
+    type: 'point',
+    xValue: eventDate,
+    yValue: closes[idx],
+    backgroundColor: BUCKET_COLOR[bucket],
+    radius: 4,
+    borderWidth: 0,
+  };
+});
+
+// Signals as larger labeled dots (drawn on top because they're added after)
+signals.forEach((sig, i) => {
+  const firedDate = (sig.fired_at || '').substring(0, 10);
+  const idx = dateToIdx[firedDate];
+  if (idx === undefined) return;
+  const isAvoid = sig.action === 'AVOID_CHASE';
+  const color   = sig.action === 'WATCH' ? '#4caf93' : isAvoid ? '#e85a5a' : '#e8c15a';
+  annotations['sig_' + i] = {
+    type: 'point', xValue: firedDate, yValue: closes[idx],
+    backgroundColor: color, radius: 9, borderColor: '#fff', borderWidth: 2,
+    label: { display: true, content: sig.action + ' ' + Math.round(sig.score || 0),
+             position: isAvoid ? 'end' : 'start', color: '#fff',
+             backgroundColor: color, font: { size: 10 } },
+  };
+  const audit = sig._audit;
+  if (audit) {
+    const exitIdx = Math.min(idx + (sig.horizon_days || 1), labels.length - 1);
+    annotations['shade_' + i] = {
+      type: 'box', xMin: firedDate, xMax: labels[exitIdx],
+      backgroundColor: audit.correct ? '#4caf9322' : '#e85a5a22', borderWidth: 0,
+    };
+  }
+});
+
+new Chart(document.getElementById('priceChart'), {
+  type: 'line',
+  data: {
+    labels,
+    datasets: [{ label: 'GOOGL Close', data: closes, borderColor: '#7ab8d9',
+                 backgroundColor: '#7ab8d911', tension: 0.2, pointRadius: 0, fill: true }],
+  },
+  options: {
+    responsive: true,
+    scales: {
+      x: { ticks: { maxTicksLimit: 12 } },
+      y: { ticks: { callback: v => '$' + v.toFixed(0) } },
+    },
+    plugins: {
+      legend: { display: false },
+      annotation: { annotations },
+      tooltip: { callbacks: { label: ctx => '$' + ctx.parsed.y.toFixed(2) } },
+    }
+  }
+});
+
+// ── Big Moves table — find days with |daily return| > 5%, list nearby events ──
+function eventLabel(e) {
+  const p = e.payload || {};
+  if (e.event_type === '8k_material_event') {
+    const items = p['8k_items'] ? ' [items: ' + p['8k_items'] + ']' : '';
+    return '8-K' + items;
+  }
+  if (e.event_type === 'earnings_release') {
+    const sub = e.event_subtype || 'earnings';
+    const surp = (p.surprise_pct != null) ? ' (' + Number(p.surprise_pct).toFixed(1) + '%)' : '';
+    return 'Earnings ' + sub + surp;
+  }
+  if (e.event_type === 'momentum') {
+    const rs = p.rel_strength_pct;
+    return 'Momentum' + (rs != null ? ' ' + Number(rs).toFixed(1) + '% vs SPY' : '');
+  }
+  if (e.event_type && e.event_type.indexOf('filing_') === 0) {
+    return p.form_type || e.event_type.replace('filing_', '').toUpperCase();
+  }
+  if (e.event_type === 'news_article') return p.headline || 'News';
+  return e.event_type;
+}
+
+// HTML-escape — payloads may contain raw text from RSS, must never reach innerHTML unescaped.
+function esc(s) {
+  if (s === null || s === undefined) return '';
+  return String(s).replace(/[&<>"']/g, c => ({
+    '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'
+  }[c]));
+}
+
+const bigMoves = [];
+for (let i = 1; i < prices.length; i++) {
+  const prev = prices[i - 1].close;
+  const cur  = prices[i].close;
+  if (!prev || !cur) continue;
+  const ret  = (cur - prev) / prev;
+  if (Math.abs(ret) < 0.05) continue;
+
+  // Find events in the prior 2 trading days (i-2 to i, inclusive of move day itself)
+  const lowDateIdx  = Math.max(0, i - 2);
+  const highDateIdx = i;
+  const lowDate  = prices[lowDateIdx].date;
+  const highDate = prices[highDateIdx].date;
+  const nearby = events.filter(e => {
+    const d = (e.event_at || '').substring(0, 10);
+    return d >= lowDate && d <= highDate;
+  });
+  bigMoves.push({ date: prices[i].date, ret, close: cur, nearby });
+}
+
+const bigMovesBody = document.getElementById('bigMovesRows');
+if (bigMoves.length === 0) {
+  document.getElementById('noBigMoves').style.display = 'block';
+  document.getElementById('bigMovesTable').style.display = 'none';
+} else {
+  // Most recent first
+  bigMoves.reverse();
+  for (const m of bigMoves) {
+    const tr = document.createElement('tr');
+    const tdDate  = document.createElement('td'); tdDate.textContent = m.date;
+    const tdMove  = document.createElement('td'); tdMove.className = 'num';
+    tdMove.textContent = (m.ret * 100).toFixed(2) + '%';
+    tdMove.style.color = m.ret > 0 ? 'var(--ok)' : 'var(--bad)';
+    const tdClose = document.createElement('td'); tdClose.className = 'num';
+    tdClose.textContent = '$' + m.close.toFixed(2);
+    const tdEv    = document.createElement('td');
+    if (m.nearby.length === 0) {
+      tdEv.style.color = 'var(--muted)';
+      tdEv.textContent = '— no tracked events';
+    } else {
+      m.nearby.forEach((e, idx) => {
+        const span = document.createElement('span');
+        span.className = 'tag agent-' + eventBucket(e.event_type);
+        span.textContent = eventLabel(e);
+        span.title = e.event_at;
+        tdEv.appendChild(span);
+        if (idx < m.nearby.length - 1) tdEv.appendChild(document.createTextNode(' '));
+      });
+    }
+    tr.appendChild(tdDate);
+    tr.appendChild(tdMove);
+    tr.appendChild(tdClose);
+    tr.appendChild(tdEv);
+    bigMovesBody.appendChild(tr);
+  }
+}
+
+// ── Signal table (unchanged from prior version, DOM-built) ──────
+const tbody = document.getElementById('sigRows');
+if (signals.length === 0) {
+  document.getElementById('noSigs').style.display = 'block';
+  document.getElementById('sigTable').style.display = 'none';
+} else {
+  for (const s of signals) {
+    const a  = s._audit || {};
+    const tr = document.createElement('tr');
+    function td(text, cls) {
+      const c = document.createElement('td');
+      if (cls) c.className = cls;
+      c.textContent = text;
+      return c;
+    }
+    function tdHTML(node) {
+      const c = document.createElement('td');
+      c.appendChild(node);
+      return c;
+    }
+    const actionSpan = document.createElement('span');
+    actionSpan.className = 'tag ' + (s.action || '');
+    actionSpan.textContent = s.action || '';
+    const statusSpan = document.createElement('span');
+    statusSpan.className = 'tag ' + (s.status_v2 || '');
+    statusSpan.textContent = s.status_v2 || '';
+    const retTd = document.createElement('td');
+    retTd.className = 'num';
+    if (a.realized_return != null) {
+      retTd.textContent = (a.realized_return * 100).toFixed(2) + '%';
+      retTd.style.color = a.realized_return > 0 ? 'var(--ok)' : 'var(--bad)';
+    } else { retTd.textContent = '—'; }
+    const okTd = document.createElement('td');
+    okTd.style.textAlign = 'center';
+    okTd.textContent = a.correct === true ? '✅' : a.correct === false ? '❌' : '—';
+    tr.appendChild(td((s.fired_at||'').substring(0,16), 'fired'));
+    tr.appendChild(tdHTML(actionSpan));
+    tr.appendChild(td(String(Math.round(s.score||0)), 'num'));
+    tr.appendChild(td(s.evidence_summary || '', 'summary'));
+    tr.appendChild(tdHTML(statusSpan));
+    tr.appendChild(retTd);
+    tr.appendChild(okTd);
+    tbody.appendChild(tr);
+  }
+}
+</script>
+
+  </main>
+  <footer>
+    <p>v1 paper-trading vocabulary: <strong>WATCH</strong> / <strong>RESEARCH</strong> / <strong>AVOID_CHASE</strong>.
+    The bot does not say BUY or SELL until 60 days of paper-trading hits the §17.6 graduation thresholds.</p>
+    <p>Data: SEC EDGAR · trumpstruth.org RSS · yfinance. Free-tier stack: GitHub Actions + Supabase Free + Hostinger static.</p>
+  </footer>
+</body>
+</html>

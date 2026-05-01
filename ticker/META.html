@@ -1,0 +1,328 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta http-equiv="refresh" content="900">  <!-- self-refresh every 15 min -->
+  <title>META · Chart · Hub4Apps Market Intel</title>
+  
+  <link rel="stylesheet" href="../styles.css">
+</head>
+<body>
+  <header>
+    <div class="brand">
+      <span class="logo">📈</span>
+      <h1>Hub4Apps Market Intel</h1>
+      <span class="subtitle">private · educational · not financial advice</span>
+    </div>
+    <nav>
+      <a href="../index.html"     class="">Dashboard</a>
+      <a href="../signals.html"   class="active">Signals</a>
+      <a href="../events.html"    class="">Events</a>
+      <a href="../agents.html"    class="">Agents</a>
+      <a href="../backtest.html"  class="">Backtest</a>
+      <a href="../learning.html"  class="">Learning</a>
+    </nav>
+    <div class="meta">
+      <span>generated 2026-05-01 21:38 UTC</span>
+    </div>
+  </header>
+  <main>
+    
+<div style="display:flex;align-items:center;gap:12px;margin-bottom:8px">
+  <h2 style="margin:0">META</h2>
+  <span style="color:var(--muted);font-size:13px">180-day price · events overlaid · big-move explanations</span>
+</div>
+
+<div style="font-size:12px;color:var(--muted);margin-bottom:8px">
+  Legend:
+  <span style="color:#7ab8d9">━ price</span> ·
+  <span style="color:#5a8fd9">● filing</span> ·
+  <span style="color:#e89c5a">● earnings</span> ·
+  <span style="color:#9c9c9c">● momentum</span> ·
+  <span style="color:#4caf93">● WATCH</span> /
+  <span style="color:#e8c15a">● RESEARCH</span> /
+  <span style="color:#e85a5a">● AVOID_CHASE</span>
+</div>
+
+<canvas id="priceChart" height="80"></canvas>
+
+<h3 style="margin-top:28px">Big moves <span style="color:var(--muted);font-size:13px;font-weight:normal">— days the close moved &gt; 5%, with events from the prior 2 trading days as candidate causes (correlation, not causation)</span></h3>
+<table id="bigMovesTable">
+  <thead>
+    <tr>
+      <th>Date</th>
+      <th class="num">Move</th>
+      <th class="num">Close</th>
+      <th>Events in prior 2 trading days</th>
+    </tr>
+  </thead>
+  <tbody id="bigMovesRows"></tbody>
+</table>
+<div id="noBigMoves" class="empty" style="display:none">No daily moves &gt;5% in the last 180 days for META.</div>
+
+<h3 style="margin-top:28px">Signal log — META</h3>
+<table id="sigTable">
+  <thead>
+    <tr>
+      <th>Fired (UTC)</th>
+      <th>Action</th>
+      <th class="num">Score</th>
+      <th>Summary</th>
+      <th>Status</th>
+      <th class="num">Return</th>
+      <th>Outcome</th>
+    </tr>
+  </thead>
+  <tbody id="sigRows"></tbody>
+</table>
+<div id="noSigs" class="empty" style="display:none">No signals fired for META in the last 180 days.</div>
+
+<div style="margin-top:24px">
+  <a href="../signals.html" style="color:var(--ok)">&larr; All signals</a>
+  &nbsp;&nbsp;
+  <a href="../learning.html" style="color:var(--ok)">Learning timeline &rarr;</a>
+</div>
+
+<script src="../vendor/chart.umd.min.js"></script>
+<script src="../vendor/chartjs-plugin-annotation.min.js"></script>
+<script id="pdata" type="application/json">[{"date": "2025-11-03", "close": 637.71}, {"date": "2025-11-04", "close": 627.32}, {"date": "2025-11-05", "close": 635.95}, {"date": "2025-11-06", "close": 618.94}, {"date": "2025-11-07", "close": 621.71}, {"date": "2025-11-10", "close": 631.76}, {"date": "2025-11-11", "close": 627.08}, {"date": "2025-11-12", "close": 609.01}, {"date": "2025-11-13", "close": 609.89}, {"date": "2025-11-14", "close": 609.46}, {"date": "2025-11-17", "close": 602.01}, {"date": "2025-11-18", "close": 597.69}, {"date": "2025-11-19", "close": 590.32}, {"date": "2025-11-20", "close": 589.15}, {"date": "2025-11-21", "close": 594.25}, {"date": "2025-11-24", "close": 613.05}, {"date": "2025-11-25", "close": 636.22}, {"date": "2025-11-26", "close": 633.61}, {"date": "2025-11-28", "close": 647.95}, {"date": "2025-12-01", "close": 640.87}, {"date": "2025-12-02", "close": 647.1}, {"date": "2025-12-03", "close": 639.6}, {"date": "2025-12-04", "close": 661.53}, {"date": "2025-12-05", "close": 673.42}, {"date": "2025-12-08", "close": 666.8}, {"date": "2025-12-09", "close": 656.96}, {"date": "2025-12-10", "close": 650.13}, {"date": "2025-12-11", "close": 652.71}, {"date": "2025-12-12", "close": 644.23}, {"date": "2025-12-15", "close": 647.51}, {"date": "2025-12-16", "close": 657.15}, {"date": "2025-12-17", "close": 649.5}, {"date": "2025-12-18", "close": 664.45}, {"date": "2025-12-19", "close": 658.77}, {"date": "2025-12-22", "close": 661.5}, {"date": "2025-12-23", "close": 664.94}, {"date": "2025-12-24", "close": 667.55}, {"date": "2025-12-26", "close": 663.29}, {"date": "2025-12-29", "close": 658.69}, {"date": "2025-12-30", "close": 665.95}, {"date": "2025-12-31", "close": 660.09}, {"date": "2026-01-02", "close": 650.41}, {"date": "2026-01-05", "close": 658.79}, {"date": "2026-01-06", "close": 660.62}, {"date": "2026-01-07", "close": 648.69}, {"date": "2026-01-08", "close": 646.06}, {"date": "2026-01-09", "close": 653.06}, {"date": "2026-01-12", "close": 641.97}, {"date": "2026-01-13", "close": 631.09}, {"date": "2026-01-14", "close": 615.52}, {"date": "2026-01-15", "close": 620.8}, {"date": "2026-01-16", "close": 620.25}, {"date": "2026-01-20", "close": 604.12}, {"date": "2026-01-21", "close": 612.96}, {"date": "2026-01-22", "close": 647.63}, {"date": "2026-01-23", "close": 658.76}, {"date": "2026-01-26", "close": 672.36}, {"date": "2026-01-27", "close": 672.97}, {"date": "2026-01-28", "close": 668.73}, {"date": "2026-01-29", "close": 738.31}, {"date": "2026-01-30", "close": 716.5}, {"date": "2026-02-02", "close": 706.41}, {"date": "2026-02-03", "close": 691.7}, {"date": "2026-02-04", "close": 668.99}, {"date": "2026-02-05", "close": 670.21}, {"date": "2026-02-06", "close": 661.46}, {"date": "2026-02-09", "close": 677.22}, {"date": "2026-02-10", "close": 670.72}, {"date": "2026-02-11", "close": 668.69}, {"date": "2026-02-12", "close": 649.81}, {"date": "2026-02-13", "close": 639.77}, {"date": "2026-02-17", "close": 639.29}, {"date": "2026-02-18", "close": 643.22}, {"date": "2026-02-19", "close": 644.78}, {"date": "2026-02-20", "close": 655.66}, {"date": "2026-02-23", "close": 637.25}, {"date": "2026-02-24", "close": 639.3}, {"date": "2026-02-25", "close": 653.69}, {"date": "2026-02-26", "close": 657.01}, {"date": "2026-02-27", "close": 648.18}, {"date": "2026-03-02", "close": 653.56}, {"date": "2026-03-03", "close": 655.08}, {"date": "2026-03-04", "close": 667.73}, {"date": "2026-03-05", "close": 660.57}, {"date": "2026-03-06", "close": 644.86}, {"date": "2026-03-09", "close": 647.39}, {"date": "2026-03-10", "close": 654.07}, {"date": "2026-03-11", "close": 654.86}, {"date": "2026-03-12", "close": 638.18}, {"date": "2026-03-13", "close": 613.71}, {"date": "2026-03-16", "close": 627.45}, {"date": "2026-03-17", "close": 622.66}, {"date": "2026-03-18", "close": 615.68}, {"date": "2026-03-19", "close": 606.7}, {"date": "2026-03-20", "close": 593.66}, {"date": "2026-03-23", "close": 604.06}, {"date": "2026-03-24", "close": 592.92}, {"date": "2026-03-25", "close": 594.89}, {"date": "2026-03-26", "close": 547.54}, {"date": "2026-03-27", "close": 525.72}, {"date": "2026-03-30", "close": 536.38}, {"date": "2026-03-31", "close": 572.13}, {"date": "2026-04-01", "close": 579.23}, {"date": "2026-04-02", "close": 574.46}, {"date": "2026-04-06", "close": 573.02}, {"date": "2026-04-07", "close": 575.05}, {"date": "2026-04-08", "close": 612.42}, {"date": "2026-04-09", "close": 628.39}, {"date": "2026-04-10", "close": 629.86}, {"date": "2026-04-13", "close": 634.53}, {"date": "2026-04-14", "close": 662.49}, {"date": "2026-04-15", "close": 671.58}, {"date": "2026-04-16", "close": 676.87}, {"date": "2026-04-17", "close": 688.55}, {"date": "2026-04-20", "close": 670.91}, {"date": "2026-04-21", "close": 668.84}, {"date": "2026-04-22", "close": 674.72}, {"date": "2026-04-23", "close": 659.15}, {"date": "2026-04-24", "close": 675.03}, {"date": "2026-04-27", "close": 678.62}, {"date": "2026-04-28", "close": 671.34}, {"date": "2026-04-29", "close": 669.12}]</script>
+<script id="sdata" type="application/json">[{"id": 17, "ticker": "META", "fired_at": "2026-01-28T23:36:36+00:00", "action": "WATCH", "score": 72.0, "confidence": 0.72, "evidence_summary": "new 8-K beat; 1\u00d7 Form 4", "status_v2": "backtest", "model_version": "rubric-v1.1-backtest-multisource", "weight_at_time": {"mode": "multi_source_research_grade", "agents": ["earnings", "filing"]}, "score_breakdown": null, "direction": "bullish", "horizon_days": 1, "agents": ["earnings", "filing"], "_audit": {"signal_id": 17, "horizon_days": 1, "realized_return": 0.000193, "realized_at": "2026-01-29T20:00:00+00:00", "correct": true}}]</script>
+<script id="edata" type="application/json">[{"ticker": "META", "event_type": "8k_material_event", "event_subtype": null, "event_at": "2025-11-03T21:18:13+00:00", "severity": 3, "payload": {"form_type": "8-K", "primary_doc_url": "https://www.sec.gov/Archives/edgar/data/1326801/000119312525262593/d75422d8k.htm", "accession_number": "0001193125-25-262593"}}, {"ticker": "META", "event_type": "filing_4", "event_subtype": null, "event_at": "2025-11-04T23:20:43+00:00", "severity": 1, "payload": {"form_type": "4", "primary_doc_url": "https://www.sec.gov/Archives/edgar/data/1326801/000095010325014302/xslF345X05/dp236747_4-alford.xml", "accession_number": "0000950103-25-014302"}}, {"ticker": "META", "event_type": "filing_4", "event_subtype": null, "event_at": "2025-11-04T23:43:46+00:00", "severity": 1, "payload": {"form_type": "4", "primary_doc_url": "https://www.sec.gov/Archives/edgar/data/1326801/000095010325014304/xslF345X05/dp236823_4-zuckerberg1031.xml", "accession_number": "0000950103-25-014304"}}, {"ticker": "META", "event_type": "filing_4", "event_subtype": null, "event_at": "2025-11-05T23:48:37+00:00", "severity": 1, "payload": {"form_type": "4", "primary_doc_url": "https://www.sec.gov/Archives/edgar/data/1326801/000095010325014374/xslF345X05/dp236884_4-olivan.xml", "accession_number": "0000950103-25-014374"}}, {"ticker": "META", "event_type": "filing_4", "event_subtype": null, "event_at": "2025-11-06T23:12:37+00:00", "severity": 1, "payload": {"form_type": "4", "primary_doc_url": "https://www.sec.gov/Archives/edgar/data/1326801/000095010325014438/xslF345X05/dp236998_4-newstead.xml", "accession_number": "0000950103-25-014438"}}, {"ticker": "META", "event_type": "filing_4", "event_subtype": null, "event_at": "2025-11-12T23:20:52+00:00", "severity": 1, "payload": {"form_type": "4", "primary_doc_url": "https://www.sec.gov/Archives/edgar/data/1326801/000095010325014637/xslF345X05/dp237210_4-newstead.xml", "accession_number": "0000950103-25-014637"}}, {"ticker": "META", "event_type": "filing_4", "event_subtype": null, "event_at": "2025-11-12T23:25:51+00:00", "severity": 1, "payload": {"form_type": "4", "primary_doc_url": "https://www.sec.gov/Archives/edgar/data/1326801/000095010325014638/xslF345X05/dp237211_4-olivan.xml", "accession_number": "0000950103-25-014638"}}, {"ticker": "META", "event_type": "filing_4", "event_subtype": null, "event_at": "2025-11-18T23:44:20+00:00", "severity": 1, "payload": {"form_type": "4", "primary_doc_url": "https://www.sec.gov/Archives/edgar/data/1326801/000095010325014954/xslF345X05/dp237382_4-powell.xml", "accession_number": "0000950103-25-014954"}}, {"ticker": "META", "event_type": "filing_4", "event_subtype": null, "event_at": "2025-11-18T23:46:17+00:00", "severity": 1, "payload": {"form_type": "4", "primary_doc_url": "https://www.sec.gov/Archives/edgar/data/1326801/000095010325014955/xslF345X05/dp237380_4-elkann.xml", "accession_number": "0000950103-25-014955"}}, {"ticker": "META", "event_type": "filing_4", "event_subtype": null, "event_at": "2025-11-18T23:48:10+00:00", "severity": 1, "payload": {"form_type": "4", "primary_doc_url": "https://www.sec.gov/Archives/edgar/data/1326801/000095010325014956/xslF345X05/dp237379_4-collison.xml", "accession_number": "0000950103-25-014956"}}, {"ticker": "META", "event_type": "filing_4", "event_subtype": null, "event_at": "2025-11-18T23:50:54+00:00", "severity": 1, "payload": {"form_type": "4", "primary_doc_url": "https://www.sec.gov/Archives/edgar/data/1326801/000095010325014957/xslF345X05/dp237378_4-arnold.xml", "accession_number": "0000950103-25-014957"}}, {"ticker": "META", "event_type": "filing_4", "event_subtype": null, "event_at": "2025-11-18T23:55:04+00:00", "severity": 1, "payload": {"form_type": "4", "primary_doc_url": "https://www.sec.gov/Archives/edgar/data/1326801/000095010325014958/xslF345X05/dp237557_4-anderson.xml", "accession_number": "0000950103-25-014958"}}, {"ticker": "META", "event_type": "filing_4", "event_subtype": null, "event_at": "2025-11-18T23:56:52+00:00", "severity": 1, "payload": {"form_type": "4", "primary_doc_url": "https://www.sec.gov/Archives/edgar/data/1326801/000095010325014959/xslF345X05/dp237386_4-xu.xml", "accession_number": "0000950103-25-014959"}}, {"ticker": "META", "event_type": "filing_4", "event_subtype": null, "event_at": "2025-11-18T23:58:33+00:00", "severity": 1, "payload": {"form_type": "4", "primary_doc_url": "https://www.sec.gov/Archives/edgar/data/1326801/000095010325014960/xslF345X05/dp237385_4-white.xml", "accession_number": "0000950103-25-014960"}}, {"ticker": "META", "event_type": "filing_4", "event_subtype": null, "event_at": "2025-11-19T00:00:16+00:00", "severity": 1, "payload": {"form_type": "4", "primary_doc_url": "https://www.sec.gov/Archives/edgar/data/1326801/000095010325014961/xslF345X05/dp237383_4-songhurst.xml", "accession_number": "0000950103-25-014961"}}, {"ticker": "META", "event_type": "filing_4", "event_subtype": null, "event_at": "2025-11-19T00:01:30+00:00", "severity": 1, "payload": {"form_type": "4", "primary_doc_url": "https://www.sec.gov/Archives/edgar/data/1326801/000095010325014962/xslF345X05/dp237384_4-tan.xml", "accession_number": "0000950103-25-014962"}}, {"ticker": "META", "event_type": "filing_4", "event_subtype": null, "event_at": "2025-11-19T00:02:00+00:00", "severity": 1, "payload": {"form_type": "4", "primary_doc_url": "https://www.sec.gov/Archives/edgar/data/1326801/000095010325014963/xslF345X05/dp237563_4-newstead.xml", "accession_number": "0000950103-25-014963"}}, {"ticker": "META", "event_type": "filing_4", "event_subtype": null, "event_at": "2025-11-19T00:03:45+00:00", "severity": 1, "payload": {"form_type": "4", "primary_doc_url": "https://www.sec.gov/Archives/edgar/data/1326801/000095010325014964/xslF345X05/dp237558_4-bosworth.xml", "accession_number": "0000950103-25-014964"}}, {"ticker": "META", "event_type": "filing_4", "event_subtype": null, "event_at": "2025-11-19T00:04:09+00:00", "severity": 1, "payload": {"form_type": "4", "primary_doc_url": "https://www.sec.gov/Archives/edgar/data/1326801/000095010325014965/xslF345X05/dp237559_4-cox.xml", "accession_number": "0000950103-25-014965"}}, {"ticker": "META", "event_type": "filing_4", "event_subtype": null, "event_at": "2025-11-19T00:05:33+00:00", "severity": 1, "payload": {"form_type": "4", "primary_doc_url": "https://www.sec.gov/Archives/edgar/data/1326801/000095010325014966/xslF345X05/dp237561_4-li.xml", "accession_number": "0000950103-25-014966"}}, {"ticker": "META", "event_type": "filing_4", "event_subtype": null, "event_at": "2025-11-19T00:06:55+00:00", "severity": 1, "payload": {"form_type": "4", "primary_doc_url": "https://www.sec.gov/Archives/edgar/data/1326801/000095010325014967/xslF345X05/dp237562_4-olivan.xml", "accession_number": "0000950103-25-014967"}}, {"ticker": "META", "event_type": "filing_4", "event_subtype": null, "event_at": "2025-11-19T23:46:14+00:00", "severity": 1, "payload": {"form_type": "4", "primary_doc_url": "https://www.sec.gov/Archives/edgar/data/1326801/000095010325015039/xslF345X05/dp237381_4-kimmitt.xml", "accession_number": "0000950103-25-015039"}}, {"ticker": "META", "event_type": "filing_4", "event_subtype": null, "event_at": "2025-11-20T23:05:47+00:00", "severity": 1, "payload": {"form_type": "4", "primary_doc_url": "https://www.sec.gov/Archives/edgar/data/1326801/000095010325015117/xslF345X05/dp237636_4-anderson.xml", "accession_number": "0000950103-25-015117"}}, {"ticker": "META", "event_type": "filing_4", "event_subtype": null, "event_at": "2025-11-20T23:07:38+00:00", "severity": 1, "payload": {"form_type": "4", "primary_doc_url": "https://www.sec.gov/Archives/edgar/data/1326801/000095010325015119/xslF345X05/dp237637_4-newstead.xml", "accession_number": "0000950103-25-015119"}}, {"ticker": "META", "event_type": "filing_4", "event_subtype": null, "event_at": "2025-11-20T23:09:43+00:00", "severity": 1, "payload": {"form_type": "4", "primary_doc_url": "https://www.sec.gov/Archives/edgar/data/1326801/000095010325015120/xslF345X05/dp237680_4-bosworth.xml", "accession_number": "0000950103-25-015120"}}, {"ticker": "META", "event_type": "filing_4", "event_subtype": null, "event_at": "2025-11-24T23:13:08+00:00", "severity": 1, "payload": {"form_type": "4", "primary_doc_url": "https://www.sec.gov/Archives/edgar/data/1326801/000095010325015185/xslF345X05/dp237762_4-li.xml", "accession_number": "0000950103-25-015185"}}, {"ticker": "META", "event_type": "filing_4", "event_subtype": null, "event_at": "2025-11-26T23:19:03+00:00", "severity": 1, "payload": {"form_type": "4", "primary_doc_url": "https://www.sec.gov/Archives/edgar/data/1326801/000095010325015372/xslF345X05/dp237948_4-newstead.xml", "accession_number": "0000950103-25-015372"}}, {"ticker": "META", "event_type": "filing_4", "event_subtype": null, "event_at": "2025-11-26T23:23:36+00:00", "severity": 1, "payload": {"form_type": "4", "primary_doc_url": "https://www.sec.gov/Archives/edgar/data/1326801/000095010325015373/xslF345X05/dp237831_4-olivan.xml", "accession_number": "0000950103-25-015373"}}, {"ticker": "META", "event_type": "filing_4", "event_subtype": null, "event_at": "2025-11-28T23:04:03+00:00", "severity": 1, "payload": {"form_type": "4", "primary_doc_url": "https://www.sec.gov/Archives/edgar/data/1326801/000095010325015482/xslF345X05/dp238042_4-kimmitt.xml", "accession_number": "0000950103-25-015482"}}, {"ticker": "META", "event_type": "filing_4", "event_subtype": null, "event_at": "2025-12-03T23:17:42+00:00", "severity": 1, "payload": {"form_type": "4", "primary_doc_url": "https://www.sec.gov/Archives/edgar/data/1326801/000095010325015703/xslF345X05/dp238222_4-olivan.xml", "accession_number": "0000950103-25-015703"}}, {"ticker": "META", "event_type": "filing_4", "event_subtype": null, "event_at": "2025-12-04T23:39:11+00:00", "severity": 1, "payload": {"form_type": "4", "primary_doc_url": "https://www.sec.gov/Archives/edgar/data/1326801/000095010325015761/xslF345X05/dp238295_4-newstead.xml", "accession_number": "0000950103-25-015761"}}, {"ticker": "META", "event_type": "filing_4", "event_subtype": null, "event_at": "2025-12-10T23:05:05+00:00", "severity": 1, "payload": {"form_type": "4", "primary_doc_url": "https://www.sec.gov/Archives/edgar/data/1326801/000095010325015976/xslF345X05/dp238546_4-olivan.xml", "accession_number": "0000950103-25-015976"}}, {"ticker": "META", "event_type": "filing_4", "event_subtype": null, "event_at": "2025-12-11T23:07:07+00:00", "severity": 1, "payload": {"form_type": "4", "primary_doc_url": "https://www.sec.gov/Archives/edgar/data/1326801/000095010325016043/xslF345X05/dp238604_4-newstead.xml", "accession_number": "0000950103-25-016043"}}, {"ticker": "META", "event_type": "8k_material_event", "event_subtype": null, "event_at": "2025-12-12T21:14:29+00:00", "severity": 3, "payload": {"form_type": "8-K", "primary_doc_url": "https://www.sec.gov/Archives/edgar/data/1326801/000162828025056768/meta-20251205.htm", "accession_number": "0001628280-25-056768"}}, {"ticker": "META", "event_type": "filing_4", "event_subtype": null, "event_at": "2025-12-17T23:21:13+00:00", "severity": 1, "payload": {"form_type": "4", "primary_doc_url": "https://www.sec.gov/Archives/edgar/data/1326801/000095010325016256/xslF345X05/dp238797_4-kimmitt.xml", "accession_number": "0000950103-25-016256"}}, {"ticker": "META", "event_type": "filing_4", "event_subtype": null, "event_at": "2025-12-17T23:22:50+00:00", "severity": 1, "payload": {"form_type": "4", "primary_doc_url": "https://www.sec.gov/Archives/edgar/data/1326801/000095010325016257/xslF345X05/dp238796_4-olivan.xml", "accession_number": "0000950103-25-016257"}}, {"ticker": "META", "event_type": "filing_4", "event_subtype": null, "event_at": "2025-12-18T23:18:41+00:00", "severity": 1, "payload": {"form_type": "4", "primary_doc_url": "https://www.sec.gov/Archives/edgar/data/1326801/000095010325016348/xslF345X05/dp238832_4-newstead.xml", "accession_number": "0000950103-25-016348"}}, {"ticker": "META", "event_type": "8k_material_event", "event_subtype": null, "event_at": "2025-12-19T22:00:37+00:00", "severity": 3, "payload": {"form_type": "8-K", "primary_doc_url": "https://www.sec.gov/Archives/edgar/data/1326801/000162828025058337/meta-20251219.htm", "accession_number": "0001628280-25-058337"}}, {"ticker": "META", "event_type": "filing_4", "event_subtype": null, "event_at": "2025-12-23T23:38:24+00:00", "severity": 1, "payload": {"form_type": "4", "primary_doc_url": "https://www.sec.gov/Archives/edgar/data/1326801/000095010325016523/xslF345X05/dp239132_4-newstead.xml", "accession_number": "0000950103-25-016523"}}, {"ticker": "META", "event_type": "filing_4", "event_subtype": null, "event_at": "2025-12-23T23:39:49+00:00", "severity": 1, "payload": {"form_type": "4", "primary_doc_url": "https://www.sec.gov/Archives/edgar/data/1326801/000095010325016524/xslF345X05/dp239057_4-olivan.xml", "accession_number": "0000950103-25-016524"}}, {"ticker": "META", "event_type": "filing_4", "event_subtype": null, "event_at": "2025-12-30T23:39:36+00:00", "severity": 1, "payload": {"form_type": "4", "primary_doc_url": "https://www.sec.gov/Archives/edgar/data/1326801/000095010325016698/xslF345X05/dp239251_4-olivan.xml", "accession_number": "0000950103-25-016698"}}, {"ticker": "META", "event_type": "filing_4", "event_subtype": null, "event_at": "2025-12-30T23:59:01+00:00", "severity": 1, "payload": {"form_type": "4", "primary_doc_url": "https://www.sec.gov/Archives/edgar/data/1326801/000095010325016699/xslF345X05/dp239333_4-newstead.xml", "accession_number": "0000950103-25-016699"}}, {"ticker": "META", "event_type": "filing_4", "event_subtype": null, "event_at": "2026-01-07T23:16:22+00:00", "severity": 1, "payload": {"form_type": "4", "primary_doc_url": "https://www.sec.gov/Archives/edgar/data/1326801/000095010326000239/xslF345X05/dp239606_4-olivan.xml", "accession_number": "0000950103-26-000239"}}, {"ticker": "META", "event_type": "filing_4", "event_subtype": null, "event_at": "2026-01-14T23:21:01+00:00", "severity": 1, "payload": {"form_type": "4", "primary_doc_url": "https://www.sec.gov/Archives/edgar/data/1326801/000095010326000506/xslF345X05/dp239863_4-olivan.xml", "accession_number": "0000950103-26-000506"}}, {"ticker": "META", "event_type": "8k_material_event", "event_subtype": null, "event_at": "2026-01-16T21:56:58+00:00", "severity": 3, "payload": {"form_type": "8-K", "primary_doc_url": "https://www.sec.gov/Archives/edgar/data/1326801/000162828026002429/meta-20260112.htm", "accession_number": "0001628280-26-002429"}}, {"ticker": "META", "event_type": "filing_4", "event_subtype": null, "event_at": "2026-01-20T23:38:05+00:00", "severity": 1, "payload": {"form_type": "4", "primary_doc_url": "https://www.sec.gov/Archives/edgar/data/1326801/000095010326000701/xslF345X05/dp240083_4-kimmitt.xml", "accession_number": "0000950103-26-000701"}}, {"ticker": "META", "event_type": "filing_4", "event_subtype": null, "event_at": "2026-01-22T23:52:51+00:00", "severity": 1, "payload": {"form_type": "4", "primary_doc_url": "https://www.sec.gov/Archives/edgar/data/1326801/000095010326000868/xslF345X05/dp240197_4-olivan.xml", "accession_number": "0000950103-26-000868"}}, {"ticker": "META", "event_type": "earnings_release", "event_subtype": "beat", "event_at": "2026-01-28T21:00:00+00:00", "severity": 3, "payload": {"actual_eps": 8.88, "surprise_pct": 8.0, "estimated_eps": 8.22}}, {"ticker": "META", "event_type": "8k_material_event", "event_subtype": null, "event_at": "2026-01-28T21:04:20+00:00", "severity": 3, "payload": {"form_type": "8-K", "primary_doc_url": "https://www.sec.gov/Archives/edgar/data/1326801/000162828026003832/meta-20260128.htm", "accession_number": "0001628280-26-003832"}}, {"ticker": "META", "event_type": "filing_4", "event_subtype": null, "event_at": "2026-01-28T23:36:36+00:00", "severity": 1, "payload": {"form_type": "4", "primary_doc_url": "https://www.sec.gov/Archives/edgar/data/1326801/000095010326001116/xslF345X05/dp240490_4-olivan.xml", "accession_number": "0000950103-26-001116"}}, {"ticker": "META", "event_type": "filing_10-k", "event_subtype": null, "event_at": "2026-01-29T00:13:46+00:00", "severity": 1, "payload": {"form_type": "10-K", "primary_doc_url": "https://www.sec.gov/Archives/edgar/data/1326801/000162828026003942/meta-20251231.htm", "accession_number": "0001628280-26-003942"}}, {"ticker": "META", "event_type": "filing_4", "event_subtype": null, "event_at": "2026-02-04T23:13:40+00:00", "severity": 1, "payload": {"form_type": "4", "primary_doc_url": "https://www.sec.gov/Archives/edgar/data/1326801/000095010326001644/xslF345X05/dp241045_4-olivan.xml", "accession_number": "0000950103-26-001644"}}, {"ticker": "META", "event_type": "filing_4", "event_subtype": null, "event_at": "2026-02-11T23:17:22+00:00", "severity": 1, "payload": {"form_type": "4", "primary_doc_url": "https://www.sec.gov/Archives/edgar/data/1326801/000095010326001988/xslF345X05/dp241341_4-olivan.xml", "accession_number": "0000950103-26-001988"}}, {"ticker": "META", "event_type": "filing_4", "event_subtype": null, "event_at": "2026-02-18T23:27:23+00:00", "severity": 1, "payload": {"form_type": "4", "primary_doc_url": "https://www.sec.gov/Archives/edgar/data/1326801/000095010326002340/xslF345X05/dp241733_4-olivan.xml", "accession_number": "0000950103-26-002340"}}, {"ticker": "META", "event_type": "filing_4", "event_subtype": null, "event_at": "2026-02-18T23:34:16+00:00", "severity": 1, "payload": {"form_type": "4", "primary_doc_url": "https://www.sec.gov/Archives/edgar/data/1326801/000095010326002341/xslF345X05/dp241671_4-li.xml", "accession_number": "0000950103-26-002341"}}, {"ticker": "META", "event_type": "filing_4", "event_subtype": null, "event_at": "2026-02-18T23:37:23+00:00", "severity": 1, "payload": {"form_type": "4", "primary_doc_url": "https://www.sec.gov/Archives/edgar/data/1326801/000095010326002342/xslF345X05/dp241665_4-bosworth.xml", "accession_number": "0000950103-26-002342"}}, {"ticker": "META", "event_type": "filing_4", "event_subtype": null, "event_at": "2026-02-18T23:39:35+00:00", "severity": 1, "payload": {"form_type": "4", "primary_doc_url": "https://www.sec.gov/Archives/edgar/data/1326801/000095010326002343/xslF345X05/dp241668_4-cox.xml", "accession_number": "0000950103-26-002343"}}, {"ticker": "META", "event_type": "filing_4", "event_subtype": null, "event_at": "2026-02-18T23:41:18+00:00", "severity": 1, "payload": {"form_type": "4", "primary_doc_url": "https://www.sec.gov/Archives/edgar/data/1326801/000095010326002344/xslF345X05/dp241669_4-arnold.xml", "accession_number": "0000950103-26-002344"}}, {"ticker": "META", "event_type": "filing_4", "event_subtype": null, "event_at": "2026-02-18T23:42:36+00:00", "severity": 1, "payload": {"form_type": "4", "primary_doc_url": "https://www.sec.gov/Archives/edgar/data/1326801/000095010326002345/xslF345X05/dp241672_4-collison.xml", "accession_number": "0000950103-26-002345"}}, {"ticker": "META", "event_type": "filing_4", "event_subtype": null, "event_at": "2026-02-18T23:43:57+00:00", "severity": 1, "payload": {"form_type": "4", "primary_doc_url": "https://www.sec.gov/Archives/edgar/data/1326801/000095010326002346/xslF345X05/dp241675_4-elkann.xml", "accession_number": "0000950103-26-002346"}}, {"ticker": "META", "event_type": "filing_4", "event_subtype": null, "event_at": "2026-02-18T23:45:20+00:00", "severity": 1, "payload": {"form_type": "4", "primary_doc_url": "https://www.sec.gov/Archives/edgar/data/1326801/000095010326002348/xslF345X05/dp241670_4-songhurst.xml", "accession_number": "0000950103-26-002348"}}, {"ticker": "META", "event_type": "filing_4", "event_subtype": null, "event_at": "2026-02-18T23:46:51+00:00", "severity": 1, "payload": {"form_type": "4", "primary_doc_url": "https://www.sec.gov/Archives/edgar/data/1326801/000095010326002349/xslF345X05/dp241667_4-powell.xml", "accession_number": "0000950103-26-002349"}}, {"ticker": "META", "event_type": "filing_4", "event_subtype": null, "event_at": "2026-02-18T23:48:25+00:00", "severity": 1, "payload": {"form_type": "4", "primary_doc_url": "https://www.sec.gov/Archives/edgar/data/1326801/000095010326002350/xslF345X05/dp241666_4-tan.xml", "accession_number": "0000950103-26-002350"}}, {"ticker": "META", "event_type": "filing_4", "event_subtype": null, "event_at": "2026-02-18T23:49:43+00:00", "severity": 1, "payload": {"form_type": "4", "primary_doc_url": "https://www.sec.gov/Archives/edgar/data/1326801/000095010326002351/xslF345X05/dp241676_4-xu.xml", "accession_number": "0000950103-26-002351"}}, {"ticker": "META", "event_type": "filing_4", "event_subtype": null, "event_at": "2026-02-18T23:51:26+00:00", "severity": 1, "payload": {"form_type": "4", "primary_doc_url": "https://www.sec.gov/Archives/edgar/data/1326801/000095010326002352/xslF345X05/dp241673_4-white.xml", "accession_number": "0000950103-26-002352"}}, {"ticker": "META", "event_type": "filing_4", "event_subtype": null, "event_at": "2026-02-19T02:54:47+00:00", "severity": 1, "payload": {"form_type": "4", "primary_doc_url": "https://www.sec.gov/Archives/edgar/data/1326801/000095010326002357/xslF345X05/dp241674_4-anderson.xml", "accession_number": "0000950103-26-002357"}}, {"ticker": "META", "event_type": "filing_4", "event_subtype": null, "event_at": "2026-02-19T23:24:09+00:00", "severity": 1, "payload": {"form_type": "4", "primary_doc_url": "https://www.sec.gov/Archives/edgar/data/1326801/000095010326002413/xslF345X05/dp241732_4-kimmitt.xml", "accession_number": "0000950103-26-002413"}}, {"ticker": "META", "event_type": "filing_4", "event_subtype": null, "event_at": "2026-02-20T23:34:29+00:00", "severity": 1, "payload": {"form_type": "4", "primary_doc_url": "https://www.sec.gov/Archives/edgar/data/1326801/000095010326002460/xslF345X05/dp241867_4-bosworth.xml", "accession_number": "0000950103-26-002460"}}, {"ticker": "META", "event_type": "filing_4", "event_subtype": null, "event_at": "2026-02-21T02:33:20+00:00", "severity": 1, "payload": {"form_type": "4", "primary_doc_url": "https://www.sec.gov/Archives/edgar/data/1326801/000095010326002462/xslF345X05/dp241879_4-powell.xml", "accession_number": "0000950103-26-002462"}}, {"ticker": "META", "event_type": "filing_4", "event_subtype": null, "event_at": "2026-02-21T02:37:38+00:00", "severity": 1, "payload": {"form_type": "4", "primary_doc_url": "https://www.sec.gov/Archives/edgar/data/1326801/000095010326002463/xslF345X05/dp241880_4-mahoney.xml", "accession_number": "0000950103-26-002463"}}, {"ticker": "META", "event_type": "filing_4", "event_subtype": null, "event_at": "2026-02-24T23:58:07+00:00", "severity": 1, "payload": {"form_type": "4", "primary_doc_url": "https://www.sec.gov/Archives/edgar/data/1326801/000095010326002589/xslF345X05/dp241989_4-li.xml", "accession_number": "0000950103-26-002589"}}, {"ticker": "META", "event_type": "filing_4", "event_subtype": null, "event_at": "2026-02-25T23:21:41+00:00", "severity": 1, "payload": {"form_type": "4", "primary_doc_url": "https://www.sec.gov/Archives/edgar/data/1326801/000095010326002662/xslF345X05/dp242025_4-olivan.xml", "accession_number": "0000950103-26-002662"}}, {"ticker": "META", "event_type": "filing_4", "event_subtype": null, "event_at": "2026-02-26T23:24:09+00:00", "severity": 1, "payload": {"form_type": "4", "primary_doc_url": "https://www.sec.gov/Archives/edgar/data/1326801/000095010326002789/xslF345X05/dp242098_4-li.xml", "accession_number": "0000950103-26-002789"}}, {"ticker": "META", "event_type": "filing_4", "event_subtype": null, "event_at": "2026-02-27T23:36:18+00:00", "severity": 1, "payload": {"form_type": "4", "primary_doc_url": "https://www.sec.gov/Archives/edgar/data/1326801/000095010326002886/xslF345X05/dp242174_4-alford.xml", "accession_number": "0000950103-26-002886"}}, {"ticker": "META", "event_type": "filing_4", "event_subtype": null, "event_at": "2026-03-03T23:23:59+00:00", "severity": 1, "payload": {"form_type": "4", "primary_doc_url": "https://www.sec.gov/Archives/edgar/data/1326801/000095010326003174/xslF345X05/dp242481_4-li.xml", "accession_number": "0000950103-26-003174"}}, {"ticker": "META", "event_type": "filing_4", "event_subtype": null, "event_at": "2026-03-05T00:12:22+00:00", "severity": 1, "payload": {"form_type": "4", "primary_doc_url": "https://www.sec.gov/Archives/edgar/data/1326801/000095010326003256/xslF345X05/dp242650_4-olivan.xml", "accession_number": "0000950103-26-003256"}}, {"ticker": "META", "event_type": "filing_4", "event_subtype": null, "event_at": "2026-03-11T22:17:24+00:00", "severity": 1, "payload": {"form_type": "4", "primary_doc_url": "https://www.sec.gov/Archives/edgar/data/1326801/000095010326003623/xslF345X05/dp243045_4-olivan.xml", "accession_number": "0000950103-26-003623"}}, {"ticker": "META", "event_type": "filing_4", "event_subtype": null, "event_at": "2026-03-18T22:09:42+00:00", "severity": 1, "payload": {"form_type": "4", "primary_doc_url": "https://www.sec.gov/Archives/edgar/data/1326801/000095010326004334/xslF345X06/dp243608_4-olivan.xml", "accession_number": "0000950103-26-004334"}}, {"ticker": "META", "event_type": "filing_4", "event_subtype": null, "event_at": "2026-03-18T22:14:31+00:00", "severity": 1, "payload": {"form_type": "4", "primary_doc_url": "https://www.sec.gov/Archives/edgar/data/1326801/000095010326004335/xslF345X06/dp243607_4-kimmitt.xml", "accession_number": "0000950103-26-004335"}}, {"ticker": "META", "event_type": "filing_4", "event_subtype": null, "event_at": "2026-03-25T01:26:46+00:00", "severity": 1, "payload": {"form_type": "4", "primary_doc_url": "https://www.sec.gov/Archives/edgar/data/1326801/000095010326004598/xslF345X06/dp243964_4-powell.xml", "accession_number": "0000950103-26-004598"}}, {"ticker": "META", "event_type": "filing_4", "event_subtype": null, "event_at": "2026-03-25T01:33:53+00:00", "severity": 1, "payload": {"form_type": "4", "primary_doc_url": "https://www.sec.gov/Archives/edgar/data/1326801/000095010326004599/xslF345X06/dp243962_4-mahoney.xml", "accession_number": "0000950103-26-004599"}}, {"ticker": "META", "event_type": "filing_4", "event_subtype": null, "event_at": "2026-03-25T01:38:35+00:00", "severity": 1, "payload": {"form_type": "4", "primary_doc_url": "https://www.sec.gov/Archives/edgar/data/1326801/000095010326004600/xslF345X06/dp243963_4-olivan.xml", "accession_number": "0000950103-26-004600"}}, {"ticker": "META", "event_type": "filing_4", "event_subtype": null, "event_at": "2026-03-25T01:40:44+00:00", "severity": 1, "payload": {"form_type": "4", "primary_doc_url": "https://www.sec.gov/Archives/edgar/data/1326801/000095010326004601/xslF345X06/dp243961_4-cox.xml", "accession_number": "0000950103-26-004601"}}, {"ticker": "META", "event_type": "filing_4", "event_subtype": null, "event_at": "2026-03-25T01:42:01+00:00", "severity": 1, "payload": {"form_type": "4", "primary_doc_url": "https://www.sec.gov/Archives/edgar/data/1326801/000095010326004602/xslF345X06/dp243960_4-bosworth.xml", "accession_number": "0000950103-26-004602"}}, {"ticker": "META", "event_type": "filing_4", "event_subtype": null, "event_at": "2026-03-25T01:44:34+00:00", "severity": 1, "payload": {"form_type": "4", "primary_doc_url": "https://www.sec.gov/Archives/edgar/data/1326801/000095010326004603/xslF345X06/dp243933_4-li.xml", "accession_number": "0000950103-26-004603"}}, {"ticker": "META", "event_type": "filing_4", "event_subtype": null, "event_at": "2026-03-25T01:46:15+00:00", "severity": 1, "payload": {"form_type": "4", "primary_doc_url": "https://www.sec.gov/Archives/edgar/data/1326801/000095010326004604/xslF345X06/dp243959_4-anderson.xml", "accession_number": "0000950103-26-004604"}}, {"ticker": "META", "event_type": "filing_4", "event_subtype": null, "event_at": "2026-03-25T22:32:50+00:00", "severity": 1, "payload": {"form_type": "4", "primary_doc_url": "https://www.sec.gov/Archives/edgar/data/1326801/000095010326004660/xslF345X06/dp244081_4-olivan.xml", "accession_number": "0000950103-26-004660"}}, {"ticker": "META", "event_type": "8k_material_event", "event_subtype": null, "event_at": "2026-04-14T21:01:31+00:00", "severity": 3, "payload": {"form_type": "8-K", "primary_doc_url": "https://www.sec.gov/Archives/edgar/data/1326801/000162828026025108/meta-20260408.htm", "accession_number": "0001628280-26-025108"}}, {"ticker": "META", "event_type": "filing_4", "event_subtype": null, "event_at": "2026-04-15T22:31:24+00:00", "severity": 1, "payload": {"form_type": "4", "primary_doc_url": "https://www.sec.gov/Archives/edgar/data/1326801/000095010326005766/xslF345X06/ownership.xml", "accession_number": "0000950103-26-005766"}}, {"ticker": "META", "event_type": "filing_4", "event_subtype": null, "event_at": "2026-04-17T22:16:53+00:00", "severity": 1, "payload": {"form_type": "4", "primary_doc_url": "https://www.sec.gov/Archives/edgar/data/1326801/000095010326005904/xslF345X06/ownership.xml", "accession_number": "0000950103-26-005904"}}, {"ticker": "META", "event_type": "filing_4", "event_subtype": null, "event_at": "2026-04-22T22:31:15+00:00", "severity": 1, "payload": {"form_type": "4", "primary_doc_url": "https://www.sec.gov/Archives/edgar/data/1326801/000095010326006068/xslF345X06/ownership.xml", "accession_number": "0000950103-26-006068"}}, {"ticker": "META", "event_type": "news_article", "event_subtype": "neutral", "event_at": "2026-04-26T12:24:11+00:00", "severity": 2, "payload": {"url": "https://www.cnbc.com/2026/04/26/earnings-playbook-five-of-mag-7-set-to-report-in-busiest-week-of-season.html", "source": "cnbc_markets", "headline": "Earnings playbook: Five of the 'Magnificent Seven' set to report in busiest week of season", "article_id": "aa1a36873ffab187d32f31a7", "direction_prior": "neutral"}}, {"ticker": "META", "event_type": "news_article", "event_subtype": "neutral", "event_at": "2026-04-29T00:59:00+00:00", "severity": 2, "payload": {"url": "https://www.marketwatch.com/story/can-meta-make-money-on-ai-beyond-consumer-ads-thats-a-big-question-going-into-earnings-ff88c78e?mod=mw_rss_topstories", "source": "marketwatch", "headline": "Can Meta make money on AI beyond consumer ads? That\u2019s a big question going into earnings.", "article_id": "4b1ad3095d9484b60ec498f1", "direction_prior": "neutral"}}, {"ticker": "META", "event_type": "8k_material_event", "event_subtype": null, "event_at": "2026-04-29T16:05:41+00:00", "severity": 3, "payload": {"8k_items": "2.02,9.01", "form_type": "8-K", "primary_doc_url": "https://www.sec.gov/Archives/edgar/data/1326801/000162828026028364/meta-20260429.htm", "accession_number": "0001628280-26-028364"}}, {"ticker": "META", "event_type": "news_article", "event_subtype": "neutral", "event_at": "2026-04-29T17:24:27+00:00", "severity": 2, "payload": {"url": "https://www.cnbc.com/2026/04/29/traders-brace-for-800-billion-in-earnings-related-stock-movement.html", "source": "cnbc_markets", "headline": "Traders brace for $800 billion in earnings-related stock movement", "article_id": "c4eddf083d972ece3321ade5", "direction_prior": "neutral"}}, {"ticker": "META", "event_type": "filing_4", "event_subtype": null, "event_at": "2026-04-29T19:32:34+00:00", "severity": 1, "payload": {"8k_items": "", "form_type": "4", "primary_doc_url": "https://www.sec.gov/Archives/edgar/data/1326801/000095010326006451/xslF345X06/ownership.xml", "accession_number": "0000950103-26-006451"}}, {"ticker": "META", "event_type": "earnings_release", "event_subtype": "beat", "event_at": "2026-04-29T20:00:00+00:00", "severity": 4, "payload": {"actual_eps": 10.44, "surprise_pct": 56.79, "estimated_eps": 6.66}}, {"ticker": "META", "event_type": "news_article", "event_subtype": "negative", "event_at": "2026-04-30T11:21:25+00:00", "severity": 3, "payload": {"url": "https://www.cnbc.com/2026/04/30/meta-platforms-gets-a-downgrade-from-jpmorgan-on-massive-ai-spending-forecast.html", "source": "cnbc_markets", "headline": "Meta Platforms gets a downgrade from JPMorgan on massive AI spending forecast", "article_id": "1f8bc75209382b99510ab84d", "direction_prior": "short"}}]</script>
+<script>
+const prices  = JSON.parse(document.getElementById('pdata').textContent);
+const signals = JSON.parse(document.getElementById('sdata').textContent);
+const events  = JSON.parse(document.getElementById('edata').textContent);
+
+// ── Date axis (one entry per available trading day) ──────────────
+const labels = prices.map(p => p.date);
+const closes = prices.map(p => p.close);
+const dateToIdx = {};
+labels.forEach((d, i) => { dateToIdx[d] = i; });
+
+// ── Event-type → display config ──────────────────────────────────
+function eventBucket(et) {
+  if (!et) return 'other';
+  if (et === '8k_material_event' || et.indexOf('filing_') === 0) return 'filing';
+  if (et === 'earnings_release' || et === 'earnings_pre' || et === 'earnings_post') return 'earnings';
+  if (et === 'momentum') return 'momentum';
+  if (et === 'news_article') return 'news';
+  if (et === 'truth_social_post') return 'social';
+  return 'other';
+}
+const BUCKET_COLOR = {
+  filing:   '#5a8fd9',
+  earnings: '#e89c5a',
+  momentum: '#9c9c9c',
+  news:     '#a07acc',
+  social:   '#d97a8f',
+  other:    '#888888',
+};
+
+// ── Build chart annotations: one dot per event + one dot per signal ──
+const annotations = {};
+
+// Events as small dots on the price line
+events.forEach((e, i) => {
+  const eventDate = (e.event_at || '').substring(0, 10);
+  const idx = dateToIdx[eventDate];
+  if (idx === undefined) return;
+  const bucket = eventBucket(e.event_type);
+  annotations['ev_' + i] = {
+    type: 'point',
+    xValue: eventDate,
+    yValue: closes[idx],
+    backgroundColor: BUCKET_COLOR[bucket],
+    radius: 4,
+    borderWidth: 0,
+  };
+});
+
+// Signals as larger labeled dots (drawn on top because they're added after)
+signals.forEach((sig, i) => {
+  const firedDate = (sig.fired_at || '').substring(0, 10);
+  const idx = dateToIdx[firedDate];
+  if (idx === undefined) return;
+  const isAvoid = sig.action === 'AVOID_CHASE';
+  const color   = sig.action === 'WATCH' ? '#4caf93' : isAvoid ? '#e85a5a' : '#e8c15a';
+  annotations['sig_' + i] = {
+    type: 'point', xValue: firedDate, yValue: closes[idx],
+    backgroundColor: color, radius: 9, borderColor: '#fff', borderWidth: 2,
+    label: { display: true, content: sig.action + ' ' + Math.round(sig.score || 0),
+             position: isAvoid ? 'end' : 'start', color: '#fff',
+             backgroundColor: color, font: { size: 10 } },
+  };
+  const audit = sig._audit;
+  if (audit) {
+    const exitIdx = Math.min(idx + (sig.horizon_days || 1), labels.length - 1);
+    annotations['shade_' + i] = {
+      type: 'box', xMin: firedDate, xMax: labels[exitIdx],
+      backgroundColor: audit.correct ? '#4caf9322' : '#e85a5a22', borderWidth: 0,
+    };
+  }
+});
+
+new Chart(document.getElementById('priceChart'), {
+  type: 'line',
+  data: {
+    labels,
+    datasets: [{ label: 'META Close', data: closes, borderColor: '#7ab8d9',
+                 backgroundColor: '#7ab8d911', tension: 0.2, pointRadius: 0, fill: true }],
+  },
+  options: {
+    responsive: true,
+    scales: {
+      x: { ticks: { maxTicksLimit: 12 } },
+      y: { ticks: { callback: v => '$' + v.toFixed(0) } },
+    },
+    plugins: {
+      legend: { display: false },
+      annotation: { annotations },
+      tooltip: { callbacks: { label: ctx => '$' + ctx.parsed.y.toFixed(2) } },
+    }
+  }
+});
+
+// ── Big Moves table — find days with |daily return| > 5%, list nearby events ──
+function eventLabel(e) {
+  const p = e.payload || {};
+  if (e.event_type === '8k_material_event') {
+    const items = p['8k_items'] ? ' [items: ' + p['8k_items'] + ']' : '';
+    return '8-K' + items;
+  }
+  if (e.event_type === 'earnings_release') {
+    const sub = e.event_subtype || 'earnings';
+    const surp = (p.surprise_pct != null) ? ' (' + Number(p.surprise_pct).toFixed(1) + '%)' : '';
+    return 'Earnings ' + sub + surp;
+  }
+  if (e.event_type === 'momentum') {
+    const rs = p.rel_strength_pct;
+    return 'Momentum' + (rs != null ? ' ' + Number(rs).toFixed(1) + '% vs SPY' : '');
+  }
+  if (e.event_type && e.event_type.indexOf('filing_') === 0) {
+    return p.form_type || e.event_type.replace('filing_', '').toUpperCase();
+  }
+  if (e.event_type === 'news_article') return p.headline || 'News';
+  return e.event_type;
+}
+
+// HTML-escape — payloads may contain raw text from RSS, must never reach innerHTML unescaped.
+function esc(s) {
+  if (s === null || s === undefined) return '';
+  return String(s).replace(/[&<>"']/g, c => ({
+    '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'
+  }[c]));
+}
+
+const bigMoves = [];
+for (let i = 1; i < prices.length; i++) {
+  const prev = prices[i - 1].close;
+  const cur  = prices[i].close;
+  if (!prev || !cur) continue;
+  const ret  = (cur - prev) / prev;
+  if (Math.abs(ret) < 0.05) continue;
+
+  // Find events in the prior 2 trading days (i-2 to i, inclusive of move day itself)
+  const lowDateIdx  = Math.max(0, i - 2);
+  const highDateIdx = i;
+  const lowDate  = prices[lowDateIdx].date;
+  const highDate = prices[highDateIdx].date;
+  const nearby = events.filter(e => {
+    const d = (e.event_at || '').substring(0, 10);
+    return d >= lowDate && d <= highDate;
+  });
+  bigMoves.push({ date: prices[i].date, ret, close: cur, nearby });
+}
+
+const bigMovesBody = document.getElementById('bigMovesRows');
+if (bigMoves.length === 0) {
+  document.getElementById('noBigMoves').style.display = 'block';
+  document.getElementById('bigMovesTable').style.display = 'none';
+} else {
+  // Most recent first
+  bigMoves.reverse();
+  for (const m of bigMoves) {
+    const tr = document.createElement('tr');
+    const tdDate  = document.createElement('td'); tdDate.textContent = m.date;
+    const tdMove  = document.createElement('td'); tdMove.className = 'num';
+    tdMove.textContent = (m.ret * 100).toFixed(2) + '%';
+    tdMove.style.color = m.ret > 0 ? 'var(--ok)' : 'var(--bad)';
+    const tdClose = document.createElement('td'); tdClose.className = 'num';
+    tdClose.textContent = '$' + m.close.toFixed(2);
+    const tdEv    = document.createElement('td');
+    if (m.nearby.length === 0) {
+      tdEv.style.color = 'var(--muted)';
+      tdEv.textContent = '— no tracked events';
+    } else {
+      m.nearby.forEach((e, idx) => {
+        const span = document.createElement('span');
+        span.className = 'tag agent-' + eventBucket(e.event_type);
+        span.textContent = eventLabel(e);
+        span.title = e.event_at;
+        tdEv.appendChild(span);
+        if (idx < m.nearby.length - 1) tdEv.appendChild(document.createTextNode(' '));
+      });
+    }
+    tr.appendChild(tdDate);
+    tr.appendChild(tdMove);
+    tr.appendChild(tdClose);
+    tr.appendChild(tdEv);
+    bigMovesBody.appendChild(tr);
+  }
+}
+
+// ── Signal table (unchanged from prior version, DOM-built) ──────
+const tbody = document.getElementById('sigRows');
+if (signals.length === 0) {
+  document.getElementById('noSigs').style.display = 'block';
+  document.getElementById('sigTable').style.display = 'none';
+} else {
+  for (const s of signals) {
+    const a  = s._audit || {};
+    const tr = document.createElement('tr');
+    function td(text, cls) {
+      const c = document.createElement('td');
+      if (cls) c.className = cls;
+      c.textContent = text;
+      return c;
+    }
+    function tdHTML(node) {
+      const c = document.createElement('td');
+      c.appendChild(node);
+      return c;
+    }
+    const actionSpan = document.createElement('span');
+    actionSpan.className = 'tag ' + (s.action || '');
+    actionSpan.textContent = s.action || '';
+    const statusSpan = document.createElement('span');
+    statusSpan.className = 'tag ' + (s.status_v2 || '');
+    statusSpan.textContent = s.status_v2 || '';
+    const retTd = document.createElement('td');
+    retTd.className = 'num';
+    if (a.realized_return != null) {
+      retTd.textContent = (a.realized_return * 100).toFixed(2) + '%';
+      retTd.style.color = a.realized_return > 0 ? 'var(--ok)' : 'var(--bad)';
+    } else { retTd.textContent = '—'; }
+    const okTd = document.createElement('td');
+    okTd.style.textAlign = 'center';
+    okTd.textContent = a.correct === true ? '✅' : a.correct === false ? '❌' : '—';
+    tr.appendChild(td((s.fired_at||'').substring(0,16), 'fired'));
+    tr.appendChild(tdHTML(actionSpan));
+    tr.appendChild(td(String(Math.round(s.score||0)), 'num'));
+    tr.appendChild(td(s.evidence_summary || '', 'summary'));
+    tr.appendChild(tdHTML(statusSpan));
+    tr.appendChild(retTd);
+    tr.appendChild(okTd);
+    tbody.appendChild(tr);
+  }
+}
+</script>
+
+  </main>
+  <footer>
+    <p>v1 paper-trading vocabulary: <strong>WATCH</strong> / <strong>RESEARCH</strong> / <strong>AVOID_CHASE</strong>.
+    The bot does not say BUY or SELL until 60 days of paper-trading hits the §17.6 graduation thresholds.</p>
+    <p>Data: SEC EDGAR · trumpstruth.org RSS · yfinance. Free-tier stack: GitHub Actions + Supabase Free + Hostinger static.</p>
+  </footer>
+</body>
+</html>

@@ -1,0 +1,145 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta http-equiv="refresh" content="900">  <!-- self-refresh every 15 min -->
+  <title>Agents · Hub4Apps Market Intel</title>
+  
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <header>
+    <div class="brand">
+      <span class="logo">📈</span>
+      <h1>Hub4Apps Market Intel</h1>
+      <span class="subtitle">private · educational · not financial advice</span>
+    </div>
+    <nav>
+      <a href="index.html"     class="">Dashboard</a>
+      <a href="signals.html"   class="">Signals</a>
+      <a href="events.html"    class="">Events</a>
+      <a href="agents.html"    class="active">Agents</a>
+      <a href="backtest.html"  class="">Backtest</a>
+      <a href="learning.html"  class="">Learning</a>
+    </nav>
+    <div class="meta">
+      <span>generated 2026-05-01 21:38 UTC</span>
+    </div>
+  </header>
+  <main>
+    
+<h2>Agents</h2>
+<p style="color:var(--muted);font-size:12px">Per-agent diagnostics. Weights evolve via §9.7 EMA after each EOD reconciliation. Agents with weight < 1.0 are underperforming the 50/50 baseline.</p>
+
+<table>
+  <thead>
+    <tr>
+      <th>Agent</th>
+      <th class="num">Current weight</th>
+      <th class="num">Accuracy EMA</th>
+      <th class="num">Signals contributed (30d)</th>
+      <th>Last seen</th>
+      <th class="num">Failures (1h)</th>
+    </tr>
+  </thead>
+  <tbody>
+    
+    <tr>
+      <td><span class="tag agent-filing">filing</span></td>
+      <td class="num">0.65</td>
+      <td class="num">32.4%</td>
+      <td class="num">5</td>
+      <td>2026-05-01T20:58</td>
+      <td class="num">0</td>
+    </tr>
+    
+    <tr>
+      <td><span class="tag agent-truth_social">truth_social</span></td>
+      <td class="num">1.00</td>
+      <td class="num">50.0%</td>
+      <td class="num">0</td>
+      <td>2026-05-01T21:31</td>
+      <td class="num">0</td>
+    </tr>
+    
+    <tr>
+      <td><span class="tag agent-thesis">thesis</span></td>
+      <td class="num">1.00</td>
+      <td class="num">50.0%</td>
+      <td class="num">0</td>
+      <td>2026-05-01T20:51</td>
+      <td class="num">0</td>
+    </tr>
+    
+    <tr>
+      <td><span class="tag agent-telegram_dispatcher">telegram_dispatcher</span></td>
+      <td class="num">1.00</td>
+      <td class="num">50.0%</td>
+      <td class="num">0</td>
+      <td>—</td>
+      <td class="num">0</td>
+    </tr>
+    
+    <tr>
+      <td><span class="tag agent-news">news</span></td>
+      <td class="num">1.00</td>
+      <td class="num">50.0%</td>
+      <td class="num">0</td>
+      <td>2026-05-01T21:34</td>
+      <td class="num">0</td>
+    </tr>
+    
+    <tr>
+      <td><span class="tag agent-flows">flows</span></td>
+      <td class="num">1.00</td>
+      <td class="num">50.0%</td>
+      <td class="num">0</td>
+      <td>—</td>
+      <td class="num">0</td>
+    </tr>
+    
+    <tr>
+      <td><span class="tag agent-price">price</span></td>
+      <td class="num">0.81</td>
+      <td class="num">40.5%</td>
+      <td class="num">1</td>
+      <td>2026-04-30T22:27</td>
+      <td class="num">0</td>
+    </tr>
+    
+  </tbody>
+</table>
+
+<h3>Per-agent recent failure log (last 10)</h3>
+
+<table>
+  <thead><tr><th>When</th><th>Agent</th><th>Reason</th><th>Detail</th></tr></thead>
+  <tbody>
+    
+    <tr>
+      <td>2026-04-28T12:05</td>
+      <td><span class="tag agent-thesis_agent">thesis_agent</span></td>
+      <td>top_level_failure</td>
+      <td style="font-family: ui-monospace, monospace; font-size: 11px;">Traceback (most recent call last):
+  File &#34;/home/runner/work/stock_app/stock_app/agents/thesis_agent.py&#34;, line 336, in m</td>
+    </tr>
+    
+  </tbody>
+</table>
+
+
+<div class="note">
+  <strong>How weights work:</strong> after EOD, each agent's accuracy EMA updates as <code>acc_new = 0.1·correct + 0.9·acc_old</code>.
+  Weight = <code>clip(acc_ema / 0.5, 0.1, 2.0)</code>. So 50% accuracy → weight 1.0; 70% → 1.4; 30% → 0.6.
+  An agent stuck at weight ≤ 0.8 is being muted by the system.
+</div>
+
+  </main>
+  <footer>
+    <p>v1 paper-trading vocabulary: <strong>WATCH</strong> / <strong>RESEARCH</strong> / <strong>AVOID_CHASE</strong>.
+    The bot does not say BUY or SELL until 60 days of paper-trading hits the §17.6 graduation thresholds.</p>
+    <p>Data: SEC EDGAR · trumpstruth.org RSS · yfinance. Free-tier stack: GitHub Actions + Supabase Free + Hostinger static.</p>
+  </footer>
+</body>
+</html>

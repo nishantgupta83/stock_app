@@ -1,0 +1,328 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta http-equiv="refresh" content="900">  <!-- self-refresh every 15 min -->
+  <title>WMT · Chart · Hub4Apps Market Intel</title>
+  
+  <link rel="stylesheet" href="../styles.css">
+</head>
+<body>
+  <header>
+    <div class="brand">
+      <span class="logo">📈</span>
+      <h1>Hub4Apps Market Intel</h1>
+      <span class="subtitle">private · educational · not financial advice</span>
+    </div>
+    <nav>
+      <a href="../index.html"     class="">Dashboard</a>
+      <a href="../signals.html"   class="active">Signals</a>
+      <a href="../events.html"    class="">Events</a>
+      <a href="../agents.html"    class="">Agents</a>
+      <a href="../backtest.html"  class="">Backtest</a>
+      <a href="../learning.html"  class="">Learning</a>
+    </nav>
+    <div class="meta">
+      <span>generated 2026-05-01 21:38 UTC</span>
+    </div>
+  </header>
+  <main>
+    
+<div style="display:flex;align-items:center;gap:12px;margin-bottom:8px">
+  <h2 style="margin:0">WMT</h2>
+  <span style="color:var(--muted);font-size:13px">180-day price · events overlaid · big-move explanations</span>
+</div>
+
+<div style="font-size:12px;color:var(--muted);margin-bottom:8px">
+  Legend:
+  <span style="color:#7ab8d9">━ price</span> ·
+  <span style="color:#5a8fd9">● filing</span> ·
+  <span style="color:#e89c5a">● earnings</span> ·
+  <span style="color:#9c9c9c">● momentum</span> ·
+  <span style="color:#4caf93">● WATCH</span> /
+  <span style="color:#e8c15a">● RESEARCH</span> /
+  <span style="color:#e85a5a">● AVOID_CHASE</span>
+</div>
+
+<canvas id="priceChart" height="80"></canvas>
+
+<h3 style="margin-top:28px">Big moves <span style="color:var(--muted);font-size:13px;font-weight:normal">— days the close moved &gt; 5%, with events from the prior 2 trading days as candidate causes (correlation, not causation)</span></h3>
+<table id="bigMovesTable">
+  <thead>
+    <tr>
+      <th>Date</th>
+      <th class="num">Move</th>
+      <th class="num">Close</th>
+      <th>Events in prior 2 trading days</th>
+    </tr>
+  </thead>
+  <tbody id="bigMovesRows"></tbody>
+</table>
+<div id="noBigMoves" class="empty" style="display:none">No daily moves &gt;5% in the last 180 days for WMT.</div>
+
+<h3 style="margin-top:28px">Signal log — WMT</h3>
+<table id="sigTable">
+  <thead>
+    <tr>
+      <th>Fired (UTC)</th>
+      <th>Action</th>
+      <th class="num">Score</th>
+      <th>Summary</th>
+      <th>Status</th>
+      <th class="num">Return</th>
+      <th>Outcome</th>
+    </tr>
+  </thead>
+  <tbody id="sigRows"></tbody>
+</table>
+<div id="noSigs" class="empty" style="display:none">No signals fired for WMT in the last 180 days.</div>
+
+<div style="margin-top:24px">
+  <a href="../signals.html" style="color:var(--ok)">&larr; All signals</a>
+  &nbsp;&nbsp;
+  <a href="../learning.html" style="color:var(--ok)">Learning timeline &rarr;</a>
+</div>
+
+<script src="../vendor/chart.umd.min.js"></script>
+<script src="../vendor/chartjs-plugin-annotation.min.js"></script>
+<script id="pdata" type="application/json">[{"date": "2025-11-03", "close": 101.59}, {"date": "2025-11-04", "close": 102.27}, {"date": "2025-11-05", "close": 101.47}, {"date": "2025-11-06", "close": 101.68}, {"date": "2025-11-07", "close": 102.59}, {"date": "2025-11-10", "close": 102.42}, {"date": "2025-11-11", "close": 103.44}, {"date": "2025-11-12", "close": 103.44}, {"date": "2025-11-13", "close": 102.54}, {"date": "2025-11-14", "close": 102.48}, {"date": "2025-11-17", "close": 102.95}, {"date": "2025-11-18", "close": 101.39}, {"date": "2025-11-19", "close": 100.61}, {"date": "2025-11-20", "close": 107.11}, {"date": "2025-11-21", "close": 105.32}, {"date": "2025-11-24", "close": 104.06}, {"date": "2025-11-25", "close": 107.0}, {"date": "2025-11-26", "close": 109.1}, {"date": "2025-11-28", "close": 110.51}, {"date": "2025-12-01", "close": 111.53}, {"date": "2025-12-02", "close": 112.41}, {"date": "2025-12-03", "close": 114.41}, {"date": "2025-12-04", "close": 114.84}, {"date": "2025-12-05", "close": 115.11}, {"date": "2025-12-08", "close": 113.56}, {"date": "2025-12-09", "close": 115.06}, {"date": "2025-12-10", "close": 113.18}, {"date": "2025-12-11", "close": 115.52}, {"date": "2025-12-12", "close": 116.7}, {"date": "2025-12-15", "close": 116.79}, {"date": "2025-12-16", "close": 115.42}, {"date": "2025-12-17", "close": 115.66}, {"date": "2025-12-18", "close": 114.83}, {"date": "2025-12-19", "close": 114.36}, {"date": "2025-12-22", "close": 112.6}, {"date": "2025-12-23", "close": 110.9}, {"date": "2025-12-24", "close": 111.61}, {"date": "2025-12-26", "close": 111.74}, {"date": "2025-12-29", "close": 112.53}, {"date": "2025-12-30", "close": 111.92}, {"date": "2025-12-31", "close": 111.41}, {"date": "2026-01-02", "close": 112.76}, {"date": "2026-01-05", "close": 112.71}, {"date": "2026-01-06", "close": 114.34}, {"date": "2026-01-07", "close": 112.72}, {"date": "2026-01-08", "close": 113.07}, {"date": "2026-01-09", "close": 114.53}, {"date": "2026-01-12", "close": 117.97}, {"date": "2026-01-13", "close": 120.36}, {"date": "2026-01-14", "close": 120.04}, {"date": "2026-01-15", "close": 119.2}, {"date": "2026-01-16", "close": 119.7}, {"date": "2026-01-20", "close": 118.71}, {"date": "2026-01-21", "close": 119.36}, {"date": "2026-01-22", "close": 117.83}, {"date": "2026-01-23", "close": 117.73}, {"date": "2026-01-26", "close": 117.64}, {"date": "2026-01-27", "close": 116.94}, {"date": "2026-01-28", "close": 116.57}, {"date": "2026-01-29", "close": 117.41}, {"date": "2026-01-30", "close": 119.14}, {"date": "2026-02-02", "close": 124.06}, {"date": "2026-02-03", "close": 127.71}, {"date": "2026-02-04", "close": 128.0}, {"date": "2026-02-05", "close": 126.94}, {"date": "2026-02-06", "close": 131.18}, {"date": "2026-02-09", "close": 129.02}, {"date": "2026-02-10", "close": 126.7}, {"date": "2026-02-11", "close": 128.77}, {"date": "2026-02-12", "close": 133.64}, {"date": "2026-02-13", "close": 133.89}, {"date": "2026-02-17", "close": 128.85}, {"date": "2026-02-18", "close": 126.62}, {"date": "2026-02-19", "close": 124.87}, {"date": "2026-02-20", "close": 122.99}, {"date": "2026-02-23", "close": 125.81}, {"date": "2026-02-24", "close": 126.75}, {"date": "2026-02-25", "close": 125.75}, {"date": "2026-02-26", "close": 124.42}, {"date": "2026-02-27", "close": 127.95}, {"date": "2026-03-02", "close": 127.1}, {"date": "2026-03-03", "close": 127.91}, {"date": "2026-03-04", "close": 127.81}, {"date": "2026-03-05", "close": 123.31}, {"date": "2026-03-06", "close": 123.8}, {"date": "2026-03-09", "close": 124.34}, {"date": "2026-03-10", "close": 125.12}, {"date": "2026-03-11", "close": 123.49}, {"date": "2026-03-12", "close": 125.33}, {"date": "2026-03-13", "close": 126.52}, {"date": "2026-03-16", "close": 125.99}, {"date": "2026-03-17", "close": 125.08}, {"date": "2026-03-18", "close": 121.98}, {"date": "2026-03-19", "close": 121.09}, {"date": "2026-03-20", "close": 119.02}, {"date": "2026-03-23", "close": 120.72}, {"date": "2026-03-24", "close": 122.05}, {"date": "2026-03-25", "close": 123.06}, {"date": "2026-03-26", "close": 122.18}, {"date": "2026-03-27", "close": 122.89}, {"date": "2026-03-30", "close": 123.5}, {"date": "2026-03-31", "close": 124.28}, {"date": "2026-04-01", "close": 124.74}, {"date": "2026-04-02", "close": 125.79}, {"date": "2026-04-06", "close": 126.79}, {"date": "2026-04-07", "close": 122.49}, {"date": "2026-04-08", "close": 127.26}, {"date": "2026-04-09", "close": 129.13}, {"date": "2026-04-10", "close": 126.77}, {"date": "2026-04-13", "close": 124.57}, {"date": "2026-04-14", "close": 125.05}, {"date": "2026-04-15", "close": 124.76}, {"date": "2026-04-16", "close": 124.82}, {"date": "2026-04-17", "close": 127.5}, {"date": "2026-04-20", "close": 127.92}, {"date": "2026-04-21", "close": 129.6}, {"date": "2026-04-22", "close": 129.98}, {"date": "2026-04-23", "close": 132.03}, {"date": "2026-04-24", "close": 129.92}, {"date": "2026-04-27", "close": 127.59}, {"date": "2026-04-28", "close": 127.59}, {"date": "2026-04-29", "close": 128.01}]</script>
+<script id="sdata" type="application/json">[{"id": 28, "ticker": "WMT", "fired_at": "2026-02-19T23:40:27+00:00", "action": "RESEARCH", "score": 52.0, "confidence": 0.52, "evidence_summary": "new 8-K beat; 1\u00d7 Form 4", "status_v2": "backtest", "model_version": "rubric-v1.1-backtest-multisource", "weight_at_time": {"mode": "multi_source_research_grade", "agents": ["earnings", "filing"]}, "score_breakdown": null, "direction": "bullish", "horizon_days": 1, "agents": ["earnings", "filing"], "_audit": {"signal_id": 28, "horizon_days": 1, "realized_return": -0.001081, "realized_at": "2026-02-20T20:00:00+00:00", "correct": false}}, {"id": 14, "ticker": "WMT", "fired_at": "2026-01-16T23:46:57+00:00", "action": "WATCH", "score": 87.0, "confidence": 0.87, "evidence_summary": "new 8-K; 13\u00d7 Form 4", "status_v2": "backtest", "model_version": "rubric-v1.1-backtest-multisource", "weight_at_time": {"mode": "multi_source_research_grade", "agents": ["filing"]}, "score_breakdown": null, "direction": "bullish", "horizon_days": 1, "agents": ["filing"], "_audit": {"signal_id": 14, "horizon_days": 1, "realized_return": -0.019033, "realized_at": "2026-01-20T20:00:00+00:00", "correct": false}}, {"id": 10, "ticker": "WMT", "fired_at": "2025-11-20T11:58:46+00:00", "action": "RESEARCH", "score": 68.0, "confidence": 0.68, "evidence_summary": "new 8-K beat", "status_v2": "backtest", "model_version": "rubric-v1.1-backtest-multisource", "weight_at_time": {"mode": "multi_source_research_grade", "agents": ["earnings", "filing"]}, "score_breakdown": null, "direction": "bullish", "horizon_days": 1, "agents": ["earnings", "filing"], "_audit": {"signal_id": 10, "horizon_days": 1, "realized_return": -0.025634, "realized_at": "2025-11-21T20:00:00+00:00", "correct": false}}]</script>
+<script id="edata" type="application/json">[{"ticker": "WMT", "event_type": "filing_4", "event_subtype": null, "event_at": "2025-11-04T22:48:17+00:00", "severity": 1, "payload": {"form_type": "4", "primary_doc_url": "https://www.sec.gov/Archives/edgar/data/104169/000154743325000009/xslF345X05/wk-form4_1762296494.xml", "accession_number": "0001547433-25-000009"}}, {"ticker": "WMT", "event_type": "filing_4", "event_subtype": null, "event_at": "2025-11-06T22:49:49+00:00", "severity": 1, "payload": {"form_type": "4", "primary_doc_url": "https://www.sec.gov/Archives/edgar/data/104169/000199280825000009/xslF345X05/wk-form4_1762469386.xml", "accession_number": "0001992808-25-000009"}}, {"ticker": "WMT", "event_type": "8k_material_event", "event_subtype": null, "event_at": "2025-11-14T13:00:30+00:00", "severity": 3, "payload": {"form_type": "8-K", "primary_doc_url": "https://www.sec.gov/Archives/edgar/data/104169/000010416925000172/wmt-20251111.htm", "accession_number": "0000104169-25-000172"}}, {"ticker": "WMT", "event_type": "filing_4", "event_subtype": null, "event_at": "2025-11-19T22:53:46+00:00", "severity": 1, "payload": {"form_type": "4", "primary_doc_url": "https://www.sec.gov/Archives/edgar/data/104169/000157929925000014/xslF345X05/wk-form4_1763592823.xml", "accession_number": "0001579299-25-000014"}}, {"ticker": "WMT", "event_type": "earnings_release", "event_subtype": "beat", "event_at": "2025-11-20T11:00:00+00:00", "severity": 3, "payload": {"actual_eps": 0.62, "surprise_pct": 3.11, "estimated_eps": 0.6}}, {"ticker": "WMT", "event_type": "8k_material_event", "event_subtype": null, "event_at": "2025-11-20T11:58:46+00:00", "severity": 3, "payload": {"form_type": "8-K", "primary_doc_url": "https://www.sec.gov/Archives/edgar/data/104169/000010416925000177/wmt-20251119.htm", "accession_number": "0000104169-25-000177"}}, {"ticker": "WMT", "event_type": "filing_4", "event_subtype": null, "event_at": "2025-11-21T00:07:23+00:00", "severity": 1, "payload": {"form_type": "4", "primary_doc_url": "https://www.sec.gov/Archives/edgar/data/104169/000150243825000011/xslF345X05/wk-form4_1763683640.xml", "accession_number": "0001502438-25-000011"}}, {"ticker": "WMT", "event_type": "filing_4", "event_subtype": null, "event_at": "2025-11-21T22:28:21+00:00", "severity": 1, "payload": {"form_type": "4", "primary_doc_url": "https://www.sec.gov/Archives/edgar/data/104169/000179457325000014/xslF345X05/wk-form4_1763764098.xml", "accession_number": "0001794573-25-000014"}}, {"ticker": "WMT", "event_type": "filing_4", "event_subtype": null, "event_at": "2025-11-24T23:08:08+00:00", "severity": 1, "payload": {"form_type": "4", "primary_doc_url": "https://www.sec.gov/Archives/edgar/data/104169/000169673725000011/xslF345X05/wk-form4_1764025685.xml", "accession_number": "0001696737-25-000011"}}, {"ticker": "WMT", "event_type": "filing_4", "event_subtype": null, "event_at": "2025-11-25T21:42:09+00:00", "severity": 1, "payload": {"form_type": "4", "primary_doc_url": "https://www.sec.gov/Archives/edgar/data/104169/000010416925000181/xslF345X05/wk-form4_1764106924.xml", "accession_number": "0000104169-25-000181"}}, {"ticker": "WMT", "event_type": "filing_4", "event_subtype": null, "event_at": "2025-11-26T21:45:14+00:00", "severity": 1, "payload": {"form_type": "4", "primary_doc_url": "https://www.sec.gov/Archives/edgar/data/104169/000150243825000013/xslF345X05/wk-form4_1764193511.xml", "accession_number": "0001502438-25-000013"}}, {"ticker": "WMT", "event_type": "filing_4", "event_subtype": null, "event_at": "2025-12-02T21:54:40+00:00", "severity": 1, "payload": {"form_type": "4", "primary_doc_url": "https://www.sec.gov/Archives/edgar/data/104169/000010416925000186/xslF345X05/wk-form4_1764712476.xml", "accession_number": "0000104169-25-000186"}}, {"ticker": "WMT", "event_type": "filing_4", "event_subtype": null, "event_at": "2025-12-02T22:17:54+00:00", "severity": 1, "payload": {"form_type": "4", "primary_doc_url": "https://www.sec.gov/Archives/edgar/data/104169/000133578225000014/xslF345X05/wk-form4_1764713871.xml", "accession_number": "0001335782-25-000014"}}, {"ticker": "WMT", "event_type": "filing_4", "event_subtype": null, "event_at": "2025-12-02T22:18:47+00:00", "severity": 1, "payload": {"form_type": "4", "primary_doc_url": "https://www.sec.gov/Archives/edgar/data/104169/000154743325000011/xslF345X05/wk-form4_1764713924.xml", "accession_number": "0001547433-25-000011"}}, {"ticker": "WMT", "event_type": "filing_10-q", "event_subtype": null, "event_at": "2025-12-03T21:45:34+00:00", "severity": 1, "payload": {"form_type": "10-Q", "primary_doc_url": "https://www.sec.gov/Archives/edgar/data/104169/000010416925000191/wmt-20251031.htm", "accession_number": "0000104169-25-000191"}}, {"ticker": "WMT", "event_type": "filing_4", "event_subtype": null, "event_at": "2025-12-04T21:56:58+00:00", "severity": 1, "payload": {"form_type": "4", "primary_doc_url": "https://www.sec.gov/Archives/edgar/data/104169/000199280825000011/xslF345X05/wk-form4_1764885416.xml", "accession_number": "0001992808-25-000011"}}, {"ticker": "WMT", "event_type": "filing_4", "event_subtype": null, "event_at": "2025-12-08T22:44:20+00:00", "severity": 1, "payload": {"form_type": "4", "primary_doc_url": "https://www.sec.gov/Archives/edgar/data/104169/000010416925000203/xslF345X05/wk-form4_1765233858.xml", "accession_number": "0000104169-25-000203"}}, {"ticker": "WMT", "event_type": "filing_4", "event_subtype": null, "event_at": "2025-12-12T23:01:03+00:00", "severity": 1, "payload": {"form_type": "4", "primary_doc_url": "https://www.sec.gov/Archives/edgar/data/104169/000010416925000205/xslF345X05/wk-form4_1765580460.xml", "accession_number": "0000104169-25-000205"}}, {"ticker": "WMT", "event_type": "filing_4", "event_subtype": null, "event_at": "2025-12-12T23:06:02+00:00", "severity": 1, "payload": {"form_type": "4", "primary_doc_url": "https://www.sec.gov/Archives/edgar/data/104169/000010416925000207/xslF345X05/wk-form4_1765580760.xml", "accession_number": "0000104169-25-000207"}}, {"ticker": "WMT", "event_type": "filing_4", "event_subtype": null, "event_at": "2025-12-17T22:57:42+00:00", "severity": 1, "payload": {"form_type": "4", "primary_doc_url": "https://www.sec.gov/Archives/edgar/data/104169/000157929925000016/xslF345X05/wk-form4_1766012259.xml", "accession_number": "0001579299-25-000016"}}, {"ticker": "WMT", "event_type": "filing_4", "event_subtype": null, "event_at": "2025-12-17T22:58:41+00:00", "severity": 1, "payload": {"form_type": "4", "primary_doc_url": "https://www.sec.gov/Archives/edgar/data/104169/000150243825000015/xslF345X05/wk-form4_1766012318.xml", "accession_number": "0001502438-25-000015"}}, {"ticker": "WMT", "event_type": "filing_4", "event_subtype": null, "event_at": "2025-12-17T23:00:19+00:00", "severity": 1, "payload": {"form_type": "4", "primary_doc_url": "https://www.sec.gov/Archives/edgar/data/104169/000010416925000209/xslF345X05/wk-form4_1766012417.xml", "accession_number": "0000104169-25-000209"}}, {"ticker": "WMT", "event_type": "filing_4", "event_subtype": null, "event_at": "2025-12-17T23:01:46+00:00", "severity": 1, "payload": {"form_type": "4", "primary_doc_url": "https://www.sec.gov/Archives/edgar/data/104169/000010416925000211/xslF345X05/wk-form4_1766012503.xml", "accession_number": "0000104169-25-000211"}}, {"ticker": "WMT", "event_type": "filing_4", "event_subtype": null, "event_at": "2025-12-19T22:05:52+00:00", "severity": 1, "payload": {"form_type": "4", "primary_doc_url": "https://www.sec.gov/Archives/edgar/data/104169/000169673725000013/xslF345X05/wk-form4_1766181949.xml", "accession_number": "0001696737-25-000013"}}, {"ticker": "WMT", "event_type": "filing_4", "event_subtype": null, "event_at": "2025-12-19T22:06:43+00:00", "severity": 1, "payload": {"form_type": "4", "primary_doc_url": "https://www.sec.gov/Archives/edgar/data/104169/000179457325000016/xslF345X05/wk-form4_1766182000.xml", "accession_number": "0001794573-25-000016"}}, {"ticker": "WMT", "event_type": "filing_4", "event_subtype": null, "event_at": "2025-12-19T23:04:47+00:00", "severity": 1, "payload": {"form_type": "4", "primary_doc_url": "https://www.sec.gov/Archives/edgar/data/104169/000010416925000232/xslF345X05/wk-form4_1766185484.xml", "accession_number": "0000104169-25-000232"}}, {"ticker": "WMT", "event_type": "filing_4", "event_subtype": null, "event_at": "2025-12-23T21:41:37+00:00", "severity": 1, "payload": {"form_type": "4", "primary_doc_url": "https://www.sec.gov/Archives/edgar/data/104169/000010416925000234/xslF345X05/wk-form4_1766526091.xml", "accession_number": "0000104169-25-000234"}}, {"ticker": "WMT", "event_type": "8k_material_event", "event_subtype": null, "event_at": "2025-12-29T21:40:38+00:00", "severity": 3, "payload": {"form_type": "8-K", "primary_doc_url": "https://www.sec.gov/Archives/edgar/data/104169/000010416925000238/wmt-20251224.htm", "accession_number": "0000104169-25-000238"}}, {"ticker": "WMT", "event_type": "filing_4", "event_subtype": null, "event_at": "2025-12-29T21:44:06+00:00", "severity": 1, "payload": {"form_type": "4", "primary_doc_url": "https://www.sec.gov/Archives/edgar/data/104169/000133578225000016/xslF345X05/wk-form4_1767044643.xml", "accession_number": "0001335782-25-000016"}}, {"ticker": "WMT", "event_type": "filing_4", "event_subtype": null, "event_at": "2026-01-05T22:25:27+00:00", "severity": 1, "payload": {"form_type": "4", "primary_doc_url": "https://www.sec.gov/Archives/edgar/data/104169/000161617226000002/xslF345X05/wk-form4_1767651923.xml", "accession_number": "0001616172-26-000002"}}, {"ticker": "WMT", "event_type": "filing_4", "event_subtype": null, "event_at": "2026-01-05T22:26:42+00:00", "severity": 1, "payload": {"form_type": "4", "primary_doc_url": "https://www.sec.gov/Archives/edgar/data/104169/000155032226000002/xslF345X05/wk-form4_1767652000.xml", "accession_number": "0001550322-26-000002"}}, {"ticker": "WMT", "event_type": "filing_4", "event_subtype": null, "event_at": "2026-01-05T22:28:54+00:00", "severity": 1, "payload": {"form_type": "4", "primary_doc_url": "https://www.sec.gov/Archives/edgar/data/104169/000157065826000002/xslF345X05/wk-form4_1767652132.xml", "accession_number": "0001570658-26-000002"}}, {"ticker": "WMT", "event_type": "filing_4", "event_subtype": null, "event_at": "2026-01-05T22:30:20+00:00", "severity": 1, "payload": {"form_type": "4", "primary_doc_url": "https://www.sec.gov/Archives/edgar/data/104169/000170735126000002/xslF345X05/wk-form4_1767652205.xml", "accession_number": "0001707351-26-000002"}}, {"ticker": "WMT", "event_type": "filing_4", "event_subtype": null, "event_at": "2026-01-05T22:31:33+00:00", "severity": 1, "payload": {"form_type": "4", "primary_doc_url": "https://www.sec.gov/Archives/edgar/data/104169/000155060826000002/xslF345X05/wk-form4_1767652290.xml", "accession_number": "0001550608-26-000002"}}, {"ticker": "WMT", "event_type": "filing_4", "event_subtype": null, "event_at": "2026-01-05T22:32:23+00:00", "severity": 1, "payload": {"form_type": "4", "primary_doc_url": "https://www.sec.gov/Archives/edgar/data/104169/000203383426000002/xslF345X05/wk-form4_1767652341.xml", "accession_number": "0002033834-26-000002"}}, {"ticker": "WMT", "event_type": "filing_4", "event_subtype": null, "event_at": "2026-01-05T22:33:26+00:00", "severity": 1, "payload": {"form_type": "4", "primary_doc_url": "https://www.sec.gov/Archives/edgar/data/104169/000162858826000002/xslF345X05/wk-form4_1767652401.xml", "accession_number": "0001628588-26-000002"}}, {"ticker": "WMT", "event_type": "filing_4", "event_subtype": null, "event_at": "2026-01-05T22:35:37+00:00", "severity": 1, "payload": {"form_type": "4", "primary_doc_url": "https://www.sec.gov/Archives/edgar/data/104169/000118342826000002/xslF345X05/wk-form4_1767652534.xml", "accession_number": "0001183428-26-000002"}}, {"ticker": "WMT", "event_type": "filing_4", "event_subtype": null, "event_at": "2026-01-05T22:39:22+00:00", "severity": 1, "payload": {"form_type": "4", "primary_doc_url": "https://www.sec.gov/Archives/edgar/data/104169/000010416926000002/xslF345X05/wk-form4_1767652760.xml", "accession_number": "0000104169-26-000002"}}, {"ticker": "WMT", "event_type": "filing_4", "event_subtype": null, "event_at": "2026-01-05T22:40:05+00:00", "severity": 1, "payload": {"form_type": "4", "primary_doc_url": "https://www.sec.gov/Archives/edgar/data/104169/000010416926000004/xslF345X05/wk-form4_1767652802.xml", "accession_number": "0000104169-26-000004"}}, {"ticker": "WMT", "event_type": "8k_material_event", "event_subtype": null, "event_at": "2026-01-08T12:59:51+00:00", "severity": 3, "payload": {"form_type": "8-K", "primary_doc_url": "https://www.sec.gov/Archives/edgar/data/104169/000010416926000008/wmt-20260108.htm", "accession_number": "0000104169-26-000008"}}, {"ticker": "WMT", "event_type": "filing_4", "event_subtype": null, "event_at": "2026-01-12T22:19:27+00:00", "severity": 1, "payload": {"form_type": "4", "primary_doc_url": "https://www.sec.gov/Archives/edgar/data/104169/000010416926000012/xslF345X05/wk-form4_1768256364.xml", "accession_number": "0000104169-26-000012"}}, {"ticker": "WMT", "event_type": "filing_4", "event_subtype": null, "event_at": "2026-01-16T00:25:11+00:00", "severity": 1, "payload": {"form_type": "4", "primary_doc_url": "https://www.sec.gov/Archives/edgar/data/104169/000133578226000002/xslF345X05/wk-form4_1768523108.xml", "accession_number": "0001335782-26-000002"}}, {"ticker": "WMT", "event_type": "filing_4", "event_subtype": null, "event_at": "2026-01-16T00:27:54+00:00", "severity": 1, "payload": {"form_type": "4", "primary_doc_url": "https://www.sec.gov/Archives/edgar/data/104169/000169673726000002/xslF345X05/wk-form4_1768523271.xml", "accession_number": "0001696737-26-000002"}}, {"ticker": "WMT", "event_type": "filing_4", "event_subtype": null, "event_at": "2026-01-16T00:28:50+00:00", "severity": 1, "payload": {"form_type": "4", "primary_doc_url": "https://www.sec.gov/Archives/edgar/data/104169/000199280826000002/xslF345X05/wk-form4_1768523327.xml", "accession_number": "0001992808-26-000002"}}, {"ticker": "WMT", "event_type": "filing_4", "event_subtype": null, "event_at": "2026-01-16T00:33:10+00:00", "severity": 1, "payload": {"form_type": "4", "primary_doc_url": "https://www.sec.gov/Archives/edgar/data/104169/000157929926000002/xslF345X05/wk-form4_1768523587.xml", "accession_number": "0001579299-26-000002"}}, {"ticker": "WMT", "event_type": "filing_4", "event_subtype": null, "event_at": "2026-01-16T00:33:54+00:00", "severity": 1, "payload": {"form_type": "4", "primary_doc_url": "https://www.sec.gov/Archives/edgar/data/104169/000159810826000002/xslF345X05/wk-form4_1768523631.xml", "accession_number": "0001598108-26-000002"}}, {"ticker": "WMT", "event_type": "filing_4", "event_subtype": null, "event_at": "2026-01-16T00:34:45+00:00", "severity": 1, "payload": {"form_type": "4", "primary_doc_url": "https://www.sec.gov/Archives/edgar/data/104169/000154743326000002/xslF345X05/wk-form4_1768523682.xml", "accession_number": "0001547433-26-000002"}}, {"ticker": "WMT", "event_type": "filing_4", "event_subtype": null, "event_at": "2026-01-16T00:36:01+00:00", "severity": 1, "payload": {"form_type": "4", "primary_doc_url": "https://www.sec.gov/Archives/edgar/data/104169/000179457326000002/xslF345X05/wk-form4_1768523759.xml", "accession_number": "0001794573-26-000002"}}, {"ticker": "WMT", "event_type": "filing_4", "event_subtype": null, "event_at": "2026-01-16T00:36:01+00:00", "severity": 1, "payload": {"form_type": "4", "primary_doc_url": "https://www.sec.gov/Archives/edgar/data/104169/000010416926000017/xslF345X05/wk-form4_1768523758.xml", "accession_number": "0000104169-26-000017"}}, {"ticker": "WMT", "event_type": "filing_4", "event_subtype": null, "event_at": "2026-01-16T00:38:20+00:00", "severity": 1, "payload": {"form_type": "4", "primary_doc_url": "https://www.sec.gov/Archives/edgar/data/104169/000178119826000002/xslF345X05/wk-form4_1768523897.xml", "accession_number": "0001781198-26-000002"}}, {"ticker": "WMT", "event_type": "filing_4", "event_subtype": null, "event_at": "2026-01-16T00:39:13+00:00", "severity": 1, "payload": {"form_type": "4", "primary_doc_url": "https://www.sec.gov/Archives/edgar/data/104169/000150243826000002/xslF345X05/wk-form4_1768523950.xml", "accession_number": "0001502438-26-000002"}}, {"ticker": "WMT", "event_type": "filing_4", "event_subtype": null, "event_at": "2026-01-16T00:47:44+00:00", "severity": 1, "payload": {"form_type": "4", "primary_doc_url": "https://www.sec.gov/Archives/edgar/data/104169/000010416926000019/xslF345X05/wk-form4_1768524462.xml", "accession_number": "0000104169-26-000019"}}, {"ticker": "WMT", "event_type": "8k_material_event", "event_subtype": null, "event_at": "2026-01-16T14:01:15+00:00", "severity": 3, "payload": {"form_type": "8-K", "primary_doc_url": "https://www.sec.gov/Archives/edgar/data/104169/000010416926000023/wmt-20260115.htm", "accession_number": "0000104169-26-000023"}}, {"ticker": "WMT", "event_type": "filing_4", "event_subtype": null, "event_at": "2026-01-16T23:45:53+00:00", "severity": 1, "payload": {"form_type": "4", "primary_doc_url": "https://www.sec.gov/Archives/edgar/data/104169/000169673726000004/xslF345X05/wk-form4_1768607150.xml", "accession_number": "0001696737-26-000004"}}, {"ticker": "WMT", "event_type": "filing_4", "event_subtype": null, "event_at": "2026-01-16T23:46:57+00:00", "severity": 1, "payload": {"form_type": "4", "primary_doc_url": "https://www.sec.gov/Archives/edgar/data/104169/000157929926000004/xslF345X05/wk-form4_1768607215.xml", "accession_number": "0001579299-26-000004"}}, {"ticker": "WMT", "event_type": "filing_4", "event_subtype": null, "event_at": "2026-01-23T22:49:53+00:00", "severity": 1, "payload": {"form_type": "4", "primary_doc_url": "https://www.sec.gov/Archives/edgar/data/104169/000133578226000004/xslF345X05/wk-form4_1769208590.xml", "accession_number": "0001335782-26-000004"}}, {"ticker": "WMT", "event_type": "filing_4", "event_subtype": null, "event_at": "2026-02-04T00:27:34+00:00", "severity": 1, "payload": {"form_type": "4", "primary_doc_url": "https://www.sec.gov/Archives/edgar/data/104169/000150243826000004/xslF345X05/wk-form4_1770164852.xml", "accession_number": "0001502438-26-000004"}}, {"ticker": "WMT", "event_type": "filing_4", "event_subtype": null, "event_at": "2026-02-04T00:29:30+00:00", "severity": 1, "payload": {"form_type": "4", "primary_doc_url": "https://www.sec.gov/Archives/edgar/data/104169/000179457326000004/xslF345X05/wk-form4_1770164967.xml", "accession_number": "0001794573-26-000004"}}, {"ticker": "WMT", "event_type": "filing_4", "event_subtype": null, "event_at": "2026-02-04T00:30:41+00:00", "severity": 1, "payload": {"form_type": "4", "primary_doc_url": "https://www.sec.gov/Archives/edgar/data/104169/000157929926000006/xslF345X05/wk-form4_1770165039.xml", "accession_number": "0001579299-26-000006"}}, {"ticker": "WMT", "event_type": "filing_4", "event_subtype": null, "event_at": "2026-02-04T00:31:29+00:00", "severity": 1, "payload": {"form_type": "4", "primary_doc_url": "https://www.sec.gov/Archives/edgar/data/104169/000154743326000004/xslF345X05/wk-form4_1770165086.xml", "accession_number": "0001547433-26-000004"}}, {"ticker": "WMT", "event_type": "filing_4", "event_subtype": null, "event_at": "2026-02-04T00:31:40+00:00", "severity": 1, "payload": {"form_type": "4", "primary_doc_url": "https://www.sec.gov/Archives/edgar/data/104169/000169673726000006/xslF345X05/wk-form4_1770165098.xml", "accession_number": "0001696737-26-000006"}}, {"ticker": "WMT", "event_type": "filing_4", "event_subtype": null, "event_at": "2026-02-04T00:32:33+00:00", "severity": 1, "payload": {"form_type": "4", "primary_doc_url": "https://www.sec.gov/Archives/edgar/data/104169/000133578226000006/xslF345X05/wk-form4_1770165150.xml", "accession_number": "0001335782-26-000006"}}, {"ticker": "WMT", "event_type": "filing_4", "event_subtype": null, "event_at": "2026-02-04T00:33:22+00:00", "severity": 1, "payload": {"form_type": "4", "primary_doc_url": "https://www.sec.gov/Archives/edgar/data/104169/000178119826000004/xslF345X05/wk-form4_1770165199.xml", "accession_number": "0001781198-26-000004"}}, {"ticker": "WMT", "event_type": "filing_4", "event_subtype": null, "event_at": "2026-02-04T00:34:29+00:00", "severity": 1, "payload": {"form_type": "4", "primary_doc_url": "https://www.sec.gov/Archives/edgar/data/104169/000199280826000004/xslF345X05/wk-form4_1770165266.xml", "accession_number": "0001992808-26-000004"}}, {"ticker": "WMT", "event_type": "filing_4", "event_subtype": null, "event_at": "2026-02-04T00:35:24+00:00", "severity": 1, "payload": {"form_type": "4", "primary_doc_url": "https://www.sec.gov/Archives/edgar/data/104169/000173609726000003/xslF345X05/wk-form4_1770165322.xml", "accession_number": "0001736097-26-000003"}}, {"ticker": "WMT", "event_type": "filing_4", "event_subtype": null, "event_at": "2026-02-04T00:53:09+00:00", "severity": 1, "payload": {"form_type": "4", "primary_doc_url": "https://www.sec.gov/Archives/edgar/data/104169/000159810826000004/xslF345X05/wk-form4_1770166387.xml", "accession_number": "0001598108-26-000004"}}, {"ticker": "WMT", "event_type": "filing_4", "event_subtype": null, "event_at": "2026-02-04T22:42:17+00:00", "severity": 1, "payload": {"form_type": "4", "primary_doc_url": "https://www.sec.gov/Archives/edgar/data/104169/000159810826000006/xslF345X05/wk-form4_1770244935.xml", "accession_number": "0001598108-26-000006"}}, {"ticker": "WMT", "event_type": "filing_4", "event_subtype": null, "event_at": "2026-02-13T00:08:45+00:00", "severity": 1, "payload": {"form_type": "4", "primary_doc_url": "https://www.sec.gov/Archives/edgar/data/104169/000211030426000004/xslF345X05/wk-form4_1770941322.xml", "accession_number": "0002110304-26-000004"}}, {"ticker": "WMT", "event_type": "filing_4", "event_subtype": null, "event_at": "2026-02-13T00:09:39+00:00", "severity": 1, "payload": {"form_type": "4", "primary_doc_url": "https://www.sec.gov/Archives/edgar/data/104169/000199280826000006/xslF345X05/wk-form4_1770941377.xml", "accession_number": "0001992808-26-000006"}}, {"ticker": "WMT", "event_type": "filing_4", "event_subtype": null, "event_at": "2026-02-13T00:10:50+00:00", "severity": 1, "payload": {"form_type": "4", "primary_doc_url": "https://www.sec.gov/Archives/edgar/data/104169/000188636726000004/xslF345X05/wk-form4_1770941447.xml", "accession_number": "0001886367-26-000004"}}, {"ticker": "WMT", "event_type": "filing_4", "event_subtype": null, "event_at": "2026-02-13T00:11:54+00:00", "severity": 1, "payload": {"form_type": "4", "primary_doc_url": "https://www.sec.gov/Archives/edgar/data/104169/000205830926000004/xslF345X05/wk-form4_1770941511.xml", "accession_number": "0002058309-26-000004"}}, {"ticker": "WMT", "event_type": "filing_4", "event_subtype": null, "event_at": "2026-02-13T00:13:00+00:00", "severity": 1, "payload": {"form_type": "4", "primary_doc_url": "https://www.sec.gov/Archives/edgar/data/104169/000211064326000004/xslF345X05/wk-form4_1770941578.xml", "accession_number": "0002110643-26-000004"}}, {"ticker": "WMT", "event_type": "earnings_release", "event_subtype": "beat", "event_at": "2026-02-19T11:00:00+00:00", "severity": 2, "payload": {"actual_eps": 0.74, "surprise_pct": 1.79, "estimated_eps": 0.73}}, {"ticker": "WMT", "event_type": "8k_material_event", "event_subtype": null, "event_at": "2026-02-19T11:59:55+00:00", "severity": 3, "payload": {"form_type": "8-K", "primary_doc_url": "https://www.sec.gov/Archives/edgar/data/104169/000010416926000032/wmt-20260219.htm", "accession_number": "0000104169-26-000032"}}, {"ticker": "WMT", "event_type": "filing_4", "event_subtype": null, "event_at": "2026-02-19T23:40:27+00:00", "severity": 1, "payload": {"form_type": "4", "primary_doc_url": "https://www.sec.gov/Archives/edgar/data/104169/000157929926000008/xslF345X05/wk-form4_1771544424.xml", "accession_number": "0001579299-26-000008"}}, {"ticker": "WMT", "event_type": "filing_4", "event_subtype": null, "event_at": "2026-02-23T22:48:00+00:00", "severity": 1, "payload": {"form_type": "4", "primary_doc_url": "https://www.sec.gov/Archives/edgar/data/104169/000169673726000008/xslF345X05/wk-form4_1771886877.xml", "accession_number": "0001696737-26-000008"}}, {"ticker": "WMT", "event_type": "filing_4", "event_subtype": null, "event_at": "2026-02-23T22:48:54+00:00", "severity": 1, "payload": {"form_type": "4", "primary_doc_url": "https://www.sec.gov/Archives/edgar/data/104169/000199280826000008/xslF345X05/wk-form4_1771886932.xml", "accession_number": "0001992808-26-000008"}}, {"ticker": "WMT", "event_type": "filing_4", "event_subtype": null, "event_at": "2026-02-23T22:50:19+00:00", "severity": 1, "payload": {"form_type": "4", "primary_doc_url": "https://www.sec.gov/Archives/edgar/data/104169/000188636726000006/xslF345X05/wk-form4_1771887016.xml", "accession_number": "0001886367-26-000006"}}, {"ticker": "WMT", "event_type": "filing_4", "event_subtype": null, "event_at": "2026-02-25T23:41:01+00:00", "severity": 1, "payload": {"form_type": "4", "primary_doc_url": "https://www.sec.gov/Archives/edgar/data/104169/000010416926000033/xslF345X05/wk-form4_1772062858.xml", "accession_number": "0000104169-26-000033"}}, {"ticker": "WMT", "event_type": "filing_4", "event_subtype": null, "event_at": "2026-02-27T22:02:14+00:00", "severity": 1, "payload": {"form_type": "4", "primary_doc_url": "https://www.sec.gov/Archives/edgar/data/104169/000133578226000008/xslF345X05/wk-form4_1772229731.xml", "accession_number": "0001335782-26-000008"}}, {"ticker": "WMT", "event_type": "filing_4", "event_subtype": null, "event_at": "2026-02-27T22:34:21+00:00", "severity": 1, "payload": {"form_type": "4", "primary_doc_url": "https://www.sec.gov/Archives/edgar/data/104169/000010416926000035/xslF345X05/wk-form4_1772231658.xml", "accession_number": "0000104169-26-000035"}}, {"ticker": "WMT", "event_type": "filing_4", "event_subtype": null, "event_at": "2026-03-04T23:11:12+00:00", "severity": 1, "payload": {"form_type": "4", "primary_doc_url": "https://www.sec.gov/Archives/edgar/data/104169/000154743326000006/xslF345X05/wk-form4_1772665869.xml", "accession_number": "0001547433-26-000006"}}, {"ticker": "WMT", "event_type": "filing_4", "event_subtype": null, "event_at": "2026-03-04T23:14:42+00:00", "severity": 1, "payload": {"form_type": "4", "primary_doc_url": "https://www.sec.gov/Archives/edgar/data/104169/000010416926000037/xslF345X05/wk-form4_1772666080.xml", "accession_number": "0000104169-26-000037"}}, {"ticker": "WMT", "event_type": "filing_4", "event_subtype": null, "event_at": "2026-03-04T23:17:55+00:00", "severity": 1, "payload": {"form_type": "4", "primary_doc_url": "https://www.sec.gov/Archives/edgar/data/104169/000010416926000039/xslF345X05/wk-form4_1772666273.xml", "accession_number": "0000104169-26-000039"}}, {"ticker": "WMT", "event_type": "filing_4", "event_subtype": null, "event_at": "2026-03-06T23:06:33+00:00", "severity": 1, "payload": {"form_type": "4", "primary_doc_url": "https://www.sec.gov/Archives/edgar/data/104169/000010416926000041/xslF345X05/wk-form4_1772838391.xml", "accession_number": "0000104169-26-000041"}}, {"ticker": "WMT", "event_type": "filing_4", "event_subtype": null, "event_at": "2026-03-11T22:38:44+00:00", "severity": 1, "payload": {"form_type": "4", "primary_doc_url": "https://www.sec.gov/Archives/edgar/data/104169/000010416926000043/xslF345X05/wk-form4_1773268721.xml", "accession_number": "0000104169-26-000043"}}, {"ticker": "WMT", "event_type": "filing_4", "event_subtype": null, "event_at": "2026-03-11T23:12:32+00:00", "severity": 1, "payload": {"form_type": "4", "primary_doc_url": "https://www.sec.gov/Archives/edgar/data/104169/000133578226000010/xslF345X05/wk-form4_1773270749.xml", "accession_number": "0001335782-26-000010"}}, {"ticker": "WMT", "event_type": "filing_4", "event_subtype": null, "event_at": "2026-03-11T23:13:49+00:00", "severity": 1, "payload": {"form_type": "4", "primary_doc_url": "https://www.sec.gov/Archives/edgar/data/104169/000169673726000010/xslF345X05/wk-form4_1773270827.xml", "accession_number": "0001696737-26-000010"}}, {"ticker": "WMT", "event_type": "filing_4", "event_subtype": null, "event_at": "2026-03-11T23:14:40+00:00", "severity": 1, "payload": {"form_type": "4", "primary_doc_url": "https://www.sec.gov/Archives/edgar/data/104169/000154743326000008/xslF345X05/wk-form4_1773270878.xml", "accession_number": "0001547433-26-000008"}}, {"ticker": "WMT", "event_type": "filing_4", "event_subtype": null, "event_at": "2026-03-11T23:15:56+00:00", "severity": 1, "payload": {"form_type": "4", "primary_doc_url": "https://www.sec.gov/Archives/edgar/data/104169/000211030426000006/xslF345X05/wk-form4_1773270954.xml", "accession_number": "0002110304-26-000006"}}, {"ticker": "WMT", "event_type": "filing_4", "event_subtype": null, "event_at": "2026-03-11T23:16:51+00:00", "severity": 1, "payload": {"form_type": "4", "primary_doc_url": "https://www.sec.gov/Archives/edgar/data/104169/000199280826000010/xslF345X05/wk-form4_1773271007.xml", "accession_number": "0001992808-26-000010"}}, {"ticker": "WMT", "event_type": "filing_4", "event_subtype": null, "event_at": "2026-03-11T23:18:44+00:00", "severity": 1, "payload": {"form_type": "4", "primary_doc_url": "https://www.sec.gov/Archives/edgar/data/104169/000188636726000008/xslF345X05/wk-form4_1773271121.xml", "accession_number": "0001886367-26-000008"}}, {"ticker": "WMT", "event_type": "filing_4", "event_subtype": null, "event_at": "2026-03-11T23:19:44+00:00", "severity": 1, "payload": {"form_type": "4", "primary_doc_url": "https://www.sec.gov/Archives/edgar/data/104169/000178119826000006/xslF345X05/wk-form4_1773271181.xml", "accession_number": "0001781198-26-000006"}}, {"ticker": "WMT", "event_type": "filing_4", "event_subtype": null, "event_at": "2026-03-11T23:20:35+00:00", "severity": 1, "payload": {"form_type": "4", "primary_doc_url": "https://www.sec.gov/Archives/edgar/data/104169/000206450226000002/xslF345X05/wk-form4_1773271232.xml", "accession_number": "0002064502-26-000002"}}, {"ticker": "WMT", "event_type": "filing_4", "event_subtype": null, "event_at": "2026-03-11T23:21:28+00:00", "severity": 1, "payload": {"form_type": "4", "primary_doc_url": "https://www.sec.gov/Archives/edgar/data/104169/000157929926000010/xslF345X05/wk-form4_1773271286.xml", "accession_number": "0001579299-26-000010"}}, {"ticker": "WMT", "event_type": "filing_4", "event_subtype": null, "event_at": "2026-03-11T23:22:26+00:00", "severity": 1, "payload": {"form_type": "4", "primary_doc_url": "https://www.sec.gov/Archives/edgar/data/104169/000159810826000008/xslF345X05/wk-form4_1773271344.xml", "accession_number": "0001598108-26-000008"}}, {"ticker": "WMT", "event_type": "filing_4", "event_subtype": null, "event_at": "2026-03-11T23:23:27+00:00", "severity": 1, "payload": {"form_type": "4", "primary_doc_url": "https://www.sec.gov/Archives/edgar/data/104169/000205830926000006/xslF345X05/wk-form4_1773271405.xml", "accession_number": "0002058309-26-000006"}}, {"ticker": "WMT", "event_type": "filing_4", "event_subtype": null, "event_at": "2026-03-11T23:24:25+00:00", "severity": 1, "payload": {"form_type": "4", "primary_doc_url": "https://www.sec.gov/Archives/edgar/data/104169/000211064326000006/xslF345X05/wk-form4_1773271462.xml", "accession_number": "0002110643-26-000006"}}, {"ticker": "WMT", "event_type": "filing_10-k", "event_subtype": null, "event_at": "2026-03-13T20:06:24+00:00", "severity": 1, "payload": {"form_type": "10-K", "primary_doc_url": "https://www.sec.gov/Archives/edgar/data/104169/000010416926000055/wmt-20260131.htm", "accession_number": "0000104169-26-000055"}}, {"ticker": "WMT", "event_type": "8k_material_event", "event_subtype": null, "event_at": "2026-03-13T20:10:19+00:00", "severity": 3, "payload": {"form_type": "8-K", "primary_doc_url": "https://www.sec.gov/Archives/edgar/data/104169/000010416926000057/wmt-20260310.htm", "accession_number": "0000104169-26-000057"}}, {"ticker": "WMT", "event_type": "filing_4", "event_subtype": null, "event_at": "2026-03-17T21:02:07+00:00", "severity": 1, "payload": {"form_type": "4", "primary_doc_url": "https://www.sec.gov/Archives/edgar/data/104169/000157929926000012/xslF345X05/wk-form4_1773781324.xml", "accession_number": "0001579299-26-000012"}}, {"ticker": "WMT", "event_type": "filing_4", "event_subtype": null, "event_at": "2026-03-17T22:57:16+00:00", "severity": 1, "payload": {"form_type": "4", "primary_doc_url": "https://www.sec.gov/Archives/edgar/data/104169/000010416926000059/xslF345X05/wk-form4_1773788233.xml", "accession_number": "0000104169-26-000059"}}, {"ticker": "WMT", "event_type": "filing_4", "event_subtype": null, "event_at": "2026-03-17T22:58:20+00:00", "severity": 1, "payload": {"form_type": "4", "primary_doc_url": "https://www.sec.gov/Archives/edgar/data/104169/000010416926000061/xslF345X05/wk-form4_1773788297.xml", "accession_number": "0000104169-26-000061"}}, {"ticker": "WMT", "event_type": "filing_4", "event_subtype": null, "event_at": "2026-03-20T21:16:52+00:00", "severity": 1, "payload": {"form_type": "4", "primary_doc_url": "https://www.sec.gov/Archives/edgar/data/104169/000169673726000012/xslF345X06/wk-form4_1774041409.xml", "accession_number": "0001696737-26-000012"}}, {"ticker": "WMT", "event_type": "filing_4", "event_subtype": null, "event_at": "2026-03-26T21:26:38+00:00", "severity": 1, "payload": {"form_type": "4", "primary_doc_url": "https://www.sec.gov/Archives/edgar/data/104169/000010416926000065/xslF345X06/wk-form4_1774560396.xml", "accession_number": "0000104169-26-000065"}}, {"ticker": "WMT", "event_type": "8k_material_event", "event_subtype": null, "event_at": "2026-03-27T20:10:53+00:00", "severity": 3, "payload": {"form_type": "8-K", "primary_doc_url": "https://www.sec.gov/Archives/edgar/data/104169/000010416926000067/wmt-20260327.htm", "accession_number": "0000104169-26-000067"}}, {"ticker": "WMT", "event_type": "filing_4", "event_subtype": null, "event_at": "2026-03-27T22:16:14+00:00", "severity": 1, "payload": {"form_type": "4", "primary_doc_url": "https://www.sec.gov/Archives/edgar/data/104169/000133578226000012/xslF345X06/wk-form4_1774649772.xml", "accession_number": "0001335782-26-000012"}}, {"ticker": "WMT", "event_type": "filing_4", "event_subtype": null, "event_at": "2026-04-02T21:54:52+00:00", "severity": 1, "payload": {"form_type": "4", "primary_doc_url": "https://www.sec.gov/Archives/edgar/data/104169/000161617226000004/xslF345X06/wk-form4_1775166889.xml", "accession_number": "0001616172-26-000004"}}, {"ticker": "WMT", "event_type": "filing_4", "event_subtype": null, "event_at": "2026-04-02T21:55:47+00:00", "severity": 1, "payload": {"form_type": "4", "primary_doc_url": "https://www.sec.gov/Archives/edgar/data/104169/000155032226000004/xslF345X06/wk-form4_1775166944.xml", "accession_number": "0001550322-26-000004"}}, {"ticker": "WMT", "event_type": "filing_4", "event_subtype": null, "event_at": "2026-04-02T21:58:00+00:00", "severity": 1, "payload": {"form_type": "4", "primary_doc_url": "https://www.sec.gov/Archives/edgar/data/104169/000010416926000072/xslF345X06/wk-form4_1775167077.xml", "accession_number": "0000104169-26-000072"}}, {"ticker": "WMT", "event_type": "filing_4", "event_subtype": null, "event_at": "2026-04-02T21:58:48+00:00", "severity": 1, "payload": {"form_type": "4", "primary_doc_url": "https://www.sec.gov/Archives/edgar/data/104169/000157065826000004/xslF345X06/wk-form4_1775167126.xml", "accession_number": "0001570658-26-000004"}}, {"ticker": "WMT", "event_type": "filing_4", "event_subtype": null, "event_at": "2026-04-02T21:59:38+00:00", "severity": 1, "payload": {"form_type": "4", "primary_doc_url": "https://www.sec.gov/Archives/edgar/data/104169/000170735126000009/xslF345X06/wk-form4_1775167176.xml", "accession_number": "0001707351-26-000009"}}, {"ticker": "WMT", "event_type": "filing_4", "event_subtype": null, "event_at": "2026-04-02T22:00:50+00:00", "severity": 1, "payload": {"form_type": "4", "primary_doc_url": "https://www.sec.gov/Archives/edgar/data/104169/000155060826000007/xslF345X06/wk-form4_1775167247.xml", "accession_number": "0001550608-26-000007"}}, {"ticker": "WMT", "event_type": "filing_4", "event_subtype": null, "event_at": "2026-04-02T22:01:46+00:00", "severity": 1, "payload": {"form_type": "4", "primary_doc_url": "https://www.sec.gov/Archives/edgar/data/104169/000203383426000008/xslF345X06/wk-form4_1775167303.xml", "accession_number": "0002033834-26-000008"}}, {"ticker": "WMT", "event_type": "filing_4", "event_subtype": null, "event_at": "2026-04-02T22:05:32+00:00", "severity": 1, "payload": {"form_type": "4", "primary_doc_url": "https://www.sec.gov/Archives/edgar/data/104169/000162858826000004/xslF345X06/wk-form4_1775167529.xml", "accession_number": "0001628588-26-000004"}}, {"ticker": "WMT", "event_type": "filing_4", "event_subtype": null, "event_at": "2026-04-02T22:06:29+00:00", "severity": 1, "payload": {"form_type": "4", "primary_doc_url": "https://www.sec.gov/Archives/edgar/data/104169/000118342826000004/xslF345X06/wk-form4_1775167586.xml", "accession_number": "0001183428-26-000004"}}, {"ticker": "WMT", "event_type": "filing_4", "event_subtype": null, "event_at": "2026-04-02T22:09:07+00:00", "severity": 1, "payload": {"form_type": "4", "primary_doc_url": "https://www.sec.gov/Archives/edgar/data/104169/000010416926000074/xslF345X06/wk-form4_1775167745.xml", "accession_number": "0000104169-26-000074"}}, {"ticker": "WMT", "event_type": "filing_4", "event_subtype": null, "event_at": "2026-04-02T22:10:09+00:00", "severity": 1, "payload": {"form_type": "4", "primary_doc_url": "https://www.sec.gov/Archives/edgar/data/104169/000010416926000075/xslF345X06/wk-form4_1775167806.xml", "accession_number": "0000104169-26-000075"}}, {"ticker": "WMT", "event_type": "filing_4", "event_subtype": null, "event_at": "2026-04-09T22:48:45+00:00", "severity": 1, "payload": {"form_type": "4", "primary_doc_url": "https://www.sec.gov/Archives/edgar/data/104169/000211030426000008/xslF345X06/wk-form4_1775774922.xml", "accession_number": "0002110304-26-000008"}}, {"ticker": "WMT", "event_type": "filing_4", "event_subtype": null, "event_at": "2026-04-09T22:50:47+00:00", "severity": 1, "payload": {"form_type": "4", "primary_doc_url": "https://www.sec.gov/Archives/edgar/data/104169/000205830926000008/xslF345X06/wk-form4_1775775045.xml", "accession_number": "0002058309-26-000008"}}, {"ticker": "WMT", "event_type": "filing_4", "event_subtype": null, "event_at": "2026-04-09T22:52:47+00:00", "severity": 1, "payload": {"form_type": "4", "primary_doc_url": "https://www.sec.gov/Archives/edgar/data/104169/000199280826000012/xslF345X06/wk-form4_1775775164.xml", "accession_number": "0001992808-26-000012"}}, {"ticker": "WMT", "event_type": "filing_4", "event_subtype": null, "event_at": "2026-04-09T22:53:37+00:00", "severity": 1, "payload": {"form_type": "4", "primary_doc_url": "https://www.sec.gov/Archives/edgar/data/104169/000188636726000010/xslF345X06/wk-form4_1775775215.xml", "accession_number": "0001886367-26-000010"}}, {"ticker": "WMT", "event_type": "filing_4", "event_subtype": null, "event_at": "2026-04-09T22:55:25+00:00", "severity": 1, "payload": {"form_type": "4", "primary_doc_url": "https://www.sec.gov/Archives/edgar/data/104169/000211064326000008/xslF345X06/wk-form4_1775775323.xml", "accession_number": "0002110643-26-000008"}}, {"ticker": "WMT", "event_type": "filing_4", "event_subtype": null, "event_at": "2026-04-17T20:58:19+00:00", "severity": 1, "payload": {"form_type": "4", "primary_doc_url": "https://www.sec.gov/Archives/edgar/data/104169/000169673726000014/xslF345X06/wk-form4_1776459496.xml", "accession_number": "0001696737-26-000014"}}, {"ticker": "WMT", "event_type": "filing_4", "event_subtype": null, "event_at": "2026-04-17T21:02:04+00:00", "severity": 1, "payload": {"form_type": "4", "primary_doc_url": "https://www.sec.gov/Archives/edgar/data/104169/000199280826000014/xslF345X06/wk-form4_1776459722.xml", "accession_number": "0001992808-26-000014"}}, {"ticker": "WMT", "event_type": "filing_4", "event_subtype": null, "event_at": "2026-04-17T21:06:17+00:00", "severity": 1, "payload": {"form_type": "4", "primary_doc_url": "https://www.sec.gov/Archives/edgar/data/104169/000157929926000014/xslF345X06/wk-form4_1776459974.xml", "accession_number": "0001579299-26-000014"}}, {"ticker": "WMT", "event_type": "filing_4", "event_subtype": null, "event_at": "2026-04-24T21:06:35+00:00", "severity": 1, "payload": {"form_type": "4", "primary_doc_url": "https://www.sec.gov/Archives/edgar/data/104169/000133578226000014/xslF345X06/wk-form4_1777064792.xml", "accession_number": "0001335782-26-000014"}}]</script>
+<script>
+const prices  = JSON.parse(document.getElementById('pdata').textContent);
+const signals = JSON.parse(document.getElementById('sdata').textContent);
+const events  = JSON.parse(document.getElementById('edata').textContent);
+
+// ── Date axis (one entry per available trading day) ──────────────
+const labels = prices.map(p => p.date);
+const closes = prices.map(p => p.close);
+const dateToIdx = {};
+labels.forEach((d, i) => { dateToIdx[d] = i; });
+
+// ── Event-type → display config ──────────────────────────────────
+function eventBucket(et) {
+  if (!et) return 'other';
+  if (et === '8k_material_event' || et.indexOf('filing_') === 0) return 'filing';
+  if (et === 'earnings_release' || et === 'earnings_pre' || et === 'earnings_post') return 'earnings';
+  if (et === 'momentum') return 'momentum';
+  if (et === 'news_article') return 'news';
+  if (et === 'truth_social_post') return 'social';
+  return 'other';
+}
+const BUCKET_COLOR = {
+  filing:   '#5a8fd9',
+  earnings: '#e89c5a',
+  momentum: '#9c9c9c',
+  news:     '#a07acc',
+  social:   '#d97a8f',
+  other:    '#888888',
+};
+
+// ── Build chart annotations: one dot per event + one dot per signal ──
+const annotations = {};
+
+// Events as small dots on the price line
+events.forEach((e, i) => {
+  const eventDate = (e.event_at || '').substring(0, 10);
+  const idx = dateToIdx[eventDate];
+  if (idx === undefined) return;
+  const bucket = eventBucket(e.event_type);
+  annotations['ev_' + i] = {
+    type: 'point',
+    xValue: eventDate,
+    yValue: closes[idx],
+    backgroundColor: BUCKET_COLOR[bucket],
+    radius: 4,
+    borderWidth: 0,
+  };
+});
+
+// Signals as larger labeled dots (drawn on top because they're added after)
+signals.forEach((sig, i) => {
+  const firedDate = (sig.fired_at || '').substring(0, 10);
+  const idx = dateToIdx[firedDate];
+  if (idx === undefined) return;
+  const isAvoid = sig.action === 'AVOID_CHASE';
+  const color   = sig.action === 'WATCH' ? '#4caf93' : isAvoid ? '#e85a5a' : '#e8c15a';
+  annotations['sig_' + i] = {
+    type: 'point', xValue: firedDate, yValue: closes[idx],
+    backgroundColor: color, radius: 9, borderColor: '#fff', borderWidth: 2,
+    label: { display: true, content: sig.action + ' ' + Math.round(sig.score || 0),
+             position: isAvoid ? 'end' : 'start', color: '#fff',
+             backgroundColor: color, font: { size: 10 } },
+  };
+  const audit = sig._audit;
+  if (audit) {
+    const exitIdx = Math.min(idx + (sig.horizon_days || 1), labels.length - 1);
+    annotations['shade_' + i] = {
+      type: 'box', xMin: firedDate, xMax: labels[exitIdx],
+      backgroundColor: audit.correct ? '#4caf9322' : '#e85a5a22', borderWidth: 0,
+    };
+  }
+});
+
+new Chart(document.getElementById('priceChart'), {
+  type: 'line',
+  data: {
+    labels,
+    datasets: [{ label: 'WMT Close', data: closes, borderColor: '#7ab8d9',
+                 backgroundColor: '#7ab8d911', tension: 0.2, pointRadius: 0, fill: true }],
+  },
+  options: {
+    responsive: true,
+    scales: {
+      x: { ticks: { maxTicksLimit: 12 } },
+      y: { ticks: { callback: v => '$' + v.toFixed(0) } },
+    },
+    plugins: {
+      legend: { display: false },
+      annotation: { annotations },
+      tooltip: { callbacks: { label: ctx => '$' + ctx.parsed.y.toFixed(2) } },
+    }
+  }
+});
+
+// ── Big Moves table — find days with |daily return| > 5%, list nearby events ──
+function eventLabel(e) {
+  const p = e.payload || {};
+  if (e.event_type === '8k_material_event') {
+    const items = p['8k_items'] ? ' [items: ' + p['8k_items'] + ']' : '';
+    return '8-K' + items;
+  }
+  if (e.event_type === 'earnings_release') {
+    const sub = e.event_subtype || 'earnings';
+    const surp = (p.surprise_pct != null) ? ' (' + Number(p.surprise_pct).toFixed(1) + '%)' : '';
+    return 'Earnings ' + sub + surp;
+  }
+  if (e.event_type === 'momentum') {
+    const rs = p.rel_strength_pct;
+    return 'Momentum' + (rs != null ? ' ' + Number(rs).toFixed(1) + '% vs SPY' : '');
+  }
+  if (e.event_type && e.event_type.indexOf('filing_') === 0) {
+    return p.form_type || e.event_type.replace('filing_', '').toUpperCase();
+  }
+  if (e.event_type === 'news_article') return p.headline || 'News';
+  return e.event_type;
+}
+
+// HTML-escape — payloads may contain raw text from RSS, must never reach innerHTML unescaped.
+function esc(s) {
+  if (s === null || s === undefined) return '';
+  return String(s).replace(/[&<>"']/g, c => ({
+    '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'
+  }[c]));
+}
+
+const bigMoves = [];
+for (let i = 1; i < prices.length; i++) {
+  const prev = prices[i - 1].close;
+  const cur  = prices[i].close;
+  if (!prev || !cur) continue;
+  const ret  = (cur - prev) / prev;
+  if (Math.abs(ret) < 0.05) continue;
+
+  // Find events in the prior 2 trading days (i-2 to i, inclusive of move day itself)
+  const lowDateIdx  = Math.max(0, i - 2);
+  const highDateIdx = i;
+  const lowDate  = prices[lowDateIdx].date;
+  const highDate = prices[highDateIdx].date;
+  const nearby = events.filter(e => {
+    const d = (e.event_at || '').substring(0, 10);
+    return d >= lowDate && d <= highDate;
+  });
+  bigMoves.push({ date: prices[i].date, ret, close: cur, nearby });
+}
+
+const bigMovesBody = document.getElementById('bigMovesRows');
+if (bigMoves.length === 0) {
+  document.getElementById('noBigMoves').style.display = 'block';
+  document.getElementById('bigMovesTable').style.display = 'none';
+} else {
+  // Most recent first
+  bigMoves.reverse();
+  for (const m of bigMoves) {
+    const tr = document.createElement('tr');
+    const tdDate  = document.createElement('td'); tdDate.textContent = m.date;
+    const tdMove  = document.createElement('td'); tdMove.className = 'num';
+    tdMove.textContent = (m.ret * 100).toFixed(2) + '%';
+    tdMove.style.color = m.ret > 0 ? 'var(--ok)' : 'var(--bad)';
+    const tdClose = document.createElement('td'); tdClose.className = 'num';
+    tdClose.textContent = '$' + m.close.toFixed(2);
+    const tdEv    = document.createElement('td');
+    if (m.nearby.length === 0) {
+      tdEv.style.color = 'var(--muted)';
+      tdEv.textContent = '— no tracked events';
+    } else {
+      m.nearby.forEach((e, idx) => {
+        const span = document.createElement('span');
+        span.className = 'tag agent-' + eventBucket(e.event_type);
+        span.textContent = eventLabel(e);
+        span.title = e.event_at;
+        tdEv.appendChild(span);
+        if (idx < m.nearby.length - 1) tdEv.appendChild(document.createTextNode(' '));
+      });
+    }
+    tr.appendChild(tdDate);
+    tr.appendChild(tdMove);
+    tr.appendChild(tdClose);
+    tr.appendChild(tdEv);
+    bigMovesBody.appendChild(tr);
+  }
+}
+
+// ── Signal table (unchanged from prior version, DOM-built) ──────
+const tbody = document.getElementById('sigRows');
+if (signals.length === 0) {
+  document.getElementById('noSigs').style.display = 'block';
+  document.getElementById('sigTable').style.display = 'none';
+} else {
+  for (const s of signals) {
+    const a  = s._audit || {};
+    const tr = document.createElement('tr');
+    function td(text, cls) {
+      const c = document.createElement('td');
+      if (cls) c.className = cls;
+      c.textContent = text;
+      return c;
+    }
+    function tdHTML(node) {
+      const c = document.createElement('td');
+      c.appendChild(node);
+      return c;
+    }
+    const actionSpan = document.createElement('span');
+    actionSpan.className = 'tag ' + (s.action || '');
+    actionSpan.textContent = s.action || '';
+    const statusSpan = document.createElement('span');
+    statusSpan.className = 'tag ' + (s.status_v2 || '');
+    statusSpan.textContent = s.status_v2 || '';
+    const retTd = document.createElement('td');
+    retTd.className = 'num';
+    if (a.realized_return != null) {
+      retTd.textContent = (a.realized_return * 100).toFixed(2) + '%';
+      retTd.style.color = a.realized_return > 0 ? 'var(--ok)' : 'var(--bad)';
+    } else { retTd.textContent = '—'; }
+    const okTd = document.createElement('td');
+    okTd.style.textAlign = 'center';
+    okTd.textContent = a.correct === true ? '✅' : a.correct === false ? '❌' : '—';
+    tr.appendChild(td((s.fired_at||'').substring(0,16), 'fired'));
+    tr.appendChild(tdHTML(actionSpan));
+    tr.appendChild(td(String(Math.round(s.score||0)), 'num'));
+    tr.appendChild(td(s.evidence_summary || '', 'summary'));
+    tr.appendChild(tdHTML(statusSpan));
+    tr.appendChild(retTd);
+    tr.appendChild(okTd);
+    tbody.appendChild(tr);
+  }
+}
+</script>
+
+  </main>
+  <footer>
+    <p>v1 paper-trading vocabulary: <strong>WATCH</strong> / <strong>RESEARCH</strong> / <strong>AVOID_CHASE</strong>.
+    The bot does not say BUY or SELL until 60 days of paper-trading hits the §17.6 graduation thresholds.</p>
+    <p>Data: SEC EDGAR · trumpstruth.org RSS · yfinance. Free-tier stack: GitHub Actions + Supabase Free + Hostinger static.</p>
+  </footer>
+</body>
+</html>

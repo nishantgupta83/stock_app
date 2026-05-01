@@ -1,0 +1,328 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta http-equiv="refresh" content="900">  <!-- self-refresh every 15 min -->
+  <title>JPM · Chart · Hub4Apps Market Intel</title>
+  
+  <link rel="stylesheet" href="../styles.css">
+</head>
+<body>
+  <header>
+    <div class="brand">
+      <span class="logo">📈</span>
+      <h1>Hub4Apps Market Intel</h1>
+      <span class="subtitle">private · educational · not financial advice</span>
+    </div>
+    <nav>
+      <a href="../index.html"     class="">Dashboard</a>
+      <a href="../signals.html"   class="active">Signals</a>
+      <a href="../events.html"    class="">Events</a>
+      <a href="../agents.html"    class="">Agents</a>
+      <a href="../backtest.html"  class="">Backtest</a>
+      <a href="../learning.html"  class="">Learning</a>
+    </nav>
+    <div class="meta">
+      <span>generated 2026-05-01 21:38 UTC</span>
+    </div>
+  </header>
+  <main>
+    
+<div style="display:flex;align-items:center;gap:12px;margin-bottom:8px">
+  <h2 style="margin:0">JPM</h2>
+  <span style="color:var(--muted);font-size:13px">180-day price · events overlaid · big-move explanations</span>
+</div>
+
+<div style="font-size:12px;color:var(--muted);margin-bottom:8px">
+  Legend:
+  <span style="color:#7ab8d9">━ price</span> ·
+  <span style="color:#5a8fd9">● filing</span> ·
+  <span style="color:#e89c5a">● earnings</span> ·
+  <span style="color:#9c9c9c">● momentum</span> ·
+  <span style="color:#4caf93">● WATCH</span> /
+  <span style="color:#e8c15a">● RESEARCH</span> /
+  <span style="color:#e85a5a">● AVOID_CHASE</span>
+</div>
+
+<canvas id="priceChart" height="80"></canvas>
+
+<h3 style="margin-top:28px">Big moves <span style="color:var(--muted);font-size:13px;font-weight:normal">— days the close moved &gt; 5%, with events from the prior 2 trading days as candidate causes (correlation, not causation)</span></h3>
+<table id="bigMovesTable">
+  <thead>
+    <tr>
+      <th>Date</th>
+      <th class="num">Move</th>
+      <th class="num">Close</th>
+      <th>Events in prior 2 trading days</th>
+    </tr>
+  </thead>
+  <tbody id="bigMovesRows"></tbody>
+</table>
+<div id="noBigMoves" class="empty" style="display:none">No daily moves &gt;5% in the last 180 days for JPM.</div>
+
+<h3 style="margin-top:28px">Signal log — JPM</h3>
+<table id="sigTable">
+  <thead>
+    <tr>
+      <th>Fired (UTC)</th>
+      <th>Action</th>
+      <th class="num">Score</th>
+      <th>Summary</th>
+      <th>Status</th>
+      <th class="num">Return</th>
+      <th>Outcome</th>
+    </tr>
+  </thead>
+  <tbody id="sigRows"></tbody>
+</table>
+<div id="noSigs" class="empty" style="display:none">No signals fired for JPM in the last 180 days.</div>
+
+<div style="margin-top:24px">
+  <a href="../signals.html" style="color:var(--ok)">&larr; All signals</a>
+  &nbsp;&nbsp;
+  <a href="../learning.html" style="color:var(--ok)">Learning timeline &rarr;</a>
+</div>
+
+<script src="../vendor/chart.umd.min.js"></script>
+<script src="../vendor/chartjs-plugin-annotation.min.js"></script>
+<script id="pdata" type="application/json">[{"date": "2025-11-03", "close": 309.35}, {"date": "2025-11-04", "close": 309.25}, {"date": "2025-11-05", "close": 311.68}, {"date": "2025-11-06", "close": 313.42}, {"date": "2025-11-07", "close": 314.21}, {"date": "2025-11-10", "close": 316.89}, {"date": "2025-11-11", "close": 315.62}, {"date": "2025-11-12", "close": 320.41}, {"date": "2025-11-13", "close": 309.48}, {"date": "2025-11-14", "close": 303.61}, {"date": "2025-11-17", "close": 300.37}, {"date": "2025-11-18", "close": 299.41}, {"date": "2025-11-19", "close": 303.27}, {"date": "2025-11-20", "close": 298.38}, {"date": "2025-11-21", "close": 298.02}, {"date": "2025-11-24", "close": 298.0}, {"date": "2025-11-25", "close": 303.0}, {"date": "2025-11-26", "close": 307.64}, {"date": "2025-11-28", "close": 313.08}, {"date": "2025-12-01", "close": 308.92}, {"date": "2025-12-02", "close": 307.88}, {"date": "2025-12-03", "close": 312.13}, {"date": "2025-12-04", "close": 316.1}, {"date": "2025-12-05", "close": 315.04}, {"date": "2025-12-08", "close": 315.21}, {"date": "2025-12-09", "close": 300.51}, {"date": "2025-12-10", "close": 310.11}, {"date": "2025-12-11", "close": 317.38}, {"date": "2025-12-12", "close": 318.52}, {"date": "2025-12-15", "close": 320.02}, {"date": "2025-12-16", "close": 315.55}, {"date": "2025-12-17", "close": 314.98}, {"date": "2025-12-18", "close": 313.0}, {"date": "2025-12-19", "close": 317.21}, {"date": "2025-12-22", "close": 323.09}, {"date": "2025-12-23", "close": 325.93}, {"date": "2025-12-24", "close": 329.17}, {"date": "2025-12-26", "close": 327.91}, {"date": "2025-12-29", "close": 323.75}, {"date": "2025-12-30", "close": 323.42}, {"date": "2025-12-31", "close": 322.22}, {"date": "2026-01-02", "close": 325.48}, {"date": "2026-01-05", "close": 334.04}, {"date": "2026-01-06", "close": 334.61}, {"date": "2026-01-07", "close": 326.99}, {"date": "2026-01-08", "close": 329.79}, {"date": "2026-01-09", "close": 329.19}, {"date": "2026-01-12", "close": 324.49}, {"date": "2026-01-13", "close": 310.9}, {"date": "2026-01-14", "close": 307.87}, {"date": "2026-01-15", "close": 309.26}, {"date": "2026-01-16", "close": 312.47}, {"date": "2026-01-20", "close": 302.74}, {"date": "2026-01-21", "close": 302.04}, {"date": "2026-01-22", "close": 303.63}, {"date": "2026-01-23", "close": 297.72}, {"date": "2026-01-26", "close": 301.04}, {"date": "2026-01-27", "close": 300.31}, {"date": "2026-01-28", "close": 300.77}, {"date": "2026-01-29", "close": 306.42}, {"date": "2026-01-30", "close": 305.89}, {"date": "2026-02-02", "close": 308.14}, {"date": "2026-02-03", "close": 314.85}, {"date": "2026-02-04", "close": 317.27}, {"date": "2026-02-05", "close": 310.16}, {"date": "2026-02-06", "close": 322.4}, {"date": "2026-02-09", "close": 322.1}, {"date": "2026-02-10", "close": 318.28}, {"date": "2026-02-11", "close": 310.82}, {"date": "2026-02-12", "close": 302.64}, {"date": "2026-02-13", "close": 302.55}, {"date": "2026-02-17", "close": 307.13}, {"date": "2026-02-18", "close": 308.78}, {"date": "2026-02-19", "close": 308.05}, {"date": "2026-02-20", "close": 310.79}, {"date": "2026-02-23", "close": 297.67}, {"date": "2026-02-24", "close": 297.3}, {"date": "2026-02-25", "close": 303.3}, {"date": "2026-02-26", "close": 306.13}, {"date": "2026-02-27", "close": 300.3}, {"date": "2026-03-02", "close": 297.56}, {"date": "2026-03-03", "close": 300.26}, {"date": "2026-03-04", "close": 299.39}, {"date": "2026-03-05", "close": 293.55}, {"date": "2026-03-06", "close": 289.48}, {"date": "2026-03-09", "close": 289.92}, {"date": "2026-03-10", "close": 288.73}, {"date": "2026-03-11", "close": 287.52}, {"date": "2026-03-12", "close": 282.89}, {"date": "2026-03-13", "close": 283.44}, {"date": "2026-03-16", "close": 286.16}, {"date": "2026-03-17", "close": 286.89}, {"date": "2026-03-18", "close": 287.74}, {"date": "2026-03-19", "close": 287.97}, {"date": "2026-03-20", "close": 286.56}, {"date": "2026-03-23", "close": 289.91}, {"date": "2026-03-24", "close": 292.4}, {"date": "2026-03-25", "close": 295.42}, {"date": "2026-03-26", "close": 291.66}, {"date": "2026-03-27", "close": 282.84}, {"date": "2026-03-30", "close": 283.77}, {"date": "2026-03-31", "close": 294.16}, {"date": "2026-04-01", "close": 295.38}, {"date": "2026-04-02", "close": 294.6}, {"date": "2026-04-06", "close": 295.45}, {"date": "2026-04-07", "close": 297.4}, {"date": "2026-04-08", "close": 307.97}, {"date": "2026-04-09", "close": 310.33}, {"date": "2026-04-10", "close": 309.87}, {"date": "2026-04-13", "close": 313.68}, {"date": "2026-04-14", "close": 311.12}, {"date": "2026-04-15", "close": 305.93}, {"date": "2026-04-16", "close": 309.95}, {"date": "2026-04-17", "close": 310.29}, {"date": "2026-04-20", "close": 316.99}, {"date": "2026-04-21", "close": 313.0}, {"date": "2026-04-22", "close": 313.02}, {"date": "2026-04-23", "close": 311.69}, {"date": "2026-04-24", "close": 308.28}, {"date": "2026-04-27", "close": 311.63}, {"date": "2026-04-28", "close": 311.45}, {"date": "2026-04-29", "close": 309.25}]</script>
+<script id="sdata" type="application/json">[{"id": 32, "ticker": "JPM", "fired_at": "2026-04-15T21:50:04+00:00", "action": "RESEARCH", "score": 55.0, "confidence": 0.55, "evidence_summary": "8\u00d7 Form 4", "status_v2": "backtest", "model_version": "rubric-v1.1-backtest-multisource", "weight_at_time": {"mode": "multi_source_research_grade", "agents": ["earnings", "filing"]}, "score_breakdown": null, "direction": "neutral", "horizon_days": 1, "agents": ["earnings", "filing"], "_audit": {"signal_id": 32, "horizon_days": 1, "realized_return": 0.014065, "realized_at": "2026-04-16T20:00:00+00:00", "correct": true}}, {"id": 31, "ticker": "JPM", "fired_at": "2026-04-14T14:05:26+00:00", "action": "WATCH", "score": 103.0, "confidence": 1.0, "evidence_summary": "new 8-K beat", "status_v2": "backtest", "model_version": "rubric-v1.1-backtest-multisource", "weight_at_time": {"mode": "multi_source_research_grade", "agents": ["earnings", "filing"]}, "score_breakdown": null, "direction": "bullish", "horizon_days": 1, "agents": ["earnings", "filing"], "_audit": {"signal_id": 31, "horizon_days": 1, "realized_return": -0.026546, "realized_at": "2026-04-15T20:00:00+00:00", "correct": false}}, {"id": 16, "ticker": "JPM", "fired_at": "2026-01-22T22:03:43+00:00", "action": "WATCH", "score": 154.0, "confidence": 1.0, "evidence_summary": "new 8-K; 21\u00d7 Form 4", "status_v2": "backtest", "model_version": "rubric-v1.1-backtest-multisource", "weight_at_time": {"mode": "multi_source_research_grade", "agents": ["filing"]}, "score_breakdown": null, "direction": "bullish", "horizon_days": 1, "agents": ["filing"], "_audit": {"signal_id": 16, "horizon_days": 1, "realized_return": -0.015172, "realized_at": "2026-01-23T20:00:00+00:00", "correct": false}}, {"id": 13, "ticker": "JPM", "fired_at": "2026-01-13T15:09:19+00:00", "action": "RESEARCH", "score": 58.0, "confidence": 0.58, "evidence_summary": "new 8-K miss", "status_v2": "backtest", "model_version": "rubric-v1.1-backtest-multisource", "weight_at_time": {"mode": "multi_source_research_grade", "agents": ["earnings", "filing"]}, "score_breakdown": null, "direction": "bullish", "horizon_days": 1, "agents": ["earnings", "filing"], "_audit": {"signal_id": 13, "horizon_days": 1, "realized_return": -0.002071, "realized_at": "2026-01-14T20:00:00+00:00", "correct": false}}]</script>
+<script id="edata" type="application/json">[{"ticker": "JPM", "event_type": "filing_10-q", "event_subtype": null, "event_at": "2025-11-04T21:18:08+00:00", "severity": 1, "payload": {"form_type": "10-Q", "primary_doc_url": "https://www.sec.gov/Archives/edgar/data/19617/000162828025048859/jpm-20250930.htm", "accession_number": "0001628280-25-048859"}}, {"ticker": "JPM", "event_type": "filing_4", "event_subtype": null, "event_at": "2025-11-05T21:17:12+00:00", "severity": 1, "payload": {"form_type": "4", "primary_doc_url": "https://www.sec.gov/Archives/edgar/data/19617/000122520825008952/xslF345X05/doc4.xml", "accession_number": "0001225208-25-008952"}}, {"ticker": "JPM", "event_type": "filing_4", "event_subtype": null, "event_at": "2025-11-06T21:18:25+00:00", "severity": 1, "payload": {"form_type": "4", "primary_doc_url": "https://www.sec.gov/Archives/edgar/data/19617/000122520825008995/xslF345X05/doc4.xml", "accession_number": "0001225208-25-008995"}}, {"ticker": "JPM", "event_type": "filing_4", "event_subtype": null, "event_at": "2025-11-07T22:45:29+00:00", "severity": 1, "payload": {"form_type": "4", "primary_doc_url": "https://www.sec.gov/Archives/edgar/data/19617/000122520825009048/xslF345X05/doc4.xml", "accession_number": "0001225208-25-009048"}}, {"ticker": "JPM", "event_type": "filing_4", "event_subtype": null, "event_at": "2025-11-13T21:17:28+00:00", "severity": 1, "payload": {"form_type": "4", "primary_doc_url": "https://www.sec.gov/Archives/edgar/data/19617/000122520825009130/xslF345X05/doc4.xml", "accession_number": "0001225208-25-009130"}}, {"ticker": "JPM", "event_type": "8k_material_event", "event_subtype": null, "event_at": "2025-12-08T11:30:37+00:00", "severity": 3, "payload": {"form_type": "8-K", "primary_doc_url": "https://www.sec.gov/Archives/edgar/data/19617/000001961725001100/jpm-20251207.htm", "accession_number": "0000019617-25-001100"}}, {"ticker": "JPM", "event_type": "filing_4", "event_subtype": null, "event_at": "2025-12-08T21:16:20+00:00", "severity": 1, "payload": {"form_type": "4", "primary_doc_url": "https://www.sec.gov/Archives/edgar/data/19617/000122520825009782/xslF345X05/doc4.xml", "accession_number": "0001225208-25-009782"}}, {"ticker": "JPM", "event_type": "filing_4", "event_subtype": null, "event_at": "2026-01-02T21:16:22+00:00", "severity": 1, "payload": {"form_type": "4", "primary_doc_url": "https://www.sec.gov/Archives/edgar/data/19617/000122520826000015/xslF345X05/doc4.xml", "accession_number": "0001225208-26-000015"}}, {"ticker": "JPM", "event_type": "filing_4", "event_subtype": null, "event_at": "2026-01-02T21:16:24+00:00", "severity": 1, "payload": {"form_type": "4", "primary_doc_url": "https://www.sec.gov/Archives/edgar/data/19617/000122520826000016/xslF345X05/doc4.xml", "accession_number": "0001225208-26-000016"}}, {"ticker": "JPM", "event_type": "filing_4", "event_subtype": null, "event_at": "2026-01-02T21:16:25+00:00", "severity": 1, "payload": {"form_type": "4", "primary_doc_url": "https://www.sec.gov/Archives/edgar/data/19617/000122520826000017/xslF345X05/doc4.xml", "accession_number": "0001225208-26-000017"}}, {"ticker": "JPM", "event_type": "filing_4", "event_subtype": null, "event_at": "2026-01-02T21:38:49+00:00", "severity": 1, "payload": {"form_type": "4", "primary_doc_url": "https://www.sec.gov/Archives/edgar/data/19617/000122520826000024/xslF345X05/doc4.xml", "accession_number": "0001225208-26-000024"}}, {"ticker": "JPM", "event_type": "earnings_release", "event_subtype": "miss", "event_at": "2026-01-13T11:00:00+00:00", "severity": 3, "payload": {"actual_eps": 4.63, "surprise_pct": -3.91, "estimated_eps": 4.82}}, {"ticker": "JPM", "event_type": "8k_material_event", "event_subtype": null, "event_at": "2026-01-13T11:41:09+00:00", "severity": 3, "payload": {"form_type": "8-K", "primary_doc_url": "https://www.sec.gov/Archives/edgar/data/19617/000162828026001902/jpm-20260113.htm", "accession_number": "0001628280-26-001902"}}, {"ticker": "JPM", "event_type": "8k_material_event", "event_subtype": null, "event_at": "2026-01-13T15:09:19+00:00", "severity": 3, "payload": {"form_type": "8-K", "primary_doc_url": "https://www.sec.gov/Archives/edgar/data/19617/000162828026001915/jpm-20260113.htm", "accession_number": "0001628280-26-001915"}}, {"ticker": "JPM", "event_type": "filing_4", "event_subtype": null, "event_at": "2026-01-15T21:16:32+00:00", "severity": 1, "payload": {"form_type": "4", "primary_doc_url": "https://www.sec.gov/Archives/edgar/data/19617/000122520826000621/xslF345X05/doc4.xml", "accession_number": "0001225208-26-000621"}}, {"ticker": "JPM", "event_type": "filing_4", "event_subtype": null, "event_at": "2026-01-15T21:16:34+00:00", "severity": 1, "payload": {"form_type": "4", "primary_doc_url": "https://www.sec.gov/Archives/edgar/data/19617/000122520826000622/xslF345X05/doc4.xml", "accession_number": "0001225208-26-000622"}}, {"ticker": "JPM", "event_type": "filing_4", "event_subtype": null, "event_at": "2026-01-15T21:16:35+00:00", "severity": 1, "payload": {"form_type": "4", "primary_doc_url": "https://www.sec.gov/Archives/edgar/data/19617/000122520826000623/xslF345X05/doc4.xml", "accession_number": "0001225208-26-000623"}}, {"ticker": "JPM", "event_type": "filing_4", "event_subtype": null, "event_at": "2026-01-15T21:16:37+00:00", "severity": 1, "payload": {"form_type": "4", "primary_doc_url": "https://www.sec.gov/Archives/edgar/data/19617/000122520826000624/xslF345X05/doc4.xml", "accession_number": "0001225208-26-000624"}}, {"ticker": "JPM", "event_type": "filing_4", "event_subtype": null, "event_at": "2026-01-15T21:16:39+00:00", "severity": 1, "payload": {"form_type": "4", "primary_doc_url": "https://www.sec.gov/Archives/edgar/data/19617/000122520826000625/xslF345X05/doc4.xml", "accession_number": "0001225208-26-000625"}}, {"ticker": "JPM", "event_type": "filing_4", "event_subtype": null, "event_at": "2026-01-15T21:16:40+00:00", "severity": 1, "payload": {"form_type": "4", "primary_doc_url": "https://www.sec.gov/Archives/edgar/data/19617/000122520826000626/xslF345X05/doc4.xml", "accession_number": "0001225208-26-000626"}}, {"ticker": "JPM", "event_type": "filing_4", "event_subtype": null, "event_at": "2026-01-15T21:16:42+00:00", "severity": 1, "payload": {"form_type": "4", "primary_doc_url": "https://www.sec.gov/Archives/edgar/data/19617/000122520826000627/xslF345X05/doc4.xml", "accession_number": "0001225208-26-000627"}}, {"ticker": "JPM", "event_type": "filing_4", "event_subtype": null, "event_at": "2026-01-15T21:16:44+00:00", "severity": 1, "payload": {"form_type": "4", "primary_doc_url": "https://www.sec.gov/Archives/edgar/data/19617/000122520826000628/xslF345X05/doc4.xml", "accession_number": "0001225208-26-000628"}}, {"ticker": "JPM", "event_type": "filing_4", "event_subtype": null, "event_at": "2026-01-15T21:16:45+00:00", "severity": 1, "payload": {"form_type": "4", "primary_doc_url": "https://www.sec.gov/Archives/edgar/data/19617/000122520826000629/xslF345X05/doc4.xml", "accession_number": "0001225208-26-000629"}}, {"ticker": "JPM", "event_type": "filing_4", "event_subtype": null, "event_at": "2026-01-15T21:16:47+00:00", "severity": 1, "payload": {"form_type": "4", "primary_doc_url": "https://www.sec.gov/Archives/edgar/data/19617/000122520826000630/xslF345X05/doc4.xml", "accession_number": "0001225208-26-000630"}}, {"ticker": "JPM", "event_type": "filing_4", "event_subtype": null, "event_at": "2026-01-15T21:16:49+00:00", "severity": 1, "payload": {"form_type": "4", "primary_doc_url": "https://www.sec.gov/Archives/edgar/data/19617/000122520826000631/xslF345X05/doc4.xml", "accession_number": "0001225208-26-000631"}}, {"ticker": "JPM", "event_type": "filing_4", "event_subtype": null, "event_at": "2026-01-16T23:02:19+00:00", "severity": 1, "payload": {"form_type": "4", "primary_doc_url": "https://www.sec.gov/Archives/edgar/data/19617/000122520826000650/xslF345X05/doc4.xml", "accession_number": "0001225208-26-000650"}}, {"ticker": "JPM", "event_type": "filing_4", "event_subtype": null, "event_at": "2026-01-16T23:02:20+00:00", "severity": 1, "payload": {"form_type": "4", "primary_doc_url": "https://www.sec.gov/Archives/edgar/data/19617/000122520826000651/xslF345X05/doc4.xml", "accession_number": "0001225208-26-000651"}}, {"ticker": "JPM", "event_type": "filing_4", "event_subtype": null, "event_at": "2026-01-16T23:02:21+00:00", "severity": 1, "payload": {"form_type": "4", "primary_doc_url": "https://www.sec.gov/Archives/edgar/data/19617/000122520826000652/xslF345X05/doc4.xml", "accession_number": "0001225208-26-000652"}}, {"ticker": "JPM", "event_type": "filing_4", "event_subtype": null, "event_at": "2026-01-16T23:02:23+00:00", "severity": 1, "payload": {"form_type": "4", "primary_doc_url": "https://www.sec.gov/Archives/edgar/data/19617/000122520826000653/xslF345X05/doc4.xml", "accession_number": "0001225208-26-000653"}}, {"ticker": "JPM", "event_type": "filing_4", "event_subtype": null, "event_at": "2026-01-16T23:02:24+00:00", "severity": 1, "payload": {"form_type": "4", "primary_doc_url": "https://www.sec.gov/Archives/edgar/data/19617/000122520826000654/xslF345X05/doc4.xml", "accession_number": "0001225208-26-000654"}}, {"ticker": "JPM", "event_type": "filing_4", "event_subtype": null, "event_at": "2026-01-16T23:02:26+00:00", "severity": 1, "payload": {"form_type": "4", "primary_doc_url": "https://www.sec.gov/Archives/edgar/data/19617/000122520826000655/xslF345X05/doc4.xml", "accession_number": "0001225208-26-000655"}}, {"ticker": "JPM", "event_type": "filing_4", "event_subtype": null, "event_at": "2026-01-16T23:02:27+00:00", "severity": 1, "payload": {"form_type": "4", "primary_doc_url": "https://www.sec.gov/Archives/edgar/data/19617/000122520826000656/xslF345X05/doc4.xml", "accession_number": "0001225208-26-000656"}}, {"ticker": "JPM", "event_type": "filing_4", "event_subtype": null, "event_at": "2026-01-16T23:02:28+00:00", "severity": 1, "payload": {"form_type": "4", "primary_doc_url": "https://www.sec.gov/Archives/edgar/data/19617/000122520826000657/xslF345X05/doc4.xml", "accession_number": "0001225208-26-000657"}}, {"ticker": "JPM", "event_type": "filing_4", "event_subtype": null, "event_at": "2026-01-21T21:17:04+00:00", "severity": 1, "payload": {"form_type": "4", "primary_doc_url": "https://www.sec.gov/Archives/edgar/data/19617/000122520826000678/xslF345X05/doc4.xml", "accession_number": "0001225208-26-000678"}}, {"ticker": "JPM", "event_type": "8k_material_event", "event_subtype": null, "event_at": "2026-01-22T21:15:33+00:00", "severity": 3, "payload": {"form_type": "8-K", "primary_doc_url": "https://www.sec.gov/Archives/edgar/data/19617/000119312526019450/d18152d8k.htm", "accession_number": "0001193125-26-019450"}}, {"ticker": "JPM", "event_type": "filing_4", "event_subtype": null, "event_at": "2026-01-22T21:20:54+00:00", "severity": 1, "payload": {"form_type": "4", "primary_doc_url": "https://www.sec.gov/Archives/edgar/data/19617/000122520826000726/xslF345X05/doc4.xml", "accession_number": "0001225208-26-000726"}}, {"ticker": "JPM", "event_type": "filing_4", "event_subtype": null, "event_at": "2026-01-22T21:20:55+00:00", "severity": 1, "payload": {"form_type": "4", "primary_doc_url": "https://www.sec.gov/Archives/edgar/data/19617/000122520826000727/xslF345X05/doc4.xml", "accession_number": "0001225208-26-000727"}}, {"ticker": "JPM", "event_type": "filing_4", "event_subtype": null, "event_at": "2026-01-22T21:20:57+00:00", "severity": 1, "payload": {"form_type": "4", "primary_doc_url": "https://www.sec.gov/Archives/edgar/data/19617/000122520826000728/xslF345X05/doc4.xml", "accession_number": "0001225208-26-000728"}}, {"ticker": "JPM", "event_type": "filing_4", "event_subtype": null, "event_at": "2026-01-22T21:20:58+00:00", "severity": 1, "payload": {"form_type": "4", "primary_doc_url": "https://www.sec.gov/Archives/edgar/data/19617/000122520826000729/xslF345X05/doc4.xml", "accession_number": "0001225208-26-000729"}}, {"ticker": "JPM", "event_type": "filing_4", "event_subtype": null, "event_at": "2026-01-22T21:21:00+00:00", "severity": 1, "payload": {"form_type": "4", "primary_doc_url": "https://www.sec.gov/Archives/edgar/data/19617/000122520826000730/xslF345X05/doc4.xml", "accession_number": "0001225208-26-000730"}}, {"ticker": "JPM", "event_type": "filing_4", "event_subtype": null, "event_at": "2026-01-22T21:21:01+00:00", "severity": 1, "payload": {"form_type": "4", "primary_doc_url": "https://www.sec.gov/Archives/edgar/data/19617/000122520826000731/xslF345X05/doc4.xml", "accession_number": "0001225208-26-000731"}}, {"ticker": "JPM", "event_type": "filing_4", "event_subtype": null, "event_at": "2026-01-22T21:21:03+00:00", "severity": 1, "payload": {"form_type": "4", "primary_doc_url": "https://www.sec.gov/Archives/edgar/data/19617/000122520826000732/xslF345X05/doc4.xml", "accession_number": "0001225208-26-000732"}}, {"ticker": "JPM", "event_type": "filing_4", "event_subtype": null, "event_at": "2026-01-22T21:21:04+00:00", "severity": 1, "payload": {"form_type": "4", "primary_doc_url": "https://www.sec.gov/Archives/edgar/data/19617/000122520826000733/xslF345X05/doc4.xml", "accession_number": "0001225208-26-000733"}}, {"ticker": "JPM", "event_type": "filing_4", "event_subtype": null, "event_at": "2026-01-22T21:21:06+00:00", "severity": 1, "payload": {"form_type": "4", "primary_doc_url": "https://www.sec.gov/Archives/edgar/data/19617/000122520826000734/xslF345X05/doc4.xml", "accession_number": "0001225208-26-000734"}}, {"ticker": "JPM", "event_type": "filing_4", "event_subtype": null, "event_at": "2026-01-22T21:21:07+00:00", "severity": 1, "payload": {"form_type": "4", "primary_doc_url": "https://www.sec.gov/Archives/edgar/data/19617/000122520826000735/xslF345X05/doc4.xml", "accession_number": "0001225208-26-000735"}}, {"ticker": "JPM", "event_type": "filing_4", "event_subtype": null, "event_at": "2026-01-22T21:21:09+00:00", "severity": 1, "payload": {"form_type": "4", "primary_doc_url": "https://www.sec.gov/Archives/edgar/data/19617/000122520826000736/xslF345X05/doc4.xml", "accession_number": "0001225208-26-000736"}}, {"ticker": "JPM", "event_type": "filing_4", "event_subtype": null, "event_at": "2026-01-22T21:21:10+00:00", "severity": 1, "payload": {"form_type": "4", "primary_doc_url": "https://www.sec.gov/Archives/edgar/data/19617/000122520826000737/xslF345X05/doc4.xml", "accession_number": "0001225208-26-000737"}}, {"ticker": "JPM", "event_type": "filing_4", "event_subtype": null, "event_at": "2026-01-22T21:21:12+00:00", "severity": 1, "payload": {"form_type": "4", "primary_doc_url": "https://www.sec.gov/Archives/edgar/data/19617/000122520826000738/xslF345X05/doc4.xml", "accession_number": "0001225208-26-000738"}}, {"ticker": "JPM", "event_type": "filing_4", "event_subtype": null, "event_at": "2026-01-22T21:21:13+00:00", "severity": 1, "payload": {"form_type": "4", "primary_doc_url": "https://www.sec.gov/Archives/edgar/data/19617/000122520826000739/xslF345X05/doc4.xml", "accession_number": "0001225208-26-000739"}}, {"ticker": "JPM", "event_type": "filing_4", "event_subtype": null, "event_at": "2026-01-22T21:21:16+00:00", "severity": 1, "payload": {"form_type": "4", "primary_doc_url": "https://www.sec.gov/Archives/edgar/data/19617/000122520826000741/xslF345X05/doc4.xml", "accession_number": "0001225208-26-000741"}}, {"ticker": "JPM", "event_type": "filing_4", "event_subtype": null, "event_at": "2026-01-22T21:21:17+00:00", "severity": 1, "payload": {"form_type": "4", "primary_doc_url": "https://www.sec.gov/Archives/edgar/data/19617/000122520826000742/xslF345X05/doc4.xml", "accession_number": "0001225208-26-000742"}}, {"ticker": "JPM", "event_type": "filing_4", "event_subtype": null, "event_at": "2026-01-22T21:21:19+00:00", "severity": 1, "payload": {"form_type": "4", "primary_doc_url": "https://www.sec.gov/Archives/edgar/data/19617/000122520826000743/xslF345X05/doc4.xml", "accession_number": "0001225208-26-000743"}}, {"ticker": "JPM", "event_type": "filing_4", "event_subtype": null, "event_at": "2026-01-22T21:21:20+00:00", "severity": 1, "payload": {"form_type": "4", "primary_doc_url": "https://www.sec.gov/Archives/edgar/data/19617/000122520826000744/xslF345X05/doc4.xml", "accession_number": "0001225208-26-000744"}}, {"ticker": "JPM", "event_type": "filing_4", "event_subtype": null, "event_at": "2026-01-22T21:21:22+00:00", "severity": 1, "payload": {"form_type": "4", "primary_doc_url": "https://www.sec.gov/Archives/edgar/data/19617/000122520826000745/xslF345X05/doc4.xml", "accession_number": "0001225208-26-000745"}}, {"ticker": "JPM", "event_type": "filing_4", "event_subtype": null, "event_at": "2026-01-22T21:21:23+00:00", "severity": 1, "payload": {"form_type": "4", "primary_doc_url": "https://www.sec.gov/Archives/edgar/data/19617/000122520826000746/xslF345X05/doc4.xml", "accession_number": "0001225208-26-000746"}}, {"ticker": "JPM", "event_type": "8k_material_event", "event_subtype": null, "event_at": "2026-01-22T21:30:18+00:00", "severity": 3, "payload": {"form_type": "8-K", "primary_doc_url": "https://www.sec.gov/Archives/edgar/data/19617/000001961726000052/jpm-20260120.htm", "accession_number": "0000019617-26-000052"}}, {"ticker": "JPM", "event_type": "filing_4", "event_subtype": null, "event_at": "2026-01-22T22:03:43+00:00", "severity": 1, "payload": {"form_type": "4", "primary_doc_url": "https://www.sec.gov/Archives/edgar/data/19617/000122520826000753/xslF345X05/doc4.xml", "accession_number": "0001225208-26-000753"}}, {"ticker": "JPM", "event_type": "filing_4", "event_subtype": null, "event_at": "2026-02-04T21:18:21+00:00", "severity": 1, "payload": {"form_type": "4", "primary_doc_url": "https://www.sec.gov/Archives/edgar/data/19617/000122520826001304/xslF345X05/doc4.xml", "accession_number": "0001225208-26-001304"}}, {"ticker": "JPM", "event_type": "8k_material_event", "event_subtype": null, "event_at": "2026-02-05T21:17:31+00:00", "severity": 3, "payload": {"form_type": "8-K", "primary_doc_url": "https://www.sec.gov/Archives/edgar/data/19617/000119312526039427/d23804d8k.htm", "accession_number": "0001193125-26-039427"}}, {"ticker": "JPM", "event_type": "filing_10-k", "event_subtype": null, "event_at": "2026-02-13T21:20:00+00:00", "severity": 1, "payload": {"form_type": "10-K", "primary_doc_url": "https://www.sec.gov/Archives/edgar/data/19617/000162828026008131/jpm-20251231.htm", "accession_number": "0001628280-26-008131"}}, {"ticker": "JPM", "event_type": "filing_4", "event_subtype": null, "event_at": "2026-02-17T22:21:12+00:00", "severity": 1, "payload": {"form_type": "4", "primary_doc_url": "https://www.sec.gov/Archives/edgar/data/19617/000122520826001990/xslF345X05/doc4.xml", "accession_number": "0001225208-26-001990"}}, {"ticker": "JPM", "event_type": "filing_4", "event_subtype": null, "event_at": "2026-02-17T22:21:15+00:00", "severity": 1, "payload": {"form_type": "4", "primary_doc_url": "https://www.sec.gov/Archives/edgar/data/19617/000122520826001991/xslF345X05/doc4.xml", "accession_number": "0001225208-26-001991"}}, {"ticker": "JPM", "event_type": "filing_4", "event_subtype": null, "event_at": "2026-02-17T22:21:16+00:00", "severity": 1, "payload": {"form_type": "4", "primary_doc_url": "https://www.sec.gov/Archives/edgar/data/19617/000122520826001992/xslF345X05/doc4.xml", "accession_number": "0001225208-26-001992"}}, {"ticker": "JPM", "event_type": "filing_4", "event_subtype": null, "event_at": "2026-02-17T22:21:18+00:00", "severity": 1, "payload": {"form_type": "4", "primary_doc_url": "https://www.sec.gov/Archives/edgar/data/19617/000122520826001993/xslF345X05/doc4.xml", "accession_number": "0001225208-26-001993"}}, {"ticker": "JPM", "event_type": "filing_4", "event_subtype": null, "event_at": "2026-02-17T22:21:19+00:00", "severity": 1, "payload": {"form_type": "4", "primary_doc_url": "https://www.sec.gov/Archives/edgar/data/19617/000122520826001994/xslF345X05/doc4.xml", "accession_number": "0001225208-26-001994"}}, {"ticker": "JPM", "event_type": "filing_4", "event_subtype": null, "event_at": "2026-02-17T22:21:20+00:00", "severity": 1, "payload": {"form_type": "4", "primary_doc_url": "https://www.sec.gov/Archives/edgar/data/19617/000122520826001995/xslF345X05/doc4.xml", "accession_number": "0001225208-26-001995"}}, {"ticker": "JPM", "event_type": "filing_4", "event_subtype": null, "event_at": "2026-02-19T22:19:53+00:00", "severity": 1, "payload": {"form_type": "4", "primary_doc_url": "https://www.sec.gov/Archives/edgar/data/19617/000122520826002170/xslF345X05/doc4.xml", "accession_number": "0001225208-26-002170"}}, {"ticker": "JPM", "event_type": "filing_4", "event_subtype": null, "event_at": "2026-02-19T22:33:57+00:00", "severity": 1, "payload": {"form_type": "4", "primary_doc_url": "https://www.sec.gov/Archives/edgar/data/19617/000122520826002171/xslF345X05/doc4.xml", "accession_number": "0001225208-26-002171"}}, {"ticker": "JPM", "event_type": "filing_4", "event_subtype": null, "event_at": "2026-02-19T22:36:59+00:00", "severity": 1, "payload": {"form_type": "4", "primary_doc_url": "https://www.sec.gov/Archives/edgar/data/19617/000122520826002172/xslF345X05/doc4.xml", "accession_number": "0001225208-26-002172"}}, {"ticker": "JPM", "event_type": "8k_material_event", "event_subtype": null, "event_at": "2026-02-23T21:39:11+00:00", "severity": 3, "payload": {"form_type": "8-K", "primary_doc_url": "https://www.sec.gov/Archives/edgar/data/19617/000162828026010693/jpm-20260223.htm", "accession_number": "0001628280-26-010693"}}, {"ticker": "JPM", "event_type": "filing_s-3", "event_subtype": null, "event_at": "2026-02-24T21:17:49+00:00", "severity": 2, "payload": {"form_type": "S-3", "primary_doc_url": "https://www.sec.gov/Archives/edgar/data/19617/000095010326002559/dp239694_s-3.htm", "accession_number": "0000950103-26-002559"}}, {"ticker": "JPM", "event_type": "filing_4", "event_subtype": null, "event_at": "2026-02-27T02:26:54+00:00", "severity": 1, "payload": {"form_type": "4", "primary_doc_url": "https://www.sec.gov/Archives/edgar/data/19617/000119312526078639/xslF345X05/ownership.xml", "accession_number": "0001193125-26-078639"}}, {"ticker": "JPM", "event_type": "filing_4", "event_subtype": null, "event_at": "2026-02-27T02:30:05+00:00", "severity": 1, "payload": {"form_type": "4", "primary_doc_url": "https://www.sec.gov/Archives/edgar/data/19617/000119312526078665/xslF345X05/ownership.xml", "accession_number": "0001193125-26-078665"}}, {"ticker": "JPM", "event_type": "filing_4", "event_subtype": null, "event_at": "2026-02-27T02:32:27+00:00", "severity": 1, "payload": {"form_type": "4", "primary_doc_url": "https://www.sec.gov/Archives/edgar/data/19617/000119312526078687/xslF345X05/ownership.xml", "accession_number": "0001193125-26-078687"}}, {"ticker": "JPM", "event_type": "filing_4", "event_subtype": null, "event_at": "2026-02-27T02:36:18+00:00", "severity": 1, "payload": {"form_type": "4", "primary_doc_url": "https://www.sec.gov/Archives/edgar/data/19617/000119312526078700/xslF345X05/ownership.xml", "accession_number": "0001193125-26-078700"}}, {"ticker": "JPM", "event_type": "filing_4", "event_subtype": null, "event_at": "2026-02-27T02:39:48+00:00", "severity": 1, "payload": {"form_type": "4", "primary_doc_url": "https://www.sec.gov/Archives/edgar/data/19617/000119312526078712/xslF345X05/ownership.xml", "accession_number": "0001193125-26-078712"}}, {"ticker": "JPM", "event_type": "filing_4", "event_subtype": null, "event_at": "2026-02-27T02:39:51+00:00", "severity": 1, "payload": {"form_type": "4", "primary_doc_url": "https://www.sec.gov/Archives/edgar/data/19617/000119312526078713/xslF345X05/ownership.xml", "accession_number": "0001193125-26-078713"}}, {"ticker": "JPM", "event_type": "filing_4", "event_subtype": null, "event_at": "2026-02-27T02:43:28+00:00", "severity": 1, "payload": {"form_type": "4", "primary_doc_url": "https://www.sec.gov/Archives/edgar/data/19617/000119312526078723/xslF345X05/ownership.xml", "accession_number": "0001193125-26-078723"}}, {"ticker": "JPM", "event_type": "filing_4", "event_subtype": null, "event_at": "2026-02-27T02:44:20+00:00", "severity": 1, "payload": {"form_type": "4", "primary_doc_url": "https://www.sec.gov/Archives/edgar/data/19617/000119312526078725/xslF345X05/ownership.xml", "accession_number": "0001193125-26-078725"}}, {"ticker": "JPM", "event_type": "filing_4", "event_subtype": null, "event_at": "2026-02-27T02:46:46+00:00", "severity": 1, "payload": {"form_type": "4", "primary_doc_url": "https://www.sec.gov/Archives/edgar/data/19617/000119312526078732/xslF345X05/ownership.xml", "accession_number": "0001193125-26-078732"}}, {"ticker": "JPM", "event_type": "filing_4", "event_subtype": null, "event_at": "2026-03-03T01:03:17+00:00", "severity": 1, "payload": {"form_type": "4", "primary_doc_url": "https://www.sec.gov/Archives/edgar/data/19617/000119312526086198/xslF345X05/ownership.xml", "accession_number": "0001193125-26-086198"}}, {"ticker": "JPM", "event_type": "filing_4", "event_subtype": null, "event_at": "2026-03-19T20:19:32+00:00", "severity": 1, "payload": {"form_type": "4", "primary_doc_url": "https://www.sec.gov/Archives/edgar/data/19617/000122520826003862/xslF345X06/doc4.xml", "accession_number": "0001225208-26-003862"}}, {"ticker": "JPM", "event_type": "filing_4", "event_subtype": null, "event_at": "2026-03-19T20:19:33+00:00", "severity": 1, "payload": {"form_type": "4", "primary_doc_url": "https://www.sec.gov/Archives/edgar/data/19617/000122520826003863/xslF345X06/doc4.xml", "accession_number": "0001225208-26-003863"}}, {"ticker": "JPM", "event_type": "filing_4", "event_subtype": null, "event_at": "2026-03-19T20:19:35+00:00", "severity": 1, "payload": {"form_type": "4", "primary_doc_url": "https://www.sec.gov/Archives/edgar/data/19617/000122520826003864/xslF345X06/doc4.xml", "accession_number": "0001225208-26-003864"}}, {"ticker": "JPM", "event_type": "filing_4", "event_subtype": null, "event_at": "2026-03-19T20:19:36+00:00", "severity": 1, "payload": {"form_type": "4", "primary_doc_url": "https://www.sec.gov/Archives/edgar/data/19617/000122520826003865/xslF345X06/doc4.xml", "accession_number": "0001225208-26-003865"}}, {"ticker": "JPM", "event_type": "filing_4", "event_subtype": null, "event_at": "2026-03-19T20:19:38+00:00", "severity": 1, "payload": {"form_type": "4", "primary_doc_url": "https://www.sec.gov/Archives/edgar/data/19617/000122520826003866/xslF345X06/doc4.xml", "accession_number": "0001225208-26-003866"}}, {"ticker": "JPM", "event_type": "filing_4", "event_subtype": null, "event_at": "2026-03-19T20:19:39+00:00", "severity": 1, "payload": {"form_type": "4", "primary_doc_url": "https://www.sec.gov/Archives/edgar/data/19617/000122520826003867/xslF345X06/doc4.xml", "accession_number": "0001225208-26-003867"}}, {"ticker": "JPM", "event_type": "filing_4", "event_subtype": null, "event_at": "2026-03-19T20:19:41+00:00", "severity": 1, "payload": {"form_type": "4", "primary_doc_url": "https://www.sec.gov/Archives/edgar/data/19617/000122520826003868/xslF345X06/doc4.xml", "accession_number": "0001225208-26-003868"}}, {"ticker": "JPM", "event_type": "filing_4", "event_subtype": null, "event_at": "2026-03-19T20:19:44+00:00", "severity": 1, "payload": {"form_type": "4", "primary_doc_url": "https://www.sec.gov/Archives/edgar/data/19617/000122520826003869/xslF345X06/doc4.xml", "accession_number": "0001225208-26-003869"}}, {"ticker": "JPM", "event_type": "filing_4", "event_subtype": null, "event_at": "2026-03-19T20:19:45+00:00", "severity": 1, "payload": {"form_type": "4", "primary_doc_url": "https://www.sec.gov/Archives/edgar/data/19617/000122520826003870/xslF345X06/doc4.xml", "accession_number": "0001225208-26-003870"}}, {"ticker": "JPM", "event_type": "filing_4", "event_subtype": null, "event_at": "2026-03-19T20:19:50+00:00", "severity": 1, "payload": {"form_type": "4", "primary_doc_url": "https://www.sec.gov/Archives/edgar/data/19617/000122520826003871/xslF345X06/doc4.xml", "accession_number": "0001225208-26-003871"}}, {"ticker": "JPM", "event_type": "filing_4", "event_subtype": null, "event_at": "2026-03-19T20:19:51+00:00", "severity": 1, "payload": {"form_type": "4", "primary_doc_url": "https://www.sec.gov/Archives/edgar/data/19617/000122520826003872/xslF345X06/doc4.xml", "accession_number": "0001225208-26-003872"}}, {"ticker": "JPM", "event_type": "filing_4", "event_subtype": null, "event_at": "2026-03-23T22:29:58+00:00", "severity": 1, "payload": {"form_type": "4", "primary_doc_url": "https://www.sec.gov/Archives/edgar/data/19617/000172682526000005/xslF345X06/primary_doc.xml", "accession_number": "0001726825-26-000005"}}, {"ticker": "JPM", "event_type": "filing_4", "event_subtype": null, "event_at": "2026-03-27T20:16:42+00:00", "severity": 1, "payload": {"form_type": "4", "primary_doc_url": "https://www.sec.gov/Archives/edgar/data/19617/000122520826004046/xslF345X06/doc4.xml", "accession_number": "0001225208-26-004046"}}, {"ticker": "JPM", "event_type": "filing_4", "event_subtype": null, "event_at": "2026-03-27T20:16:45+00:00", "severity": 1, "payload": {"form_type": "4", "primary_doc_url": "https://www.sec.gov/Archives/edgar/data/19617/000122520826004047/xslF345X06/doc4.xml", "accession_number": "0001225208-26-004047"}}, {"ticker": "JPM", "event_type": "filing_4", "event_subtype": null, "event_at": "2026-03-27T20:16:46+00:00", "severity": 1, "payload": {"form_type": "4", "primary_doc_url": "https://www.sec.gov/Archives/edgar/data/19617/000122520826004048/xslF345X06/doc4.xml", "accession_number": "0001225208-26-004048"}}, {"ticker": "JPM", "event_type": "filing_4", "event_subtype": null, "event_at": "2026-03-27T20:16:46+00:00", "severity": 1, "payload": {"form_type": "4", "primary_doc_url": "https://www.sec.gov/Archives/edgar/data/19617/000122520826004052/xslF345X06/doc4.xml", "accession_number": "0001225208-26-004052"}}, {"ticker": "JPM", "event_type": "filing_4", "event_subtype": null, "event_at": "2026-03-27T20:16:47+00:00", "severity": 1, "payload": {"form_type": "4", "primary_doc_url": "https://www.sec.gov/Archives/edgar/data/19617/000122520826004049/xslF345X06/doc4.xml", "accession_number": "0001225208-26-004049"}}, {"ticker": "JPM", "event_type": "filing_4", "event_subtype": null, "event_at": "2026-03-27T20:16:47+00:00", "severity": 1, "payload": {"form_type": "4", "primary_doc_url": "https://www.sec.gov/Archives/edgar/data/19617/000122520826004053/xslF345X06/doc4.xml", "accession_number": "0001225208-26-004053"}}, {"ticker": "JPM", "event_type": "filing_4", "event_subtype": null, "event_at": "2026-03-27T20:16:48+00:00", "severity": 1, "payload": {"form_type": "4", "primary_doc_url": "https://www.sec.gov/Archives/edgar/data/19617/000122520826004054/xslF345X06/doc4.xml", "accession_number": "0001225208-26-004054"}}, {"ticker": "JPM", "event_type": "filing_4", "event_subtype": null, "event_at": "2026-03-27T20:16:48+00:00", "severity": 1, "payload": {"form_type": "4", "primary_doc_url": "https://www.sec.gov/Archives/edgar/data/19617/000122520826004050/xslF345X06/doc4.xml", "accession_number": "0001225208-26-004050"}}, {"ticker": "JPM", "event_type": "filing_4", "event_subtype": null, "event_at": "2026-03-27T20:16:50+00:00", "severity": 1, "payload": {"form_type": "4", "primary_doc_url": "https://www.sec.gov/Archives/edgar/data/19617/000122520826004055/xslF345X06/doc4.xml", "accession_number": "0001225208-26-004055"}}, {"ticker": "JPM", "event_type": "filing_4", "event_subtype": null, "event_at": "2026-03-27T20:16:50+00:00", "severity": 1, "payload": {"form_type": "4", "primary_doc_url": "https://www.sec.gov/Archives/edgar/data/19617/000122520826004051/xslF345X06/doc4.xml", "accession_number": "0001225208-26-004051"}}, {"ticker": "JPM", "event_type": "filing_4", "event_subtype": null, "event_at": "2026-03-27T20:16:51+00:00", "severity": 1, "payload": {"form_type": "4", "primary_doc_url": "https://www.sec.gov/Archives/edgar/data/19617/000122520826004056/xslF345X06/doc4.xml", "accession_number": "0001225208-26-004056"}}, {"ticker": "JPM", "event_type": "filing_4", "event_subtype": null, "event_at": "2026-04-01T20:16:49+00:00", "severity": 1, "payload": {"form_type": "4", "primary_doc_url": "https://www.sec.gov/Archives/edgar/data/19617/000122520826004122/xslF345X06/doc4.xml", "accession_number": "0001225208-26-004122"}}, {"ticker": "JPM", "event_type": "filing_4", "event_subtype": null, "event_at": "2026-04-01T20:16:51+00:00", "severity": 1, "payload": {"form_type": "4", "primary_doc_url": "https://www.sec.gov/Archives/edgar/data/19617/000122520826004123/xslF345X06/doc4.xml", "accession_number": "0001225208-26-004123"}}, {"ticker": "JPM", "event_type": "filing_4", "event_subtype": null, "event_at": "2026-04-01T20:16:52+00:00", "severity": 1, "payload": {"form_type": "4", "primary_doc_url": "https://www.sec.gov/Archives/edgar/data/19617/000122520826004124/xslF345X06/doc4.xml", "accession_number": "0001225208-26-004124"}}, {"ticker": "JPM", "event_type": "filing_4", "event_subtype": null, "event_at": "2026-04-01T20:16:54+00:00", "severity": 1, "payload": {"form_type": "4", "primary_doc_url": "https://www.sec.gov/Archives/edgar/data/19617/000122520826004125/xslF345X06/doc4.xml", "accession_number": "0001225208-26-004125"}}, {"ticker": "JPM", "event_type": "earnings_release", "event_subtype": "beat", "event_at": "2026-04-14T10:00:00+00:00", "severity": 3, "payload": {"actual_eps": 5.94, "surprise_pct": 7.78, "estimated_eps": 5.51}}, {"ticker": "JPM", "event_type": "8k_material_event", "event_subtype": null, "event_at": "2026-04-14T10:32:42+00:00", "severity": 3, "payload": {"form_type": "8-K", "primary_doc_url": "https://www.sec.gov/Archives/edgar/data/19617/000162828026024990/jpm-20260414.htm", "accession_number": "0001628280-26-024990"}}, {"ticker": "JPM", "event_type": "8k_material_event", "event_subtype": null, "event_at": "2026-04-14T14:05:26+00:00", "severity": 3, "payload": {"form_type": "8-K", "primary_doc_url": "https://www.sec.gov/Archives/edgar/data/19617/000162828026025013/jpm-20260414.htm", "accession_number": "0001628280-26-025013"}}, {"ticker": "JPM", "event_type": "filing_4", "event_subtype": null, "event_at": "2026-04-15T20:58:45+00:00", "severity": 1, "payload": {"form_type": "4", "primary_doc_url": "https://www.sec.gov/Archives/edgar/data/19617/000122520826004520/xslF345X06/doc4.xml", "accession_number": "0001225208-26-004520"}}, {"ticker": "JPM", "event_type": "filing_4", "event_subtype": null, "event_at": "2026-04-15T21:49:57+00:00", "severity": 1, "payload": {"form_type": "4", "primary_doc_url": "https://www.sec.gov/Archives/edgar/data/19617/000122520826004521/xslF345X06/doc4.xml", "accession_number": "0001225208-26-004521"}}, {"ticker": "JPM", "event_type": "filing_4", "event_subtype": null, "event_at": "2026-04-15T21:49:58+00:00", "severity": 1, "payload": {"form_type": "4", "primary_doc_url": "https://www.sec.gov/Archives/edgar/data/19617/000122520826004522/xslF345X06/doc4.xml", "accession_number": "0001225208-26-004522"}}, {"ticker": "JPM", "event_type": "filing_4", "event_subtype": null, "event_at": "2026-04-15T21:49:59+00:00", "severity": 1, "payload": {"form_type": "4", "primary_doc_url": "https://www.sec.gov/Archives/edgar/data/19617/000122520826004523/xslF345X06/doc4.xml", "accession_number": "0001225208-26-004523"}}, {"ticker": "JPM", "event_type": "filing_4", "event_subtype": null, "event_at": "2026-04-15T21:50:00+00:00", "severity": 1, "payload": {"form_type": "4", "primary_doc_url": "https://www.sec.gov/Archives/edgar/data/19617/000122520826004524/xslF345X06/doc4.xml", "accession_number": "0001225208-26-004524"}}, {"ticker": "JPM", "event_type": "filing_4", "event_subtype": null, "event_at": "2026-04-15T21:50:01+00:00", "severity": 1, "payload": {"form_type": "4", "primary_doc_url": "https://www.sec.gov/Archives/edgar/data/19617/000122520826004525/xslF345X06/doc4.xml", "accession_number": "0001225208-26-004525"}}, {"ticker": "JPM", "event_type": "filing_4", "event_subtype": null, "event_at": "2026-04-15T21:50:03+00:00", "severity": 1, "payload": {"form_type": "4", "primary_doc_url": "https://www.sec.gov/Archives/edgar/data/19617/000122520826004526/xslF345X06/doc4.xml", "accession_number": "0001225208-26-004526"}}, {"ticker": "JPM", "event_type": "filing_4", "event_subtype": null, "event_at": "2026-04-15T21:50:04+00:00", "severity": 1, "payload": {"form_type": "4", "primary_doc_url": "https://www.sec.gov/Archives/edgar/data/19617/000122520826004527/xslF345X06/doc4.xml", "accession_number": "0001225208-26-004527"}}, {"ticker": "JPM", "event_type": "8k_material_event", "event_subtype": null, "event_at": "2026-04-23T20:15:28+00:00", "severity": 3, "payload": {"form_type": "8-K", "primary_doc_url": "https://www.sec.gov/Archives/edgar/data/19617/000119312526173739/d235028d8k.htm", "accession_number": "0001193125-26-173739"}}, {"ticker": "JPM", "event_type": "8k_material_event", "event_subtype": null, "event_at": "2026-04-24T20:16:13+00:00", "severity": 3, "payload": {"form_type": "8-K", "primary_doc_url": "https://www.sec.gov/Archives/edgar/data/19617/000001961726000119/jpm-20260421.htm", "accession_number": "0000019617-26-000119"}}, {"ticker": "JPM", "event_type": "news_article", "event_subtype": "negative", "event_at": "2026-04-30T11:21:25+00:00", "severity": 3, "payload": {"url": "https://www.cnbc.com/2026/04/30/meta-platforms-gets-a-downgrade-from-jpmorgan-on-massive-ai-spending-forecast.html", "source": "cnbc_markets", "headline": "Meta Platforms gets a downgrade from JPMorgan on massive AI spending forecast", "article_id": "1f8bc75209382b99510ab84d", "direction_prior": "short"}}]</script>
+<script>
+const prices  = JSON.parse(document.getElementById('pdata').textContent);
+const signals = JSON.parse(document.getElementById('sdata').textContent);
+const events  = JSON.parse(document.getElementById('edata').textContent);
+
+// ── Date axis (one entry per available trading day) ──────────────
+const labels = prices.map(p => p.date);
+const closes = prices.map(p => p.close);
+const dateToIdx = {};
+labels.forEach((d, i) => { dateToIdx[d] = i; });
+
+// ── Event-type → display config ──────────────────────────────────
+function eventBucket(et) {
+  if (!et) return 'other';
+  if (et === '8k_material_event' || et.indexOf('filing_') === 0) return 'filing';
+  if (et === 'earnings_release' || et === 'earnings_pre' || et === 'earnings_post') return 'earnings';
+  if (et === 'momentum') return 'momentum';
+  if (et === 'news_article') return 'news';
+  if (et === 'truth_social_post') return 'social';
+  return 'other';
+}
+const BUCKET_COLOR = {
+  filing:   '#5a8fd9',
+  earnings: '#e89c5a',
+  momentum: '#9c9c9c',
+  news:     '#a07acc',
+  social:   '#d97a8f',
+  other:    '#888888',
+};
+
+// ── Build chart annotations: one dot per event + one dot per signal ──
+const annotations = {};
+
+// Events as small dots on the price line
+events.forEach((e, i) => {
+  const eventDate = (e.event_at || '').substring(0, 10);
+  const idx = dateToIdx[eventDate];
+  if (idx === undefined) return;
+  const bucket = eventBucket(e.event_type);
+  annotations['ev_' + i] = {
+    type: 'point',
+    xValue: eventDate,
+    yValue: closes[idx],
+    backgroundColor: BUCKET_COLOR[bucket],
+    radius: 4,
+    borderWidth: 0,
+  };
+});
+
+// Signals as larger labeled dots (drawn on top because they're added after)
+signals.forEach((sig, i) => {
+  const firedDate = (sig.fired_at || '').substring(0, 10);
+  const idx = dateToIdx[firedDate];
+  if (idx === undefined) return;
+  const isAvoid = sig.action === 'AVOID_CHASE';
+  const color   = sig.action === 'WATCH' ? '#4caf93' : isAvoid ? '#e85a5a' : '#e8c15a';
+  annotations['sig_' + i] = {
+    type: 'point', xValue: firedDate, yValue: closes[idx],
+    backgroundColor: color, radius: 9, borderColor: '#fff', borderWidth: 2,
+    label: { display: true, content: sig.action + ' ' + Math.round(sig.score || 0),
+             position: isAvoid ? 'end' : 'start', color: '#fff',
+             backgroundColor: color, font: { size: 10 } },
+  };
+  const audit = sig._audit;
+  if (audit) {
+    const exitIdx = Math.min(idx + (sig.horizon_days || 1), labels.length - 1);
+    annotations['shade_' + i] = {
+      type: 'box', xMin: firedDate, xMax: labels[exitIdx],
+      backgroundColor: audit.correct ? '#4caf9322' : '#e85a5a22', borderWidth: 0,
+    };
+  }
+});
+
+new Chart(document.getElementById('priceChart'), {
+  type: 'line',
+  data: {
+    labels,
+    datasets: [{ label: 'JPM Close', data: closes, borderColor: '#7ab8d9',
+                 backgroundColor: '#7ab8d911', tension: 0.2, pointRadius: 0, fill: true }],
+  },
+  options: {
+    responsive: true,
+    scales: {
+      x: { ticks: { maxTicksLimit: 12 } },
+      y: { ticks: { callback: v => '$' + v.toFixed(0) } },
+    },
+    plugins: {
+      legend: { display: false },
+      annotation: { annotations },
+      tooltip: { callbacks: { label: ctx => '$' + ctx.parsed.y.toFixed(2) } },
+    }
+  }
+});
+
+// ── Big Moves table — find days with |daily return| > 5%, list nearby events ──
+function eventLabel(e) {
+  const p = e.payload || {};
+  if (e.event_type === '8k_material_event') {
+    const items = p['8k_items'] ? ' [items: ' + p['8k_items'] + ']' : '';
+    return '8-K' + items;
+  }
+  if (e.event_type === 'earnings_release') {
+    const sub = e.event_subtype || 'earnings';
+    const surp = (p.surprise_pct != null) ? ' (' + Number(p.surprise_pct).toFixed(1) + '%)' : '';
+    return 'Earnings ' + sub + surp;
+  }
+  if (e.event_type === 'momentum') {
+    const rs = p.rel_strength_pct;
+    return 'Momentum' + (rs != null ? ' ' + Number(rs).toFixed(1) + '% vs SPY' : '');
+  }
+  if (e.event_type && e.event_type.indexOf('filing_') === 0) {
+    return p.form_type || e.event_type.replace('filing_', '').toUpperCase();
+  }
+  if (e.event_type === 'news_article') return p.headline || 'News';
+  return e.event_type;
+}
+
+// HTML-escape — payloads may contain raw text from RSS, must never reach innerHTML unescaped.
+function esc(s) {
+  if (s === null || s === undefined) return '';
+  return String(s).replace(/[&<>"']/g, c => ({
+    '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'
+  }[c]));
+}
+
+const bigMoves = [];
+for (let i = 1; i < prices.length; i++) {
+  const prev = prices[i - 1].close;
+  const cur  = prices[i].close;
+  if (!prev || !cur) continue;
+  const ret  = (cur - prev) / prev;
+  if (Math.abs(ret) < 0.05) continue;
+
+  // Find events in the prior 2 trading days (i-2 to i, inclusive of move day itself)
+  const lowDateIdx  = Math.max(0, i - 2);
+  const highDateIdx = i;
+  const lowDate  = prices[lowDateIdx].date;
+  const highDate = prices[highDateIdx].date;
+  const nearby = events.filter(e => {
+    const d = (e.event_at || '').substring(0, 10);
+    return d >= lowDate && d <= highDate;
+  });
+  bigMoves.push({ date: prices[i].date, ret, close: cur, nearby });
+}
+
+const bigMovesBody = document.getElementById('bigMovesRows');
+if (bigMoves.length === 0) {
+  document.getElementById('noBigMoves').style.display = 'block';
+  document.getElementById('bigMovesTable').style.display = 'none';
+} else {
+  // Most recent first
+  bigMoves.reverse();
+  for (const m of bigMoves) {
+    const tr = document.createElement('tr');
+    const tdDate  = document.createElement('td'); tdDate.textContent = m.date;
+    const tdMove  = document.createElement('td'); tdMove.className = 'num';
+    tdMove.textContent = (m.ret * 100).toFixed(2) + '%';
+    tdMove.style.color = m.ret > 0 ? 'var(--ok)' : 'var(--bad)';
+    const tdClose = document.createElement('td'); tdClose.className = 'num';
+    tdClose.textContent = '$' + m.close.toFixed(2);
+    const tdEv    = document.createElement('td');
+    if (m.nearby.length === 0) {
+      tdEv.style.color = 'var(--muted)';
+      tdEv.textContent = '— no tracked events';
+    } else {
+      m.nearby.forEach((e, idx) => {
+        const span = document.createElement('span');
+        span.className = 'tag agent-' + eventBucket(e.event_type);
+        span.textContent = eventLabel(e);
+        span.title = e.event_at;
+        tdEv.appendChild(span);
+        if (idx < m.nearby.length - 1) tdEv.appendChild(document.createTextNode(' '));
+      });
+    }
+    tr.appendChild(tdDate);
+    tr.appendChild(tdMove);
+    tr.appendChild(tdClose);
+    tr.appendChild(tdEv);
+    bigMovesBody.appendChild(tr);
+  }
+}
+
+// ── Signal table (unchanged from prior version, DOM-built) ──────
+const tbody = document.getElementById('sigRows');
+if (signals.length === 0) {
+  document.getElementById('noSigs').style.display = 'block';
+  document.getElementById('sigTable').style.display = 'none';
+} else {
+  for (const s of signals) {
+    const a  = s._audit || {};
+    const tr = document.createElement('tr');
+    function td(text, cls) {
+      const c = document.createElement('td');
+      if (cls) c.className = cls;
+      c.textContent = text;
+      return c;
+    }
+    function tdHTML(node) {
+      const c = document.createElement('td');
+      c.appendChild(node);
+      return c;
+    }
+    const actionSpan = document.createElement('span');
+    actionSpan.className = 'tag ' + (s.action || '');
+    actionSpan.textContent = s.action || '';
+    const statusSpan = document.createElement('span');
+    statusSpan.className = 'tag ' + (s.status_v2 || '');
+    statusSpan.textContent = s.status_v2 || '';
+    const retTd = document.createElement('td');
+    retTd.className = 'num';
+    if (a.realized_return != null) {
+      retTd.textContent = (a.realized_return * 100).toFixed(2) + '%';
+      retTd.style.color = a.realized_return > 0 ? 'var(--ok)' : 'var(--bad)';
+    } else { retTd.textContent = '—'; }
+    const okTd = document.createElement('td');
+    okTd.style.textAlign = 'center';
+    okTd.textContent = a.correct === true ? '✅' : a.correct === false ? '❌' : '—';
+    tr.appendChild(td((s.fired_at||'').substring(0,16), 'fired'));
+    tr.appendChild(tdHTML(actionSpan));
+    tr.appendChild(td(String(Math.round(s.score||0)), 'num'));
+    tr.appendChild(td(s.evidence_summary || '', 'summary'));
+    tr.appendChild(tdHTML(statusSpan));
+    tr.appendChild(retTd);
+    tr.appendChild(okTd);
+    tbody.appendChild(tr);
+  }
+}
+</script>
+
+  </main>
+  <footer>
+    <p>v1 paper-trading vocabulary: <strong>WATCH</strong> / <strong>RESEARCH</strong> / <strong>AVOID_CHASE</strong>.
+    The bot does not say BUY or SELL until 60 days of paper-trading hits the §17.6 graduation thresholds.</p>
+    <p>Data: SEC EDGAR · trumpstruth.org RSS · yfinance. Free-tier stack: GitHub Actions + Supabase Free + Hostinger static.</p>
+  </footer>
+</body>
+</html>

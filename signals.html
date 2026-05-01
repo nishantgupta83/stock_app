@@ -1,0 +1,132 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta http-equiv="refresh" content="900">  <!-- self-refresh every 15 min -->
+  <title>Signals · Hub4Apps Market Intel</title>
+  
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <header>
+    <div class="brand">
+      <span class="logo">📈</span>
+      <h1>Hub4Apps Market Intel</h1>
+      <span class="subtitle">private · educational · not financial advice</span>
+    </div>
+    <nav>
+      <a href="index.html"     class="">Dashboard</a>
+      <a href="signals.html"   class="active">Signals</a>
+      <a href="events.html"    class="">Events</a>
+      <a href="agents.html"    class="">Agents</a>
+      <a href="backtest.html"  class="">Backtest</a>
+      <a href="learning.html"  class="">Learning</a>
+    </nav>
+    <div class="meta">
+      <span>generated 2026-05-01 21:38 UTC</span>
+    </div>
+  </header>
+  <main>
+    
+<h2>Signals</h2>
+<p style="color:var(--muted);font-size:12px">All signals scored by the v1 rubric (§17.7). Filter client-side — no page reload.</p>
+
+<div class="filters">
+  <label>Agent</label>
+  <select id="f-agent" onchange="render()">
+    <option value="">all</option>
+    <option>earnings</option><option>filing</option><option>flows</option><option>news</option><option>price</option><option>telegram_dispatcher</option><option>thesis</option><option>truth_social</option>
+  </select>
+  <label>Action</label>
+  <select id="f-action" onchange="render()">
+    <option value="">all</option>
+    <option>WATCH</option>
+    <option>RESEARCH</option>
+    <option>AVOID_CHASE</option>
+  </select>
+  <label>Status</label>
+  <select id="f-status" onchange="render()">
+    <option value="">all</option>
+    <option>candidate</option>
+    <option>sent</option>
+    <option>suppressed</option>
+    <option>backtest</option>
+    <option>closed</option>
+  </select>
+  <label>Min score</label>
+  <input id="f-score" type="number" min="0" max="100" value="0" oninput="render()" style="width:70px">
+  <label>Ticker</label>
+  <input id="f-ticker" type="text" placeholder="e.g. NVDA" oninput="render()" style="width:80px">
+  <span class="count" id="count">— rows</span>
+</div>
+
+<table>
+  <thead>
+    <tr>
+      <th>Fired (UTC)</th>
+      <th>Ticker</th>
+      <th>Action</th>
+      <th class="num">Score</th>
+      <th>Summary</th>
+      <th>Agents</th>
+      <th>Status</th>
+    </tr>
+  </thead>
+  <tbody id="rows"></tbody>
+</table>
+<div id="empty" class="empty" style="display:none">No signals match the current filter.</div>
+
+<script id="data" type="application/json">[{"id": 34, "ticker": "V", "fired_at": "2026-04-28T20:00:00+00:00", "action": "WATCH", "score": 77.0, "confidence": 0.77, "evidence_summary": "new 8-K beat", "status_v2": "backtest", "model_version": "rubric-v1.1-backtest-multisource", "weight_at_time": {"mode": "multi_source_research_grade", "agents": ["earnings", "filing", "price"]}, "score_breakdown": null, "direction": "bullish", "horizon_days": 1, "agents": ["earnings", "filing", "price"]}, {"id": 33, "ticker": "JNJ", "fired_at": "2026-04-27T22:23:40+00:00", "action": "WATCH", "score": 79.0, "confidence": 0.79, "evidence_summary": "new 8-K; 11\u00d7 Form 4", "status_v2": "backtest", "model_version": "rubric-v1.1-backtest-multisource", "weight_at_time": {"mode": "multi_source_research_grade", "agents": ["filing"]}, "score_breakdown": null, "direction": "bullish", "horizon_days": 1, "agents": ["filing"]}, {"id": 32, "ticker": "JPM", "fired_at": "2026-04-15T21:50:04+00:00", "action": "RESEARCH", "score": 55.0, "confidence": 0.55, "evidence_summary": "8\u00d7 Form 4", "status_v2": "backtest", "model_version": "rubric-v1.1-backtest-multisource", "weight_at_time": {"mode": "multi_source_research_grade", "agents": ["earnings", "filing"]}, "score_breakdown": null, "direction": "neutral", "horizon_days": 1, "agents": ["earnings", "filing"]}, {"id": 31, "ticker": "JPM", "fired_at": "2026-04-14T14:05:26+00:00", "action": "WATCH", "score": 103.0, "confidence": 1.0, "evidence_summary": "new 8-K beat", "status_v2": "backtest", "model_version": "rubric-v1.1-backtest-multisource", "weight_at_time": {"mode": "multi_source_research_grade", "agents": ["earnings", "filing"]}, "score_breakdown": null, "direction": "bullish", "horizon_days": 1, "agents": ["earnings", "filing"]}, {"id": 30, "ticker": "GOOGL", "fired_at": "2026-04-10T20:48:17+00:00", "action": "RESEARCH", "score": 51.0, "confidence": 0.51, "evidence_summary": "new 8-K; 4\u00d7 Form 4", "status_v2": "backtest", "model_version": "rubric-v1.1-backtest-multisource", "weight_at_time": {"mode": "multi_source_research_grade", "agents": ["filing"]}, "score_breakdown": null, "direction": "bullish", "horizon_days": 1, "agents": ["filing"]}, {"id": 29, "ticker": "NVDA", "fired_at": "2026-02-25T21:42:19+00:00", "action": "WATCH", "score": 72.0, "confidence": 0.72, "evidence_summary": "new 8-K beat", "status_v2": "backtest", "model_version": "rubric-v1.1-backtest-multisource", "weight_at_time": {"mode": "multi_source_research_grade", "agents": ["earnings", "filing"]}, "score_breakdown": null, "direction": "bullish", "horizon_days": 1, "agents": ["earnings", "filing"]}, {"id": 28, "ticker": "WMT", "fired_at": "2026-02-19T23:40:27+00:00", "action": "RESEARCH", "score": 52.0, "confidence": 0.52, "evidence_summary": "new 8-K beat; 1\u00d7 Form 4", "status_v2": "backtest", "model_version": "rubric-v1.1-backtest-multisource", "weight_at_time": {"mode": "multi_source_research_grade", "agents": ["earnings", "filing"]}, "score_breakdown": null, "direction": "bullish", "horizon_days": 1, "agents": ["earnings", "filing"]}, {"id": 27, "ticker": "GOOGL", "fired_at": "2026-02-04T21:01:37+00:00", "action": "RESEARCH", "score": 68.0, "confidence": 0.68, "evidence_summary": "new 8-K beat", "status_v2": "backtest", "model_version": "rubric-v1.1-backtest-multisource", "weight_at_time": {"mode": "multi_source_research_grade", "agents": ["earnings", "filing"]}, "score_breakdown": null, "direction": "bullish", "horizon_days": 1, "agents": ["earnings", "filing"]}, {"id": 26, "ticker": "LLY", "fired_at": "2026-02-04T12:05:22+00:00", "action": "RESEARCH", "score": 68.0, "confidence": 0.68, "evidence_summary": "new 8-K beat", "status_v2": "backtest", "model_version": "rubric-v1.1-backtest-multisource", "weight_at_time": {"mode": "multi_source_research_grade", "agents": ["earnings", "filing"]}, "score_breakdown": null, "direction": "bullish", "horizon_days": 1, "agents": ["earnings", "filing"]}, {"id": 25, "ticker": "AMD", "fired_at": "2026-02-03T23:14:52+00:00", "action": "WATCH", "score": 87.0, "confidence": 0.87, "evidence_summary": "new 8-K beat", "status_v2": "backtest", "model_version": "rubric-v1.1-backtest-multisource", "weight_at_time": {"mode": "multi_source_research_grade", "agents": ["earnings", "filing"]}, "score_breakdown": null, "direction": "bullish", "horizon_days": 1, "agents": ["earnings", "filing"]}, {"id": 24, "ticker": "XOM", "fired_at": "2026-01-30T11:31:24+00:00", "action": "WATCH", "score": 78.0, "confidence": 0.78, "evidence_summary": "new 8-K beat", "status_v2": "backtest", "model_version": "rubric-v1.1-backtest-multisource", "weight_at_time": {"mode": "multi_source_research_grade", "agents": ["earnings", "filing", "price"]}, "score_breakdown": null, "direction": "bullish", "horizon_days": 1, "agents": ["earnings", "filing", "price"]}, {"id": 22, "ticker": "V", "fired_at": "2026-01-29T23:08:26+00:00", "action": "RESEARCH", "score": 52.0, "confidence": 0.52, "evidence_summary": "new 8-K beat", "status_v2": "backtest", "model_version": "rubric-v1.1-backtest-multisource", "weight_at_time": {"mode": "multi_source_research_grade", "agents": ["earnings", "filing"]}, "score_breakdown": null, "direction": "bullish", "horizon_days": 1, "agents": ["earnings", "filing"]}, {"id": 23, "ticker": "AAPL", "fired_at": "2026-01-29T21:30:33+00:00", "action": "RESEARCH", "score": 68.0, "confidence": 0.68, "evidence_summary": "new 8-K beat", "status_v2": "backtest", "model_version": "rubric-v1.1-backtest-multisource", "weight_at_time": {"mode": "multi_source_research_grade", "agents": ["earnings", "filing"]}, "score_breakdown": null, "direction": "bullish", "horizon_days": 1, "agents": ["earnings", "filing"]}, {"id": 21, "ticker": "MA", "fired_at": "2026-01-29T13:03:21+00:00", "action": "WATCH", "score": 83.0, "confidence": 0.83, "evidence_summary": "new 8-K beat", "status_v2": "backtest", "model_version": "rubric-v1.1-backtest-multisource", "weight_at_time": {"mode": "multi_source_research_grade", "agents": ["earnings", "filing"]}, "score_breakdown": null, "direction": "bullish", "horizon_days": 1, "agents": ["earnings", "filing"]}, {"id": 17, "ticker": "META", "fired_at": "2026-01-28T23:36:36+00:00", "action": "WATCH", "score": 72.0, "confidence": 0.72, "evidence_summary": "new 8-K beat; 1\u00d7 Form 4", "status_v2": "backtest", "model_version": "rubric-v1.1-backtest-multisource", "weight_at_time": {"mode": "multi_source_research_grade", "agents": ["earnings", "filing"]}, "score_breakdown": null, "direction": "bullish", "horizon_days": 1, "agents": ["earnings", "filing"]}, {"id": 20, "ticker": "V", "fired_at": "2026-01-28T22:20:09+00:00", "action": "WATCH", "score": 75.0, "confidence": 0.75, "evidence_summary": "new 8-K; 10\u00d7 Form 4", "status_v2": "backtest", "model_version": "rubric-v1.1-backtest-multisource", "weight_at_time": {"mode": "multi_source_research_grade", "agents": ["filing"]}, "score_breakdown": null, "direction": "bullish", "horizon_days": 1, "agents": ["filing"]}, {"id": 19, "ticker": "TSLA", "fired_at": "2026-01-28T21:11:04+00:00", "action": "WATCH", "score": 83.0, "confidence": 0.83, "evidence_summary": "new 8-K beat", "status_v2": "backtest", "model_version": "rubric-v1.1-backtest-multisource", "weight_at_time": {"mode": "multi_source_research_grade", "agents": ["earnings", "filing"]}, "score_breakdown": null, "direction": "bullish", "horizon_days": 1, "agents": ["earnings", "filing"]}, {"id": 18, "ticker": "MSFT", "fired_at": "2026-01-28T21:07:34+00:00", "action": "WATCH", "score": 72.0, "confidence": 0.72, "evidence_summary": "new 8-K beat", "status_v2": "backtest", "model_version": "rubric-v1.1-backtest-multisource", "weight_at_time": {"mode": "multi_source_research_grade", "agents": ["earnings", "filing"]}, "score_breakdown": null, "direction": "bullish", "horizon_days": 1, "agents": ["earnings", "filing"]}, {"id": 16, "ticker": "JPM", "fired_at": "2026-01-22T22:03:43+00:00", "action": "WATCH", "score": 154.0, "confidence": 1.0, "evidence_summary": "new 8-K; 21\u00d7 Form 4", "status_v2": "backtest", "model_version": "rubric-v1.1-backtest-multisource", "weight_at_time": {"mode": "multi_source_research_grade", "agents": ["filing"]}, "score_breakdown": null, "direction": "bullish", "horizon_days": 1, "agents": ["filing"]}, {"id": 15, "ticker": "NFLX", "fired_at": "2026-01-20T22:17:28+00:00", "action": "WATCH", "score": 87.0, "confidence": 0.87, "evidence_summary": "new 8-K beat; 1\u00d7 Form 4", "status_v2": "backtest", "model_version": "rubric-v1.1-backtest-multisource", "weight_at_time": {"mode": "multi_source_research_grade", "agents": ["earnings", "filing"]}, "score_breakdown": null, "direction": "bullish", "horizon_days": 1, "agents": ["earnings", "filing"]}, {"id": 14, "ticker": "WMT", "fired_at": "2026-01-16T23:46:57+00:00", "action": "WATCH", "score": 87.0, "confidence": 0.87, "evidence_summary": "new 8-K; 13\u00d7 Form 4", "status_v2": "backtest", "model_version": "rubric-v1.1-backtest-multisource", "weight_at_time": {"mode": "multi_source_research_grade", "agents": ["filing"]}, "score_breakdown": null, "direction": "bullish", "horizon_days": 1, "agents": ["filing"]}, {"id": 13, "ticker": "JPM", "fired_at": "2026-01-13T15:09:19+00:00", "action": "RESEARCH", "score": 58.0, "confidence": 0.58, "evidence_summary": "new 8-K miss", "status_v2": "backtest", "model_version": "rubric-v1.1-backtest-multisource", "weight_at_time": {"mode": "multi_source_research_grade", "agents": ["earnings", "filing"]}, "score_breakdown": null, "direction": "bullish", "horizon_days": 1, "agents": ["earnings", "filing"]}, {"id": 12, "ticker": "COST", "fired_at": "2025-12-11T21:22:04+00:00", "action": "RESEARCH", "score": 68.0, "confidence": 0.68, "evidence_summary": "new 8-K beat", "status_v2": "backtest", "model_version": "rubric-v1.1-backtest-multisource", "weight_at_time": {"mode": "multi_source_research_grade", "agents": ["earnings", "filing"]}, "score_breakdown": null, "direction": "bullish", "horizon_days": 1, "agents": ["earnings", "filing"]}, {"id": 11, "ticker": "AVGO", "fired_at": "2025-12-11T21:17:37+00:00", "action": "RESEARCH", "score": 68.0, "confidence": 0.68, "evidence_summary": "new 8-K beat", "status_v2": "backtest", "model_version": "rubric-v1.1-backtest-multisource", "weight_at_time": {"mode": "multi_source_research_grade", "agents": ["earnings", "filing"]}, "score_breakdown": null, "direction": "bullish", "horizon_days": 1, "agents": ["earnings", "filing"]}, {"id": 10, "ticker": "WMT", "fired_at": "2025-11-20T11:58:46+00:00", "action": "RESEARCH", "score": 68.0, "confidence": 0.68, "evidence_summary": "new 8-K beat", "status_v2": "backtest", "model_version": "rubric-v1.1-backtest-multisource", "weight_at_time": {"mode": "multi_source_research_grade", "agents": ["earnings", "filing"]}, "score_breakdown": null, "direction": "bullish", "horizon_days": 1, "agents": ["earnings", "filing"]}, {"id": 9, "ticker": "NVDA", "fired_at": "2025-11-19T21:36:17+00:00", "action": "WATCH", "score": 72.0, "confidence": 0.72, "evidence_summary": "new 8-K beat", "status_v2": "backtest", "model_version": "rubric-v1.1-backtest-multisource", "weight_at_time": {"mode": "multi_source_research_grade", "agents": ["earnings", "filing"]}, "score_breakdown": null, "direction": "bullish", "horizon_days": 1, "agents": ["earnings", "filing"]}, {"id": 8, "ticker": "AMD", "fired_at": "2025-11-04T23:07:50+00:00", "action": "WATCH", "score": 87.0, "confidence": 0.87, "evidence_summary": "new 8-K beat", "status_v2": "backtest", "model_version": "rubric-v1.1-backtest-multisource", "weight_at_time": {"mode": "multi_source_research_grade", "agents": ["earnings", "filing"]}, "score_breakdown": null, "direction": "bullish", "horizon_days": 1, "agents": ["earnings", "filing"]}]</script>
+<script>
+// HTML-escape any string that could contain user-controlled content
+// (ticker fields, evidence summaries, agent names, status values).
+function esc(s) {
+  if (s === null || s === undefined) return '';
+  return String(s).replace(/[&<>"']/g, c => ({
+    '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'
+  }[c]));
+}
+const DATA = JSON.parse(document.getElementById('data').textContent);
+function render() {
+  const fA = document.getElementById('f-agent').value;
+  const fAct = document.getElementById('f-action').value;
+  const fS = document.getElementById('f-status').value;
+  const fSc = parseFloat(document.getElementById('f-score').value) || 0;
+  const fT = document.getElementById('f-ticker').value.trim().toUpperCase();
+  const tbody = document.getElementById('rows');
+  // Build via DOM rather than innerHTML strings to avoid any XSS surface.
+  while (tbody.firstChild) tbody.removeChild(tbody.firstChild);
+  let n = 0;
+  for (const r of DATA) {
+    if (fA && !(r.agents || []).includes(fA)) continue;
+    if (fAct && r.action !== fAct) continue;
+    if (fS && r.status_v2 !== fS) continue;
+    if (r.score < fSc) continue;
+    if (fT && r.ticker.toUpperCase().indexOf(fT) === -1) continue;
+    n++;
+    const tr = document.createElement('tr');
+    tr.innerHTML =
+      `<td>${esc((r.fired_at || '').substring(0,16))}</td>` +
+      `<td><strong>${esc(r.ticker)}</strong></td>` +
+      `<td><span class="tag ${esc(r.action)}">${esc(r.action)}</span></td>` +
+      `<td class="num">${Math.round(r.score)}</td>` +
+      `<td>${esc(r.evidence_summary)}</td>` +
+      `<td>${(r.agents || []).map(a => `<span class="tag agent-${esc(a)}">${esc(a)}</span>`).join(' ')}</td>` +
+      `<td><span class="tag ${esc(r.status_v2)}">${esc(r.status_v2)}</span></td>`;
+    tbody.appendChild(tr);
+  }
+  document.getElementById('count').textContent = `${n} of ${DATA.length} rows`;
+  document.getElementById('empty').style.display = n === 0 ? 'block' : 'none';
+}
+render();
+</script>
+
+  </main>
+  <footer>
+    <p>v1 paper-trading vocabulary: <strong>WATCH</strong> / <strong>RESEARCH</strong> / <strong>AVOID_CHASE</strong>.
+    The bot does not say BUY or SELL until 60 days of paper-trading hits the §17.6 graduation thresholds.</p>
+    <p>Data: SEC EDGAR · trumpstruth.org RSS · yfinance. Free-tier stack: GitHub Actions + Supabase Free + Hostinger static.</p>
+  </footer>
+</body>
+</html>

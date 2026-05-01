@@ -1,0 +1,494 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta http-equiv="refresh" content="900">  <!-- self-refresh every 15 min -->
+  <title>Learning · Hub4Apps Market Intel</title>
+  
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <header>
+    <div class="brand">
+      <span class="logo">📈</span>
+      <h1>Hub4Apps Market Intel</h1>
+      <span class="subtitle">private · educational · not financial advice</span>
+    </div>
+    <nav>
+      <a href="index.html"     class="">Dashboard</a>
+      <a href="signals.html"   class="">Signals</a>
+      <a href="events.html"    class="">Events</a>
+      <a href="agents.html"    class="">Agents</a>
+      <a href="backtest.html"  class="">Backtest</a>
+      <a href="learning.html"  class="active">Learning</a>
+    </nav>
+    <div class="meta">
+      <span>generated 2026-05-01 21:38 UTC</span>
+    </div>
+  </header>
+  <main>
+    
+<h2>Learning — Agent Accuracy Over Time</h2>
+<p style="color:var(--muted);font-size:12px">Each data point is a day in the 180-day backtest replay. Accuracy EMA (α=0.1) updates after every reconciled signal. Weight = clip(accuracy/0.5, 0.1×, 2.0×) — so a 60% accurate agent gets 1.2× influence in scoring.</p>
+
+<canvas id="weightChart" height="90"></canvas>
+
+
+<h3 style="margin-top:28px">Paper-trade reconciliation log</h3>
+<p style="color:var(--muted);font-size:12px">Every signal that has been closed by price_agent. Entry = signal fire date close. Exit = horizon_days later close.</p>
+<table>
+  <thead>
+    <tr>
+      <th>Ticker</th>
+      <th>Action</th>
+      <th class="num">Score</th>
+      <th>Fired</th>
+      <th>Closed</th>
+      <th class="num">Return</th>
+      <th>Correct</th>
+      <th>Agents</th>
+    </tr>
+  </thead>
+  <tbody>
+    
+    
+    <tr>
+      <td><strong><a href="ticker/V.html" style="color:var(--ok)">V</a></strong></td>
+      <td><span class="tag WATCH">WATCH</span></td>
+      <td class="num">77</td>
+      <td style="font-size:12px">2026-04-28 20:00</td>
+      <td style="font-size:12px">2026-04-29</td>
+      <td class="num" style="color:var(--bad)">
+        -0.56%
+      </td>
+      <td style="text-align:center;font-size:18px">❌</td>
+      <td style="font-size:11px;color:var(--muted)">earnings, filing, price</td>
+    </tr>
+    
+    
+    <tr>
+      <td><strong><a href="ticker/JNJ.html" style="color:var(--ok)">JNJ</a></strong></td>
+      <td><span class="tag WATCH">WATCH</span></td>
+      <td class="num">79</td>
+      <td style="font-size:12px">2026-04-27 22:23</td>
+      <td style="font-size:12px">2026-04-28</td>
+      <td class="num" style="color:var(--bad)">
+        -0.07%
+      </td>
+      <td style="text-align:center;font-size:18px">❌</td>
+      <td style="font-size:11px;color:var(--muted)">filing</td>
+    </tr>
+    
+    
+    <tr>
+      <td><strong><a href="ticker/JPM.html" style="color:var(--ok)">JPM</a></strong></td>
+      <td><span class="tag RESEARCH">RESEARCH</span></td>
+      <td class="num">55</td>
+      <td style="font-size:12px">2026-04-15 21:50</td>
+      <td style="font-size:12px">2026-04-16</td>
+      <td class="num" style="color:var(--ok)">
+        +1.41%
+      </td>
+      <td style="text-align:center;font-size:18px">✅</td>
+      <td style="font-size:11px;color:var(--muted)">earnings, filing</td>
+    </tr>
+    
+    
+    <tr>
+      <td><strong><a href="ticker/JPM.html" style="color:var(--ok)">JPM</a></strong></td>
+      <td><span class="tag WATCH">WATCH</span></td>
+      <td class="num">103</td>
+      <td style="font-size:12px">2026-04-14 14:05</td>
+      <td style="font-size:12px">2026-04-15</td>
+      <td class="num" style="color:var(--bad)">
+        -2.65%
+      </td>
+      <td style="text-align:center;font-size:18px">❌</td>
+      <td style="font-size:11px;color:var(--muted)">earnings, filing</td>
+    </tr>
+    
+    
+    <tr>
+      <td><strong><a href="ticker/GOOGL.html" style="color:var(--ok)">GOOGL</a></strong></td>
+      <td><span class="tag RESEARCH">RESEARCH</span></td>
+      <td class="num">51</td>
+      <td style="font-size:12px">2026-04-10 20:48</td>
+      <td style="font-size:12px">2026-04-13</td>
+      <td class="num" style="color:var(--ok)">
+        +1.21%
+      </td>
+      <td style="text-align:center;font-size:18px">✅</td>
+      <td style="font-size:11px;color:var(--muted)">filing</td>
+    </tr>
+    
+    
+    <tr>
+      <td><strong><a href="ticker/NVDA.html" style="color:var(--ok)">NVDA</a></strong></td>
+      <td><span class="tag WATCH">WATCH</span></td>
+      <td class="num">72</td>
+      <td style="font-size:12px">2026-02-25 21:42</td>
+      <td style="font-size:12px">2026-02-26</td>
+      <td class="num" style="color:var(--bad)">
+        -4.93%
+      </td>
+      <td style="text-align:center;font-size:18px">❌</td>
+      <td style="font-size:11px;color:var(--muted)">earnings, filing</td>
+    </tr>
+    
+    
+    <tr>
+      <td><strong><a href="ticker/WMT.html" style="color:var(--ok)">WMT</a></strong></td>
+      <td><span class="tag RESEARCH">RESEARCH</span></td>
+      <td class="num">52</td>
+      <td style="font-size:12px">2026-02-19 23:40</td>
+      <td style="font-size:12px">2026-02-20</td>
+      <td class="num" style="color:var(--bad)">
+        -0.11%
+      </td>
+      <td style="text-align:center;font-size:18px">❌</td>
+      <td style="font-size:11px;color:var(--muted)">earnings, filing</td>
+    </tr>
+    
+    
+    <tr>
+      <td><strong><a href="ticker/GOOGL.html" style="color:var(--ok)">GOOGL</a></strong></td>
+      <td><span class="tag RESEARCH">RESEARCH</span></td>
+      <td class="num">68</td>
+      <td style="font-size:12px">2026-02-04 21:01</td>
+      <td style="font-size:12px">2026-02-05</td>
+      <td class="num" style="color:var(--ok)">
+        +6.00%
+      </td>
+      <td style="text-align:center;font-size:18px">✅</td>
+      <td style="font-size:11px;color:var(--muted)">earnings, filing</td>
+    </tr>
+    
+    
+    <tr>
+      <td><strong><a href="ticker/LLY.html" style="color:var(--ok)">LLY</a></strong></td>
+      <td><span class="tag RESEARCH">RESEARCH</span></td>
+      <td class="num">68</td>
+      <td style="font-size:12px">2026-02-04 12:05</td>
+      <td style="font-size:12px">2026-02-05</td>
+      <td class="num" style="color:var(--bad)">
+        -4.29%
+      </td>
+      <td style="text-align:center;font-size:18px">❌</td>
+      <td style="font-size:11px;color:var(--muted)">earnings, filing</td>
+    </tr>
+    
+    
+    <tr>
+      <td><strong><a href="ticker/AMD.html" style="color:var(--ok)">AMD</a></strong></td>
+      <td><span class="tag WATCH">WATCH</span></td>
+      <td class="num">87</td>
+      <td style="font-size:12px">2026-02-03 23:14</td>
+      <td style="font-size:12px">2026-02-04</td>
+      <td class="num" style="color:var(--bad)">
+        -6.99%
+      </td>
+      <td style="text-align:center;font-size:18px">❌</td>
+      <td style="font-size:11px;color:var(--muted)">earnings, filing</td>
+    </tr>
+    
+    
+    <tr>
+      <td><strong><a href="ticker/XOM.html" style="color:var(--ok)">XOM</a></strong></td>
+      <td><span class="tag WATCH">WATCH</span></td>
+      <td class="num">78</td>
+      <td style="font-size:12px">2026-01-30 11:31</td>
+      <td style="font-size:12px">2026-02-02</td>
+      <td class="num" style="color:var(--bad)">
+        -1.12%
+      </td>
+      <td style="text-align:center;font-size:18px">❌</td>
+      <td style="font-size:11px;color:var(--muted)">earnings, filing, price</td>
+    </tr>
+    
+    
+    <tr>
+      <td><strong><a href="ticker/MA.html" style="color:var(--ok)">MA</a></strong></td>
+      <td><span class="tag WATCH">WATCH</span></td>
+      <td class="num">83</td>
+      <td style="font-size:12px">2026-01-29 13:03</td>
+      <td style="font-size:12px">2026-01-30</td>
+      <td class="num" style="color:var(--bad)">
+        -0.51%
+      </td>
+      <td style="text-align:center;font-size:18px">❌</td>
+      <td style="font-size:11px;color:var(--muted)">earnings, filing</td>
+    </tr>
+    
+    
+    <tr>
+      <td><strong><a href="ticker/V.html" style="color:var(--ok)">V</a></strong></td>
+      <td><span class="tag RESEARCH">RESEARCH</span></td>
+      <td class="num">52</td>
+      <td style="font-size:12px">2026-01-29 23:08</td>
+      <td style="font-size:12px">2026-01-30</td>
+      <td class="num" style="color:var(--bad)">
+        -3.23%
+      </td>
+      <td style="text-align:center;font-size:18px">❌</td>
+      <td style="font-size:11px;color:var(--muted)">earnings, filing</td>
+    </tr>
+    
+    
+    <tr>
+      <td><strong><a href="ticker/AAPL.html" style="color:var(--ok)">AAPL</a></strong></td>
+      <td><span class="tag RESEARCH">RESEARCH</span></td>
+      <td class="num">68</td>
+      <td style="font-size:12px">2026-01-29 21:30</td>
+      <td style="font-size:12px">2026-01-30</td>
+      <td class="num" style="color:var(--ok)">
+        +1.59%
+      </td>
+      <td style="text-align:center;font-size:18px">✅</td>
+      <td style="font-size:11px;color:var(--muted)">earnings, filing</td>
+    </tr>
+    
+    
+    <tr>
+      <td><strong><a href="ticker/V.html" style="color:var(--ok)">V</a></strong></td>
+      <td><span class="tag WATCH">WATCH</span></td>
+      <td class="num">75</td>
+      <td style="font-size:12px">2026-01-28 22:20</td>
+      <td style="font-size:12px">2026-01-29</td>
+      <td class="num" style="color:var(--ok)">
+        +0.45%
+      </td>
+      <td style="text-align:center;font-size:18px">✅</td>
+      <td style="font-size:11px;color:var(--muted)">filing</td>
+    </tr>
+    
+    
+    <tr>
+      <td><strong><a href="ticker/TSLA.html" style="color:var(--ok)">TSLA</a></strong></td>
+      <td><span class="tag WATCH">WATCH</span></td>
+      <td class="num">83</td>
+      <td style="font-size:12px">2026-01-28 21:11</td>
+      <td style="font-size:12px">2026-01-29</td>
+      <td class="num" style="color:var(--bad)">
+        -4.95%
+      </td>
+      <td style="text-align:center;font-size:18px">❌</td>
+      <td style="font-size:11px;color:var(--muted)">earnings, filing</td>
+    </tr>
+    
+    
+    <tr>
+      <td><strong><a href="ticker/MSFT.html" style="color:var(--ok)">MSFT</a></strong></td>
+      <td><span class="tag WATCH">WATCH</span></td>
+      <td class="num">72</td>
+      <td style="font-size:12px">2026-01-28 21:07</td>
+      <td style="font-size:12px">2026-01-29</td>
+      <td class="num" style="color:var(--bad)">
+        -1.57%
+      </td>
+      <td style="text-align:center;font-size:18px">❌</td>
+      <td style="font-size:11px;color:var(--muted)">earnings, filing</td>
+    </tr>
+    
+    
+    <tr>
+      <td><strong><a href="ticker/META.html" style="color:var(--ok)">META</a></strong></td>
+      <td><span class="tag WATCH">WATCH</span></td>
+      <td class="num">72</td>
+      <td style="font-size:12px">2026-01-28 23:36</td>
+      <td style="font-size:12px">2026-01-29</td>
+      <td class="num" style="color:var(--ok)">
+        +0.02%
+      </td>
+      <td style="text-align:center;font-size:18px">✅</td>
+      <td style="font-size:11px;color:var(--muted)">earnings, filing</td>
+    </tr>
+    
+    
+    <tr>
+      <td><strong><a href="ticker/JPM.html" style="color:var(--ok)">JPM</a></strong></td>
+      <td><span class="tag WATCH">WATCH</span></td>
+      <td class="num">154</td>
+      <td style="font-size:12px">2026-01-22 22:03</td>
+      <td style="font-size:12px">2026-01-23</td>
+      <td class="num" style="color:var(--bad)">
+        -1.52%
+      </td>
+      <td style="text-align:center;font-size:18px">❌</td>
+      <td style="font-size:11px;color:var(--muted)">filing</td>
+    </tr>
+    
+    
+    <tr>
+      <td><strong><a href="ticker/NFLX.html" style="color:var(--ok)">NFLX</a></strong></td>
+      <td><span class="tag WATCH">WATCH</span></td>
+      <td class="num">87</td>
+      <td style="font-size:12px">2026-01-20 22:17</td>
+      <td style="font-size:12px">2026-01-21</td>
+      <td class="num" style="color:var(--ok)">
+        +3.34%
+      </td>
+      <td style="text-align:center;font-size:18px">✅</td>
+      <td style="font-size:11px;color:var(--muted)">earnings, filing</td>
+    </tr>
+    
+    
+    <tr>
+      <td><strong><a href="ticker/WMT.html" style="color:var(--ok)">WMT</a></strong></td>
+      <td><span class="tag WATCH">WATCH</span></td>
+      <td class="num">87</td>
+      <td style="font-size:12px">2026-01-16 23:46</td>
+      <td style="font-size:12px">2026-01-20</td>
+      <td class="num" style="color:var(--bad)">
+        -1.90%
+      </td>
+      <td style="text-align:center;font-size:18px">❌</td>
+      <td style="font-size:11px;color:var(--muted)">filing</td>
+    </tr>
+    
+    
+    <tr>
+      <td><strong><a href="ticker/JPM.html" style="color:var(--ok)">JPM</a></strong></td>
+      <td><span class="tag RESEARCH">RESEARCH</span></td>
+      <td class="num">58</td>
+      <td style="font-size:12px">2026-01-13 15:09</td>
+      <td style="font-size:12px">2026-01-14</td>
+      <td class="num" style="color:var(--bad)">
+        -0.21%
+      </td>
+      <td style="text-align:center;font-size:18px">❌</td>
+      <td style="font-size:11px;color:var(--muted)">earnings, filing</td>
+    </tr>
+    
+    
+    <tr>
+      <td><strong><a href="ticker/COST.html" style="color:var(--ok)">COST</a></strong></td>
+      <td><span class="tag RESEARCH">RESEARCH</span></td>
+      <td class="num">68</td>
+      <td style="font-size:12px">2025-12-11 21:22</td>
+      <td style="font-size:12px">2025-12-12</td>
+      <td class="num" style="color:var(--ok)">
+        +0.03%
+      </td>
+      <td style="text-align:center;font-size:18px">✅</td>
+      <td style="font-size:11px;color:var(--muted)">earnings, filing</td>
+    </tr>
+    
+    
+    <tr>
+      <td><strong><a href="ticker/AVGO.html" style="color:var(--ok)">AVGO</a></strong></td>
+      <td><span class="tag RESEARCH">RESEARCH</span></td>
+      <td class="num">68</td>
+      <td style="font-size:12px">2025-12-11 21:17</td>
+      <td style="font-size:12px">2025-12-12</td>
+      <td class="num" style="color:var(--bad)">
+        -5.37%
+      </td>
+      <td style="text-align:center;font-size:18px">❌</td>
+      <td style="font-size:11px;color:var(--muted)">earnings, filing</td>
+    </tr>
+    
+    
+    <tr>
+      <td><strong><a href="ticker/WMT.html" style="color:var(--ok)">WMT</a></strong></td>
+      <td><span class="tag RESEARCH">RESEARCH</span></td>
+      <td class="num">68</td>
+      <td style="font-size:12px">2025-11-20 11:58</td>
+      <td style="font-size:12px">2025-11-21</td>
+      <td class="num" style="color:var(--bad)">
+        -2.56%
+      </td>
+      <td style="text-align:center;font-size:18px">❌</td>
+      <td style="font-size:11px;color:var(--muted)">earnings, filing</td>
+    </tr>
+    
+    
+    <tr>
+      <td><strong><a href="ticker/NVDA.html" style="color:var(--ok)">NVDA</a></strong></td>
+      <td><span class="tag WATCH">WATCH</span></td>
+      <td class="num">72</td>
+      <td style="font-size:12px">2025-11-19 21:36</td>
+      <td style="font-size:12px">2025-11-20</td>
+      <td class="num" style="color:var(--bad)">
+        -7.91%
+      </td>
+      <td style="text-align:center;font-size:18px">❌</td>
+      <td style="font-size:11px;color:var(--muted)">earnings, filing</td>
+    </tr>
+    
+    
+    <tr>
+      <td><strong><a href="ticker/AMD.html" style="color:var(--ok)">AMD</a></strong></td>
+      <td><span class="tag WATCH">WATCH</span></td>
+      <td class="num">87</td>
+      <td style="font-size:12px">2025-11-04 23:07</td>
+      <td style="font-size:12px">2025-11-05</td>
+      <td class="num" style="color:var(--ok)">
+        +5.28%
+      </td>
+      <td style="text-align:center;font-size:18px">✅</td>
+      <td style="font-size:11px;color:var(--muted)">earnings, filing</td>
+    </tr>
+    
+  </tbody>
+</table>
+
+
+<script src="vendor/chart.umd.min.js"></script>
+<script id="wdata" type="application/json">[{"agent": "earnings", "date": "2025-11-04", "accuracy_ema": 0.55, "weight": 1.1, "n_signals": 1}, {"agent": "filing", "date": "2025-11-04", "accuracy_ema": 0.55, "weight": 1.1, "n_signals": 1}, {"agent": "earnings", "date": "2025-11-05", "accuracy_ema": 0.55, "weight": 1.1, "n_signals": 1}, {"agent": "filing", "date": "2025-11-05", "accuracy_ema": 0.55, "weight": 1.1, "n_signals": 1}, {"agent": "earnings", "date": "2025-11-06", "accuracy_ema": 0.55, "weight": 1.1, "n_signals": 1}, {"agent": "filing", "date": "2025-11-06", "accuracy_ema": 0.55, "weight": 1.1, "n_signals": 1}, {"agent": "earnings", "date": "2025-11-07", "accuracy_ema": 0.55, "weight": 1.1, "n_signals": 1}, {"agent": "filing", "date": "2025-11-07", "accuracy_ema": 0.55, "weight": 1.1, "n_signals": 1}, {"agent": "earnings", "date": "2025-11-08", "accuracy_ema": 0.55, "weight": 1.1, "n_signals": 1}, {"agent": "filing", "date": "2025-11-08", "accuracy_ema": 0.55, "weight": 1.1, "n_signals": 1}, {"agent": "earnings", "date": "2025-11-09", "accuracy_ema": 0.55, "weight": 1.1, "n_signals": 1}, {"agent": "filing", "date": "2025-11-09", "accuracy_ema": 0.55, "weight": 1.1, "n_signals": 1}, {"agent": "earnings", "date": "2025-11-10", "accuracy_ema": 0.55, "weight": 1.1, "n_signals": 1}, {"agent": "filing", "date": "2025-11-10", "accuracy_ema": 0.55, "weight": 1.1, "n_signals": 1}, {"agent": "earnings", "date": "2025-11-11", "accuracy_ema": 0.55, "weight": 1.1, "n_signals": 1}, {"agent": "filing", "date": "2025-11-11", "accuracy_ema": 0.55, "weight": 1.1, "n_signals": 1}, {"agent": "earnings", "date": "2025-11-12", "accuracy_ema": 0.55, "weight": 1.1, "n_signals": 1}, {"agent": "filing", "date": "2025-11-12", "accuracy_ema": 0.55, "weight": 1.1, "n_signals": 1}, {"agent": "earnings", "date": "2025-11-13", "accuracy_ema": 0.55, "weight": 1.1, "n_signals": 1}, {"agent": "filing", "date": "2025-11-13", "accuracy_ema": 0.55, "weight": 1.1, "n_signals": 1}, {"agent": "earnings", "date": "2025-11-14", "accuracy_ema": 0.55, "weight": 1.1, "n_signals": 1}, {"agent": "filing", "date": "2025-11-14", "accuracy_ema": 0.55, "weight": 1.1, "n_signals": 1}, {"agent": "earnings", "date": "2025-11-15", "accuracy_ema": 0.55, "weight": 1.1, "n_signals": 1}, {"agent": "filing", "date": "2025-11-15", "accuracy_ema": 0.55, "weight": 1.1, "n_signals": 1}, {"agent": "earnings", "date": "2025-11-16", "accuracy_ema": 0.55, "weight": 1.1, "n_signals": 1}, {"agent": "filing", "date": "2025-11-16", "accuracy_ema": 0.55, "weight": 1.1, "n_signals": 1}, {"agent": "earnings", "date": "2025-11-17", "accuracy_ema": 0.55, "weight": 1.1, "n_signals": 1}, {"agent": "filing", "date": "2025-11-17", "accuracy_ema": 0.55, "weight": 1.1, "n_signals": 1}, {"agent": "earnings", "date": "2025-11-18", "accuracy_ema": 0.55, "weight": 1.1, "n_signals": 1}, {"agent": "filing", "date": "2025-11-18", "accuracy_ema": 0.55, "weight": 1.1, "n_signals": 1}, {"agent": "earnings", "date": "2025-11-19", "accuracy_ema": 0.495, "weight": 0.99, "n_signals": 2}, {"agent": "filing", "date": "2025-11-19", "accuracy_ema": 0.495, "weight": 0.99, "n_signals": 2}, {"agent": "earnings", "date": "2025-11-20", "accuracy_ema": 0.4455, "weight": 0.891, "n_signals": 3}, {"agent": "filing", "date": "2025-11-20", "accuracy_ema": 0.4455, "weight": 0.891, "n_signals": 3}, {"agent": "earnings", "date": "2025-11-21", "accuracy_ema": 0.4455, "weight": 0.891, "n_signals": 3}, {"agent": "filing", "date": "2025-11-21", "accuracy_ema": 0.4455, "weight": 0.891, "n_signals": 3}, {"agent": "earnings", "date": "2025-11-22", "accuracy_ema": 0.4455, "weight": 0.891, "n_signals": 3}, {"agent": "filing", "date": "2025-11-22", "accuracy_ema": 0.4455, "weight": 0.891, "n_signals": 3}, {"agent": "earnings", "date": "2025-11-23", "accuracy_ema": 0.4455, "weight": 0.891, "n_signals": 3}, {"agent": "filing", "date": "2025-11-23", "accuracy_ema": 0.4455, "weight": 0.891, "n_signals": 3}, {"agent": "earnings", "date": "2025-11-24", "accuracy_ema": 0.4455, "weight": 0.891, "n_signals": 3}, {"agent": "filing", "date": "2025-11-24", "accuracy_ema": 0.4455, "weight": 0.891, "n_signals": 3}, {"agent": "earnings", "date": "2025-11-25", "accuracy_ema": 0.4455, "weight": 0.891, "n_signals": 3}, {"agent": "filing", "date": "2025-11-25", "accuracy_ema": 0.4455, "weight": 0.891, "n_signals": 3}, {"agent": "earnings", "date": "2025-11-26", "accuracy_ema": 0.4455, "weight": 0.891, "n_signals": 3}, {"agent": "filing", "date": "2025-11-26", "accuracy_ema": 0.4455, "weight": 0.891, "n_signals": 3}, {"agent": "earnings", "date": "2025-11-27", "accuracy_ema": 0.4455, "weight": 0.891, "n_signals": 3}, {"agent": "filing", "date": "2025-11-27", "accuracy_ema": 0.4455, "weight": 0.891, "n_signals": 3}, {"agent": "earnings", "date": "2025-11-28", "accuracy_ema": 0.4455, "weight": 0.891, "n_signals": 3}, {"agent": "filing", "date": "2025-11-28", "accuracy_ema": 0.4455, "weight": 0.891, "n_signals": 3}, {"agent": "earnings", "date": "2025-11-29", "accuracy_ema": 0.4455, "weight": 0.891, "n_signals": 3}, {"agent": "filing", "date": "2025-11-29", "accuracy_ema": 0.4455, "weight": 0.891, "n_signals": 3}, {"agent": "earnings", "date": "2025-11-30", "accuracy_ema": 0.4455, "weight": 0.891, "n_signals": 3}, {"agent": "filing", "date": "2025-11-30", "accuracy_ema": 0.4455, "weight": 0.891, "n_signals": 3}, {"agent": "earnings", "date": "2025-12-01", "accuracy_ema": 0.4455, "weight": 0.891, "n_signals": 3}, {"agent": "filing", "date": "2025-12-01", "accuracy_ema": 0.4455, "weight": 0.891, "n_signals": 3}, {"agent": "earnings", "date": "2025-12-02", "accuracy_ema": 0.4455, "weight": 0.891, "n_signals": 3}, {"agent": "filing", "date": "2025-12-02", "accuracy_ema": 0.4455, "weight": 0.891, "n_signals": 3}, {"agent": "earnings", "date": "2025-12-03", "accuracy_ema": 0.4455, "weight": 0.891, "n_signals": 3}, {"agent": "filing", "date": "2025-12-03", "accuracy_ema": 0.4455, "weight": 0.891, "n_signals": 3}, {"agent": "earnings", "date": "2025-12-04", "accuracy_ema": 0.4455, "weight": 0.891, "n_signals": 3}, {"agent": "filing", "date": "2025-12-04", "accuracy_ema": 0.4455, "weight": 0.891, "n_signals": 3}, {"agent": "earnings", "date": "2025-12-05", "accuracy_ema": 0.4455, "weight": 0.891, "n_signals": 3}, {"agent": "filing", "date": "2025-12-05", "accuracy_ema": 0.4455, "weight": 0.891, "n_signals": 3}, {"agent": "earnings", "date": "2025-12-06", "accuracy_ema": 0.4455, "weight": 0.891, "n_signals": 3}, {"agent": "filing", "date": "2025-12-06", "accuracy_ema": 0.4455, "weight": 0.891, "n_signals": 3}, {"agent": "earnings", "date": "2025-12-07", "accuracy_ema": 0.4455, "weight": 0.891, "n_signals": 3}, {"agent": "filing", "date": "2025-12-07", "accuracy_ema": 0.4455, "weight": 0.891, "n_signals": 3}, {"agent": "earnings", "date": "2025-12-08", "accuracy_ema": 0.4455, "weight": 0.891, "n_signals": 3}, {"agent": "filing", "date": "2025-12-08", "accuracy_ema": 0.4455, "weight": 0.891, "n_signals": 3}, {"agent": "earnings", "date": "2025-12-09", "accuracy_ema": 0.4455, "weight": 0.891, "n_signals": 3}, {"agent": "filing", "date": "2025-12-09", "accuracy_ema": 0.4455, "weight": 0.891, "n_signals": 3}, {"agent": "earnings", "date": "2025-12-10", "accuracy_ema": 0.4455, "weight": 0.891, "n_signals": 3}, {"agent": "filing", "date": "2025-12-10", "accuracy_ema": 0.4455, "weight": 0.891, "n_signals": 3}, {"agent": "earnings", "date": "2025-12-11", "accuracy_ema": 0.4609, "weight": 0.9217, "n_signals": 5}, {"agent": "filing", "date": "2025-12-11", "accuracy_ema": 0.4609, "weight": 0.9217, "n_signals": 5}, {"agent": "earnings", "date": "2025-12-12", "accuracy_ema": 0.4609, "weight": 0.9217, "n_signals": 5}, {"agent": "filing", "date": "2025-12-12", "accuracy_ema": 0.4609, "weight": 0.9217, "n_signals": 5}, {"agent": "earnings", "date": "2025-12-13", "accuracy_ema": 0.4609, "weight": 0.9217, "n_signals": 5}, {"agent": "filing", "date": "2025-12-13", "accuracy_ema": 0.4609, "weight": 0.9217, "n_signals": 5}, {"agent": "earnings", "date": "2025-12-14", "accuracy_ema": 0.4609, "weight": 0.9217, "n_signals": 5}, {"agent": "filing", "date": "2025-12-14", "accuracy_ema": 0.4609, "weight": 0.9217, "n_signals": 5}, {"agent": "earnings", "date": "2025-12-15", "accuracy_ema": 0.4609, "weight": 0.9217, "n_signals": 5}, {"agent": "filing", "date": "2025-12-15", "accuracy_ema": 0.4609, "weight": 0.9217, "n_signals": 5}, {"agent": "earnings", "date": "2025-12-16", "accuracy_ema": 0.4609, "weight": 0.9217, "n_signals": 5}, {"agent": "filing", "date": "2025-12-16", "accuracy_ema": 0.4609, "weight": 0.9217, "n_signals": 5}, {"agent": "earnings", "date": "2025-12-17", "accuracy_ema": 0.4609, "weight": 0.9217, "n_signals": 5}, {"agent": "filing", "date": "2025-12-17", "accuracy_ema": 0.4609, "weight": 0.9217, "n_signals": 5}, {"agent": "earnings", "date": "2025-12-18", "accuracy_ema": 0.4609, "weight": 0.9217, "n_signals": 5}, {"agent": "filing", "date": "2025-12-18", "accuracy_ema": 0.4609, "weight": 0.9217, "n_signals": 5}, {"agent": "earnings", "date": "2025-12-19", "accuracy_ema": 0.4609, "weight": 0.9217, "n_signals": 5}, {"agent": "filing", "date": "2025-12-19", "accuracy_ema": 0.4609, "weight": 0.9217, "n_signals": 5}, {"agent": "earnings", "date": "2025-12-20", "accuracy_ema": 0.4609, "weight": 0.9217, "n_signals": 5}, {"agent": "filing", "date": "2025-12-20", "accuracy_ema": 0.4609, "weight": 0.9217, "n_signals": 5}, {"agent": "earnings", "date": "2025-12-21", "accuracy_ema": 0.4609, "weight": 0.9217, "n_signals": 5}, {"agent": "filing", "date": "2025-12-21", "accuracy_ema": 0.4609, "weight": 0.9217, "n_signals": 5}, {"agent": "earnings", "date": "2025-12-22", "accuracy_ema": 0.4609, "weight": 0.9217, "n_signals": 5}, {"agent": "filing", "date": "2025-12-22", "accuracy_ema": 0.4609, "weight": 0.9217, "n_signals": 5}, {"agent": "earnings", "date": "2025-12-23", "accuracy_ema": 0.4609, "weight": 0.9217, "n_signals": 5}, {"agent": "filing", "date": "2025-12-23", "accuracy_ema": 0.4609, "weight": 0.9217, "n_signals": 5}, {"agent": "earnings", "date": "2025-12-24", "accuracy_ema": 0.4609, "weight": 0.9217, "n_signals": 5}, {"agent": "filing", "date": "2025-12-24", "accuracy_ema": 0.4609, "weight": 0.9217, "n_signals": 5}, {"agent": "earnings", "date": "2025-12-25", "accuracy_ema": 0.4609, "weight": 0.9217, "n_signals": 5}, {"agent": "filing", "date": "2025-12-25", "accuracy_ema": 0.4609, "weight": 0.9217, "n_signals": 5}, {"agent": "earnings", "date": "2025-12-26", "accuracy_ema": 0.4609, "weight": 0.9217, "n_signals": 5}, {"agent": "filing", "date": "2025-12-26", "accuracy_ema": 0.4609, "weight": 0.9217, "n_signals": 5}, {"agent": "earnings", "date": "2025-12-27", "accuracy_ema": 0.4609, "weight": 0.9217, "n_signals": 5}, {"agent": "filing", "date": "2025-12-27", "accuracy_ema": 0.4609, "weight": 0.9217, "n_signals": 5}, {"agent": "earnings", "date": "2025-12-28", "accuracy_ema": 0.4609, "weight": 0.9217, "n_signals": 5}, {"agent": "filing", "date": "2025-12-28", "accuracy_ema": 0.4609, "weight": 0.9217, "n_signals": 5}, {"agent": "earnings", "date": "2025-12-29", "accuracy_ema": 0.4609, "weight": 0.9217, "n_signals": 5}, {"agent": "filing", "date": "2025-12-29", "accuracy_ema": 0.4609, "weight": 0.9217, "n_signals": 5}, {"agent": "earnings", "date": "2025-12-30", "accuracy_ema": 0.4609, "weight": 0.9217, "n_signals": 5}, {"agent": "filing", "date": "2025-12-30", "accuracy_ema": 0.4609, "weight": 0.9217, "n_signals": 5}, {"agent": "earnings", "date": "2025-12-31", "accuracy_ema": 0.4609, "weight": 0.9217, "n_signals": 5}, {"agent": "filing", "date": "2025-12-31", "accuracy_ema": 0.4609, "weight": 0.9217, "n_signals": 5}, {"agent": "earnings", "date": "2026-01-01", "accuracy_ema": 0.4609, "weight": 0.9217, "n_signals": 5}, {"agent": "filing", "date": "2026-01-01", "accuracy_ema": 0.4609, "weight": 0.9217, "n_signals": 5}, {"agent": "earnings", "date": "2026-01-02", "accuracy_ema": 0.4609, "weight": 0.9217, "n_signals": 5}, {"agent": "filing", "date": "2026-01-02", "accuracy_ema": 0.4609, "weight": 0.9217, "n_signals": 5}, {"agent": "earnings", "date": "2026-01-03", "accuracy_ema": 0.4609, "weight": 0.9217, "n_signals": 5}, {"agent": "filing", "date": "2026-01-03", "accuracy_ema": 0.4609, "weight": 0.9217, "n_signals": 5}, {"agent": "earnings", "date": "2026-01-04", "accuracy_ema": 0.4609, "weight": 0.9217, "n_signals": 5}, {"agent": "filing", "date": "2026-01-04", "accuracy_ema": 0.4609, "weight": 0.9217, "n_signals": 5}, {"agent": "earnings", "date": "2026-01-05", "accuracy_ema": 0.4609, "weight": 0.9217, "n_signals": 5}, {"agent": "filing", "date": "2026-01-05", "accuracy_ema": 0.4609, "weight": 0.9217, "n_signals": 5}, {"agent": "earnings", "date": "2026-01-06", "accuracy_ema": 0.4609, "weight": 0.9217, "n_signals": 5}, {"agent": "filing", "date": "2026-01-06", "accuracy_ema": 0.4609, "weight": 0.9217, "n_signals": 5}, {"agent": "earnings", "date": "2026-01-07", "accuracy_ema": 0.4609, "weight": 0.9217, "n_signals": 5}, {"agent": "filing", "date": "2026-01-07", "accuracy_ema": 0.4609, "weight": 0.9217, "n_signals": 5}, {"agent": "earnings", "date": "2026-01-08", "accuracy_ema": 0.4609, "weight": 0.9217, "n_signals": 5}, {"agent": "filing", "date": "2026-01-08", "accuracy_ema": 0.4609, "weight": 0.9217, "n_signals": 5}, {"agent": "earnings", "date": "2026-01-09", "accuracy_ema": 0.4609, "weight": 0.9217, "n_signals": 5}, {"agent": "filing", "date": "2026-01-09", "accuracy_ema": 0.4609, "weight": 0.9217, "n_signals": 5}, {"agent": "earnings", "date": "2026-01-10", "accuracy_ema": 0.4609, "weight": 0.9217, "n_signals": 5}, {"agent": "filing", "date": "2026-01-10", "accuracy_ema": 0.4609, "weight": 0.9217, "n_signals": 5}, {"agent": "earnings", "date": "2026-01-11", "accuracy_ema": 0.4609, "weight": 0.9217, "n_signals": 5}, {"agent": "filing", "date": "2026-01-11", "accuracy_ema": 0.4609, "weight": 0.9217, "n_signals": 5}, {"agent": "earnings", "date": "2026-01-12", "accuracy_ema": 0.4609, "weight": 0.9217, "n_signals": 5}, {"agent": "filing", "date": "2026-01-12", "accuracy_ema": 0.4609, "weight": 0.9217, "n_signals": 5}, {"agent": "earnings", "date": "2026-01-13", "accuracy_ema": 0.4148, "weight": 0.8295, "n_signals": 6}, {"agent": "filing", "date": "2026-01-13", "accuracy_ema": 0.4148, "weight": 0.8295, "n_signals": 6}, {"agent": "earnings", "date": "2026-01-14", "accuracy_ema": 0.4148, "weight": 0.8295, "n_signals": 6}, {"agent": "filing", "date": "2026-01-14", "accuracy_ema": 0.4148, "weight": 0.8295, "n_signals": 6}, {"agent": "earnings", "date": "2026-01-15", "accuracy_ema": 0.4148, "weight": 0.8295, "n_signals": 6}, {"agent": "filing", "date": "2026-01-15", "accuracy_ema": 0.4148, "weight": 0.8295, "n_signals": 6}, {"agent": "earnings", "date": "2026-01-16", "accuracy_ema": 0.4148, "weight": 0.8295, "n_signals": 6}, {"agent": "filing", "date": "2026-01-16", "accuracy_ema": 0.3733, "weight": 0.7466, "n_signals": 7}, {"agent": "earnings", "date": "2026-01-17", "accuracy_ema": 0.4148, "weight": 0.8295, "n_signals": 6}, {"agent": "filing", "date": "2026-01-17", "accuracy_ema": 0.3733, "weight": 0.7466, "n_signals": 7}, {"agent": "earnings", "date": "2026-01-18", "accuracy_ema": 0.4148, "weight": 0.8295, "n_signals": 6}, {"agent": "filing", "date": "2026-01-18", "accuracy_ema": 0.3733, "weight": 0.7466, "n_signals": 7}, {"agent": "earnings", "date": "2026-01-19", "accuracy_ema": 0.4148, "weight": 0.8295, "n_signals": 6}, {"agent": "filing", "date": "2026-01-19", "accuracy_ema": 0.3733, "weight": 0.7466, "n_signals": 7}, {"agent": "earnings", "date": "2026-01-20", "accuracy_ema": 0.4733, "weight": 0.9466, "n_signals": 7}, {"agent": "filing", "date": "2026-01-20", "accuracy_ema": 0.436, "weight": 0.8719, "n_signals": 8}, {"agent": "earnings", "date": "2026-01-21", "accuracy_ema": 0.4733, "weight": 0.9466, "n_signals": 7}, {"agent": "filing", "date": "2026-01-21", "accuracy_ema": 0.436, "weight": 0.8719, "n_signals": 8}, {"agent": "earnings", "date": "2026-01-22", "accuracy_ema": 0.4733, "weight": 0.9466, "n_signals": 7}, {"agent": "filing", "date": "2026-01-22", "accuracy_ema": 0.3924, "weight": 0.7847, "n_signals": 9}, {"agent": "earnings", "date": "2026-01-23", "accuracy_ema": 0.4733, "weight": 0.9466, "n_signals": 7}, {"agent": "filing", "date": "2026-01-23", "accuracy_ema": 0.3924, "weight": 0.7847, "n_signals": 9}, {"agent": "earnings", "date": "2026-01-24", "accuracy_ema": 0.4733, "weight": 0.9466, "n_signals": 7}, {"agent": "filing", "date": "2026-01-24", "accuracy_ema": 0.3924, "weight": 0.7847, "n_signals": 9}, {"agent": "earnings", "date": "2026-01-25", "accuracy_ema": 0.4733, "weight": 0.9466, "n_signals": 7}, {"agent": "filing", "date": "2026-01-25", "accuracy_ema": 0.3924, "weight": 0.7847, "n_signals": 9}, {"agent": "earnings", "date": "2026-01-26", "accuracy_ema": 0.4733, "weight": 0.9466, "n_signals": 7}, {"agent": "filing", "date": "2026-01-26", "accuracy_ema": 0.3924, "weight": 0.7847, "n_signals": 9}, {"agent": "earnings", "date": "2026-01-27", "accuracy_ema": 0.4733, "weight": 0.9466, "n_signals": 7}, {"agent": "filing", "date": "2026-01-27", "accuracy_ema": 0.3924, "weight": 0.7847, "n_signals": 9}, {"agent": "earnings", "date": "2026-01-28", "accuracy_ema": 0.426, "weight": 0.8521, "n_signals": 10}, {"agent": "filing", "date": "2026-01-28", "accuracy_ema": 0.4303, "weight": 0.8607, "n_signals": 13}, {"agent": "earnings", "date": "2026-01-29", "accuracy_ema": 0.4106, "weight": 0.8212, "n_signals": 13}, {"agent": "filing", "date": "2026-01-29", "accuracy_ema": 0.4137, "weight": 0.8274, "n_signals": 16}, {"agent": "earnings", "date": "2026-01-30", "accuracy_ema": 0.3695, "weight": 0.739, "n_signals": 14}, {"agent": "filing", "date": "2026-01-30", "accuracy_ema": 0.3723, "weight": 0.7447, "n_signals": 17}, {"agent": "price", "date": "2026-01-30", "accuracy_ema": 0.45, "weight": 0.9, "n_signals": 1}, {"agent": "earnings", "date": "2026-01-31", "accuracy_ema": 0.3695, "weight": 0.739, "n_signals": 14}, {"agent": "filing", "date": "2026-01-31", "accuracy_ema": 0.3723, "weight": 0.7447, "n_signals": 17}, {"agent": "price", "date": "2026-01-31", "accuracy_ema": 0.45, "weight": 0.9, "n_signals": 1}, {"agent": "earnings", "date": "2026-02-01", "accuracy_ema": 0.3695, "weight": 0.739, "n_signals": 14}, {"agent": "filing", "date": "2026-02-01", "accuracy_ema": 0.3723, "weight": 0.7447, "n_signals": 17}, {"agent": "price", "date": "2026-02-01", "accuracy_ema": 0.45, "weight": 0.9, "n_signals": 1}, {"agent": "earnings", "date": "2026-02-02", "accuracy_ema": 0.3695, "weight": 0.739, "n_signals": 14}, {"agent": "filing", "date": "2026-02-02", "accuracy_ema": 0.3723, "weight": 0.7447, "n_signals": 17}, {"agent": "price", "date": "2026-02-02", "accuracy_ema": 0.45, "weight": 0.9, "n_signals": 1}, {"agent": "earnings", "date": "2026-02-03", "accuracy_ema": 0.3326, "weight": 0.6651, "n_signals": 15}, {"agent": "filing", "date": "2026-02-03", "accuracy_ema": 0.3351, "weight": 0.6702, "n_signals": 18}, {"agent": "price", "date": "2026-02-03", "accuracy_ema": 0.45, "weight": 0.9, "n_signals": 1}, {"agent": "earnings", "date": "2026-02-04", "accuracy_ema": 0.3694, "weight": 0.7388, "n_signals": 17}, {"agent": "filing", "date": "2026-02-04", "accuracy_ema": 0.3714, "weight": 0.7429, "n_signals": 20}, {"agent": "price", "date": "2026-02-04", "accuracy_ema": 0.45, "weight": 0.9, "n_signals": 1}, {"agent": "earnings", "date": "2026-02-05", "accuracy_ema": 0.3694, "weight": 0.7388, "n_signals": 17}, {"agent": "filing", "date": "2026-02-05", "accuracy_ema": 0.3714, "weight": 0.7429, "n_signals": 20}, {"agent": "price", "date": "2026-02-05", "accuracy_ema": 0.45, "weight": 0.9, "n_signals": 1}, {"agent": "earnings", "date": "2026-02-06", "accuracy_ema": 0.3694, "weight": 0.7388, "n_signals": 17}, {"agent": "filing", "date": "2026-02-06", "accuracy_ema": 0.3714, "weight": 0.7429, "n_signals": 20}, {"agent": "price", "date": "2026-02-06", "accuracy_ema": 0.45, "weight": 0.9, "n_signals": 1}, {"agent": "earnings", "date": "2026-02-07", "accuracy_ema": 0.3694, "weight": 0.7388, "n_signals": 17}, {"agent": "filing", "date": "2026-02-07", "accuracy_ema": 0.3714, "weight": 0.7429, "n_signals": 20}, {"agent": "price", "date": "2026-02-07", "accuracy_ema": 0.45, "weight": 0.9, "n_signals": 1}, {"agent": "earnings", "date": "2026-02-08", "accuracy_ema": 0.3694, "weight": 0.7388, "n_signals": 17}, {"agent": "filing", "date": "2026-02-08", "accuracy_ema": 0.3714, "weight": 0.7429, "n_signals": 20}, {"agent": "price", "date": "2026-02-08", "accuracy_ema": 0.45, "weight": 0.9, "n_signals": 1}, {"agent": "earnings", "date": "2026-02-09", "accuracy_ema": 0.3694, "weight": 0.7388, "n_signals": 17}, {"agent": "filing", "date": "2026-02-09", "accuracy_ema": 0.3714, "weight": 0.7429, "n_signals": 20}, {"agent": "price", "date": "2026-02-09", "accuracy_ema": 0.45, "weight": 0.9, "n_signals": 1}, {"agent": "earnings", "date": "2026-02-10", "accuracy_ema": 0.3694, "weight": 0.7388, "n_signals": 17}, {"agent": "filing", "date": "2026-02-10", "accuracy_ema": 0.3714, "weight": 0.7429, "n_signals": 20}, {"agent": "price", "date": "2026-02-10", "accuracy_ema": 0.45, "weight": 0.9, "n_signals": 1}, {"agent": "earnings", "date": "2026-02-11", "accuracy_ema": 0.3694, "weight": 0.7388, "n_signals": 17}, {"agent": "filing", "date": "2026-02-11", "accuracy_ema": 0.3714, "weight": 0.7429, "n_signals": 20}, {"agent": "price", "date": "2026-02-11", "accuracy_ema": 0.45, "weight": 0.9, "n_signals": 1}, {"agent": "earnings", "date": "2026-02-12", "accuracy_ema": 0.3694, "weight": 0.7388, "n_signals": 17}, {"agent": "filing", "date": "2026-02-12", "accuracy_ema": 0.3714, "weight": 0.7429, "n_signals": 20}, {"agent": "price", "date": "2026-02-12", "accuracy_ema": 0.45, "weight": 0.9, "n_signals": 1}, {"agent": "earnings", "date": "2026-02-13", "accuracy_ema": 0.3694, "weight": 0.7388, "n_signals": 17}, {"agent": "filing", "date": "2026-02-13", "accuracy_ema": 0.3714, "weight": 0.7429, "n_signals": 20}, {"agent": "price", "date": "2026-02-13", "accuracy_ema": 0.45, "weight": 0.9, "n_signals": 1}, {"agent": "earnings", "date": "2026-02-14", "accuracy_ema": 0.3694, "weight": 0.7388, "n_signals": 17}, {"agent": "filing", "date": "2026-02-14", "accuracy_ema": 0.3714, "weight": 0.7429, "n_signals": 20}, {"agent": "price", "date": "2026-02-14", "accuracy_ema": 0.45, "weight": 0.9, "n_signals": 1}, {"agent": "earnings", "date": "2026-02-15", "accuracy_ema": 0.3694, "weight": 0.7388, "n_signals": 17}, {"agent": "filing", "date": "2026-02-15", "accuracy_ema": 0.3714, "weight": 0.7429, "n_signals": 20}, {"agent": "price", "date": "2026-02-15", "accuracy_ema": 0.45, "weight": 0.9, "n_signals": 1}, {"agent": "earnings", "date": "2026-02-16", "accuracy_ema": 0.3694, "weight": 0.7388, "n_signals": 17}, {"agent": "filing", "date": "2026-02-16", "accuracy_ema": 0.3714, "weight": 0.7429, "n_signals": 20}, {"agent": "price", "date": "2026-02-16", "accuracy_ema": 0.45, "weight": 0.9, "n_signals": 1}, {"agent": "earnings", "date": "2026-02-17", "accuracy_ema": 0.3694, "weight": 0.7388, "n_signals": 17}, {"agent": "filing", "date": "2026-02-17", "accuracy_ema": 0.3714, "weight": 0.7429, "n_signals": 20}, {"agent": "price", "date": "2026-02-17", "accuracy_ema": 0.45, "weight": 0.9, "n_signals": 1}, {"agent": "earnings", "date": "2026-02-18", "accuracy_ema": 0.3694, "weight": 0.7388, "n_signals": 17}, {"agent": "filing", "date": "2026-02-18", "accuracy_ema": 0.3714, "weight": 0.7429, "n_signals": 20}, {"agent": "price", "date": "2026-02-18", "accuracy_ema": 0.45, "weight": 0.9, "n_signals": 1}, {"agent": "earnings", "date": "2026-02-19", "accuracy_ema": 0.3324, "weight": 0.6649, "n_signals": 18}, {"agent": "filing", "date": "2026-02-19", "accuracy_ema": 0.3343, "weight": 0.6686, "n_signals": 21}, {"agent": "price", "date": "2026-02-19", "accuracy_ema": 0.45, "weight": 0.9, "n_signals": 1}, {"agent": "earnings", "date": "2026-02-20", "accuracy_ema": 0.3324, "weight": 0.6649, "n_signals": 18}, {"agent": "filing", "date": "2026-02-20", "accuracy_ema": 0.3343, "weight": 0.6686, "n_signals": 21}, {"agent": "price", "date": "2026-02-20", "accuracy_ema": 0.45, "weight": 0.9, "n_signals": 1}, {"agent": "earnings", "date": "2026-02-21", "accuracy_ema": 0.3324, "weight": 0.6649, "n_signals": 18}, {"agent": "filing", "date": "2026-02-21", "accuracy_ema": 0.3343, "weight": 0.6686, "n_signals": 21}, {"agent": "price", "date": "2026-02-21", "accuracy_ema": 0.45, "weight": 0.9, "n_signals": 1}, {"agent": "earnings", "date": "2026-02-22", "accuracy_ema": 0.3324, "weight": 0.6649, "n_signals": 18}, {"agent": "filing", "date": "2026-02-22", "accuracy_ema": 0.3343, "weight": 0.6686, "n_signals": 21}, {"agent": "price", "date": "2026-02-22", "accuracy_ema": 0.45, "weight": 0.9, "n_signals": 1}, {"agent": "earnings", "date": "2026-02-23", "accuracy_ema": 0.3324, "weight": 0.6649, "n_signals": 18}, {"agent": "filing", "date": "2026-02-23", "accuracy_ema": 0.3343, "weight": 0.6686, "n_signals": 21}, {"agent": "price", "date": "2026-02-23", "accuracy_ema": 0.45, "weight": 0.9, "n_signals": 1}, {"agent": "earnings", "date": "2026-02-24", "accuracy_ema": 0.3324, "weight": 0.6649, "n_signals": 18}, {"agent": "filing", "date": "2026-02-24", "accuracy_ema": 0.3343, "weight": 0.6686, "n_signals": 21}, {"agent": "price", "date": "2026-02-24", "accuracy_ema": 0.45, "weight": 0.9, "n_signals": 1}, {"agent": "earnings", "date": "2026-02-25", "accuracy_ema": 0.2992, "weight": 0.5984, "n_signals": 19}, {"agent": "filing", "date": "2026-02-25", "accuracy_ema": 0.3009, "weight": 0.6017, "n_signals": 22}, {"agent": "price", "date": "2026-02-25", "accuracy_ema": 0.45, "weight": 0.9, "n_signals": 1}, {"agent": "earnings", "date": "2026-02-26", "accuracy_ema": 0.2992, "weight": 0.5984, "n_signals": 19}, {"agent": "filing", "date": "2026-02-26", "accuracy_ema": 0.3009, "weight": 0.6017, "n_signals": 22}, {"agent": "price", "date": "2026-02-26", "accuracy_ema": 0.45, "weight": 0.9, "n_signals": 1}, {"agent": "earnings", "date": "2026-02-27", "accuracy_ema": 0.2992, "weight": 0.5984, "n_signals": 19}, {"agent": "filing", "date": "2026-02-27", "accuracy_ema": 0.3009, "weight": 0.6017, "n_signals": 22}, {"agent": "price", "date": "2026-02-27", "accuracy_ema": 0.45, "weight": 0.9, "n_signals": 1}, {"agent": "earnings", "date": "2026-02-28", "accuracy_ema": 0.2992, "weight": 0.5984, "n_signals": 19}, {"agent": "filing", "date": "2026-02-28", "accuracy_ema": 0.3009, "weight": 0.6017, "n_signals": 22}, {"agent": "price", "date": "2026-02-28", "accuracy_ema": 0.45, "weight": 0.9, "n_signals": 1}, {"agent": "earnings", "date": "2026-03-01", "accuracy_ema": 0.2992, "weight": 0.5984, "n_signals": 19}, {"agent": "filing", "date": "2026-03-01", "accuracy_ema": 0.3009, "weight": 0.6017, "n_signals": 22}, {"agent": "price", "date": "2026-03-01", "accuracy_ema": 0.45, "weight": 0.9, "n_signals": 1}, {"agent": "earnings", "date": "2026-03-02", "accuracy_ema": 0.2992, "weight": 0.5984, "n_signals": 19}, {"agent": "filing", "date": "2026-03-02", "accuracy_ema": 0.3009, "weight": 0.6017, "n_signals": 22}, {"agent": "price", "date": "2026-03-02", "accuracy_ema": 0.45, "weight": 0.9, "n_signals": 1}, {"agent": "earnings", "date": "2026-03-03", "accuracy_ema": 0.2992, "weight": 0.5984, "n_signals": 19}, {"agent": "filing", "date": "2026-03-03", "accuracy_ema": 0.3009, "weight": 0.6017, "n_signals": 22}, {"agent": "price", "date": "2026-03-03", "accuracy_ema": 0.45, "weight": 0.9, "n_signals": 1}, {"agent": "earnings", "date": "2026-03-04", "accuracy_ema": 0.2992, "weight": 0.5984, "n_signals": 19}, {"agent": "filing", "date": "2026-03-04", "accuracy_ema": 0.3009, "weight": 0.6017, "n_signals": 22}, {"agent": "price", "date": "2026-03-04", "accuracy_ema": 0.45, "weight": 0.9, "n_signals": 1}, {"agent": "earnings", "date": "2026-03-05", "accuracy_ema": 0.2992, "weight": 0.5984, "n_signals": 19}, {"agent": "filing", "date": "2026-03-05", "accuracy_ema": 0.3009, "weight": 0.6017, "n_signals": 22}, {"agent": "price", "date": "2026-03-05", "accuracy_ema": 0.45, "weight": 0.9, "n_signals": 1}, {"agent": "earnings", "date": "2026-03-06", "accuracy_ema": 0.2992, "weight": 0.5984, "n_signals": 19}, {"agent": "filing", "date": "2026-03-06", "accuracy_ema": 0.3009, "weight": 0.6017, "n_signals": 22}, {"agent": "price", "date": "2026-03-06", "accuracy_ema": 0.45, "weight": 0.9, "n_signals": 1}, {"agent": "earnings", "date": "2026-03-07", "accuracy_ema": 0.2992, "weight": 0.5984, "n_signals": 19}, {"agent": "filing", "date": "2026-03-07", "accuracy_ema": 0.3009, "weight": 0.6017, "n_signals": 22}, {"agent": "price", "date": "2026-03-07", "accuracy_ema": 0.45, "weight": 0.9, "n_signals": 1}, {"agent": "earnings", "date": "2026-03-08", "accuracy_ema": 0.2992, "weight": 0.5984, "n_signals": 19}, {"agent": "filing", "date": "2026-03-08", "accuracy_ema": 0.3009, "weight": 0.6017, "n_signals": 22}, {"agent": "price", "date": "2026-03-08", "accuracy_ema": 0.45, "weight": 0.9, "n_signals": 1}, {"agent": "earnings", "date": "2026-03-09", "accuracy_ema": 0.2992, "weight": 0.5984, "n_signals": 19}, {"agent": "filing", "date": "2026-03-09", "accuracy_ema": 0.3009, "weight": 0.6017, "n_signals": 22}, {"agent": "price", "date": "2026-03-09", "accuracy_ema": 0.45, "weight": 0.9, "n_signals": 1}, {"agent": "earnings", "date": "2026-03-10", "accuracy_ema": 0.2992, "weight": 0.5984, "n_signals": 19}, {"agent": "filing", "date": "2026-03-10", "accuracy_ema": 0.3009, "weight": 0.6017, "n_signals": 22}, {"agent": "price", "date": "2026-03-10", "accuracy_ema": 0.45, "weight": 0.9, "n_signals": 1}, {"agent": "earnings", "date": "2026-03-11", "accuracy_ema": 0.2992, "weight": 0.5984, "n_signals": 19}, {"agent": "filing", "date": "2026-03-11", "accuracy_ema": 0.3009, "weight": 0.6017, "n_signals": 22}, {"agent": "price", "date": "2026-03-11", "accuracy_ema": 0.45, "weight": 0.9, "n_signals": 1}, {"agent": "earnings", "date": "2026-03-12", "accuracy_ema": 0.2992, "weight": 0.5984, "n_signals": 19}, {"agent": "filing", "date": "2026-03-12", "accuracy_ema": 0.3009, "weight": 0.6017, "n_signals": 22}, {"agent": "price", "date": "2026-03-12", "accuracy_ema": 0.45, "weight": 0.9, "n_signals": 1}, {"agent": "earnings", "date": "2026-03-13", "accuracy_ema": 0.2992, "weight": 0.5984, "n_signals": 19}, {"agent": "filing", "date": "2026-03-13", "accuracy_ema": 0.3009, "weight": 0.6017, "n_signals": 22}, {"agent": "price", "date": "2026-03-13", "accuracy_ema": 0.45, "weight": 0.9, "n_signals": 1}, {"agent": "earnings", "date": "2026-03-14", "accuracy_ema": 0.2992, "weight": 0.5984, "n_signals": 19}, {"agent": "filing", "date": "2026-03-14", "accuracy_ema": 0.3009, "weight": 0.6017, "n_signals": 22}, {"agent": "price", "date": "2026-03-14", "accuracy_ema": 0.45, "weight": 0.9, "n_signals": 1}, {"agent": "earnings", "date": "2026-03-15", "accuracy_ema": 0.2992, "weight": 0.5984, "n_signals": 19}, {"agent": "filing", "date": "2026-03-15", "accuracy_ema": 0.3009, "weight": 0.6017, "n_signals": 22}, {"agent": "price", "date": "2026-03-15", "accuracy_ema": 0.45, "weight": 0.9, "n_signals": 1}, {"agent": "earnings", "date": "2026-03-16", "accuracy_ema": 0.2992, "weight": 0.5984, "n_signals": 19}, {"agent": "filing", "date": "2026-03-16", "accuracy_ema": 0.3009, "weight": 0.6017, "n_signals": 22}, {"agent": "price", "date": "2026-03-16", "accuracy_ema": 0.45, "weight": 0.9, "n_signals": 1}, {"agent": "earnings", "date": "2026-03-17", "accuracy_ema": 0.2992, "weight": 0.5984, "n_signals": 19}, {"agent": "filing", "date": "2026-03-17", "accuracy_ema": 0.3009, "weight": 0.6017, "n_signals": 22}, {"agent": "price", "date": "2026-03-17", "accuracy_ema": 0.45, "weight": 0.9, "n_signals": 1}, {"agent": "earnings", "date": "2026-03-18", "accuracy_ema": 0.2992, "weight": 0.5984, "n_signals": 19}, {"agent": "filing", "date": "2026-03-18", "accuracy_ema": 0.3009, "weight": 0.6017, "n_signals": 22}, {"agent": "price", "date": "2026-03-18", "accuracy_ema": 0.45, "weight": 0.9, "n_signals": 1}, {"agent": "earnings", "date": "2026-03-19", "accuracy_ema": 0.2992, "weight": 0.5984, "n_signals": 19}, {"agent": "filing", "date": "2026-03-19", "accuracy_ema": 0.3009, "weight": 0.6017, "n_signals": 22}, {"agent": "price", "date": "2026-03-19", "accuracy_ema": 0.45, "weight": 0.9, "n_signals": 1}, {"agent": "earnings", "date": "2026-03-20", "accuracy_ema": 0.2992, "weight": 0.5984, "n_signals": 19}, {"agent": "filing", "date": "2026-03-20", "accuracy_ema": 0.3009, "weight": 0.6017, "n_signals": 22}, {"agent": "price", "date": "2026-03-20", "accuracy_ema": 0.45, "weight": 0.9, "n_signals": 1}, {"agent": "earnings", "date": "2026-03-21", "accuracy_ema": 0.2992, "weight": 0.5984, "n_signals": 19}, {"agent": "filing", "date": "2026-03-21", "accuracy_ema": 0.3009, "weight": 0.6017, "n_signals": 22}, {"agent": "price", "date": "2026-03-21", "accuracy_ema": 0.45, "weight": 0.9, "n_signals": 1}, {"agent": "earnings", "date": "2026-03-22", "accuracy_ema": 0.2992, "weight": 0.5984, "n_signals": 19}, {"agent": "filing", "date": "2026-03-22", "accuracy_ema": 0.3009, "weight": 0.6017, "n_signals": 22}, {"agent": "price", "date": "2026-03-22", "accuracy_ema": 0.45, "weight": 0.9, "n_signals": 1}, {"agent": "earnings", "date": "2026-03-23", "accuracy_ema": 0.2992, "weight": 0.5984, "n_signals": 19}, {"agent": "filing", "date": "2026-03-23", "accuracy_ema": 0.3009, "weight": 0.6017, "n_signals": 22}, {"agent": "price", "date": "2026-03-23", "accuracy_ema": 0.45, "weight": 0.9, "n_signals": 1}, {"agent": "earnings", "date": "2026-03-24", "accuracy_ema": 0.2992, "weight": 0.5984, "n_signals": 19}, {"agent": "filing", "date": "2026-03-24", "accuracy_ema": 0.3009, "weight": 0.6017, "n_signals": 22}, {"agent": "price", "date": "2026-03-24", "accuracy_ema": 0.45, "weight": 0.9, "n_signals": 1}, {"agent": "earnings", "date": "2026-03-25", "accuracy_ema": 0.2992, "weight": 0.5984, "n_signals": 19}, {"agent": "filing", "date": "2026-03-25", "accuracy_ema": 0.3009, "weight": 0.6017, "n_signals": 22}, {"agent": "price", "date": "2026-03-25", "accuracy_ema": 0.45, "weight": 0.9, "n_signals": 1}, {"agent": "earnings", "date": "2026-03-26", "accuracy_ema": 0.2992, "weight": 0.5984, "n_signals": 19}, {"agent": "filing", "date": "2026-03-26", "accuracy_ema": 0.3009, "weight": 0.6017, "n_signals": 22}, {"agent": "price", "date": "2026-03-26", "accuracy_ema": 0.45, "weight": 0.9, "n_signals": 1}, {"agent": "earnings", "date": "2026-03-27", "accuracy_ema": 0.2992, "weight": 0.5984, "n_signals": 19}, {"agent": "filing", "date": "2026-03-27", "accuracy_ema": 0.3009, "weight": 0.6017, "n_signals": 22}, {"agent": "price", "date": "2026-03-27", "accuracy_ema": 0.45, "weight": 0.9, "n_signals": 1}, {"agent": "earnings", "date": "2026-03-28", "accuracy_ema": 0.2992, "weight": 0.5984, "n_signals": 19}, {"agent": "filing", "date": "2026-03-28", "accuracy_ema": 0.3009, "weight": 0.6017, "n_signals": 22}, {"agent": "price", "date": "2026-03-28", "accuracy_ema": 0.45, "weight": 0.9, "n_signals": 1}, {"agent": "earnings", "date": "2026-03-29", "accuracy_ema": 0.2992, "weight": 0.5984, "n_signals": 19}, {"agent": "filing", "date": "2026-03-29", "accuracy_ema": 0.3009, "weight": 0.6017, "n_signals": 22}, {"agent": "price", "date": "2026-03-29", "accuracy_ema": 0.45, "weight": 0.9, "n_signals": 1}, {"agent": "earnings", "date": "2026-03-30", "accuracy_ema": 0.2992, "weight": 0.5984, "n_signals": 19}, {"agent": "filing", "date": "2026-03-30", "accuracy_ema": 0.3009, "weight": 0.6017, "n_signals": 22}, {"agent": "price", "date": "2026-03-30", "accuracy_ema": 0.45, "weight": 0.9, "n_signals": 1}, {"agent": "earnings", "date": "2026-03-31", "accuracy_ema": 0.2992, "weight": 0.5984, "n_signals": 19}, {"agent": "filing", "date": "2026-03-31", "accuracy_ema": 0.3009, "weight": 0.6017, "n_signals": 22}, {"agent": "price", "date": "2026-03-31", "accuracy_ema": 0.45, "weight": 0.9, "n_signals": 1}, {"agent": "earnings", "date": "2026-04-01", "accuracy_ema": 0.2992, "weight": 0.5984, "n_signals": 19}, {"agent": "filing", "date": "2026-04-01", "accuracy_ema": 0.3009, "weight": 0.6017, "n_signals": 22}, {"agent": "price", "date": "2026-04-01", "accuracy_ema": 0.45, "weight": 0.9, "n_signals": 1}, {"agent": "earnings", "date": "2026-04-02", "accuracy_ema": 0.2992, "weight": 0.5984, "n_signals": 19}, {"agent": "filing", "date": "2026-04-02", "accuracy_ema": 0.3009, "weight": 0.6017, "n_signals": 22}, {"agent": "price", "date": "2026-04-02", "accuracy_ema": 0.45, "weight": 0.9, "n_signals": 1}, {"agent": "earnings", "date": "2026-04-03", "accuracy_ema": 0.2992, "weight": 0.5984, "n_signals": 19}, {"agent": "filing", "date": "2026-04-03", "accuracy_ema": 0.3009, "weight": 0.6017, "n_signals": 22}, {"agent": "price", "date": "2026-04-03", "accuracy_ema": 0.45, "weight": 0.9, "n_signals": 1}, {"agent": "earnings", "date": "2026-04-04", "accuracy_ema": 0.2992, "weight": 0.5984, "n_signals": 19}, {"agent": "filing", "date": "2026-04-04", "accuracy_ema": 0.3009, "weight": 0.6017, "n_signals": 22}, {"agent": "price", "date": "2026-04-04", "accuracy_ema": 0.45, "weight": 0.9, "n_signals": 1}, {"agent": "earnings", "date": "2026-04-05", "accuracy_ema": 0.2992, "weight": 0.5984, "n_signals": 19}, {"agent": "filing", "date": "2026-04-05", "accuracy_ema": 0.3009, "weight": 0.6017, "n_signals": 22}, {"agent": "price", "date": "2026-04-05", "accuracy_ema": 0.45, "weight": 0.9, "n_signals": 1}, {"agent": "earnings", "date": "2026-04-06", "accuracy_ema": 0.2992, "weight": 0.5984, "n_signals": 19}, {"agent": "filing", "date": "2026-04-06", "accuracy_ema": 0.3009, "weight": 0.6017, "n_signals": 22}, {"agent": "price", "date": "2026-04-06", "accuracy_ema": 0.45, "weight": 0.9, "n_signals": 1}, {"agent": "earnings", "date": "2026-04-07", "accuracy_ema": 0.2992, "weight": 0.5984, "n_signals": 19}, {"agent": "filing", "date": "2026-04-07", "accuracy_ema": 0.3009, "weight": 0.6017, "n_signals": 22}, {"agent": "price", "date": "2026-04-07", "accuracy_ema": 0.45, "weight": 0.9, "n_signals": 1}, {"agent": "earnings", "date": "2026-04-08", "accuracy_ema": 0.2992, "weight": 0.5984, "n_signals": 19}, {"agent": "filing", "date": "2026-04-08", "accuracy_ema": 0.3009, "weight": 0.6017, "n_signals": 22}, {"agent": "price", "date": "2026-04-08", "accuracy_ema": 0.45, "weight": 0.9, "n_signals": 1}, {"agent": "earnings", "date": "2026-04-09", "accuracy_ema": 0.2992, "weight": 0.5984, "n_signals": 19}, {"agent": "filing", "date": "2026-04-09", "accuracy_ema": 0.3009, "weight": 0.6017, "n_signals": 22}, {"agent": "price", "date": "2026-04-09", "accuracy_ema": 0.45, "weight": 0.9, "n_signals": 1}, {"agent": "earnings", "date": "2026-04-10", "accuracy_ema": 0.2992, "weight": 0.5984, "n_signals": 19}, {"agent": "filing", "date": "2026-04-10", "accuracy_ema": 0.3708, "weight": 0.7416, "n_signals": 23}, {"agent": "price", "date": "2026-04-10", "accuracy_ema": 0.45, "weight": 0.9, "n_signals": 1}, {"agent": "earnings", "date": "2026-04-11", "accuracy_ema": 0.2992, "weight": 0.5984, "n_signals": 19}, {"agent": "filing", "date": "2026-04-11", "accuracy_ema": 0.3708, "weight": 0.7416, "n_signals": 23}, {"agent": "price", "date": "2026-04-11", "accuracy_ema": 0.45, "weight": 0.9, "n_signals": 1}, {"agent": "earnings", "date": "2026-04-12", "accuracy_ema": 0.2992, "weight": 0.5984, "n_signals": 19}, {"agent": "filing", "date": "2026-04-12", "accuracy_ema": 0.3708, "weight": 0.7416, "n_signals": 23}, {"agent": "price", "date": "2026-04-12", "accuracy_ema": 0.45, "weight": 0.9, "n_signals": 1}, {"agent": "earnings", "date": "2026-04-13", "accuracy_ema": 0.2992, "weight": 0.5984, "n_signals": 19}, {"agent": "filing", "date": "2026-04-13", "accuracy_ema": 0.3708, "weight": 0.7416, "n_signals": 23}, {"agent": "price", "date": "2026-04-13", "accuracy_ema": 0.45, "weight": 0.9, "n_signals": 1}, {"agent": "earnings", "date": "2026-04-14", "accuracy_ema": 0.2693, "weight": 0.5386, "n_signals": 20}, {"agent": "filing", "date": "2026-04-14", "accuracy_ema": 0.3337, "weight": 0.6674, "n_signals": 24}, {"agent": "price", "date": "2026-04-14", "accuracy_ema": 0.45, "weight": 0.9, "n_signals": 1}, {"agent": "earnings", "date": "2026-04-15", "accuracy_ema": 0.3423, "weight": 0.6847, "n_signals": 21}, {"agent": "filing", "date": "2026-04-15", "accuracy_ema": 0.4003, "weight": 0.8007, "n_signals": 25}, {"agent": "price", "date": "2026-04-15", "accuracy_ema": 0.45, "weight": 0.9, "n_signals": 1}, {"agent": "earnings", "date": "2026-04-16", "accuracy_ema": 0.3423, "weight": 0.6847, "n_signals": 21}, {"agent": "filing", "date": "2026-04-16", "accuracy_ema": 0.4003, "weight": 0.8007, "n_signals": 25}, {"agent": "price", "date": "2026-04-16", "accuracy_ema": 0.45, "weight": 0.9, "n_signals": 1}, {"agent": "earnings", "date": "2026-04-17", "accuracy_ema": 0.3423, "weight": 0.6847, "n_signals": 21}, {"agent": "filing", "date": "2026-04-17", "accuracy_ema": 0.4003, "weight": 0.8007, "n_signals": 25}, {"agent": "price", "date": "2026-04-17", "accuracy_ema": 0.45, "weight": 0.9, "n_signals": 1}, {"agent": "earnings", "date": "2026-04-18", "accuracy_ema": 0.3423, "weight": 0.6847, "n_signals": 21}, {"agent": "filing", "date": "2026-04-18", "accuracy_ema": 0.4003, "weight": 0.8007, "n_signals": 25}, {"agent": "price", "date": "2026-04-18", "accuracy_ema": 0.45, "weight": 0.9, "n_signals": 1}, {"agent": "earnings", "date": "2026-04-19", "accuracy_ema": 0.3423, "weight": 0.6847, "n_signals": 21}, {"agent": "filing", "date": "2026-04-19", "accuracy_ema": 0.4003, "weight": 0.8007, "n_signals": 25}, {"agent": "price", "date": "2026-04-19", "accuracy_ema": 0.45, "weight": 0.9, "n_signals": 1}, {"agent": "earnings", "date": "2026-04-20", "accuracy_ema": 0.3423, "weight": 0.6847, "n_signals": 21}, {"agent": "filing", "date": "2026-04-20", "accuracy_ema": 0.4003, "weight": 0.8007, "n_signals": 25}, {"agent": "price", "date": "2026-04-20", "accuracy_ema": 0.45, "weight": 0.9, "n_signals": 1}, {"agent": "earnings", "date": "2026-04-21", "accuracy_ema": 0.3423, "weight": 0.6847, "n_signals": 21}, {"agent": "filing", "date": "2026-04-21", "accuracy_ema": 0.4003, "weight": 0.8007, "n_signals": 25}, {"agent": "price", "date": "2026-04-21", "accuracy_ema": 0.45, "weight": 0.9, "n_signals": 1}, {"agent": "earnings", "date": "2026-04-22", "accuracy_ema": 0.3423, "weight": 0.6847, "n_signals": 21}, {"agent": "filing", "date": "2026-04-22", "accuracy_ema": 0.4003, "weight": 0.8007, "n_signals": 25}, {"agent": "price", "date": "2026-04-22", "accuracy_ema": 0.45, "weight": 0.9, "n_signals": 1}, {"agent": "earnings", "date": "2026-04-23", "accuracy_ema": 0.3423, "weight": 0.6847, "n_signals": 21}, {"agent": "filing", "date": "2026-04-23", "accuracy_ema": 0.4003, "weight": 0.8007, "n_signals": 25}, {"agent": "price", "date": "2026-04-23", "accuracy_ema": 0.45, "weight": 0.9, "n_signals": 1}, {"agent": "earnings", "date": "2026-04-24", "accuracy_ema": 0.3423, "weight": 0.6847, "n_signals": 21}, {"agent": "filing", "date": "2026-04-24", "accuracy_ema": 0.4003, "weight": 0.8007, "n_signals": 25}, {"agent": "price", "date": "2026-04-24", "accuracy_ema": 0.45, "weight": 0.9, "n_signals": 1}, {"agent": "earnings", "date": "2026-04-25", "accuracy_ema": 0.3423, "weight": 0.6847, "n_signals": 21}, {"agent": "filing", "date": "2026-04-25", "accuracy_ema": 0.4003, "weight": 0.8007, "n_signals": 25}, {"agent": "price", "date": "2026-04-25", "accuracy_ema": 0.45, "weight": 0.9, "n_signals": 1}, {"agent": "earnings", "date": "2026-04-26", "accuracy_ema": 0.3423, "weight": 0.6847, "n_signals": 21}, {"agent": "filing", "date": "2026-04-26", "accuracy_ema": 0.4003, "weight": 0.8007, "n_signals": 25}, {"agent": "price", "date": "2026-04-26", "accuracy_ema": 0.45, "weight": 0.9, "n_signals": 1}, {"agent": "earnings", "date": "2026-04-27", "accuracy_ema": 0.3423, "weight": 0.6847, "n_signals": 21}, {"agent": "filing", "date": "2026-04-27", "accuracy_ema": 0.3603, "weight": 0.7206, "n_signals": 26}, {"agent": "price", "date": "2026-04-27", "accuracy_ema": 0.45, "weight": 0.9, "n_signals": 1}, {"agent": "earnings", "date": "2026-04-28", "accuracy_ema": 0.3081, "weight": 0.6162, "n_signals": 22}, {"agent": "filing", "date": "2026-04-28", "accuracy_ema": 0.3243, "weight": 0.6485, "n_signals": 27}, {"agent": "price", "date": "2026-04-28", "accuracy_ema": 0.405, "weight": 0.81, "n_signals": 2}, {"agent": "earnings", "date": "2026-04-29", "accuracy_ema": 0.3081, "weight": 0.6162, "n_signals": 22}, {"agent": "filing", "date": "2026-04-29", "accuracy_ema": 0.3243, "weight": 0.6485, "n_signals": 27}, {"agent": "price", "date": "2026-04-29", "accuracy_ema": 0.405, "weight": 0.81, "n_signals": 2}]</script>
+<script>
+const raw = JSON.parse(document.getElementById('wdata').textContent);
+
+// Group by agent → {date: accuracy_ema}
+const byAgent = {};
+for (const r of raw) {
+  if (!byAgent[r.agent]) byAgent[r.agent] = {};
+  byAgent[r.agent][r.date] = r.accuracy_ema;
+}
+
+const allDates = [...new Set(raw.map(r => r.date))].sort();
+const COLORS   = ['#4caf93','#e88c5a','#7ab8d9','#c97ab5','#a8c45a','#e8c15a','#9b7fe8'];
+const agents   = Object.keys(byAgent);
+
+const datasets = agents.map((ag, i) => ({
+  label:           ag,
+  data:            allDates.map(d => byAgent[ag][d] ?? null),
+  borderColor:     COLORS[i % COLORS.length],
+  backgroundColor: COLORS[i % COLORS.length] + '22',
+  tension:         0.3,
+  spanGaps:        true,
+  pointRadius:     2,
+}));
+
+new Chart(document.getElementById('weightChart'), {
+  type: 'line',
+  data: { labels: allDates, datasets },
+  options: {
+    responsive: true,
+    scales: {
+      y: {
+        min: 0, max: 1,
+        ticks: { callback: v => (v * 100).toFixed(0) + '%' },
+        title: { display: true, text: 'Accuracy EMA' },
+      },
+    },
+    plugins: {
+      tooltip: { callbacks: { label: ctx => `${ctx.dataset.label}: ${(ctx.parsed.y * 100).toFixed(1)}%` }},
+      annotation: {
+        annotations: {
+          baseline: { type: 'line', yMin: 0.5, yMax: 0.5, borderColor: '#666', borderDash: [4,4], label: { content: 'baseline 50%', display: true }},
+        }
+      }
+    }
+  }
+});
+</script>
+
+  </main>
+  <footer>
+    <p>v1 paper-trading vocabulary: <strong>WATCH</strong> / <strong>RESEARCH</strong> / <strong>AVOID_CHASE</strong>.
+    The bot does not say BUY or SELL until 60 days of paper-trading hits the §17.6 graduation thresholds.</p>
+    <p>Data: SEC EDGAR · trumpstruth.org RSS · yfinance. Free-tier stack: GitHub Actions + Supabase Free + Hostinger static.</p>
+  </footer>
+</body>
+</html>

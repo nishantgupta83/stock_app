@@ -1,0 +1,314 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta http-equiv="refresh" content="900">  <!-- self-refresh every 15 min -->
+  <title>Backtest · Hub4Apps Market Intel</title>
+  
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <header>
+    <div class="brand">
+      <span class="logo">📈</span>
+      <h1>Hub4Apps Market Intel</h1>
+      <span class="subtitle">private · educational · not financial advice</span>
+    </div>
+    <nav>
+      <a href="index.html"     class="">Dashboard</a>
+      <a href="signals.html"   class="">Signals</a>
+      <a href="events.html"    class="">Events</a>
+      <a href="agents.html"    class="">Agents</a>
+      <a href="backtest.html"  class="active">Backtest</a>
+      <a href="learning.html"  class="">Learning</a>
+    </nav>
+    <div class="meta">
+      <span>generated 2026-05-01 21:38 UTC</span>
+    </div>
+  </header>
+  <main>
+    
+<h2>6-month backtest</h2>
+
+<p style="color:var(--muted);font-size:12px">
+  Replayed 20 calendar days · 27 hypothetical signals · model_version <code>rubric-v1.1-backtest-multisource</code> · last run 2026-04-30T05:53.
+</p>
+
+<div class="cards">
+  <div class="card bad">
+    <div class="label">Precision @ top 5/day</div>
+    <div class="value">33%</div>
+    <div class="sub">target ≥ 55% (§19)</div>
+  </div>
+  <div class="card warn">
+    <div class="label">Pseudo-Brier (uncalibrated)</div>
+    <div class="value">0.477</div>
+    <div class="sub">score/100 ≠ probability — relative use only</div>
+  </div>
+  <div class="card warn">
+    <div class="label">Calibration error</div>
+    <div class="value">35.0%</div>
+    <div class="sub">target ≤ 10%</div>
+  </div>
+  <div class="card bad">
+    <div class="label">Paper Sharpe</div>
+    <div class="value">-6.13</div>
+    <div class="sub">annualized · target > 0.8</div>
+  </div>
+  <div class="card bad">
+    <div class="label">Max drawdown</div>
+    <div class="value">26.2%</div>
+    <div class="sub">target ≤ 15%</div>
+  </div>
+  <div class="card">
+    <div class="label">Direction accuracy</div>
+    <div class="value">33%</div>
+    <div class="sub">27 signals · 1-day horizon</div>
+  </div>
+</div>
+
+<h3>Calibration curve (predicted prob vs realized hit rate)</h3>
+
+<div class="calibration">
+  
+  <div class="row">
+    <div>50% – 60%</div>
+    <div class="bar">
+      <div class="fill" style="width: 40%"></div>
+      <div class="marker" style="left: 55%"></div>
+    </div>
+    <div>n=5</div>
+  </div>
+  
+  <div class="row">
+    <div>60% – 70%</div>
+    <div class="bar">
+      <div class="fill" style="width: 50%"></div>
+      <div class="marker" style="left: 65%"></div>
+    </div>
+    <div>n=6</div>
+  </div>
+  
+  <div class="row">
+    <div>70% – 80%</div>
+    <div class="bar">
+      <div class="fill" style="width: 25%"></div>
+      <div class="marker" style="left: 75%"></div>
+    </div>
+    <div>n=8</div>
+  </div>
+  
+  <div class="row">
+    <div>80% – 90%</div>
+    <div class="bar">
+      <div class="fill" style="width: 33%"></div>
+      <div class="marker" style="left: 85%"></div>
+    </div>
+    <div>n=6</div>
+  </div>
+  
+</div>
+<p style="color:var(--muted);font-size:11px;margin-top:8px">
+  Bar = realized hit rate. Dashed marker = expected (perfectly calibrated would have bar reaching the marker).
+</p>
+
+
+<h3>Top winners (highest realized return)</h3>
+
+<table>
+  <thead><tr><th>Date</th><th>Ticker</th><th class="num">Score</th><th>Evidence</th><th class="num">Realized</th></tr></thead>
+  <tbody>
+  
+    <tr>
+      <td>2026-02-04</td>
+      <td><strong>GOOGL</strong></td>
+      <td class="num">68</td>
+      <td>new 8-K beat</td>
+      <td class="num" style="color:var(--sage)">+6.00%</td>
+    </tr>
+  
+    <tr>
+      <td>2025-11-04</td>
+      <td><strong>AMD</strong></td>
+      <td class="num">87</td>
+      <td>new 8-K beat</td>
+      <td class="num" style="color:var(--sage)">+5.28%</td>
+    </tr>
+  
+    <tr>
+      <td>2026-01-20</td>
+      <td><strong>NFLX</strong></td>
+      <td class="num">87</td>
+      <td>new 8-K beat; 1× Form 4</td>
+      <td class="num" style="color:var(--sage)">+3.34%</td>
+    </tr>
+  
+    <tr>
+      <td>2026-01-29</td>
+      <td><strong>AAPL</strong></td>
+      <td class="num">68</td>
+      <td>new 8-K beat</td>
+      <td class="num" style="color:var(--sage)">+1.59%</td>
+    </tr>
+  
+    <tr>
+      <td>2026-04-15</td>
+      <td><strong>JPM</strong></td>
+      <td class="num">55</td>
+      <td>8× Form 4</td>
+      <td class="num" style="color:var(--sage)">+1.41%</td>
+    </tr>
+  
+    <tr>
+      <td>2026-04-10</td>
+      <td><strong>GOOGL</strong></td>
+      <td class="num">51</td>
+      <td>new 8-K; 4× Form 4</td>
+      <td class="num" style="color:var(--sage)">+1.21%</td>
+    </tr>
+  
+    <tr>
+      <td>2026-01-28</td>
+      <td><strong>V</strong></td>
+      <td class="num">75</td>
+      <td>new 8-K; 10× Form 4</td>
+      <td class="num" style="color:var(--sage)">+0.45%</td>
+    </tr>
+  
+    <tr>
+      <td>2025-12-11</td>
+      <td><strong>COST</strong></td>
+      <td class="num">68</td>
+      <td>new 8-K beat</td>
+      <td class="num" style="color:var(--sage)">+0.03%</td>
+    </tr>
+  
+    <tr>
+      <td>2026-01-28</td>
+      <td><strong>META</strong></td>
+      <td class="num">72</td>
+      <td>new 8-K beat; 1× Form 4</td>
+      <td class="num" style="color:var(--sage)">+0.02%</td>
+    </tr>
+  
+    <tr>
+      <td>2026-04-27</td>
+      <td><strong>JNJ</strong></td>
+      <td class="num">79</td>
+      <td>new 8-K; 11× Form 4</td>
+      <td class="num" style="color:var(--sage)">+-0.07%</td>
+    </tr>
+  
+  </tbody>
+</table>
+
+
+<h3>Top losers (most negative realized return)</h3>
+
+<table>
+  <thead><tr><th>Date</th><th>Ticker</th><th class="num">Score</th><th>Evidence</th><th class="num">Realized</th></tr></thead>
+  <tbody>
+  
+    <tr>
+      <td>2025-11-19</td>
+      <td><strong>NVDA</strong></td>
+      <td class="num">72</td>
+      <td>new 8-K beat</td>
+      <td class="num" style="color:var(--coral)">-7.91%</td>
+    </tr>
+  
+    <tr>
+      <td>2026-02-03</td>
+      <td><strong>AMD</strong></td>
+      <td class="num">87</td>
+      <td>new 8-K beat</td>
+      <td class="num" style="color:var(--coral)">-6.99%</td>
+    </tr>
+  
+    <tr>
+      <td>2025-12-11</td>
+      <td><strong>AVGO</strong></td>
+      <td class="num">68</td>
+      <td>new 8-K beat</td>
+      <td class="num" style="color:var(--coral)">-5.37%</td>
+    </tr>
+  
+    <tr>
+      <td>2026-01-28</td>
+      <td><strong>TSLA</strong></td>
+      <td class="num">83</td>
+      <td>new 8-K beat</td>
+      <td class="num" style="color:var(--coral)">-4.95%</td>
+    </tr>
+  
+    <tr>
+      <td>2026-02-25</td>
+      <td><strong>NVDA</strong></td>
+      <td class="num">72</td>
+      <td>new 8-K beat</td>
+      <td class="num" style="color:var(--coral)">-4.93%</td>
+    </tr>
+  
+    <tr>
+      <td>2026-02-04</td>
+      <td><strong>LLY</strong></td>
+      <td class="num">68</td>
+      <td>new 8-K beat</td>
+      <td class="num" style="color:var(--coral)">-4.29%</td>
+    </tr>
+  
+    <tr>
+      <td>2026-01-29</td>
+      <td><strong>V</strong></td>
+      <td class="num">52</td>
+      <td>new 8-K beat</td>
+      <td class="num" style="color:var(--coral)">-3.23%</td>
+    </tr>
+  
+    <tr>
+      <td>2026-04-14</td>
+      <td><strong>JPM</strong></td>
+      <td class="num">103</td>
+      <td>new 8-K beat</td>
+      <td class="num" style="color:var(--coral)">-2.65%</td>
+    </tr>
+  
+    <tr>
+      <td>2025-11-20</td>
+      <td><strong>WMT</strong></td>
+      <td class="num">68</td>
+      <td>new 8-K beat</td>
+      <td class="num" style="color:var(--coral)">-2.56%</td>
+    </tr>
+  
+    <tr>
+      <td>2026-01-16</td>
+      <td><strong>WMT</strong></td>
+      <td class="num">87</td>
+      <td>new 8-K; 13× Form 4</td>
+      <td class="num" style="color:var(--coral)">-1.90%</td>
+    </tr>
+  
+  </tbody>
+</table>
+
+
+<div class="note">
+  <strong>Honest caveats:</strong>
+  Survivorship bias — universe is today's S&P leaders, not those from 6mo ago.
+  Look-ahead bias controlled via next-day-open entry.
+  Truth Social signal limited to last ~7 days (RSS history limit).
+  0.05% slippage assumed each side, no commissions.
+  6 months × 31 symbols is a small sample — calibration noisy.
+</div>
+
+
+  </main>
+  <footer>
+    <p>v1 paper-trading vocabulary: <strong>WATCH</strong> / <strong>RESEARCH</strong> / <strong>AVOID_CHASE</strong>.
+    The bot does not say BUY or SELL until 60 days of paper-trading hits the §17.6 graduation thresholds.</p>
+    <p>Data: SEC EDGAR · trumpstruth.org RSS · yfinance. Free-tier stack: GitHub Actions + Supabase Free + Hostinger static.</p>
+  </footer>
+</body>
+</html>
