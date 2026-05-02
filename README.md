@@ -32,7 +32,7 @@ and learns from outcomes via per-agent EMA weights.
 | `thesis_agent`        | `*/5 * * * *`     | Cluster rule (≥2 distinct agents within 5-minute bucket, with narrow high-severity exceptions) → 100-pt weighted score → action → Telegram dispatch. Reads live `stock_agent_weights` to amplify reliable agents and dampen chronically-wrong ones. Includes chase-risk downgrade if price already moved >5% since cluster start. |
 | `earnings_agent`      | weekly Sun 12:00 UTC | yfinance earnings dates per stock → upcoming + recently-released into `stock_normalized_events` |
 | `price_agent`         | weekday 21:30 UTC | yfinance EOD closes → outcome audit → EMA weight update per agent → digest |
-| `paper_trade_agent`   | `*/15 * * * *`    | live signals + historical audit → calibrated paper forecasts (`prob_win`, expected value, sample size, target/stop) |
+| `paper_trade_agent`   | `*/15 * * * *`    | live signals + historical audit → calibrated paper forecasts (`prob_win`, expected value, sample size, target/stop). Manual `shadow_30d` mode replays historical backtest signals day-by-day for UI/calibration review. |
 | `backtester`          | manual / weekly   | 180-day replay (filings + earnings + momentum) → Sharpe, precision, calibration metrics |
 | `site_generator`      | `*/15 * * * *`    | Supabase → Jinja2 HTML → FTPS auto-deploy to Hostinger |
 | `source_review_agent` | `0 13 1 * *`      | Monthly health check on every external feed → Telegram digest |
@@ -57,6 +57,11 @@ and learns from outcomes via per-agent EMA weights.
 - **PAPER_AVOID** — negative expected value, bearish setup, or poor historical follow-through
 - **PAPER_CHASE_RISK** — signal exists, but the move is likely already priced in
 - **NO_TRADE** — insufficient comparable history for a realistic paper forecast
+
+Forecast modes:
+
+- **live** — generated only from live `candidate` / `sent` / `suppressed` signals; these count toward real paper-trading review
+- **shadow_backtest** — generated from already-audited historical backtest signals, replayed day-by-day so each day only learns from older outcomes; useful for validation, not counted as live paper-trading performance
 
 ## Dashboard tabs
 
@@ -86,6 +91,7 @@ table) and per-alert detail pages under `/alert/{id}.html` for the link in every
 - `sql/0006_add_closed_status.sql` — `status_v2='closed'` for matured signals (price_agent loop)
 - `sql/0007_allow_chase_risk.sql` — `action='CHASE_RISK'` plus latest signal status constraint
 - `sql/0008_paper_forecasts.sql` — Phase 6A calibrated paper forecast table
+- `sql/0009_paper_forecast_modes.sql` — separates live paper forecasts from historical `shadow_backtest` replay rows
 
 ## GitHub Actions secrets
 
@@ -136,9 +142,10 @@ Jinja `tojson`, not raw `|safe`.
 4. Push to `main` — every cron-scheduled workflow starts running
 5. Run `historical_ingest.yml` once with `sections=all` (6-month backfill)
 6. Run `backtester.yml` once to populate `stock_agent_weights` and `stock_forecast_audit`
-7. Run `paper_trade_agent.yml` once to seed `stock_paper_forecasts` from current live signals
-8. Wait one `*/15` cycle for `site_generator` to render and deploy
-9. After a few weeks of live signals, `price_agent`'s EMA loop populates per-agent weights
+7. Run `paper_trade_agent.yml` once with `mode=shadow_30d` to fill 30 days of closed historical shadow forecasts
+8. Run `paper_trade_agent.yml` once with `mode=live` to seed `stock_paper_forecasts` from current live signals, if any exist
+9. Wait one `*/15` cycle for `site_generator` to render and deploy
+10. After a few weeks of live signals, `price_agent`'s EMA loop populates per-agent weights
    that `thesis_agent` then uses to amplify reliable agents
 
 ## Security note

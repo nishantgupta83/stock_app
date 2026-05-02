@@ -44,9 +44,10 @@ HEADERS_SB = {
     "Prefer":        "resolution=ignore-duplicates,return=minimal",
 }
 
-# Look back this far for "fresh" events. Anything older has likely been
-# scored already (dedupe_key prevents double signals).
-FRESHNESS_WINDOW_MIN = 30
+# Look back this far for "fresh" events. GitHub cron can be delayed or skipped;
+# dedupe_key prevents duplicate signals, so a wider replay window is safer than
+# missing a valid cluster.
+FRESHNESS_WINDOW_MIN = 180
 CLUSTER_WINDOW_MIN   = 5
 MAX_ALERTS_PER_DAY   = 5
 # Chase-risk threshold: if the price has already moved >5% in the cluster's

@@ -7,9 +7,9 @@
 
 <div class="cards">
   <div class="card">
-    <div class="label">Open Forecasts</div>
-    <div class="value">{{ paper_metrics.open }}</div>
-    <div class="sub">{{ paper_metrics.total }} total forecasts</div>
+    <div class="label">Live Open</div>
+    <div class="value">{{ paper_metrics.live_open }}</div>
+    <div class="sub">{{ paper_metrics.live_total }} live forecasts</div>
   </div>
   <div class="card {% if paper_metrics.paper_long > 0 %}ok{% endif %}">
     <div class="label">Paper Long</div>
@@ -22,18 +22,37 @@
     <div class="sub">open forecasts only</div>
   </div>
   <div class="card">
-    <div class="label">Avg Prob</div>
-    <div class="value">{{ "%.0f%%"|format(paper_metrics.avg_prob * 100) }}</div>
-    <div class="sub">open calibrated win probability</div>
+    <div class="label">Shadow 30d</div>
+    <div class="value">{{ paper_metrics.shadow_total }}</div>
+    <div class="sub">historical replay rows</div>
   </div>
-  <div class="card {% if paper_metrics.closed_hit_rate is not none and paper_metrics.closed_hit_rate >= 0.55 %}ok{% elif paper_metrics.closed_hit_rate is not none %}warn{% endif %}">
-    <div class="label">Closed Hit Rate</div>
-    <div class="value">{% if paper_metrics.closed_hit_rate is none %}—{% else %}{{ "%.0f%%"|format(paper_metrics.closed_hit_rate * 100) }}{% endif %}</div>
-    <div class="sub">{{ paper_metrics.closed }} closed forecasts</div>
+  <div class="card {% if paper_metrics.shadow_hit_rate is not none and paper_metrics.shadow_hit_rate >= 0.55 %}ok{% elif paper_metrics.shadow_hit_rate is not none %}warn{% endif %}">
+    <div class="label">Shadow Hit Rate</div>
+    <div class="value">{% if paper_metrics.shadow_hit_rate is none %}—{% else %}{{ "%.0f%%"|format(paper_metrics.shadow_hit_rate * 100) }}{% endif %}</div>
+    <div class="sub">{{ paper_metrics.shadow_closed }} closed shadow rows</div>
   </div>
 </div>
 
+{% if paper_metrics.total == 0 %}
+<div class="note">
+  <strong>No paper forecasts yet:</strong>
+  latest paper agent run{% if paper_job.started_at %} started {{ paper_job.started_at[:16] }} UTC, status {{ paper_job.status }}, rows in/out {{ paper_job.rows_in or 0 }}/{{ paper_job.rows_out or 0 }}{% endif %}.
+  Scheduled runs stay live-only. To fill historical examples, run `paper_trade_agent.yml` manually with mode `shadow_30d` after applying `sql/0009_paper_forecast_modes.sql`.
+</div>
+{% elif paper_metrics.live_open == 0 %}
+<div class="note">
+  <strong>No live paper trades are open right now.</strong>
+  The table may still contain `shadow_backtest` rows from historical replay. Latest thesis run{% if thesis_job.started_at %}: {{ thesis_job.status }} at {{ thesis_job.started_at[:16] }} UTC, rows in/out {{ thesis_job.rows_in or 0 }}/{{ thesis_job.rows_out or 0 }}{% endif %}.
+</div>
+{% endif %}
+
 <div class="filters">
+  <label>Mode</label>
+  <select id="f-mode" onchange="render()">
+    <option value="">all</option>
+    <option value="live">live</option>
+    <option value="shadow_backtest">shadow_backtest</option>
+  </select>
   <label>Paper action</label>
   <select id="f-action" onchange="render()">
     <option value="">all</option>
@@ -61,8 +80,9 @@
 <table>
   <thead>
     <tr>
-      <th>Created</th>
+      <th>Signal Time</th>
       <th>Ticker</th>
+      <th>Mode</th>
       <th>Paper Action</th>
       <th class="num">Prob</th>
       <th class="num">EV</th>
@@ -103,6 +123,7 @@ function price(v) {
 }
 const DATA = JSON.parse(document.getElementById('data').textContent);
 function render() {
+  const fMode = document.getElementById('f-mode').value;
   const fAct = document.getElementById('f-action').value;
   const fStatus = document.getElementById('f-status').value;
   const fProb = (parseFloat(document.getElementById('f-prob').value) || 0) / 100;
@@ -111,6 +132,7 @@ function render() {
   while (tbody.firstChild) tbody.removeChild(tbody.firstChild);
   let n = 0;
   for (const r of DATA) {
+    if (fMode && (r.forecast_mode || 'live') !== fMode) continue;
     if (fAct && r.paper_action !== fAct) continue;
     if (fStatus && r.status !== fStatus) continue;
     if ((r.prob_win || 0) < fProb) continue;
@@ -120,8 +142,9 @@ function render() {
     const realizedClass = (r.realized_return || 0) >= 0 ? 'pos' : 'neg';
     const tr = document.createElement('tr');
     tr.innerHTML =
-      `<td>${esc((r.created_at || '').substring(0,16))}</td>` +
+      `<td>${esc((r.fired_at || r.created_at || '').substring(0,16))}</td>` +
       `<td><strong>${esc(r.ticker)}</strong></td>` +
+      `<td><span class="tag ${esc(r.forecast_mode || 'live')}">${esc(r.forecast_mode || 'live')}</span></td>` +
       `<td><span class="tag ${esc(r.paper_action)}">${esc(r.paper_action)}</span></td>` +
       `<td class="num">${pct(r.prob_win)}</td>` +
       `<td class="num ${evClass}">${pct(r.expected_value)}</td>` +

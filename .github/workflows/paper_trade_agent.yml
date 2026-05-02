@@ -8,6 +8,15 @@ on:
   schedule:
     - cron: "*/15 * * * *"
   workflow_dispatch:
+    inputs:
+      mode:
+        description: "Run mode"
+        type: choice
+        required: true
+        default: "live"
+        options:
+          - live
+          - shadow_30d
 
 concurrency:
   group: paper_trade_agent
@@ -34,4 +43,10 @@ jobs:
         env:
           SUPABASE_URL:         ${{ secrets.SUPABASE_URL }}
           SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
-        run: python agents/paper_trade_agent.py
+          MODE:                 ${{ github.event.inputs.mode || 'live' }}
+        run: |
+          case "$MODE" in
+            live) python agents/paper_trade_agent.py ;;
+            shadow_30d) python agents/paper_trade_agent.py --shadow-backtest-days 30 ;;
+            *) echo "invalid mode: $MODE"; exit 1 ;;
+          esac

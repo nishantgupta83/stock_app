@@ -18,7 +18,9 @@ Supersedes: v1 (paid-stack assumptions: Supabase Pro, Polygon, Next.js on Hostin
 > weights actually used are persisted in `stock_signals.weight_at_time` for audit.
 > Phase 6A adds `paper_trade_agent`: it converts live signals into paper-only calibrated
 > forecasts with empirical `prob_win`, sample size, expected value, and target/stop levels
-> in `stock_paper_forecasts`. The vocabulary remains paper-only.
+> in `stock_paper_forecasts`. Phase 6B adds a clearly-separated `shadow_backtest`
+> replay mode that fills recent historical paper forecasts day-by-day for validation
+> without counting them as live paper-trading performance. The vocabulary remains paper-only.
 >
 > Recent additions worth noting (not yet woven into the v2 narrative below):
 > - 8-K dilution detection via EDGAR's `primaryDocDescription` (PIPE / underwriting /
@@ -29,7 +31,8 @@ Supersedes: v1 (paid-stack assumptions: Supabase Pro, Polygon, Next.js on Hostin
 > - Per-ticker chart pages render 180 days of price + filing/earnings event dots and a
 >   "Big Moves" table (any |daily return| > 5% with the prior 2-day events as candidate causes)
 > - Paper Trades dashboard tab shows `PAPER_LONG` / `PAPER_WATCH` / `PAPER_AVOID` /
->   `PAPER_CHASE_RISK` / `NO_TRADE` forecasts and closes them through `price_agent`
+>   `PAPER_CHASE_RISK` / `NO_TRADE` forecasts, split by `live` vs `shadow_backtest`;
+>   live rows close through `price_agent`, shadow rows are closed from historical audit
 >
 > Sections of this doc that predate those changes (notably §7.5 Price-Action Agent and
 > §7.7 Reconciliation Agent) describe future work; the live agent inventory is in `README.md`.
@@ -198,6 +201,7 @@ GitHub Actions (cron schedules)
   ├─ thesis_agent        every 5 min
   ├─ earnings_agent      weekly
   ├─ price_agent         weekday EOD
+  ├─ paper_trade_agent   every 15 min
   ├─ backtester          weekly/manual
   ├─ source_review_agent monthly
   └─ site_generator      every 15 min
@@ -465,6 +469,8 @@ Sufficient for personal use with disciplined retention.
 - `telegram_dispatch_log` (NEW — every push attempt with delivery status)
 - `paper_trades` (NEW — user's Bought/Sold/Skipped responses)
 - `paper_forecasts` (NEW — model-generated paper-only probability, EV, risk/reward, outcome)
+  - `forecast_mode='live'` for true live paper trades
+  - `forecast_mode='shadow_backtest'` for historical replay validation rows
 - `backtest_runs`
 - `backtest_trades`
 - `model_registry`
@@ -766,6 +772,12 @@ This rubric is the v1 thesis function. It is fully transparent — every point o
 - Writes `stock_paper_forecasts` with `prob_win`, `expected_value`, `sample_size`, `entry_price`, `target_price`, and `stop_price`.
 - `price_agent.yml` closes paper forecasts when the underlying signal matures.
 - Dashboard adds a Paper Trades tab for paper-only review.
+
+### Phase 6B — Historical Shadow Paper Replay
+- `paper_trade_agent.yml` manual mode `shadow_30d` reads recent audited backtest signals.
+- Replays one calendar day at a time; each day's probability calibration can only use audit rows older than that day.
+- Writes closed `stock_paper_forecasts` rows with `forecast_mode='shadow_backtest'`.
+- Scheduled paper-trade runs remain strict live mode and ignore `status_v2='backtest'` signals.
 
 ## 19. Honest Accuracy Targets
 

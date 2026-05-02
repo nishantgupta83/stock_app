@@ -114,6 +114,8 @@ td.neg { color: var(--coral); }
 .tag.PAPER_AVOID      { background: rgba(255,107,107,0.15); color: var(--coral); }
 .tag.PAPER_CHASE_RISK { background: rgba(255,107,107,0.15); color: var(--coral); }
 .tag.NO_TRADE         { background: var(--panel-2); color: var(--muted); }
+.tag.live             { background: rgba(78,197,232,0.15); color: var(--sky); }
+.tag.shadow_backtest  { background: rgba(154,127,232,0.15); color: var(--purple); }
 .tag.suppressed  { background: var(--panel-2); color: var(--muted); }
 .tag.candidate   { background: rgba(78,197,232,0.15); color: var(--sky); }
 .tag.sent        { background: rgba(46,196,182,0.15); color: var(--teal); }

@@ -241,12 +241,26 @@ def count_open_signals() -> int:
 
 
 def count_fresh_events() -> int:
-    cutoff = (datetime.now(timezone.utc) - timedelta(minutes=30)).isoformat()
+    cutoff = (datetime.now(timezone.utc) - timedelta(minutes=180)).isoformat()
     rows = sb_get("stock_normalized_events", {
         "event_at": f"gte.{cutoff}",
         "select":   "id",
     })
     return len(rows)
+
+
+def fetch_latest_job_run(agent: str) -> dict:
+    rows = sb_get("stock_job_runs", {
+        "agent":  f"eq.{agent}",
+        "select": "started_at,finished_at,status,rows_in,rows_out,error_text",
+        "order":  "started_at.desc",
+        "limit":  "1",
+    })
+    if not rows:
+        return {}
+    row = rows[0]
+    row["error_text"] = redact_sensitive(row.get("error_text"))
+    return row
 
 
 # ============================================================
@@ -277,18 +291,19 @@ def fetch_paper_forecasts(limit: int = 300) -> list[dict]:
     During rollout, sql/0008 may not be applied yet. Suppress missing-table
     noise so site generation continues with an empty Paper Trades page.
     """
+    select_cols = (
+        "id,signal_id,ticker,created_at,fired_at,horizon_days,direction,"
+        "source_action,paper_action,forecast_mode,prob_win,base_rate,setup_hit_rate,"
+        "sample_size,score_bucket,avg_win,avg_loss,expected_value,"
+        "risk_reward,entry_price,target_price,stop_price,status,"
+        "exit_price,realized_return,realized_at,correct,reason_summary,"
+        "features_json,calibration_method"
+    )
     r = requests.get(
         f"{SUPABASE_URL}/rest/v1/stock_paper_forecasts",
         headers=HEADERS_SB,
         params={
-            "select": (
-                "id,signal_id,ticker,created_at,fired_at,horizon_days,direction,"
-                "source_action,paper_action,prob_win,base_rate,setup_hit_rate,"
-                "sample_size,score_bucket,avg_win,avg_loss,expected_value,"
-                "risk_reward,entry_price,target_price,stop_price,status,"
-                "exit_price,realized_return,realized_at,correct,reason_summary,"
-                "features_json,calibration_method"
-            ),
+            "select": select_cols,
             "order": "created_at.desc",
             "limit": str(limit),
         },
@@ -296,6 +311,17 @@ def fetch_paper_forecasts(limit: int = 300) -> list[dict]:
     )
     if r.status_code == 404:
         return []
+    if r.status_code == 400 and "forecast_mode" in r.text:
+        r = requests.get(
+            f"{SUPABASE_URL}/rest/v1/stock_paper_forecasts",
+            headers=HEADERS_SB,
+            params={
+                "select": select_cols.replace("forecast_mode,", ""),
+                "order": "created_at.desc",
+                "limit": str(limit),
+            },
+            timeout=20,
+        )
     if r.status_code != 200:
         print(f"  SB stock_paper_forecasts {r.status_code}: {r.text[:200]}", file=sys.stderr)
         return []
@@ -312,6 +338,7 @@ def fetch_paper_forecasts(limit: int = 300) -> list[dict]:
                 except (TypeError, ValueError):
                     row[key] = None
         row["sample_size"] = int(row.get("sample_size") or 0)
+        row["forecast_mode"] = row.get("forecast_mode") or "live"
         if row.get("reason_summary"):
             row["reason_summary"] = redact_sensitive(row["reason_summary"])
     return rows
@@ -543,6 +570,10 @@ def derive_dashboard_metrics(events: list[dict], freshness: list[dict]) -> dict:
 def derive_paper_metrics(forecasts: list[dict]) -> dict:
     open_rows = [f for f in forecasts if f.get("status") == "open"]
     closed_rows = [f for f in forecasts if f.get("status") == "closed"]
+    live_rows = [f for f in forecasts if f.get("forecast_mode", "live") == "live"]
+    shadow_rows = [f for f in forecasts if f.get("forecast_mode") == "shadow_backtest"]
+    live_open_rows = [f for f in live_rows if f.get("status") == "open"]
+    shadow_closed_rows = [f for f in shadow_rows if f.get("status") == "closed"]
     long_rows = [f for f in open_rows if f.get("paper_action") == "PAPER_LONG"]
     avg_prob = (
         sum(float(f.get("prob_win") or 0) for f in open_rows) / len(open_rows)
@@ -553,14 +584,20 @@ def derive_paper_metrics(forecasts: list[dict]) -> dict:
         if f.get("expected_value") is not None and float(f["expected_value"]) > 0
     ]
     closed_correct = [f for f in closed_rows if f.get("correct") is True]
+    shadow_correct = [f for f in shadow_closed_rows if f.get("correct") is True]
     return {
         "total":       len(forecasts),
         "open":        len(open_rows),
         "closed":      len(closed_rows),
+        "live_total":  len(live_rows),
+        "live_open":   len(live_open_rows),
+        "shadow_total": len(shadow_rows),
+        "shadow_closed": len(shadow_closed_rows),
         "paper_long":  len(long_rows),
         "positive_ev": len(positive_ev),
         "avg_prob":    avg_prob,
         "closed_hit_rate": (len(closed_correct) / len(closed_rows)) if closed_rows else None,
+        "shadow_hit_rate": (len(shadow_correct) / len(shadow_closed_rows)) if shadow_closed_rows else None,
     }
 
 
@@ -588,6 +625,8 @@ def render_all() -> int:
     weight_hist  = fetch_agent_weight_history()
     audit_rows   = fetch_forecast_audit()
     paper_forecasts = fetch_paper_forecasts(300)
+    paper_job    = fetch_latest_job_run("paper_trade_agent")
+    thesis_job   = fetch_latest_job_run("thesis_agent")
 
     agent_rows   = derive_agent_rows(weights, freshness, signals)
     dash         = derive_dashboard_metrics(events, freshness)
@@ -702,6 +741,8 @@ def render_all() -> int:
         title="Paper Trades", active="paper_trades",
         forecasts_json=paper_forecasts,
         paper_metrics=paper_metrics,
+        paper_job=paper_job,
+        thesis_job=thesis_job,
     ))
 
     # Learning — agent weight evolution over time + paper-trade audit
