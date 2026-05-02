@@ -18,7 +18,10 @@ import requests
 
 SUPABASE_URL = os.environ["SUPABASE_URL"].rstrip("/")
 SUPABASE_KEY = os.environ["SUPABASE_SERVICE_KEY"]
-EDGAR_UA     = os.environ["EDGAR_USER_AGENT"]   # required by SEC fair-access policy
+EDGAR_UA     = os.environ.get(
+    "EDGAR_USER_AGENT",
+    "Hub4Apps Market Intel nishantgupta83@users.noreply.github.com",
+)   # required by SEC fair-access policy
 
 EDGAR_BASE   = "https://data.sec.gov"
 HEADERS_SEC  = {"User-Agent": EDGAR_UA, "Accept": "application/json"}
