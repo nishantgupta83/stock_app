@@ -30,6 +30,11 @@ jobs:
       contents: read
     steps:
       - uses: actions/checkout@v4
+      - name: Record workflow start
+        env:
+          SUPABASE_URL:         ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
+        run: python agents/ops_recorder.py --phase start --agent workflow_paper_trade_agent
 
       - uses: actions/setup-python@v5
         with:
@@ -50,3 +55,10 @@ jobs:
             shadow_30d) python agents/paper_trade_agent.py --shadow-backtest-days 30 ;;
             *) echo "invalid mode: $MODE"; exit 1 ;;
           esac
+      - name: Record workflow finish
+        if: always()
+        env:
+          SUPABASE_URL:         ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
+          WORKFLOW_STATUS:      ${{ job.status }}
+        run: python agents/ops_recorder.py --phase finish --agent workflow_paper_trade_agent --status "$WORKFLOW_STATUS"

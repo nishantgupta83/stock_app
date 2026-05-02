@@ -20,6 +20,11 @@ jobs:
     timeout-minutes: 4
     steps:
       - uses: actions/checkout@v4
+      - name: Record workflow start
+        env:
+          SUPABASE_URL:         ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
+        run: python agents/ops_recorder.py --phase start --agent workflow_filing_agent
 
       - uses: actions/setup-python@v5
         with:
@@ -35,3 +40,10 @@ jobs:
           SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
           EDGAR_USER_AGENT:     ${{ secrets.EDGAR_USER_AGENT }}
         run: python agents/filing_agent.py
+      - name: Record workflow finish
+        if: always()
+        env:
+          SUPABASE_URL:         ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
+          WORKFLOW_STATUS:      ${{ job.status }}
+        run: python agents/ops_recorder.py --phase finish --agent workflow_filing_agent --status "$WORKFLOW_STATUS"

@@ -8,6 +8,7 @@ venv/
 dist/*.html
 dist/alert/*.html
 *.log
+.ops_run_id_*
 .idea/
 .vscode/
 .claude/

@@ -9,7 +9,7 @@ pipeline. It does not place trades and does not use BUY/SELL language.
 flowchart TB
   subgraph Sources["External Sources"]
     EDGAR["SEC EDGAR submissions"]
-    News["CNBC / MarketWatch / AP RSS"]
+    News["CNBC / MarketWatch / Seeking Alpha RSS"]
     Truth["Truth Social RSS"]
     Yahoo["yfinance prices + earnings"]
   end
@@ -22,7 +22,7 @@ flowchart TB
     Thesis["thesis_agent<br/>every 5 min<br/>180 min freshness window"]
     Paper["paper_trade_agent<br/>every 15 min live<br/>manual shadow_30d replay"]
     Price["price_agent<br/>weekday EOD"]
-    Backtester["backtester<br/>manual / weekly"]
+    Backtester["backtester<br/>manual only"]
     Site["site_generator<br/>every 15 min"]
     SourceReview["source_review_agent<br/>monthly"]
   end
@@ -154,12 +154,44 @@ strictly live-only.
 | `stock_normalized_events` | Cross-source event stream consumed by thesis and site. |
 | `stock_signals` | Thesis outputs: live signals plus backtest replay signals. |
 | `stock_signal_evidence` | Links signals back to supporting normalized events. |
-| `stock_forecast_audit` | Realized outcomes for matured live/backtest signals. |
+| `stock_forecast_audit` | Realized outcomes for matured live/backtest signals. One row per `(signal_id, horizon_days)` after `sql/0010`. |
 | `stock_agent_weights` | Per-agent EMA accuracy and scoring weight. |
 | `stock_paper_forecasts` | Probability-calibrated paper forecasts, split by `forecast_mode`. |
 | `stock_backtest_runs` | Backtest metrics and calibration summaries. |
 | `stock_job_runs` | Operational run history per agent. |
 | `stock_dead_letter_events` | Failed parses/fetches with redacted diagnostics. |
+
+## Data Lineage Contract
+
+```mermaid
+flowchart LR
+    RawFilings["stock_raw_filings"]
+    RawNews["stock_raw_news"]
+    RawTruth["stock_raw_truth_posts"]
+    Prices["stock_raw_prices"]
+    Events["stock_normalized_events<br/>source_table + source_id + dedupe_key"]
+    Signals["stock_signals"]
+    Evidence["stock_signal_evidence<br/>unique(signal_id,event_id)"]
+    Forecasts["stock_paper_forecasts<br/>forecast_mode live/shadow"]
+    Audit["stock_forecast_audit<br/>unique(signal_id,horizon_days)"]
+    Weights["stock_agent_weights"]
+    Site["static dashboard"]
+
+    RawFilings --> Events
+    RawNews --> Events
+    RawTruth --> Events
+    Prices --> Signals
+    Events --> Signals
+    Signals --> Evidence
+    Events --> Evidence
+    Signals --> Forecasts
+    Signals --> Audit
+    Audit --> Forecasts
+    Audit --> Weights
+    Forecasts --> Site
+    Evidence --> Site
+    Weights --> Site
+```
 
 ## Forecast Modes
 
@@ -172,7 +204,7 @@ strictly live-only.
 
 Cold start order:
 
-1. Apply `sql/*.sql` in order through `sql/0009_paper_forecast_modes.sql`.
+1. Apply `sql/*.sql` in order through `sql/0010_reliability_and_calibration.sql`.
 2. Run `historical_ingest.yml` with `sections=all`.
 3. Run `backtester.yml`.
 4. Run `paper_trade_agent.yml` with `mode=shadow_30d`.
@@ -183,15 +215,29 @@ Normal operation:
 
 - Ingestion, thesis, paper forecast, and site generation run on cron.
 - `price_agent` closes mature signals and forecasts at weekday EOD.
-- `backtester` remains manual/weekly so historical replay is deliberate.
+- `backtester` remains manual-only so historical replay is deliberate.
 - `source_review_agent` runs monthly to catch feed drift.
 
 ## Current Verification Snapshot
 
 Last verified on 2026-05-02:
 
-- Shadow replay wrote 27 closed `shadow_backtest` paper forecasts.
+- Shadow replay wrote 27 closed `shadow_backtest` paper forecasts before the Phase 7 leakage fix.
 - Live paper forecast pass wrote 0 rows because no live eligible signals existed.
 - Manual thesis run saw 4 fresh events in the 180-minute window and produced 0 candidates.
+
+## Outcome Contract
+
+Backtest, live audit, and paper forecast closure use the same paper-only outcome
+contract:
+
+1. Signal fires on day `D`.
+2. Entry is the next available trading session open after `D`.
+3. Exit is the close at `entry_session + horizon_days - 1`, or the next available close.
+4. Net return subtracts 5 bps per side.
+5. `stock_forecast_audit` stores `entry_price`, `exit_price`, `entry_at`, `exit_at`, and `outcome_method='next_session_open_to_horizon_close'`.
+
+Shadow replay calibration filters by audit `computed_at`, not just signal
+`fired_at`, so replay days cannot learn from outcomes that were not known yet.
 - Site generation succeeded after increasing Hostinger FTPS timeout to 120 seconds.
 - Live Paper Trades page rendered `Shadow 30d = 27` and `Shadow Hit Rate = 48%`.

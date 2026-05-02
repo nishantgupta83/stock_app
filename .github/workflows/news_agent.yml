@@ -1,6 +1,6 @@
 name: news_agent
 
-# Polls CNBC, MarketWatch, AP Business RSS every 5 min.
+# Polls CNBC, MarketWatch, and Seeking Alpha RSS every 5 min.
 # One of three co-equal source agents (filing, news, truth_social).
 # Safety: only repo secrets via env: — no untrusted input interpolated.
 # No github.event.* inputs are used in this workflow.
@@ -20,6 +20,11 @@ jobs:
     timeout-minutes: 3
     steps:
       - uses: actions/checkout@v4
+      - name: Record workflow start
+        env:
+          SUPABASE_URL:         ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
+        run: python agents/ops_recorder.py --phase start --agent workflow_news_agent
       - uses: actions/setup-python@v5
         with:
           python-version: "3.12"
@@ -31,3 +36,10 @@ jobs:
           SUPABASE_URL:         ${{ secrets.SUPABASE_URL }}
           SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
         run: python agents/news_agent.py
+      - name: Record workflow finish
+        if: always()
+        env:
+          SUPABASE_URL:         ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
+          WORKFLOW_STATUS:      ${{ job.status }}
+        run: python agents/ops_recorder.py --phase finish --agent workflow_news_agent --status "$WORKFLOW_STATUS"

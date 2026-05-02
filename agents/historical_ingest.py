@@ -35,7 +35,7 @@ import yfinance as yf
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from filing_agent import (   # type: ignore
     fetch_watchlist, fetch_recent_filings, upsert_filings,
-    emit_normalized_events, already_seen_accessions,
+    emit_normalized_events,
     job_run_start, job_run_finish, dead_letter,
     SUPABASE_URL, HEADERS_SB,
 )
@@ -85,16 +85,12 @@ def ingest_filings() -> tuple[int, int, int]:
                 n_processed += 1
                 time.sleep(EDGAR_SLEEP)
                 continue
-            seen = already_seen_accessions([r["accession_number"] for r in in_win])
-            new  = [r for r in in_win if r["accession_number"] not in seen]
-            if new:
-                f_inserted = upsert_filings(new, ticker)
-                e_emitted  = emit_normalized_events(new, ticker)
-                n_filings += f_inserted
-                n_events  += e_emitted
-                print(f"  {ticker}: {len(in_win)} in window, +{f_inserted} filings, +{e_emitted} events")
-            else:
-                print(f"  {ticker}: {len(in_win)} in window, all already ingested")
+            raw_ids = upsert_filings(in_win, ticker)
+            f_inserted = len(raw_ids)
+            e_emitted  = emit_normalized_events(in_win, ticker, raw_ids)
+            n_filings += f_inserted
+            n_events  += e_emitted
+            print(f"  {ticker}: {len(in_win)} in window, reconciled {f_inserted} filings, {e_emitted} events")
             n_processed += 1
         except Exception as e:  # noqa: BLE001
             dead_letter("historical_ingest", "stock_symbols", None,

@@ -35,6 +35,11 @@ jobs:
       contents: read
     steps:
       - uses: actions/checkout@v4
+      - name: Record workflow start
+        env:
+          SUPABASE_URL:         ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
+        run: python agents/ops_recorder.py --phase start --agent workflow_historical_ingest
 
       - uses: actions/setup-python@v5
         with:
@@ -57,3 +62,10 @@ jobs:
             *) echo "invalid sections: $SECTIONS"; exit 1 ;;
           esac
           python agents/historical_ingest.py "--$SECTIONS"
+      - name: Record workflow finish
+        if: always()
+        env:
+          SUPABASE_URL:         ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
+          WORKFLOW_STATUS:      ${{ job.status }}
+        run: python agents/ops_recorder.py --phase finish --agent workflow_historical_ingest --status "$WORKFLOW_STATUS"

@@ -39,13 +39,13 @@ The current technical diagram and operational runbook live in
 | Agent | Schedule | What it does |
 |---|---|---|
 | `filing_agent`        | `*/5 * * * *`     | EDGAR → 8-K (with item parsing), 10-K/Q, Form 4, 13D/G, S-3 → `stock_raw_filings` + `stock_normalized_events` |
-| `news_agent`          | `*/5 * * * *`     | CNBC / MarketWatch / AP RSS → ticker mention + sentiment classifier → `stock_normalized_events` |
+| `news_agent`          | `*/5 * * * *`     | CNBC / MarketWatch / Seeking Alpha RSS → `stock_raw_news` + ticker mention + sentiment classifier → `stock_normalized_events` |
 | `truth_social_agent`  | `*/5 * * * *`     | Trump Truth Social RSS → keyword router → `stock_normalized_events` |
 | `thesis_agent`        | `*/5 * * * *`     | Cluster rule (≥2 distinct agents within 5-minute bucket, with narrow high-severity exceptions) → 100-pt weighted score → action → Telegram dispatch. Reads live `stock_agent_weights` to amplify reliable agents and dampen chronically-wrong ones. Includes chase-risk downgrade if price already moved >5% since cluster start. |
 | `earnings_agent`      | weekly Sun 12:00 UTC | yfinance earnings dates per stock → upcoming + recently-released into `stock_normalized_events` |
 | `price_agent`         | weekday 21:30 UTC | yfinance EOD closes → outcome audit → EMA weight update per agent → digest |
 | `paper_trade_agent`   | `*/15 * * * *`    | live signals + historical audit → calibrated paper forecasts (`prob_win`, expected value, sample size, target/stop). Manual `shadow_30d` mode replays historical backtest signals day-by-day for UI/calibration review. |
-| `backtester`          | manual / weekly   | 180-day replay (filings + earnings + momentum) → Sharpe, precision, calibration metrics |
+| `backtester`          | manual only       | 180-day replay (filings + earnings + momentum) → precision/calibration metrics. Not cron-scheduled because replay must be deliberate. |
 | `site_generator`      | `*/15 * * * *`    | Supabase → Jinja2 HTML → FTPS auto-deploy to Hostinger |
 | `source_review_agent` | `0 13 1 * *`      | Monthly health check on every external feed → Telegram digest |
 
@@ -73,7 +73,13 @@ The current technical diagram and operational runbook live in
 Forecast modes:
 
 - **live** — generated only from live `candidate` / `sent` / `suppressed` signals; these count toward real paper-trading review
-- **shadow_backtest** — generated from already-audited historical backtest signals, replayed day-by-day so each day only learns from older outcomes; useful for validation, not counted as live paper-trading performance
+- **shadow_backtest** — generated from already-audited historical backtest signals, replayed day-by-day so each day only learns from outcomes computed before that replay day; useful for validation, not counted as live paper-trading performance
+
+Probability caveats:
+
+- Forecast outcomes use the paper-only contract `next_session_open_to_horizon_close` with 5 bps per-side slippage.
+- `target_price` and `stop_price` are display assumptions until intraday high/low target-stop auditing is added.
+- Probabilities are shown with setup sample sizes; sparse setups are learning examples, not calibrated confidence.
 
 ## Dashboard tabs
 
@@ -105,6 +111,7 @@ table) and per-alert detail pages under `/alert/{id}.html` for the link in every
 - `sql/0007_allow_chase_risk.sql` — `action='CHASE_RISK'` plus latest signal status constraint
 - `sql/0008_paper_forecasts.sql` — Phase 6A calibrated paper forecast table
 - `sql/0009_paper_forecast_modes.sql` — separates live paper forecasts from historical `shadow_backtest` replay rows
+- `sql/0010_reliability_and_calibration.sql` — audit/evidence uniqueness, dispatch retry status, outcome-price fields, source registry refresh, calibration summary view
 
 ## GitHub Actions secrets
 

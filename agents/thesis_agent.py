@@ -105,13 +105,15 @@ def fetch_fresh_events() -> list[dict]:
     """Pull normalized_events from the last FRESHNESS_WINDOW_MIN minutes.
     Use params= so requests URL-encodes the +00:00 in the ISO timestamp correctly."""
     cutoff = (datetime.now(timezone.utc) - timedelta(minutes=FRESHNESS_WINDOW_MIN)).isoformat()
-    params = {
-        "event_at":  f"gte.{cutoff}",
-        "ticker":    "not.is.null",
-        "select":    "id,event_type,event_subtype,ticker,event_at,severity,source_table,parser_confidence,payload",
-        "order":     "event_at.desc",
-        "limit":     "500",
-    }
+    now = datetime.now(timezone.utc).isoformat()
+    params = [
+        ("event_at", f"gte.{cutoff}"),
+        ("event_at", f"lte.{now}"),
+        ("ticker", "not.is.null"),
+        ("select", "id,event_type,event_subtype,ticker,event_at,severity,source_table,parser_confidence,payload"),
+        ("order", "event_at.desc"),
+        ("limit", "500"),
+    ]
     r = requests.get(f"{SUPABASE_URL}/rest/v1/stock_normalized_events",
                      headers=HEADERS_SB, params=params, timeout=20)
     r.raise_for_status()
@@ -211,6 +213,24 @@ def already_signaled_dedupe_keys(keys: list[str]) -> set[str]:
     return {row["dedupe_key"] for row in r.json()}
 
 
+def existing_signals_by_dedupe(keys: list[str]) -> dict[str, int]:
+    """Return {dedupe_key: signal_id} for existing signals."""
+    if not keys:
+        return {}
+    in_list = ",".join(f'"{k}"' for k in keys)
+    r = requests.get(
+        f"{SUPABASE_URL}/rest/v1/stock_signals?dedupe_key=in.({in_list})&select=id,dedupe_key",
+        headers=HEADERS_SB, timeout=15,
+    )
+    if r.status_code != 200:
+        return {}
+    return {
+        str(row["dedupe_key"]): int(row["id"])
+        for row in r.json()
+        if row.get("dedupe_key") and row.get("id") is not None
+    }
+
+
 def alerts_sent_today() -> int:
     """Count signals already sent today (UTC) — for the daily cap."""
     today = datetime.now(timezone.utc).date().isoformat()
@@ -240,11 +260,27 @@ def recently_dispatched(ticker: str, event_type: str) -> bool:
             "fired_at":  f"gte.{cutoff}",
             "status_v2": "eq.sent",
             "select":    "id",
+            "limit":     "25",
+        },
+        timeout=10,
+    )
+    if r.status_code != 200 or not r.json():
+        return False
+    ids = ",".join(str(row["id"]) for row in r.json() if row.get("id") is not None)
+    if not ids:
+        return False
+    ev = requests.get(
+        f"{SUPABASE_URL}/rest/v1/stock_signal_evidence",
+        headers=HEADERS_SB,
+        params={
+            "signal_id": f"in.({ids})",
+            "detail":    f"like.{event_type}%",
+            "select":    "id",
             "limit":     "1",
         },
         timeout=10,
     )
-    return r.status_code == 200 and len(r.json()) > 0
+    return ev.status_code == 200 and len(ev.json()) > 0
 
 
 # ============================================================
@@ -510,12 +546,31 @@ def evidence_summary(events: list[dict]) -> str:
 # Signal write + dispatch
 # ============================================================
 
+def write_signal_evidence(signal_id: int, events: list[dict]) -> None:
+    """Upsert signal-to-event evidence so reruns can heal partial writes."""
+    ev_rows = [{
+        "signal_id": signal_id,
+        "agent":     source_agent_for(e),
+        "event_id":  e["id"],
+        "strength":  1.0,
+        "detail":    f"{e['event_type']}{':'+e.get('event_subtype') if e.get('event_subtype') else ''}",
+    } for e in events]
+    if ev_rows:
+        requests.post(
+            f"{SUPABASE_URL}/rest/v1/stock_signal_evidence?on_conflict=signal_id,event_id",
+            headers={**HEADERS_SB, "Prefer": "resolution=merge-duplicates,return=minimal"},
+            json=ev_rows,
+            timeout=15,
+        )
+
+
 def write_signal(ticker: str, score: float, action: str, direction: str,
                  breakdown: list[dict], events: list[dict], dedupe_key: str,
                  agent_weights: dict[str, float] | None = None,
                  fallback_action: str | None = None) -> int | None:
     weights = agent_weights or {}
     cluster_agents = list({source_agent_for(e) for e in events})
+    event_types = sorted({e.get("event_type") for e in events if e.get("event_type")})
     payload = {
         "ticker":           ticker,
         "fired_at":         datetime.now(timezone.utc).isoformat(),
@@ -530,10 +585,11 @@ def write_signal(ticker: str, score: float, action: str, direction: str,
         "weight_at_time":   {
             "agents":  cluster_agents,
             "weights": {a: round(weights.get(a, 1.0), 4) for a in cluster_agents},
+            "primary_event_types": event_types,
         },
         "status":           "open",
         "action":           action,
-        "score":            round(score, 2),
+        "score":            round(min(max(score, 0), 100), 2),
         "score_breakdown":  {"items": breakdown},
         "evidence_summary": evidence_summary(events),
         "dedupe_key":       dedupe_key,
@@ -569,17 +625,7 @@ def write_signal(ticker: str, score: float, action: str, direction: str,
         return None
     sig = r.json()[0]
     sig_id = sig["id"]
-    # Link evidence
-    ev_rows = [{
-        "signal_id": sig_id,
-        "agent":     source_agent_for(e),
-        "event_id":  e["id"],
-        "strength":  1.0,
-        "detail":    f"{e['event_type']}{':'+e.get('event_subtype') if e.get('event_subtype') else ''}",
-    } for e in events]
-    if ev_rows:
-        requests.post(f"{SUPABASE_URL}/rest/v1/stock_signal_evidence",
-                      headers=HEADERS_SB, json=ev_rows, timeout=15)
+    write_signal_evidence(sig_id, events)
     return sig_id
 
 
@@ -589,6 +635,38 @@ def mark_signal_status(signal_id: int, status_v2: str) -> None:
         headers=HEADERS_SB,
         json={"status_v2": status_v2}, timeout=10,
     )
+
+
+def retry_dispatch_failed(cap_remaining: int) -> int:
+    """Retry previously inserted signals whose Telegram dispatch failed."""
+    if cap_remaining <= 0:
+        return 0
+    rows = requests.get(
+        f"{SUPABASE_URL}/rest/v1/stock_signals",
+        headers=HEADERS_SB,
+        params={
+            "status_v2": "eq.dispatch_failed",
+            "action":    "in.(WATCH,AVOID_CHASE)",
+            "select":    "id,ticker,score,action",
+            "order":     "fired_at.asc",
+            "limit":     str(cap_remaining),
+        },
+        timeout=15,
+    )
+    if rows.status_code != 200 or not rows.json():
+        return 0
+    from telegram_dispatcher import dispatch_signal
+    sent = 0
+    for sig in rows.json():
+        sig_id = int(sig["id"])
+        ok = dispatch_signal(sig_id)
+        if ok:
+            mark_signal_status(sig_id, "sent")
+            sent += 1
+            print(f"  {sig.get('ticker')}: RETRY SENT (sig_id={sig_id})")
+        else:
+            print(f"  {sig.get('ticker')}: retry dispatch failed again (sig_id={sig_id})")
+    return sent
 
 
 # ============================================================
@@ -602,10 +680,18 @@ def main() -> int:
     suppressed = 0
 
     try:
+        already_today = alerts_sent_today()
+        cap_remaining = max(0, MAX_ALERTS_PER_DAY - already_today)
+        retried = retry_dispatch_failed(cap_remaining)
+        sent += retried
+        cap_remaining = max(0, cap_remaining - retried)
+        if retried:
+            print(f"Retried dispatch_failed signals: {retried} sent, cap remaining: {cap_remaining}")
+
         events = fetch_fresh_events()
         print(f"Fresh events in last {FRESHNESS_WINDOW_MIN}m: {len(events)}")
         if not events:
-            job_run_finish(run_id, "ok", 0, 0)
+            job_run_finish(run_id, "ok", 0, sent)
             return 0
 
         # Learning loop: pull current per-agent weights so well-performing agents
@@ -631,10 +717,7 @@ def main() -> int:
 
         print(f"Distinct (ticker, 5-min) clusters: {len(clusters)}")
 
-        # Daily cap check
-        already_today = alerts_sent_today()
-        cap_remaining = max(0, MAX_ALERTS_PER_DAY - already_today)
-        print(f"Alerts already sent today: {already_today} (cap remaining: {cap_remaining})")
+        print(f"Alerts already sent today: {already_today} (cap remaining after retries: {cap_remaining})")
 
         # Score and rank
         scored = []
@@ -660,6 +743,12 @@ def main() -> int:
         candidates = [s for s in scored if s["cluster_ok"] and s["action"]]
         # Skip already-signaled buckets
         existing = already_signaled_dedupe_keys([c["dedupe_key"] for c in candidates])
+        if existing:
+            existing_ids = existing_signals_by_dedupe(list(existing))
+            for c in candidates:
+                sig_id = existing_ids.get(c["dedupe_key"])
+                if sig_id is not None:
+                    write_signal_evidence(sig_id, c["events"])
         candidates = [c for c in candidates if c["dedupe_key"] not in existing]
 
         # Chase-risk downgrade: WATCH/RESEARCH on a stock that has already moved
@@ -717,6 +806,7 @@ def main() -> int:
                     sent += 1
                     print(f"  {ticker}: SENT (score={cand['score']:.0f}, sig_id={sig_id})")
                 else:
+                    mark_signal_status(sig_id, "dispatch_failed")
                     print(f"  {ticker}: dispatch failed (sig_id={sig_id})")
             else:
                 mark_signal_status(sig_id, "suppressed")

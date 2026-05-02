@@ -38,10 +38,16 @@ HEADERS_SB = {
     "Authorization": f"Bearer {SUPABASE_KEY}",
 }
 
+SB_ERRORS: list[str] = []
+
 # Known agent inventory — drives the agents tab even if agent has no signals yet
 KNOWN_AGENTS = [
     "filing", "news", "truth_social", "thesis", "earnings", "price",
     "paper_trade", "backtester", "site_generator", "source_review", "telegram_dispatcher",
+    "workflow_filing_agent", "workflow_news_agent", "workflow_truth_social_agent",
+    "workflow_thesis_agent", "workflow_earnings_agent", "workflow_price_agent",
+    "workflow_paper_trade_agent", "workflow_backtester", "workflow_site_generator",
+    "workflow_source_review_agent", "workflow_historical_ingest",
 ]
 
 # Maps short display name → job_runs agent string (fixes last_seen showing "—")
@@ -61,10 +67,12 @@ _JOB_NAME = {
 }
 
 
-def sb_get(path: str, params: dict | None = None) -> list[dict]:
+def sb_get(path: str, params: dict | list[tuple[str, str]] | None = None) -> list[dict]:
     r = requests.get(f"{SUPABASE_URL}/rest/v1/{path}", headers=HEADERS_SB, params=params or {}, timeout=20)
     if r.status_code != 200:
-        print(f"  SB {path} {r.status_code}: {r.text[:200]}", file=sys.stderr)
+        msg = f"SB {path} {r.status_code}: {r.text[:200]}"
+        SB_ERRORS.append(msg)
+        print(f"  {msg}", file=sys.stderr)
         return []
     return r.json()
 
@@ -156,6 +164,7 @@ def fetch_signals(limit: int = 500) -> list[dict]:
         wt = r.get("weight_at_time") or {}
         r["agents"] = wt.get("agents", []) if isinstance(wt, dict) else []
         r["score"] = float(r.get("score") or 0)
+        r["score_pct"] = max(0, min(100, r["score"]))
         r["status_v2"] = r.get("status_v2") or "candidate"
         r["action"] = r.get("action") or "RESEARCH"
         if isinstance(wt, dict) and wt.get("display_action"):
@@ -172,6 +181,7 @@ def fetch_signals(limit: int = 500) -> list[dict]:
 
 def fetch_recent_events(limit: int = 200) -> list[dict]:
     rows = sb_get("stock_normalized_events", {
+        "event_at": f"lte.{datetime.now(timezone.utc).isoformat()}",
         "select": "id,ticker,event_type,event_subtype,event_at,severity,payload",
         "order":  "event_at.desc",
         "limit":  str(limit),
@@ -242,10 +252,11 @@ def count_open_signals() -> int:
 
 def count_fresh_events() -> int:
     cutoff = (datetime.now(timezone.utc) - timedelta(minutes=180)).isoformat()
-    rows = sb_get("stock_normalized_events", {
-        "event_at": f"gte.{cutoff}",
-        "select":   "id",
-    })
+    rows = sb_get("stock_normalized_events", [
+        ("event_at", f"gte.{cutoff}"),
+        ("event_at", f"lte.{datetime.now(timezone.utc).isoformat()}"),
+        ("select", "id"),
+    ])
     return len(rows)
 
 
@@ -285,12 +296,8 @@ def fetch_forecast_audit() -> list[dict]:
     })
 
 
-def fetch_paper_forecasts(limit: int = 300) -> list[dict]:
-    """Phase 6A probability-calibrated paper forecasts.
-
-    During rollout, sql/0008 may not be applied yet. Suppress missing-table
-    noise so site generation continues with an empty Paper Trades page.
-    """
+def _fetch_paper_forecast_page(limit: int, mode: str | None = None,
+                               include_mode_col: bool = True) -> tuple[int, list[dict], str]:
     select_cols = (
         "id,signal_id,ticker,created_at,fired_at,horizon_days,direction,"
         "source_action,paper_action,forecast_mode,prob_win,base_rate,setup_hit_rate,"
@@ -299,33 +306,48 @@ def fetch_paper_forecasts(limit: int = 300) -> list[dict]:
         "exit_price,realized_return,realized_at,correct,reason_summary,"
         "features_json,calibration_method"
     )
+    if not include_mode_col:
+        select_cols = select_cols.replace("forecast_mode,", "")
+    params = {
+        "select": select_cols,
+        "order": "created_at.desc",
+        "limit": str(limit),
+    }
+    if mode and include_mode_col:
+        params["forecast_mode"] = f"eq.{mode}"
     r = requests.get(
         f"{SUPABASE_URL}/rest/v1/stock_paper_forecasts",
         headers=HEADERS_SB,
-        params={
-            "select": select_cols,
-            "order": "created_at.desc",
-            "limit": str(limit),
-        },
+        params=params,
         timeout=20,
     )
-    if r.status_code == 404:
+    return r.status_code, r.json() if r.status_code == 200 else [], r.text
+
+
+def fetch_paper_forecasts(limit: int = 300) -> list[dict]:
+    """Phase 6A probability-calibrated paper forecasts.
+
+    During rollout, sql/0008 may not be applied yet. Suppress missing-table
+    noise so site generation continues with an empty Paper Trades page.
+    """
+    status, rows, text = _fetch_paper_forecast_page(limit, "live")
+    if status == 404:
         return []
-    if r.status_code == 400 and "forecast_mode" in r.text:
-        r = requests.get(
-            f"{SUPABASE_URL}/rest/v1/stock_paper_forecasts",
-            headers=HEADERS_SB,
-            params={
-                "select": select_cols.replace("forecast_mode,", ""),
-                "order": "created_at.desc",
-                "limit": str(limit),
-            },
-            timeout=20,
-        )
-    if r.status_code != 200:
-        print(f"  SB stock_paper_forecasts {r.status_code}: {r.text[:200]}", file=sys.stderr)
+    if status == 400 and "forecast_mode" in text:
+        status, rows, text = _fetch_paper_forecast_page(limit, None, include_mode_col=False)
+    elif status == 200:
+        shadow_status, shadow_rows, shadow_text = _fetch_paper_forecast_page(limit, "shadow_backtest")
+        if shadow_status == 200:
+            rows = rows + shadow_rows
+        else:
+            msg = f"SB stock_paper_forecasts shadow {shadow_status}: {shadow_text[:200]}"
+            SB_ERRORS.append(msg)
+            print(f"  {msg}", file=sys.stderr)
+    if status != 200:
+        msg = f"SB stock_paper_forecasts {status}: {text[:200]}"
+        SB_ERRORS.append(msg)
+        print(f"  {msg}", file=sys.stderr)
         return []
-    rows = r.json()
     for row in rows:
         for key in (
             "prob_win", "base_rate", "setup_hit_rate", "avg_win", "avg_loss",
@@ -368,25 +390,12 @@ def _yfinance_fetch_one(ticker: str, days: int) -> list[dict] | None:
         return None
 
 
-def _persist_prices(ticker: str, bars: list[dict]) -> None:
-    """Best-effort bulk insert of yfinance bars into stock_raw_prices. Dups ignored
-    via unique(ticker, ts, source) — safe to call repeatedly."""
-    if not bars:
-        return
-    payload = [{**b, "ticker": ticker, "source": "yfinance"} for b in bars]
-    try:
-        url = f"{SUPABASE_URL}/rest/v1/stock_raw_prices"
-        headers = {**HEADERS_SB, "Content-Type": "application/json",
-                   "Prefer": "resolution=ignore-duplicates,return=minimal"}
-        requests.post(url, headers=headers, json=payload, timeout=30)
-    except Exception as e:
-        print(f"  persist_prices {ticker}: {e}", file=sys.stderr)
-
-
 def fetch_ticker_prices(tickers: list[str], days: int = 180) -> dict[str, list[dict]]:
-    """Read daily bars from stock_raw_prices for each ticker. Self-healing:
-    if a ticker has no DB rows or its latest row is >3 days stale, fall back to
-    yfinance and persist the result so the next run reads from DB.
+    """Read daily bars from stock_raw_prices for each ticker.
+
+    If DB rows are missing or stale, yfinance is used only as a render fallback.
+    The site generator does not write raw price storage; price ingestion belongs
+    to price_agent/historical_ingest.
 
     Returns {ticker: [{date, close}]} ordered by date asc.
     """
@@ -418,15 +427,7 @@ def fetch_ticker_prices(tickers: list[str], days: int = 180) -> dict[str, list[d
         if need_refresh:
             yf_bars = _yfinance_fetch_one(ticker, days)
             if yf_bars:
-                _persist_prices(ticker, yf_bars)
-                # Re-read so we get the unified, deduped view
-                bars = sb_get("stock_raw_prices", {
-                    "ticker": f"eq.{ticker}",
-                    "ts":     f"gte.{cutoff_date.isoformat()}",
-                    "select": "ts,close",
-                    "order":  "ts.asc",
-                    "limit":  "300",
-                })
+                bars = yf_bars
 
         if bars:
             result[ticker] = [
@@ -449,13 +450,14 @@ def fetch_events_for_tickers(tickers: list[str], days: int = 180) -> dict[str, l
         return result
     cutoff = (datetime.now(timezone.utc) - timedelta(days=days)).isoformat()
     in_list = ",".join(f'"{t}"' for t in tickers)
-    rows = sb_get("stock_normalized_events", {
-        "ticker":   f"in.({in_list})",
-        "event_at": f"gte.{cutoff}",
-        "select":   "ticker,event_type,event_subtype,event_at,severity,payload",
-        "order":    "event_at.asc",
-        "limit":    "5000",
-    })
+    rows = sb_get("stock_normalized_events", [
+        ("ticker", f"in.({in_list})"),
+        ("event_at", f"gte.{cutoff}"),
+        ("event_at", f"lte.{datetime.now(timezone.utc).isoformat()}"),
+        ("select", "ticker,event_type,event_subtype,event_at,severity,payload"),
+        ("order", "event_at.asc"),
+        ("limit", "5000"),
+    ])
     for r in rows:
         ticker = r.get("ticker")
         if ticker in result:
@@ -466,14 +468,15 @@ def fetch_events_for_tickers(tickers: list[str], days: int = 180) -> dict[str, l
 def build_pre_signal_candidates(events: list[dict]) -> list[dict]:
     """Tickers with events in the last 5 days that haven't yet clustered into a signal.
     Shows the user what's building toward a signal."""
-    cutoff = datetime.now(timezone.utc) - timedelta(days=5)
+    now = datetime.now(timezone.utc)
+    cutoff = now - timedelta(days=5)
     by_ticker: dict[str, dict] = {}
     for e in events:
         try:
             t = datetime.fromisoformat(e["event_at"].replace("Z", "+00:00"))
         except Exception:
             continue
-        if t < cutoff:
+        if t < cutoff or t > now:
             continue
         ticker = e.get("ticker") or "?"
         if ticker not in by_ticker:
@@ -525,7 +528,9 @@ def derive_agent_rows(weights: dict, freshness: list[dict], signals: list[dict])
             "accuracy_ema":       float(w.get("accuracy_ema") or 0.5),
             "contributions_30d":  contrib.get(name, 0),
             "last_seen":          (f.get("last_seen") or "")[:16],
+            "last_status":        f.get("last_status") or "",
             "failures_1h":        int(f.get("failures_last_hour") or 0),
+            "stale_running":      int(f.get("stale_running") or 0),
         })
     return rows
 
@@ -548,7 +553,7 @@ def derive_dashboard_metrics(events: list[dict], freshness: list[dict]) -> dict:
         by_agent[agent] += 1
         samples.setdefault(agent, e.get("event_subtype") or et)
 
-    # Agent health: anyone seen in last 30 min (ingestion agents) considered healthy
+    # Agent health: latest run must be recent and finished ok/partial.
     cutoff_health = datetime.now(timezone.utc) - timedelta(minutes=30)
     healthy = []
     stale = []
@@ -556,7 +561,12 @@ def derive_dashboard_metrics(events: list[dict], freshness: list[dict]) -> dict:
         last = f.get("last_seen") or ""
         try:
             t = datetime.fromisoformat(last.replace("Z", "+00:00"))
-            (healthy if t > cutoff_health else stale).append(f["agent"])
+            latest_status = f.get("last_status") or ""
+            stale_running = int(f.get("stale_running") or 0)
+            if t > cutoff_health and latest_status in ("ok", "partial") and stale_running == 0:
+                healthy.append(f["agent"])
+            else:
+                stale.append(f["agent"])
         except Exception:
             stale.append(f["agent"])
 
@@ -583,8 +593,10 @@ def derive_paper_metrics(forecasts: list[dict]) -> dict:
         f for f in open_rows
         if f.get("expected_value") is not None and float(f["expected_value"]) > 0
     ]
-    closed_correct = [f for f in closed_rows if f.get("correct") is True]
-    shadow_correct = [f for f in shadow_closed_rows if f.get("correct") is True]
+    closed_scored = [f for f in closed_rows if f.get("correct") is not None]
+    shadow_scored = [f for f in shadow_closed_rows if f.get("correct") is not None]
+    closed_correct = [f for f in closed_scored if f.get("correct") is True]
+    shadow_correct = [f for f in shadow_scored if f.get("correct") is True]
     return {
         "total":       len(forecasts),
         "open":        len(open_rows),
@@ -596,9 +608,53 @@ def derive_paper_metrics(forecasts: list[dict]) -> dict:
         "paper_long":  len(long_rows),
         "positive_ev": len(positive_ev),
         "avg_prob":    avg_prob,
-        "closed_hit_rate": (len(closed_correct) / len(closed_rows)) if closed_rows else None,
-        "shadow_hit_rate": (len(shadow_correct) / len(shadow_closed_rows)) if shadow_closed_rows else None,
+        "closed_hit_rate": (len(closed_correct) / len(closed_scored)) if closed_scored else None,
+        "shadow_hit_rate": (len(shadow_correct) / len(shadow_scored)) if shadow_scored else None,
     }
+
+
+def derive_calibration_groups(forecasts: list[dict], limit: int = 20) -> list[dict]:
+    """Group paper forecasts by mode/setup so sparse calibration is visible."""
+    groups: dict[tuple, dict] = {}
+    for f in forecasts:
+        features = f.get("features_json") if isinstance(f.get("features_json"), dict) else {}
+        setup_key = features.get("setup_key") or f.get("source_action") or "unknown"
+        key = (
+            f.get("forecast_mode", "live"),
+            f.get("ticker") or "?",
+            f.get("horizon_days") or 1,
+            f.get("score_bucket") or "?",
+            setup_key,
+            f.get("paper_action") or "?",
+        )
+        row = groups.setdefault(key, {
+            "forecast_mode": key[0],
+            "ticker": key[1],
+            "horizon_days": key[2],
+            "score_bucket": key[3],
+            "setup_key": key[4],
+            "paper_action": key[5],
+            "n": 0,
+            "closed": 0,
+            "correct": 0,
+            "prob_sum": 0.0,
+            "ev_sum": 0.0,
+        })
+        row["n"] += 1
+        row["prob_sum"] += float(f.get("prob_win") or 0)
+        row["ev_sum"] += float(f.get("expected_value") or 0)
+        if f.get("status") == "closed" and f.get("correct") is not None:
+            row["closed"] += 1
+            if f.get("correct") is True:
+                row["correct"] += 1
+    out = []
+    for row in groups.values():
+        row["avg_prob"] = row["prob_sum"] / row["n"] if row["n"] else None
+        row["avg_ev"] = row["ev_sum"] / row["n"] if row["n"] else None
+        row["hit_rate"] = row["correct"] / row["closed"] if row["closed"] else None
+        out.append(row)
+    out.sort(key=lambda r: (r["forecast_mode"] != "live", -r["n"], r["ticker"], r["setup_key"]))
+    return out[:limit]
 
 
 # ============================================================
@@ -628,10 +684,14 @@ def render_all() -> int:
     paper_job    = fetch_latest_job_run("paper_trade_agent")
     thesis_job   = fetch_latest_job_run("thesis_agent")
 
+    if SB_ERRORS:
+        raise RuntimeError("Supabase read errors; refusing to publish stale/empty dashboard: " + " | ".join(SB_ERRORS[:5]))
+
     agent_rows   = derive_agent_rows(weights, freshness, signals)
     dash         = derive_dashboard_metrics(events, freshness)
     candidates   = build_pre_signal_candidates(events)
     paper_metrics = derive_paper_metrics(paper_forecasts)
+    calibration_groups = derive_calibration_groups(paper_forecasts)
 
     # Build ticker pages for the entire watchlist (not only signal-bearing ones)
     # so any tracked ticker can be inspected. Signal tickers get prioritized
@@ -641,7 +701,14 @@ def render_all() -> int:
     sorted_tickers = sorted(set(all_watchlist),
                             key=lambda t: (t not in signal_tickers, t))[:30]
     prices = fetch_ticker_prices(sorted_tickers, days=180)
+    context_prices = fetch_ticker_prices(
+        ["SPY", "QQQ", "BTC-USD", "XLK", "XLF", "XLE", "XLI", "XLV", "XLY", "TLT", "USO"],
+        days=180,
+    )
     ticker_events = fetch_events_for_tickers(list(prices.keys()), days=180)
+
+    if SB_ERRORS:
+        raise RuntimeError("Supabase read errors; refusing to publish stale/empty dashboard: " + " | ".join(SB_ERRORS[:5]))
 
     distinct_agents = sorted({a for s in signals for a in s.get("agents", [])} | set(KNOWN_AGENTS))
     distinct_types  = sorted({e["event_type"] for e in events})
@@ -694,7 +761,7 @@ def render_all() -> int:
         alerts_today=alerts_today,
         open_signals=open_signals,
         fresh_events=fresh_events,
-        recent_signals=signals[:10],
+        recent_signals=[s for s in signals if s.get("status_v2") != "backtest"][:10],
         agent_activity=dash["agent_activity"],
         all_agents_healthy=len(dash["stale_agents"]) == 0 and len(dash["healthy_agents"]) > 0,
         healthy_agent_count=len(dash["healthy_agents"]),
@@ -741,6 +808,7 @@ def render_all() -> int:
         title="Paper Trades", active="paper_trades",
         forecasts_json=paper_forecasts,
         paper_metrics=paper_metrics,
+        calibration_groups=calibration_groups,
         paper_job=paper_job,
         thesis_job=thesis_job,
     ))
@@ -776,6 +844,7 @@ def render_all() -> int:
             root_path="../",
             ticker=ticker,
             price_json=price_data,
+            context_json=context_prices,
             signals_json=ticker_sigs,
             events_json=events_for_ticker,
         ))

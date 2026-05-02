@@ -32,6 +32,18 @@ SUPABASE_KEY = os.environ["SUPABASE_SERVICE_KEY"]
 BOT_TOKEN    = os.environ["TELEGRAM_BOT_TOKEN"]
 CHAT_ID      = os.environ["TELEGRAM_CHAT_ID"]
 
+SOURCE_JOB_AGENT = {
+    "edgar": "filing_agent",
+    "cnbc_markets": "news_agent",
+    "marketwatch": "news_agent",
+    "seeking_alpha": "news_agent",
+    "rss_cnbc": "news_agent",
+    "rss_reuters": "news_agent",
+    "trumpstruth_rss": "truth_social_agent",
+    "telegram": "thesis_agent",
+    "yfinance": "price_agent",
+}
+
 HEADERS_SB = {
     "apikey":        SUPABASE_KEY,
     "Authorization": f"Bearer {SUPABASE_KEY}",
@@ -74,9 +86,14 @@ def ping_source(source: dict) -> tuple[bool, str]:
         if name == "finnhub_news" or name == "finnhub_free":
             r = requests.get("https://finnhub.io/api/v1/", timeout=10)
             return r.status_code in (200, 401), f"http {r.status_code} (401 expected without key)"
-        if name in ("rss_reuters", "rss_cnbc"):
-            test_url = "https://www.reutersagency.com/feed/?best-topics=business-finance" if "reuters" in name \
-                       else "https://search.cnbc.com/rs/search/combinedcms/view.xml?partnerId=wrss01&id=15839069"
+        if name in ("rss_reuters", "rss_cnbc", "cnbc_markets", "marketwatch", "seeking_alpha"):
+            test_url = {
+                "rss_reuters": "https://www.reutersagency.com/feed/?best-topics=business-finance",
+                "rss_cnbc": "https://search.cnbc.com/rs/search/combinedcms/view.xml?partnerId=wrss01&id=15839069",
+                "cnbc_markets": "https://search.cnbc.com/rs/search/combinedcms/view.xml?partnerId=wrss01&id=15839069",
+                "marketwatch": "https://feeds.marketwatch.com/marketwatch/topstories/",
+                "seeking_alpha": "https://seekingalpha.com/market_currents.xml",
+            }[name]
             r = requests.get(test_url, timeout=10, headers={"User-Agent": "Hub4Apps Market Intel/1.0"})
             return r.status_code == 200, f"http {r.status_code}"
         # Default: HEAD the URL
@@ -151,7 +168,7 @@ def generate_recommendations(sources: list[dict], success: dict[str, dict]) -> l
         elif primary.get("last_health_check_ok") is False:
             recs.append(f"⚠️ {category}: primary <code>{primary['name']}</code> failed last health check. Investigating.")
         # If a fallback is healthy and primary has poor job_run success, recommend swap
-        prim_jobs = success.get(primary["name"], {})
+        prim_jobs = success.get(SOURCE_JOB_AGENT.get(primary["name"], primary["name"]), {})
         if prim_jobs.get("total", 0) >= 5 and prim_jobs.get("success_rate", 1.0) < 0.8:
             for fb in items:
                 if fb is primary:

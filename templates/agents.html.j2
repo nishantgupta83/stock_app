@@ -11,7 +11,9 @@
       <th class="num">Accuracy EMA</th>
       <th class="num">Signals contributed (30d)</th>
       <th>Last seen</th>
+      <th>Status</th>
       <th class="num">Failures (1h)</th>
+      <th class="num">Stale running</th>
     </tr>
   </thead>
   <tbody>
@@ -22,7 +24,9 @@
       <td class="num">{{ "%.1f%%"|format(a.accuracy_ema * 100) }}</td>
       <td class="num">{{ a.contributions_30d }}</td>
       <td>{{ a.last_seen or "—" }}</td>
+      <td><span class="tag {{ a.last_status }}">{{ a.last_status or "—" }}</span></td>
       <td class="num">{{ a.failures_1h }}</td>
+      <td class="num">{{ a.stale_running }}</td>
     </tr>
     {% endfor %}
   </tbody>

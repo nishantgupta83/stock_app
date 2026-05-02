@@ -19,6 +19,11 @@ jobs:
     timeout-minutes: 4
     steps:
       - uses: actions/checkout@v4
+      - name: Record workflow start
+        env:
+          SUPABASE_URL:         ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
+        run: python agents/ops_recorder.py --phase start --agent workflow_thesis_agent
       - uses: actions/setup-python@v5
         with:
           python-version: "3.12"
@@ -33,3 +38,10 @@ jobs:
           TELEGRAM_CHAT_ID:     ${{ secrets.TELEGRAM_CHAT_ID }}
           PYTHONPATH:           agents
         run: python agents/thesis_agent.py
+      - name: Record workflow finish
+        if: always()
+        env:
+          SUPABASE_URL:         ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
+          WORKFLOW_STATUS:      ${{ job.status }}
+        run: python agents/ops_recorder.py --phase finish --agent workflow_thesis_agent --status "$WORKFLOW_STATUS"

@@ -29,7 +29,7 @@ Supersedes: v1 (paid-stack assumptions: Supabase Pro, Polygon, Next.js on Hostin
 > - Recurring `earnings_agent` (weekly Sunday) keeps yfinance earnings dates fresh
 >   in `stock_normalized_events`
 > - Per-ticker chart pages render 180 days of price + filing/earnings event dots and a
->   "Big Moves" table (any |daily return| > 5% with the prior 2-day events as candidate causes)
+>   "Big Moves" table (any |daily return| > 5% with nearby tracked events as candidate catalysts; correlation, not causation)
 > - Paper Trades dashboard tab shows `PAPER_LONG` / `PAPER_WATCH` / `PAPER_AVOID` /
 >   `PAPER_CHASE_RISK` / `NO_TRADE` forecasts, split by `live` vs `shadow_backtest`;
 >   live rows close through `price_agent`, shadow rows are closed from historical audit
@@ -435,29 +435,33 @@ Sufficient for personal use with disciplined retention.
 
 ### 11.2 Core tables
 
-- `symbols`
-- `watchlists`
-- `raw_filings`
-- `raw_news`
-- `raw_prices`
-- `raw_truth_posts` (NEW)
-- `normalized_events`
-- `features_daily`
-- `features_intraday`
-- `signals`
-- `signal_evidence`
-- `forecast_audit`
-- `agent_weights` (NEW — one row per agent per day with `accuracy_ema`, `weight`)
-- `telegram_dispatch_log` (NEW — every push attempt with delivery status)
-- `paper_trades` (NEW — user's Bought/Sold/Skipped responses)
-- `paper_forecasts` (NEW — model-generated paper-only probability, EV, risk/reward, outcome)
+- `stock_symbols`
+- `stock_watchlists`
+- `stock_raw_filings`
+- `stock_raw_news`
+- `stock_raw_prices`
+- `stock_raw_truth_posts`
+- `stock_normalized_events`
+- `stock_features_daily`
+- `stock_features_intraday`
+- `stock_signals`
+- `stock_signal_evidence`
+- `stock_forecast_audit` (one row per signal/horizon after `sql/0010`)
+- `stock_agent_weights` (one row per agent per day with `accuracy_ema`, `weight`)
+- `stock_telegram_dispatch_log` (every push attempt with delivery status)
+- `stock_paper_trades` (user's Bought/Sold/Skipped responses)
+- `stock_paper_forecasts` (model-generated paper-only probability, EV, risk/reward, outcome)
   - `forecast_mode='live'` for true live paper trades
   - `forecast_mode='shadow_backtest'` for historical replay validation rows
-- `backtest_runs`
-- `backtest_trades`
-- `model_registry`
-- `user_decisions`
-- `journal_entries`
+- `stock_backtest_runs`
+- `stock_backtest_trades`
+- `stock_model_registry`
+- `stock_user_decisions`
+- `stock_journal_entries`
+
+The current live RSS news sources are CNBC markets, MarketWatch top stories,
+and Seeking Alpha market currents. Reuters is tracked as a fallback probe in
+`stock_data_sources`; AP RSS is not currently polled.
 
 ### 11.3 Free-tier retention
 
@@ -537,7 +541,7 @@ Do not introduce a paid component until §19 calibration targets are met for 60 
 |---|---|---|
 | `truth_social_agent.yml` | `*/5 * * * *` | Poll Trump posts (RSS) — see note below for sub-5-min option |
 | `filing_agent.yml` | `*/5 * * * *` | EDGAR poll |
-| `news_agent.yml` | `*/5 * * * *` | CNBC / MarketWatch / AP RSS classifier |
+| `news_agent.yml` | `*/5 * * * *` | CNBC / MarketWatch / Seeking Alpha RSS classifier |
 | `earnings_agent.yml` | `0 12 * * 0` | Refresh upcoming/recent earnings events |
 | `thesis_agent.yml` | `*/5 * * * *` | Join evidence, score, dispatch Telegram |
 | `price_agent.yml` | `30 21 * * 1-5` UTC | EOD close audit + EMA weight update |

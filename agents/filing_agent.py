@@ -4,7 +4,7 @@ EDGAR filing agent.
 Polls SEC EDGAR for new filings on the watchlist, dedupes by accession_number,
 writes to stock_raw_filings + stock_normalized_events.
 
-Run via: .github/workflows/filing_agent.yml (cron */2)
+Run via: .github/workflows/filing_agent.yml (cron */5)
 Local test: SUPABASE_URL=... SUPABASE_SERVICE_KEY=... EDGAR_USER_AGENT="..." python agents/filing_agent.py
 """
 from __future__ import annotations
@@ -32,10 +32,20 @@ HEADERS_SB   = {
 # Forms we care about per kind of filer. Stocks get the broad set; institutions
 # get 13F (positions); mutual funds get N-PORT/N-CSR (holdings).
 FORMS_BY_KIND = {
-    "stock":       {"8-K","10-Q","10-K","4","13D","13G","13D/A","13G/A","S-3","S-3/A"},
+    "stock":       {
+        "8-K","10-Q","10-K","4",
+        "13D","13G","13D/A","13G/A",
+        "SC 13D","SC 13G","SC 13D/A","SC 13G/A",
+        "SCHEDULE 13D","SCHEDULE 13G","SCHEDULE 13D/A","SCHEDULE 13G/A",
+        "S-3","S-3/A",
+    },
     "etf":         {"N-PORT","N-CSR","N-CSRS","N-PORT-NT","485BPOS"},
     "mutual_fund": {"N-PORT","N-CSR","N-CSRS","N-PORT-NT","485BPOS"},
-    "institution": {"13F-HR","13F-HR/A","13F-NT","SC 13D","SC 13G"},
+    "institution": {
+        "13F-HR","13F-HR/A","13F-NT",
+        "SC 13D","SC 13G","SC 13D/A","SC 13G/A",
+        "SCHEDULE 13D","SCHEDULE 13G","SCHEDULE 13D/A","SCHEDULE 13G/A",
+    },
     "index":       set(),
 }
 
@@ -120,6 +130,8 @@ def severity_for_filing(form_type: str, raw: dict) -> int:
         "4":        1,
         "13D":      3,
         "13G":      2,
+        "13D/A":    2,
+        "13G/A":    1,
         "10-Q":     1,
         "10-K":     1,
         "S-3":      2,
@@ -129,6 +141,12 @@ def severity_for_filing(form_type: str, raw: dict) -> int:
         "13F-HR/A": 2,
         "SC 13D":   3,    # activist stake (>5%, intent to influence)
         "SC 13G":   2,    # passive stake
+        "SC 13D/A": 2,
+        "SC 13G/A": 1,
+        "SCHEDULE 13D":   3,
+        "SCHEDULE 13G":   2,
+        "SCHEDULE 13D/A": 2,
+        "SCHEDULE 13G/A": 1,
         # Mutual fund / ETF
         "N-PORT":   1,
         "N-CSR":    1,
@@ -188,10 +206,10 @@ def looks_like_dilution(filing: dict) -> tuple[bool, str]:
     return False, ""
 
 
-def upsert_filings(rows: list[dict], ticker: str) -> int:
-    """Insert into stock_raw_filings; conflict on accession_number is fine (dedupe)."""
+def upsert_filings(rows: list[dict], ticker: str) -> dict[str, int]:
+    """Insert into stock_raw_filings and return accession_number -> raw row id."""
     if not rows:
-        return 0
+        return {}
     payload = []
     for r in rows:
         payload.append({
@@ -203,15 +221,29 @@ def upsert_filings(rows: list[dict], ticker: str) -> int:
             "primary_doc_url":   r["primary_doc_url"],
             "raw_payload":       r,
         })
-    url = f"{SUPABASE_URL}/rest/v1/stock_raw_filings"
-    r = requests.post(url, headers=HEADERS_SB, json=payload, timeout=30)
+    url = f"{SUPABASE_URL}/rest/v1/stock_raw_filings?on_conflict=accession_number"
+    headers = {**HEADERS_SB, "Prefer": "resolution=merge-duplicates,return=representation"}
+    r = requests.post(url, headers=headers, json=payload, timeout=30)
     if r.status_code not in (200, 201, 204):
         print(f"  Supabase insert {r.status_code}: {r.text}", file=sys.stderr)
-        return 0
-    return len(payload)
+        return {}
+    returned = r.json() if r.text else []
+    if not returned:
+        in_list = ",".join(f'"{p["accession_number"]}"' for p in payload)
+        rr = requests.get(
+            f"{SUPABASE_URL}/rest/v1/stock_raw_filings?accession_number=in.({in_list})&select=id,accession_number",
+            headers=HEADERS_SB,
+            timeout=20,
+        )
+        returned = rr.json() if rr.status_code == 200 else []
+    return {
+        row["accession_number"]: int(row["id"])
+        for row in returned
+        if row.get("id") is not None and row.get("accession_number")
+    }
 
 
-def emit_normalized_events(filings: list[dict], ticker: str) -> int:
+def emit_normalized_events(filings: list[dict], ticker: str, raw_ids: dict[str, int]) -> int:
     """
     For each new filing, emit one stock_normalized_events row keyed off it.
     The Thesis Agent later joins these with other agents' events within a 5-min window.
@@ -229,9 +261,9 @@ def emit_normalized_events(filings: list[dict], ticker: str) -> int:
         ft = f["form_type"]
         if ft == "8-K":
             event_type = "8k_material_event"
-        elif ft in ("SC 13D", "13D"):
+        elif ft in ("SC 13D", "SC 13D/A", "SCHEDULE 13D", "SCHEDULE 13D/A", "13D", "13D/A"):
             event_type = "filing_13d"
-        elif ft in ("SC 13G", "13G"):
+        elif ft in ("SC 13G", "SC 13G/A", "SCHEDULE 13G", "SCHEDULE 13G/A", "13G", "13G/A"):
             event_type = "filing_13g"
         else:
             event_type = f"filing_{ft.lower().replace(' ', '_')}"
@@ -241,9 +273,9 @@ def emit_normalized_events(filings: list[dict], ticker: str) -> int:
             "event_at":     f["filed_at"],
             "severity":     sev,
             "source_table": "stock_raw_filings",
+            "source_id":    raw_ids.get(f["accession_number"]),
             # Defensive idempotency: stock_normalized_events has a partial unique index
-            # on dedupe_key. already_seen_accessions() prevents dups upstream, but if a
-            # re-run ever bypasses that (e.g. parallel jobs), this stops dup events.
+            # on dedupe_key, so reruns can heal raw/event lineage without dup events.
             "dedupe_key":   f"filing_{f['accession_number']}",
             "payload": {
                 "accession_number": f["accession_number"],
@@ -265,6 +297,7 @@ def emit_normalized_events(filings: list[dict], ticker: str) -> int:
                 "event_at":     f["filed_at"],
                 "severity":     3,
                 "source_table": "stock_raw_filings",
+                "source_id":    raw_ids.get(f["accession_number"]),
                 "dedupe_key":   f"dilution_{f['accession_number']}",
                 "payload": {
                     "accession_number": f["accession_number"],
@@ -279,7 +312,8 @@ def emit_normalized_events(filings: list[dict], ticker: str) -> int:
     # Without this, PostgREST defaults to PK conflict resolution and the
     # ignore-duplicates Prefer header silently fails to suppress 409s.
     url = f"{SUPABASE_URL}/rest/v1/stock_normalized_events?on_conflict=dedupe_key"
-    r = requests.post(url, headers=HEADERS_SB, json=payload, timeout=30)
+    headers = {**HEADERS_SB, "Prefer": "resolution=merge-duplicates,return=minimal"}
+    r = requests.post(url, headers=headers, json=payload, timeout=30)
     if r.status_code not in (200, 201, 204):
         print(f"  events insert {r.status_code}: {r.text}", file=sys.stderr)
         return 0
@@ -371,18 +405,12 @@ def main() -> int:
                     time.sleep(0.15)
                     continue
 
-                accs = [r["accession_number"] for r in recent]
-                seen = already_seen_accessions(accs)
-                new  = [r for r in recent if r["accession_number"] not in seen]
-                if not new:
-                    time.sleep(0.15)
-                    continue
-
-                n_filings = upsert_filings(new, ticker)
-                n_events  = emit_normalized_events(new, ticker)
+                raw_ids = upsert_filings(recent, ticker)
+                n_filings = len(raw_ids)
+                n_events  = emit_normalized_events(recent, ticker, raw_ids)
                 total_new_filings += n_filings
                 total_new_events  += n_events
-                print(f"  {ticker}: +{n_filings} filings, +{n_events} events")
+                print(f"  {ticker}: reconciled {n_filings} raw filings, {n_events} events")
             except Exception as e:  # noqa: BLE001 — never let one symbol crash the run
                 n_symbols_processed -= 1   # roll back the optimistic increment
                 dead_letter("filing_agent", "stock_symbols", None,

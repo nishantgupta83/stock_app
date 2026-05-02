@@ -1,7 +1,7 @@
 """
 News agent.
 
-Polls free RSS feeds (CNBC, MarketWatch, AP Business), dedupes by article id,
+Polls free RSS feeds (CNBC, MarketWatch, Seeking Alpha), dedupes by article id,
 classifies by ticker mention + sentiment keywords, and writes:
   - stock_raw_news (raw articles)
   - stock_normalized_events (one event per (article, affected_ticker) pair)
@@ -200,7 +200,48 @@ def already_seen_dedupe_keys(keys: list[str]) -> set[str]:
     return {row["dedupe_key"] for row in r.json()}
 
 
-def emit_news_events(articles: list[dict]) -> int:
+def upsert_raw_news(articles: list[dict]) -> dict[tuple[str, str], int]:
+    """Insert raw RSS articles first and return {(source, article_id): row_id}."""
+    if not articles:
+        return {}
+    raw_rows = [{
+        "source":       a["source"],
+        "external_id":  a["article_id"],
+        "headline":     a["headline"][:500],
+        "url":          a.get("url"),
+        "published_at": a["published_at"],
+        "raw_payload":  {
+            "article_id": a["article_id"],
+            "summary":    a.get("summary"),
+            "url":        a.get("url"),
+        },
+    } for a in articles]
+    r = requests.post(
+        f"{SUPABASE_URL}/rest/v1/stock_raw_news?on_conflict=source,external_id",
+        headers={**HEADERS_SB, "Prefer": "resolution=merge-duplicates,return=representation"},
+        json=raw_rows,
+        timeout=30,
+    )
+    if r.status_code not in (200, 201, 204):
+        print(f"  raw news upsert {r.status_code}: {r.text[:300]}", file=sys.stderr)
+        return {}
+    rows = r.json() if r.text else []
+    if not rows:
+        ids = ",".join(f'"{a["article_id"]}"' for a in articles)
+        r = requests.get(
+            f"{SUPABASE_URL}/rest/v1/stock_raw_news?external_id=in.({ids})&select=id,source,external_id",
+            headers=HEADERS_SB,
+            timeout=20,
+        )
+        rows = r.json() if r.status_code == 200 else []
+    return {
+        (str(row.get("source")), str(row.get("external_id"))): int(row["id"])
+        for row in rows
+        if row.get("id") is not None and row.get("source") and row.get("external_id")
+    }
+
+
+def emit_news_events(articles: list[dict], raw_ids: dict[tuple[str, str], int]) -> int:
     """One normalized event per (article, classified ticker)."""
     rows = []
     for a in articles:
@@ -216,6 +257,7 @@ def emit_news_events(articles: list[dict]) -> int:
                 "event_at":          a["published_at"],
                 "severity":          sev,
                 "source_table":      "stock_raw_news",
+                "source_id":         raw_ids.get((a["source"], a["article_id"])),
                 "parser_confidence": 0.55,
                 "dedupe_key":        f"news_{a['article_id']}_{h['ticker']}",
                 "payload": {
@@ -230,7 +272,9 @@ def emit_news_events(articles: list[dict]) -> int:
         return 0
     r = requests.post(
         f"{SUPABASE_URL}/rest/v1/stock_normalized_events?on_conflict=dedupe_key",
-        headers=HEADERS_SB, json=rows, timeout=20,
+        headers={**HEADERS_SB, "Prefer": "resolution=merge-duplicates,return=minimal"},
+        json=rows,
+        timeout=20,
     )
     if r.status_code not in (200, 201, 204):
         print(f"  events insert {r.status_code}: {r.text[:300]}", file=sys.stderr)
@@ -245,6 +289,7 @@ def poll_feed(source_name: str, feed_url: str) -> list[dict]:
         feed = feedparser.parse(feed_url, request_headers={"User-Agent": "Hub4Apps Market Intel/1.0"})
         if feed.bozo and not feed.entries:
             print(f"  {source_name}: feed parse error — {feed.bozo_exception}", file=sys.stderr)
+            dead_letter("news_agent", "feed_parse_failure", f"{source_name}: {feed.bozo_exception}")
             return []
         for entry in feed.entries:
             art_id = _article_id(entry, source_name)
@@ -267,6 +312,7 @@ def poll_feed(source_name: str, feed_url: str) -> list[dict]:
             })
     except Exception as e:  # noqa: BLE001
         print(f"  {source_name}: exception — {e}", file=sys.stderr)
+        dead_letter("news_agent", "feed_exception", f"{source_name}: {e}")
     return articles
 
 
@@ -288,8 +334,8 @@ def main() -> int:
             job_run_finish(run_id, "ok", 0, 0)
             return 0
 
-        # DB handles dedup via resolution=ignore-duplicates on dedupe_key unique index
-        total_events = emit_news_events(all_articles)
+        raw_ids = upsert_raw_news(all_articles)
+        total_events = emit_news_events(all_articles, raw_ids)
         print(f"Fetched {total_in} articles, {total_events} events emitted (dupes ignored by DB)")
         job_run_finish(run_id, "ok", total_in, total_events)
         return 0

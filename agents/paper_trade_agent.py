@@ -77,6 +77,7 @@ class SetupFeatures:
 class CalibrationRow:
     signal_id: int
     fired_at: datetime
+    known_at: datetime
     features: SetupFeatures
     correct: bool
     realized_return: float
@@ -224,6 +225,12 @@ def _agents_from_signal(signal: dict) -> tuple[str, ...]:
     return tuple(sorted(str(a) for a in agents if a))
 
 
+def _event_types_from_signal(signal: dict) -> tuple[str, ...]:
+    wt = signal.get("weight_at_time") or {}
+    types = wt.get("primary_event_types", []) if isinstance(wt, dict) else []
+    return tuple(sorted(str(t) for t in types if t))
+
+
 def _display_action(signal: dict) -> str:
     wt = signal.get("weight_at_time") or {}
     if isinstance(wt, dict) and wt.get("display_action"):
@@ -304,7 +311,7 @@ def existing_forecast_signal_ids(signal_ids: list[int], forecast_mode: str | Non
 
 def fetch_calibration_rows(limit: int = 5000) -> list[CalibrationRow]:
     status, audits = sb_get("stock_forecast_audit", {
-        "select": "signal_id,horizon_days,realized_return,correct",
+        "select": "signal_id,horizon_days,realized_return,realized_at,correct,computed_at",
         "order":  "computed_at.desc",
         "limit":  str(limit),
     })
@@ -357,6 +364,9 @@ def fetch_calibration_rows(limit: int = 5000) -> list[CalibrationRow]:
         fired_at = parse_dt(sig.get("fired_at"))
         if fired_at is None:
             continue
+        known_at = parse_dt(audit.get("computed_at")) or parse_dt(audit.get("realized_at"))
+        if known_at is None:
+            continue
         try:
             realized = float(audit["realized_return"])
         except (TypeError, ValueError):
@@ -364,6 +374,7 @@ def fetch_calibration_rows(limit: int = 5000) -> list[CalibrationRow]:
         out.append(CalibrationRow(
             signal_id=sid,
             fired_at=fired_at,
+            known_at=known_at,
             features=features,
             correct=bool(audit["correct"]),
             realized_return=realized,
@@ -442,7 +453,7 @@ def fetch_audits_by_signal(signal_ids: list[int]) -> dict[int, dict]:
         chunk = ",".join(str(x) for x in signal_ids[i:i + 100])
         status, rows = sb_get("stock_forecast_audit", {
             "signal_id": f"in.({chunk})",
-            "select": "signal_id,horizon_days,realized_return,realized_at,correct",
+            "select": "signal_id,horizon_days,realized_return,realized_at,correct,computed_at,entry_price,exit_price",
             "limit": "100",
         })
         if status == 200:
@@ -497,12 +508,30 @@ def next_open_price(signal: dict, bars_by_ticker: dict[str, list[dict]]) -> floa
 
 
 def realized_exit_price(entry: float | None, audit: dict | None) -> float | None:
+    if audit and audit.get("exit_price") is not None:
+        try:
+            return float(audit["exit_price"])
+        except (TypeError, ValueError):
+            pass
     if entry is None or not audit or audit.get("realized_return") is None:
         return None
     try:
         return entry * (1 + float(audit["realized_return"]))
     except (TypeError, ValueError):
         return None
+
+
+def paper_correct_for_action(paper_action: str, realized_return: float | None) -> bool | None:
+    """Paper outcome semantics, shared with price_agent.close_paper_forecasts."""
+    if realized_return is None:
+        return None
+    if paper_action == "PAPER_LONG":
+        return realized_return > 0
+    if paper_action == "PAPER_SHORT":
+        return realized_return < 0
+    if paper_action in ("PAPER_AVOID", "PAPER_CHASE_RISK"):
+        return realized_return <= 0
+    return None
 
 
 # ============================================================
@@ -582,6 +611,16 @@ def build_forecast(signal: dict, calibration_rows: list[CalibrationRow],
 
     ticker = str(signal["ticker"])
     entry = entry_prices.get(int(signal["id"])) or entry_prices.get(ticker)
+    if entry is None and close_audit and close_audit.get("entry_price") is not None:
+        try:
+            entry = float(close_audit["entry_price"])
+        except (TypeError, ValueError):
+            entry = None
+    entry_basis = (
+        "next_session_open"
+        if forecast_mode == FORECAST_MODE_SHADOW and int(signal["id"]) in entry_prices
+        else "latest_close_reference_pending_next_session_open"
+    )
     level_win = bounded_level(avg_win, 0.02, 0.01, 0.08)
     level_loss = bounded_level(avg_loss, 0.015, 0.01, 0.06)
     target = stop = None
@@ -601,10 +640,18 @@ def build_forecast(signal: dict, calibration_rows: list[CalibrationRow],
         "signal_score": float(signal.get("score") or 0),
         "score_bucket": features.score_bucket,
         "agents": list(features.agents),
+        "event_types": list(_event_types_from_signal(signal)),
         "flags": sorted(features.important_flags()),
+        "setup_key": "|".join(_event_types_from_signal(signal) or tuple(sorted(features.important_flags()))) or features.action,
         "base_n": len(base_rows),
         "setup_n": n,
+        "min_setup_n_for_watch": MIN_SETUP_N_FOR_WATCH,
+        "min_setup_n_for_long": MIN_SETUP_N_FOR_LONG,
+        "sample_floor_met": n >= MIN_SETUP_N_FOR_WATCH,
         "shrinkage_k": SHRINKAGE_K,
+        "entry_basis": entry_basis,
+        "outcome_contract": "next_session_open_to_horizon_close",
+        "target_stop_audited": False,
         "source_evidence_summary": signal.get("evidence_summary"),
     }
 
@@ -647,12 +694,13 @@ def build_forecast(signal: dict, calibration_rows: list[CalibrationRow],
             except (TypeError, ValueError):
                 realized = None
         exit_px = realized_exit_price(entry, close_audit)
+        paper_correct = paper_correct_for_action(paper_action, realized)
         row.update({
             "status":          "closed",
             "exit_price":      round(exit_px, 4) if exit_px is not None else None,
             "realized_return": round(realized, 6) if realized is not None else None,
             "realized_at":     close_audit.get("realized_at"),
-            "correct":         bool(close_audit.get("correct")),
+            "correct":         paper_correct,
             "reason_summary":  f"SHADOW_BACKTEST: {reason}",
         })
     return row
@@ -733,7 +781,7 @@ def run_shadow_backtest(days: int) -> int:
     """Fill historical paper forecasts without contaminating live paper trading.
 
     The replay walks one calendar day at a time. For each day it calibrates only
-    on audit rows whose signal fired before that day, then writes that day's
+    on audit rows whose outcome was computed before that day, then writes that day's
     shadow forecasts as already-closed rows using the historical audit outcome.
     """
     run_id = job_run_start()
@@ -786,7 +834,7 @@ def run_shadow_backtest(days: int) -> int:
         for day in sorted(by_day):
             day_signals = by_day[day]
             day_cutoff = _day_start(day)
-            prior_rows = [r for r in calibration_rows if r.fired_at < day_cutoff]
+            prior_rows = [r for r in calibration_rows if r.known_at < day_cutoff]
             entry_prices: dict[int | str, float] = {}
             for signal in day_signals:
                 entry = next_open_price(signal, bars_by_ticker)

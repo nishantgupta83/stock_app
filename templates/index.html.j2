@@ -25,7 +25,7 @@
   </div>
 </div>
 
-<h3>Recent signals</h3>
+<h3>Recent live signals</h3>
 {% if recent_signals %}
 <table>
   <thead>
@@ -40,7 +40,7 @@
       <td><span class="tag {{ action }}">{{ action }}</span></td>
       <td class="num">
         {{ s.score|int }}
-        <span class="score-bar"><span class="fill" style="width: {{ (s.score|float / 100 * 100)|round|int }}%"></span></span>
+        <span class="score-bar"><span class="fill" style="width: {{ s.score_pct|round|int }}%"></span></span>
       </td>
       <td>{{ s.evidence_summary }}</td>
       <td><span class="tag {{ s.status_v2 }}">{{ s.status_v2 }}</span></td>
@@ -49,10 +49,10 @@
   </tbody>
 </table>
 {% else %}
-<div class="empty">No signals yet. The system fires only when ≥2 agents agree (per §15.3 cluster rule). Quiet days are normal — high signal density is the goal.</div>
+<div class="empty">No live signals yet. Backtest rows are kept out of this dashboard summary so live paper review stays separate.</div>
 {% endif %}
 
-<h3>Building toward a signal <span style="color:var(--muted);font-size:13px;font-weight:normal">— tickers accumulating evidence, last 5 days</span></h3>
+<h3>Building toward a signal <span style="color:var(--muted);font-size:13px;font-weight:normal">— past tracked events, last 5 days</span></h3>
 {% if candidates %}
 <table>
   <thead>
@@ -92,6 +92,6 @@
 </div>
 
 <div class="note">
-  <strong>Reading guide:</strong> WATCH = ≥2 agents agree, score ≥70. RESEARCH = single strong signal. AVOID_CHASE = price moved before alert fired. The bot stays in this conservative vocabulary until 60 days of paper trading hits the §17.6 graduation thresholds.
+  <strong>Reading guide:</strong> WATCH = ≥2 agents agree, score ≥70. RESEARCH = single strong signal. AVOID_CHASE = bearish or cautionary setup. CHASE_RISK = bullish setup where price already moved before the alert. All language is paper-only.
 </div>
 {% endblock %}

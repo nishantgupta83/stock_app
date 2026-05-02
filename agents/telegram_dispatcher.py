@@ -73,8 +73,8 @@ def inline_keyboard(signal_id: int) -> dict:
 
 def log_dispatch(signal_id: int, payload_text: str, ok: bool, msg_id: int | None, err: str | None) -> None:
     requests.post(
-        f"{SUPABASE_URL}/rest/v1/stock_telegram_dispatch_log",
-        headers=HEADERS_SB,
+        f"{SUPABASE_URL}/rest/v1/stock_telegram_dispatch_log?on_conflict=dedupe_key",
+        headers={**HEADERS_SB, "Prefer": "resolution=merge-duplicates,return=minimal"},
         json={
             "signal_id":       signal_id,
             "sent_at":         datetime.now(timezone.utc).isoformat(),

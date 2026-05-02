@@ -18,7 +18,20 @@
 
 <canvas id="priceChart" height="80"></canvas>
 
-<h3 style="margin-top:28px">Big moves <span style="color:var(--muted);font-size:13px;font-weight:normal">— days the close moved &gt; 5%, with events from the prior 2 trading days as candidate causes (correlation, not causation)</span></h3>
+<h3 style="margin-top:28px">Context moves <span style="color:var(--muted);font-size:13px;font-weight:normal">— broad, sector, rates, crypto, and oil context; paper-only</span></h3>
+<table id="contextTable">
+  <thead>
+    <tr>
+      <th>Series</th>
+      <th class="num">5 sessions</th>
+      <th class="num">20 sessions</th>
+      <th class="num">60 sessions</th>
+    </tr>
+  </thead>
+  <tbody id="contextRows"></tbody>
+</table>
+
+<h3 style="margin-top:28px">Big moves <span style="color:var(--muted);font-size:13px;font-weight:normal">— days the close moved &gt; 5%, with nearby tracked events as candidate catalysts (correlation, not causation)</span></h3>
 <table id="bigMovesTable">
   <thead>
     <tr>
@@ -58,18 +71,54 @@
 <script src="{{ root_path | default('') }}vendor/chart.umd.min.js"></script>
 <script src="{{ root_path | default('') }}vendor/chartjs-plugin-annotation.min.js"></script>
 <script id="pdata" type="application/json">{{ price_json|tojson }}</script>
+<script id="cdata" type="application/json">{{ context_json|tojson }}</script>
 <script id="sdata" type="application/json">{{ signals_json|tojson }}</script>
 <script id="edata" type="application/json">{{ events_json|tojson }}</script>
 <script>
 const prices  = JSON.parse(document.getElementById('pdata').textContent);
+const context = JSON.parse(document.getElementById('cdata').textContent);
 const signals = JSON.parse(document.getElementById('sdata').textContent);
 const events  = JSON.parse(document.getElementById('edata').textContent);
+const tickerSymbol = {{ ticker|tojson }};
 
 // ── Date axis (one entry per available trading day) ──────────────
 const labels = prices.map(p => p.date);
 const closes = prices.map(p => p.close);
 const dateToIdx = {};
 labels.forEach((d, i) => { dateToIdx[d] = i; });
+
+function windowReturn(series, sessions) {
+  if (!series || series.length <= sessions) return null;
+  const end = series[series.length - 1].close;
+  const start = series[series.length - 1 - sessions].close;
+  if (!end || !start) return null;
+  return (end - start) / start;
+}
+
+function fmtRet(v) {
+  if (v === null || v === undefined || Number.isNaN(Number(v))) return '-';
+  return (v * 100).toFixed(2) + '%';
+}
+
+const contextBody = document.getElementById('contextRows');
+const contextSymbols = [tickerSymbol].concat(Object.keys(context).filter(k => k !== tickerSymbol).sort());
+for (const symbol of contextSymbols) {
+  const series = symbol === tickerSymbol ? prices : context[symbol];
+  const tr = document.createElement('tr');
+  const cells = [
+    symbol,
+    fmtRet(windowReturn(series, 5)),
+    fmtRet(windowReturn(series, 20)),
+    fmtRet(windowReturn(series, 60)),
+  ];
+  cells.forEach((text, idx) => {
+    const td = document.createElement('td');
+    if (idx > 0) td.className = 'num';
+    td.textContent = text;
+    tr.appendChild(td);
+  });
+  contextBody.appendChild(tr);
+}
 
 // ── Event-type → display config ──────────────────────────────────
 function eventBucket(et) {
@@ -194,7 +243,7 @@ for (let i = 1; i < prices.length; i++) {
   const ret  = (cur - prev) / prev;
   if (Math.abs(ret) < 0.05) continue;
 
-  // Find events in the prior 2 trading days (i-2 to i, inclusive of move day itself)
+  // Find tracked events in the prior 2 trading days through move day.
   const lowDateIdx  = Math.max(0, i - 2);
   const highDateIdx = i;
   const lowDate  = prices[lowDateIdx].date;

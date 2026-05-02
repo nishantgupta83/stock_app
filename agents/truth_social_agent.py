@@ -159,20 +159,34 @@ def already_seen_post_ids(ids: list[str]) -> set[str]:
     return {row["post_id"] for row in r.json()}
 
 
-def upsert_posts(posts: list[dict]) -> int:
+def upsert_posts(posts: list[dict]) -> dict[str, int]:
     if not posts:
-        return 0
+        return {}
     r = requests.post(
-        f"{SUPABASE_URL}/rest/v1/stock_raw_truth_posts",
-        headers=HEADERS_SB, json=posts, timeout=20,
+        f"{SUPABASE_URL}/rest/v1/stock_raw_truth_posts?on_conflict=post_id",
+        headers={**HEADERS_SB, "Prefer": "resolution=merge-duplicates,return=representation"},
+        json=posts, timeout=20,
     )
     if r.status_code not in (200, 201, 204):
         print(f"  posts insert {r.status_code}: {r.text}", file=sys.stderr)
-        return 0
-    return len(posts)
+        return {}
+    returned = r.json() if r.text else []
+    if not returned:
+        in_list = ",".join(f'"{p["post_id"]}"' for p in posts)
+        rr = requests.get(
+            f"{SUPABASE_URL}/rest/v1/stock_raw_truth_posts?post_id=in.({in_list})&select=id,post_id",
+            headers=HEADERS_SB,
+            timeout=15,
+        )
+        returned = rr.json() if rr.status_code == 200 else []
+    return {
+        str(row["post_id"]): int(row["id"])
+        for row in returned
+        if row.get("id") is not None and row.get("post_id")
+    }
 
 
-def emit_truth_events(posts: list[dict]) -> int:
+def emit_truth_events(posts: list[dict], raw_ids: dict[str, int]) -> int:
     """One normalized event per (post, classified ticker)."""
     rows = []
     for p in posts:
@@ -187,6 +201,7 @@ def emit_truth_events(posts: list[dict]) -> int:
                 "event_at":       p["posted_at"],
                 "severity":       2,                 # treat as medium by default
                 "source_table":   "stock_raw_truth_posts",
+                "source_id":      raw_ids.get(p["post_id"]),
                 "parser_confidence": 0.7,            # rule-based, mid confidence
                 "dedupe_key":     f"truth_{p['post_id']}_{h['ticker']}",
                 "payload": {
@@ -201,7 +216,9 @@ def emit_truth_events(posts: list[dict]) -> int:
         return 0
     r = requests.post(
         f"{SUPABASE_URL}/rest/v1/stock_normalized_events?on_conflict=dedupe_key",
-        headers=HEADERS_SB, json=rows, timeout=20,
+        headers={**HEADERS_SB, "Prefer": "resolution=merge-duplicates,return=minimal"},
+        json=rows,
+        timeout=20,
     )
     if r.status_code not in (200, 201, 204):
         print(f"  events insert {r.status_code}: {r.text}", file=sys.stderr)
@@ -252,12 +269,10 @@ def main() -> int:
                 "source":     "trumpstruth_rss",
             })
 
-        ids = [c["post_id"] for c in candidates]
-        seen = already_seen_post_ids(ids)
-        new_posts = [c for c in candidates if c["post_id"] not in seen]
-        n_posts_new = upsert_posts(new_posts)
-        n_events = emit_truth_events(new_posts)
-        print(f"New posts: {n_posts_new}, classified events: {n_events}")
+        raw_ids = upsert_posts(candidates)
+        n_posts_new = len(raw_ids)
+        n_events = emit_truth_events(candidates, raw_ids)
+        print(f"Reconciled posts: {n_posts_new}, classified events: {n_events}")
         job_run_finish(run_id, "ok", n_posts_in, n_posts_new + n_events)
         return 0
 

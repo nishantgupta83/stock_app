@@ -5,7 +5,7 @@ Runs every weekday at 21:30 UTC (4:30 PM ET, after US market close).
 
 Pipeline:
   1. Fetch live signals (status_v2 IN candidate/sent/suppressed) whose horizon has expired.
-  2. Fetch entry price (close on fired_at date) and exit price (close on exit date).
+  2. Fetch entry price (next session open after fired_at) and exit price (horizon close).
   3. Compute realized return and correctness (direction-aware).
   4. Write stock_forecast_audit row.
   5. Close any stock_paper_forecasts rows tied to that signal.
@@ -20,8 +20,6 @@ from __future__ import annotations
 import os
 import sys
 from datetime import date, datetime, timedelta, timezone
-from typing import Optional
-
 import requests
 import yfinance as yf
 
@@ -44,6 +42,7 @@ HEADERS_SB = {
 }
 
 EMA_ALPHA = 0.1   # same as backtester — consistent learning rate across live + replay
+SLIPPAGE_BPS = 5  # same as backtester: 0.05% per side, no commissions
 
 
 # ============================================================
@@ -61,11 +60,13 @@ def sb_get(path: str, params: dict | None = None) -> list[dict]:
     return r.json()
 
 
-def sb_post(path: str, rows: list[dict], prefer: str = "resolution=ignore-duplicates,return=minimal") -> bool:
+def sb_post(path: str, rows: list[dict], prefer: str = "resolution=ignore-duplicates,return=minimal",
+            on_conflict: str | None = None) -> bool:
     if not rows:
         return True
     hdrs = {**HEADERS_SB, "Prefer": prefer}
-    r = requests.post(f"{SUPABASE_URL}/rest/v1/{path}", headers=hdrs, json=rows, timeout=20)
+    suffix = f"?on_conflict={on_conflict}" if on_conflict else ""
+    r = requests.post(f"{SUPABASE_URL}/rest/v1/{path}{suffix}", headers=hdrs, json=rows, timeout=20)
     if r.status_code not in (200, 201, 204):
         print(f"  SB POST {path} {r.status_code}: {r.text[:300]}", file=sys.stderr)
         return False
@@ -109,7 +110,7 @@ def fetch_mature_signals() -> list[dict]:
         "order":     "fired_at.asc",
         "limit":     "500",
     })
-    yesterday = date.today() - timedelta(days=1)
+    yesterday = datetime.now(timezone.utc).date() - timedelta(days=1)
     mature = []
     for s in rows:
         try:
@@ -124,16 +125,16 @@ def fetch_mature_signals() -> list[dict]:
     return mature
 
 
-def already_audited(signal_ids: list[int]) -> set[int]:
-    """Return signal_ids that already have a forecast_audit row (skip re-processing)."""
+def existing_audits(signal_ids: list[int]) -> dict[int, dict]:
+    """Return existing forecast audits by signal_id for idempotent healing."""
     if not signal_ids:
-        return set()
+        return {}
     in_list = ",".join(str(i) for i in signal_ids)
     rows = sb_get("stock_forecast_audit", {
         "signal_id": f"in.({in_list})",
-        "select":    "signal_id",
+        "select":    "signal_id,horizon_days,realized_return,realized_at,correct,entry_price,exit_price,entry_at,exit_at",
     })
-    return {r["signal_id"] for r in rows}
+    return {int(r["signal_id"]): r for r in rows if r.get("signal_id") is not None}
 
 
 # ============================================================
@@ -144,8 +145,8 @@ def _yf_ticker(sym: str) -> yf.Ticker:
     return yf.Ticker(sym, session=_CF_SESSION) if _CF_SESSION else yf.Ticker(sym)
 
 
-def fetch_closes(ticker: str, start: date, end: date) -> dict[date, float]:
-    """Return {date: close_price} for ticker between start and end+7 days (covers weekends/holidays)."""
+def fetch_bars(ticker: str, start: date, end: date) -> dict[date, dict[str, float]]:
+    """Return adjusted daily OHLC bars between start and end+7 days."""
     try:
         t = _yf_ticker(ticker)
         df = t.history(
@@ -155,21 +156,34 @@ def fetch_closes(ticker: str, start: date, end: date) -> dict[date, float]:
         )
         if df.empty:
             return {}
-        result = {}
+        result: dict[date, dict[str, float]] = {}
         for ts, row in df.iterrows():
             d = ts.date() if hasattr(ts, "date") else ts.to_pydatetime().date()
-            result[d] = float(row["Close"])
+            result[d] = {
+                "open":  float(row["Open"]),
+                "close": float(row["Close"]),
+            }
         return result
     except Exception as e:
         print(f"  {ticker}: price fetch error — {e}", file=sys.stderr)
         return {}
 
 
-def get_close_on_or_after(closes: dict[date, float], target: date) -> Optional[float]:
+def next_session_open(bars: dict[date, dict[str, float]], after: date) -> tuple[date, float] | None:
+    """Return the first trading session open after the signal fire date."""
+    for d in sorted(bars):
+        if d > after and bars[d].get("open"):
+            return d, bars[d]["open"]
+    return None
+
+
+def close_on_or_after(bars: dict[date, dict[str, float]], target: date) -> tuple[date, float] | None:
     """Return the close on target date, or the next available trading day."""
-    for d in sorted(closes):
+    for d in sorted(bars):
         if d >= target:
-            return closes[d]
+            close = bars[d].get("close")
+            if close:
+                return d, close
     return None
 
 
@@ -177,7 +191,7 @@ def get_close_on_or_after(closes: dict[date, float], target: date) -> Optional[f
 # Outcome computation
 # ============================================================
 
-def compute_outcome(signal: dict, closes: dict[date, float]) -> dict | None:
+def compute_outcome(signal: dict, bars: dict[date, dict[str, float]]) -> dict | None:
     """
     Returns {entry_price, exit_price, net_return, correct} or None if prices unavailable.
     correct is direction-aware:
@@ -185,11 +199,17 @@ def compute_outcome(signal: dict, closes: dict[date, float]) -> dict | None:
       - CHASE_RISK warns against chasing upside and is correct when no further
         positive follow-through occurs over the audited horizon.
     """
-    entry = get_close_on_or_after(closes, signal["_fired_date"])
-    exit_ = get_close_on_or_after(closes, signal["_exit_date"])
-    if entry is None or exit_ is None or entry == 0:
+    entry = next_session_open(bars, signal["_fired_date"])
+    if entry is None:
         return None
-    net_return = (exit_ - entry) / entry
+    entry_date, entry_price = entry
+    exit_target = entry_date + timedelta(days=int(signal.get("horizon_days") or 1) - 1)
+    exit_ = close_on_or_after(bars, exit_target)
+    if exit_ is None or entry_price == 0:
+        return None
+    exit_date, exit_price = exit_
+    raw_return = (exit_price - entry_price) / entry_price
+    net_return = raw_return - 2 * (SLIPPAGE_BPS / 10000)
     action = signal.get("action") or "RESEARCH"
     # Bearish signals (AVOID_CHASE) are correct when price drops.
     # CHASE_RISK is a caution label: correct if the post-alert move is flat/down.
@@ -200,8 +220,10 @@ def compute_outcome(signal: dict, closes: dict[date, float]) -> dict | None:
     else:
         correct = net_return > 0
     return {
-        "entry_price": round(entry, 4),
-        "exit_price":  round(exit_, 4),
+        "entry_price": round(entry_price, 4),
+        "exit_price":  round(exit_price, 4),
+        "entry_at":     entry_date.isoformat() + "T14:30:00+00:00",
+        "exit_at":      exit_date.isoformat() + "T20:00:00+00:00",
         "net_return":  round(net_return, 6),
         "correct":     correct,
     }
@@ -216,9 +238,14 @@ def write_forecast_audit(signal_id: int, signal: dict, outcome: dict) -> None:
         "signal_id":       signal_id,
         "horizon_days":    int(signal.get("horizon_days") or 1),
         "realized_return": outcome["net_return"],
-        "realized_at":     signal["_exit_date"].isoformat() + "T20:00:00+00:00",
+        "realized_at":     outcome["exit_at"],
         "correct":         outcome["correct"],
-    }])
+        "entry_price":     outcome["entry_price"],
+        "exit_price":      outcome["exit_price"],
+        "entry_at":        outcome["entry_at"],
+        "exit_at":         outcome["exit_at"],
+        "outcome_method":  "next_session_open_to_horizon_close",
+    }], prefer="resolution=merge-duplicates,return=minimal", on_conflict="signal_id,horizon_days")
 
 
 def close_paper_forecasts(signal_id: int, signal: dict, outcome: dict) -> None:
@@ -247,21 +274,44 @@ def close_paper_forecasts(signal_id: int, signal: dict, outcome: dict) -> None:
         else:
             correct = None
 
-        sb_patch(f"stock_paper_forecasts?id=eq.{row['id']}", {
+        patch = {
             "status":          "closed",
-            "exit_price":      outcome["exit_price"],
             "realized_return": outcome["net_return"],
-            "realized_at":     signal["_exit_date"].isoformat() + "T20:00:00+00:00",
+            "realized_at":     outcome.get("exit_at") or outcome.get("realized_at"),
             "correct":         correct,
             "updated_at":      datetime.now(timezone.utc).isoformat(),
-        })
+        }
+        if outcome.get("entry_price") is not None:
+            patch["entry_price"] = outcome["entry_price"]
+        if outcome.get("exit_price") is not None:
+            patch["exit_price"] = outcome["exit_price"]
+        sb_patch(f"stock_paper_forecasts?id=eq.{row['id']}", patch)
+
+
+def outcome_from_audit(audit: dict) -> dict | None:
+    """Build a patchable paper-forecast outcome from an existing audit row."""
+    if audit.get("realized_return") is None:
+        return None
+    try:
+        realized = float(audit["realized_return"])
+    except (TypeError, ValueError):
+        return None
+    return {
+        "entry_price": float(audit["entry_price"]) if audit.get("entry_price") is not None else None,
+        "exit_price": float(audit["exit_price"]) if audit.get("exit_price") is not None else None,
+        "entry_at": audit.get("entry_at"),
+        "exit_at": audit.get("exit_at") or audit.get("realized_at"),
+        "realized_at": audit.get("realized_at"),
+        "net_return": round(realized, 6),
+        "correct": bool(audit.get("correct")) if audit.get("correct") is not None else None,
+    }
 
 
 def update_agent_weights(agents: list[str], correct: bool) -> None:
     """Fetch latest EMA for each agent and apply one EMA step."""
     if not agents:
         return
-    today = date.today().isoformat()
+    today = datetime.now(timezone.utc).date().isoformat()
     rows = []
     for agent in agents:
         latest = sb_get("stock_agent_weights", {
@@ -296,7 +346,7 @@ def send_digest(results: list[dict]) -> None:
         return
     wins   = [r for r in results if r["outcome"]["correct"]]
     losses = [r for r in results if not r["outcome"]["correct"]]
-    lines  = [f"<b>📊 EOD Recap · {date.today().isoformat()}</b>"]
+    lines  = [f"<b>📊 EOD Recap · {datetime.now(timezone.utc).date().isoformat()}</b>"]
     lines.append(f"{len(results)} signal(s) closed — {len(wins)} ✅  {len(losses)} ❌\n")
     for r in results:
         o    = r["outcome"]
@@ -370,23 +420,28 @@ def main() -> int:
             job_run_finish(run_id, "ok", 0, 0)
             return 0
 
-        # Skip signals already audited (idempotent re-runs)
-        audited = already_audited([s["id"] for s in signals])
-        pending = [s for s in signals if s["id"] not in audited]
-        print(f"  {len(audited)} already audited, {len(pending)} to process")
+        # Existing audit rows are not ignored: reruns use them to heal dependent
+        # paper_forecasts and signal status without double-counting weights.
+        audits = existing_audits([s["id"] for s in signals])
+        pending = [s for s in signals if s["id"] not in audits]
+        print(f"  {len(audits)} already audited, {len(pending)} to process")
         for sig in signals:
-            if sig["id"] in audited:
+            audit = audits.get(int(sig["id"]))
+            if audit:
+                healed = outcome_from_audit(audit)
+                if healed:
+                    close_paper_forecasts(sig["id"], sig, healed)
                 close_signal(sig["id"])
 
         results = []
         for sig in pending:
             ticker = sig["ticker"]
-            closes = fetch_closes(ticker, sig["_fired_date"], sig["_exit_date"])
-            if not closes:
+            bars = fetch_bars(ticker, sig["_fired_date"], sig["_exit_date"])
+            if not bars:
                 print(f"  {ticker} signal {sig['id']}: no price data — skipping", file=sys.stderr)
                 continue
 
-            outcome = compute_outcome(sig, closes)
+            outcome = compute_outcome(sig, bars)
             if outcome is None:
                 print(f"  {ticker} signal {sig['id']}: price unavailable for window — skipping", file=sys.stderr)
                 continue

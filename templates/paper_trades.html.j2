@@ -37,7 +37,7 @@
 <div class="note">
   <strong>No paper forecasts yet:</strong>
   latest paper agent run{% if paper_job.started_at %} started {{ paper_job.started_at[:16] }} UTC, status {{ paper_job.status }}, rows in/out {{ paper_job.rows_in or 0 }}/{{ paper_job.rows_out or 0 }}{% endif %}.
-  Scheduled runs stay live-only. To fill historical examples, run `paper_trade_agent.yml` manually with mode `shadow_30d` after applying `sql/0009_paper_forecast_modes.sql`.
+  Scheduled runs stay live-only. To fill historical examples, run `paper_trade_agent.yml` manually with mode `shadow_30d` after applying migrations through `sql/0010_reliability_and_calibration.sql`.
 </div>
 {% elif paper_metrics.live_open == 0 %}
 <div class="note">
@@ -102,8 +102,46 @@
 <div class="note">
   <strong>Interpretation:</strong>
   `prob` is the chance that the paper thesis is correct, not the chance of guaranteed profit.
-  `EV` is estimated from similar audited setups and is noisy when sample size is small.
+  `EV` is estimated from similar audited setups and is noisy when sample size is small. Targets and stops are display assumptions until an intraday target/stop audit exists.
 </div>
+
+<h3>Calibration groups</h3>
+{% if calibration_groups %}
+<table>
+  <thead>
+    <tr>
+      <th>Mode</th>
+      <th>Ticker</th>
+      <th>Setup</th>
+      <th>Action</th>
+      <th class="num">Horizon</th>
+      <th class="num">Rows</th>
+      <th class="num">Closed</th>
+      <th class="num">Hit Rate</th>
+      <th class="num">Avg Prob</th>
+      <th class="num">Avg EV</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for g in calibration_groups %}
+    <tr>
+      <td><span class="tag {{ g.forecast_mode }}">{{ g.forecast_mode }}</span></td>
+      <td><strong>{{ g.ticker }}</strong></td>
+      <td>{{ g.setup_key }} · {{ g.score_bucket }}</td>
+      <td><span class="tag {{ g.paper_action }}">{{ g.paper_action }}</span></td>
+      <td class="num">{{ g.horizon_days }}d</td>
+      <td class="num">{{ g.n }}</td>
+      <td class="num">{{ g.closed }}</td>
+      <td class="num">{% if g.hit_rate is none %}—{% else %}{{ "%.0f%%"|format(g.hit_rate * 100) }}{% endif %}</td>
+      <td class="num">{% if g.avg_prob is none %}—{% else %}{{ "%.0f%%"|format(g.avg_prob * 100) }}{% endif %}</td>
+      <td class="num">{% if g.avg_ev is none %}—{% else %}{{ "%+.2f%%"|format(g.avg_ev * 100) }}{% endif %}</td>
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
+{% else %}
+<div class="empty">No calibration groups yet.</div>
+{% endif %}
 
 <script id="data" type="application/json">{{ forecasts_json|tojson }}</script>
 <script>

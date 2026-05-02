@@ -354,6 +354,7 @@ def realized_outcome(ticker: str, signal_time: datetime, horizon_days: int = 1,
     entry_date, entry_px = entry
     # Exit at close of (entry_date + horizon_days - 1) — for horizon=1 that's same day close
     exit_target = entry_date + timedelta(days=horizon_days - 1)
+    exit_date = exit_target
     exit_px = session_close_on(ticker, exit_target)
     if exit_px is None:
         # Try to find next available close within ±3 days
@@ -361,8 +362,10 @@ def realized_outcome(ticker: str, signal_time: datetime, horizon_days: int = 1,
         if bars is None:
             return None
         for offset in range(1, 4):
-            exit_px = session_close_on(ticker, exit_target + timedelta(days=offset))
+            candidate_exit_date = exit_target + timedelta(days=offset)
+            exit_px = session_close_on(ticker, candidate_exit_date)
             if exit_px is not None:
+                exit_date = candidate_exit_date
                 break
         if exit_px is None:
             return None
@@ -378,6 +381,7 @@ def realized_outcome(ticker: str, signal_time: datetime, horizon_days: int = 1,
         correct = net_return > 0
     return {
         "entry_date":   entry_date.isoformat(),
+        "exit_date":    exit_date.isoformat(),
         "entry_px":     entry_px,
         "exit_px":      exit_px,
         "raw_return":   raw_return,
@@ -425,10 +429,12 @@ def fetch_earnings_events(tickers: list[str], start: datetime, end: datetime) ->
                 actual_eps   = row.get("Reported EPS")
                 estimated    = row.get("EPS Estimate")
                 surprise_pct = row.get("Surprise(%)")
-                # earnings_pre: 5 days before — use the prior price-history slope as drift signal
+                # earnings_pre: timestamp before earnings and use only price action
+                # known by that timestamp, not the future drift into earnings day.
                 pre_dt = d - timedelta(days=7)   # calendar days; weekends skipped naturally
                 if pre_dt > start:
-                    drift = compute_drift_pct(t, pre_dt, d)
+                    drift_start = pre_dt - timedelta(days=7)
+                    drift = compute_drift_pct(t, drift_start, pre_dt)
                     if drift is not None:
                         events.append({
                             "id": None,
@@ -543,7 +549,8 @@ def fetch_momentum_events(tickers: list[str], start: datetime, end: datetime,
                     "event_type":    "momentum",
                     "event_subtype": f"{period_days}d_rel_strength",
                     "ticker":        t,
-                    "event_at":      datetime.combine(anchor_date, datetime.min.time(), tzinfo=timezone.utc).isoformat(),
+                    "event_at":      datetime.combine(anchor_date, datetime.max.time(), tzinfo=timezone.utc)
+                                         .replace(hour=20, minute=0, second=0, microsecond=0).isoformat(),
                     "severity":      3 if abs(rel_strength) > 10 else 2,
                     "source_table":  "yfinance_prices",
                     "parser_confidence": 0.85,
@@ -646,7 +653,7 @@ def replay_day(day_start: datetime, day_end: datetime, all_events: list[dict],
         fired.append({
             "ticker":           ticker,
             "fired_at":         sig_time.isoformat(),
-            "score":            round(score, 2),
+            "score":            round(min(max(score, 0), 100), 2),
             "action":           action,
             "direction":        direction,
             "evidence_summary": evidence_summary(ev_list),
@@ -701,8 +708,13 @@ def persist_signals(signals: list[dict]) -> None:
             "signal_id":       sig_id,
             "horizon_days":    s["horizon_days"],
             "realized_return": round(o["net_return"], 6),
-            "realized_at":     o["entry_date"] + "T20:00:00+00:00",   # ~end of US session
+            "realized_at":     o["exit_date"] + "T20:00:00+00:00",
             "correct":         bool(o["correct"]),
+            "entry_price":     round(o["entry_px"], 4),
+            "exit_price":      round(o["exit_px"], 4),
+            "entry_at":        o["entry_date"] + "T14:30:00+00:00",
+            "exit_at":         o["exit_date"] + "T20:00:00+00:00",
+            "outcome_method":  "next_session_open_to_horizon_close",
         })
     for i in range(0, len(audit), 500):
         sb_post("stock_forecast_audit", audit[i:i+500])
