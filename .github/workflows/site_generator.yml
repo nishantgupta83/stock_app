@@ -45,6 +45,7 @@ jobs:
           password:        ${{ secrets.HOSTINGER_FTP_PASS }}
           protocol:        ftps
           port:            21
+          timeout:         120000
           local-dir:       ./dist/
           # FTP user u832160935.stock_app is chrooted DIRECTLY at the served
           # folder /public_html/stock_app/. Verified by curl listing showing
