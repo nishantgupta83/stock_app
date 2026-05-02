@@ -6,6 +6,7 @@ and learns from outcomes via per-agent EMA weights.
 
 **Live dashboard:** https://hub4apps.com/stock_app/
 **Design doc:** [`docs/market-intelligence-platform-design.md`](docs/market-intelligence-platform-design.md)
+**Technical architecture:** [`docs/technical-architecture.md`](docs/technical-architecture.md)
 **Phase 0 setup:** [`docs/PHASE0_CHECKLIST.md`](docs/PHASE0_CHECKLIST.md)
 
 > **Paper-trading vocabulary only.** The bot says **WATCH / RESEARCH / AVOID_CHASE / CHASE_RISK** — never
@@ -21,6 +22,17 @@ and learns from outcomes via per-agent EMA weights.
 | Push notifications | Telegram Bot API | $0 |
 | Static frontend | Hostinger shared hosting (FTPS auto-deploy) | already paid |
 | Domain | hub4apps.com | already paid |
+
+## Architecture
+
+The current technical diagram and operational runbook live in
+[`docs/technical-architecture.md`](docs/technical-architecture.md). It covers:
+
+- runtime topology across GitHub Actions, Supabase, Telegram, and Hostinger
+- live signal and paper forecast sequence
+- historical backfill, backtest, and `shadow_backtest` replay path
+- core table responsibilities and forecast modes
+- current verification snapshot from the Phase 6B rollout
 
 ## Pipeline (10 GitHub Actions jobs)
 
@@ -74,6 +86,7 @@ table) and per-alert detail pages under `/alert/{id}.html` for the link in every
 ```
 .
 ├── docs/                       Design doc + Phase 0 checklist
+│   └── technical-architecture.md  Current diagrams + runbook
 ├── sql/                        Supabase migrations (run in order)
 ├── agents/                     One Python file per agent
 ├── .github/workflows/          One YAML per agent (cron-scheduled)
@@ -111,6 +124,7 @@ Pinned in `.github/workflows/site_generator.yml`:
 
 - **server:** `ftp.hub4apps.com`
 - **port:** `21` with `protocol: ftps` (Hostinger requires explicit TLS; plain FTP returns 530)
+- **timeout:** `120000` ms because Hostinger can take longer than the action's default control-socket timeout
 - **server-dir:** `./` because the `u832160935.stock_app` FTP user is chrooted directly at `/public_html/stock_app/`
 - **dangerous-clean-slate:** `false` (never wipe the deploy target)
 

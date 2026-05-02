@@ -33,6 +33,8 @@ Supersedes: v1 (paid-stack assumptions: Supabase Pro, Polygon, Next.js on Hostin
 > - Paper Trades dashboard tab shows `PAPER_LONG` / `PAPER_WATCH` / `PAPER_AVOID` /
 >   `PAPER_CHASE_RISK` / `NO_TRADE` forecasts, split by `live` vs `shadow_backtest`;
 >   live rows close through `price_agent`, shadow rows are closed from historical audit
+> - Current technical diagrams and the runbook are maintained in
+>   [`docs/technical-architecture.md`](technical-architecture.md)
 >
 > Sections of this doc that predate those changes (notably §7.5 Price-Action Agent and
 > §7.7 Reconciliation Agent) describe future work; the live agent inventory is in `README.md`.
@@ -193,44 +195,24 @@ V1 should not:
 
 ## 6. System Architecture
 
-```
-GitHub Actions (cron schedules)
-  ├─ filing_agent        every 5 min
-  ├─ news_agent          every 5 min
-  ├─ truth_social_agent  every 5 min
-  ├─ thesis_agent        every 5 min
-  ├─ earnings_agent      weekly
-  ├─ price_agent         weekday EOD
-  ├─ paper_trade_agent   every 15 min
-  ├─ backtester          weekly/manual
-  ├─ source_review_agent monthly
-  └─ site_generator      every 15 min
-                │
-                ▼
-         Supabase Free
-   (raw + normalized + signals + weights + audit)
-                │
-                ▼
-         Thesis Agent → Risk + Dedupe + Daily-cap gate
-                │
-                ▼
-         Telegram Bot API → your phone
-                │
-        ┌───────┴────────┐
-        ▼                ▼
-  Tap deep link     Inline buttons
-        │           Bought/Sold/Skipped
-        ▼                │
-  Static page on         ▼
-  hub4apps.com     paper_trades table
-                         │
-                         ▼
-                EOD Reconciliation
-                → agent weight update
-                         │
-                         ▼
-                Static HTML regenerated
-                → deployed to Hostinger by FTPS
+The canonical technical diagrams are in
+[`docs/technical-architecture.md`](technical-architecture.md). The short version:
+
+```mermaid
+flowchart LR
+  Sources["EDGAR / RSS / Truth Social / yfinance"] --> Agents["GitHub Actions agents"]
+  Agents --> DB["Supabase<br/>raw, normalized, signals, audit, weights"]
+  DB --> Thesis["thesis_agent<br/>cluster + score + risk gates"]
+  Thesis --> Telegram["Telegram paper-only alerts"]
+  Thesis --> Paper["paper_trade_agent<br/>live forecasts"]
+  DB --> Paper
+  DB --> Backtest["backtester + shadow_30d replay"]
+  Paper --> DB
+  Backtest --> DB
+  DB --> Price["price_agent<br/>EOD outcome + EMA learning"]
+  Price --> DB
+  DB --> Site["site_generator"]
+  Site --> Hostinger["hub4apps.com/stock_app"]
 ```
 
 ### 6.1 Architecture layers
