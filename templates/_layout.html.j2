@@ -21,6 +21,7 @@
       <a href="{{ rp }}events.html"    class="{% if active=='events' %}active{% endif %}">Events</a>
       <a href="{{ rp }}agents.html"    class="{% if active=='agents' %}active{% endif %}">Agents</a>
       <a href="{{ rp }}backtest.html"  class="{% if active=='backtest' %}active{% endif %}">Backtest</a>
+      <a href="{{ rp }}paper_trades.html" class="{% if active=='paper_trades' %}active{% endif %}">Paper Trades</a>
       <a href="{{ rp }}learning.html"  class="{% if active=='learning' %}active{% endif %}">Learning</a>
     </nav>
     <div class="meta">
@@ -31,7 +32,8 @@
     {% block content %}{% endblock %}
   </main>
   <footer>
-    <p>v1 paper-trading vocabulary: <strong>WATCH</strong> / <strong>RESEARCH</strong> / <strong>AVOID_CHASE</strong>.
+    <p>v1 paper-trading vocabulary: <strong>WATCH</strong> / <strong>RESEARCH</strong> / <strong>AVOID_CHASE</strong> / <strong>CHASE_RISK</strong>.
+    Phase 6A paper forecasts use <strong>PAPER_LONG</strong> / <strong>PAPER_WATCH</strong> / <strong>PAPER_AVOID</strong> / <strong>NO_TRADE</strong>.
     The bot does not say BUY or SELL until 60 days of paper-trading hits the §17.6 graduation thresholds.</p>
     <p>Data: SEC EDGAR · trumpstruth.org RSS · yfinance. Free-tier stack: GitHub Actions + Supabase Free + Hostinger static.</p>
   </footer>

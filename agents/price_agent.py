@@ -8,9 +8,10 @@ Pipeline:
   2. Fetch entry price (close on fired_at date) and exit price (close on exit date).
   3. Compute realized return and correctness (direction-aware).
   4. Write stock_forecast_audit row.
-  5. Update stock_agent_weights EMA for each contributing agent.
-  6. Mark signal status_v2 → 'closed'.
-  7. Send Telegram EOD digest.
+  5. Close any stock_paper_forecasts rows tied to that signal.
+  6. Update stock_agent_weights EMA for each contributing agent.
+  7. Mark signal status_v2 → 'closed'.
+  8. Send Telegram EOD digest.
 
 This closes the prediction→outcome loop so agent weights self-correct over time.
 """
@@ -220,6 +221,42 @@ def write_forecast_audit(signal_id: int, signal: dict, outcome: dict) -> None:
     }])
 
 
+def close_paper_forecasts(signal_id: int, signal: dict, outcome: dict) -> None:
+    """Close Phase 6A paper forecasts tied to this signal.
+
+    `stock_paper_forecasts` may not exist until sql/0008 is applied. A missing
+    table is tolerated so the existing EOD learning loop keeps running.
+    """
+    rows = sb_get("stock_paper_forecasts", {
+        "signal_id": f"eq.{signal_id}",
+        "status":    "eq.open",
+        "select":    "id,paper_action",
+    })
+    if not rows:
+        return
+
+    realized = float(outcome["net_return"])
+    for row in rows:
+        action = row.get("paper_action") or "PAPER_WATCH"
+        if action == "PAPER_LONG":
+            correct = realized > 0
+        elif action == "PAPER_SHORT":
+            correct = realized < 0
+        elif action in ("PAPER_AVOID", "PAPER_CHASE_RISK"):
+            correct = realized <= 0
+        else:
+            correct = None
+
+        sb_patch(f"stock_paper_forecasts?id=eq.{row['id']}", {
+            "status":          "closed",
+            "exit_price":      outcome["exit_price"],
+            "realized_return": outcome["net_return"],
+            "realized_at":     signal["_exit_date"].isoformat() + "T20:00:00+00:00",
+            "correct":         correct,
+            "updated_at":      datetime.now(timezone.utc).isoformat(),
+        })
+
+
 def update_agent_weights(agents: list[str], correct: bool) -> None:
     """Fetch latest EMA for each agent and apply one EMA step."""
     if not agents:
@@ -359,6 +396,7 @@ def main() -> int:
             agents = wt.get("agents", []) if isinstance(wt, dict) else []
 
             write_forecast_audit(sig["id"], sig, outcome)
+            close_paper_forecasts(sig["id"], sig, outcome)
             update_agent_weights(agents, outcome["correct"])
             close_signal(sig["id"])
 

@@ -1,0 +1,142 @@
+{% extends "_layout.html.j2" %}
+{% block content %}
+<h2>Paper Trades</h2>
+<p style="color:var(--muted);font-size:12px">
+  Phase 6A converts live signals into calibrated paper forecasts. Probability is empirical and shrunk toward the base rate when sample size is small. This is paper-only, not a trade recommendation.
+</p>
+
+<div class="cards">
+  <div class="card">
+    <div class="label">Open Forecasts</div>
+    <div class="value">{{ paper_metrics.open }}</div>
+    <div class="sub">{{ paper_metrics.total }} total forecasts</div>
+  </div>
+  <div class="card {% if paper_metrics.paper_long > 0 %}ok{% endif %}">
+    <div class="label">Paper Long</div>
+    <div class="value">{{ paper_metrics.paper_long }}</div>
+    <div class="sub">positive EV + enough history</div>
+  </div>
+  <div class="card">
+    <div class="label">Positive EV</div>
+    <div class="value">{{ paper_metrics.positive_ev }}</div>
+    <div class="sub">open forecasts only</div>
+  </div>
+  <div class="card">
+    <div class="label">Avg Prob</div>
+    <div class="value">{{ "%.0f%%"|format(paper_metrics.avg_prob * 100) }}</div>
+    <div class="sub">open calibrated win probability</div>
+  </div>
+  <div class="card {% if paper_metrics.closed_hit_rate is not none and paper_metrics.closed_hit_rate >= 0.55 %}ok{% elif paper_metrics.closed_hit_rate is not none %}warn{% endif %}">
+    <div class="label">Closed Hit Rate</div>
+    <div class="value">{% if paper_metrics.closed_hit_rate is none %}—{% else %}{{ "%.0f%%"|format(paper_metrics.closed_hit_rate * 100) }}{% endif %}</div>
+    <div class="sub">{{ paper_metrics.closed }} closed forecasts</div>
+  </div>
+</div>
+
+<div class="filters">
+  <label>Paper action</label>
+  <select id="f-action" onchange="render()">
+    <option value="">all</option>
+    <option>PAPER_LONG</option>
+    <option>PAPER_WATCH</option>
+    <option>PAPER_AVOID</option>
+    <option>PAPER_CHASE_RISK</option>
+    <option>NO_TRADE</option>
+  </select>
+  <label>Status</label>
+  <select id="f-status" onchange="render()">
+    <option value="">all</option>
+    <option>open</option>
+    <option>closed</option>
+    <option>expired</option>
+    <option>skipped</option>
+  </select>
+  <label>Min probability</label>
+  <input id="f-prob" type="number" min="0" max="100" value="0" oninput="render()" style="width:70px">
+  <label>Ticker</label>
+  <input id="f-ticker" type="text" placeholder="AAPL" oninput="render()" style="width:80px">
+  <span class="count" id="count">— rows</span>
+</div>
+
+<table>
+  <thead>
+    <tr>
+      <th>Created</th>
+      <th>Ticker</th>
+      <th>Paper Action</th>
+      <th class="num">Prob</th>
+      <th class="num">EV</th>
+      <th class="num">Sample</th>
+      <th class="num">Entry</th>
+      <th class="num">Target</th>
+      <th class="num">Stop</th>
+      <th>Status</th>
+      <th class="num">Realized</th>
+      <th>Reason</th>
+    </tr>
+  </thead>
+  <tbody id="rows"></tbody>
+</table>
+<div id="empty" class="empty" style="display:none">No paper forecasts match the current filter.</div>
+
+<div class="note">
+  <strong>Interpretation:</strong>
+  `prob` is the chance that the paper thesis is correct, not the chance of guaranteed profit.
+  `EV` is estimated from similar audited setups and is noisy when sample size is small.
+</div>
+
+<script id="data" type="application/json">{{ forecasts_json|tojson }}</script>
+<script>
+function esc(s) {
+  if (s === null || s === undefined) return '';
+  return String(s).replace(/[&<>"']/g, c => ({
+    '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'
+  }[c]));
+}
+function pct(v) {
+  if (v === null || v === undefined || Number.isNaN(Number(v))) return '—';
+  return `${(Number(v) * 100).toFixed(1)}%`;
+}
+function price(v) {
+  if (v === null || v === undefined || Number.isNaN(Number(v))) return '—';
+  return Number(v).toFixed(2);
+}
+const DATA = JSON.parse(document.getElementById('data').textContent);
+function render() {
+  const fAct = document.getElementById('f-action').value;
+  const fStatus = document.getElementById('f-status').value;
+  const fProb = (parseFloat(document.getElementById('f-prob').value) || 0) / 100;
+  const fTicker = document.getElementById('f-ticker').value.trim().toUpperCase();
+  const tbody = document.getElementById('rows');
+  while (tbody.firstChild) tbody.removeChild(tbody.firstChild);
+  let n = 0;
+  for (const r of DATA) {
+    if (fAct && r.paper_action !== fAct) continue;
+    if (fStatus && r.status !== fStatus) continue;
+    if ((r.prob_win || 0) < fProb) continue;
+    if (fTicker && (r.ticker || '').toUpperCase().indexOf(fTicker) === -1) continue;
+    n++;
+    const evClass = (r.expected_value || 0) >= 0 ? 'pos' : 'neg';
+    const realizedClass = (r.realized_return || 0) >= 0 ? 'pos' : 'neg';
+    const tr = document.createElement('tr');
+    tr.innerHTML =
+      `<td>${esc((r.created_at || '').substring(0,16))}</td>` +
+      `<td><strong>${esc(r.ticker)}</strong></td>` +
+      `<td><span class="tag ${esc(r.paper_action)}">${esc(r.paper_action)}</span></td>` +
+      `<td class="num">${pct(r.prob_win)}</td>` +
+      `<td class="num ${evClass}">${pct(r.expected_value)}</td>` +
+      `<td class="num">${esc(r.sample_size)}</td>` +
+      `<td class="num">${price(r.entry_price)}</td>` +
+      `<td class="num">${price(r.target_price)}</td>` +
+      `<td class="num">${price(r.stop_price)}</td>` +
+      `<td><span class="tag ${esc(r.status)}">${esc(r.status)}</span></td>` +
+      `<td class="num ${realizedClass}">${r.realized_return === null || r.realized_return === undefined ? '—' : pct(r.realized_return)}</td>` +
+      `<td>${esc(r.reason_summary)}</td>`;
+    tbody.appendChild(tr);
+  }
+  document.getElementById('count').textContent = `${n} of ${DATA.length} rows`;
+  document.getElementById('empty').style.display = n === 0 ? 'block' : 'none';
+}
+render();
+</script>
+{% endblock %}

@@ -22,7 +22,7 @@ and learns from outcomes via per-agent EMA weights.
 | Static frontend | Hostinger shared hosting (FTPS auto-deploy) | already paid |
 | Domain | hub4apps.com | already paid |
 
-## Pipeline (9 GitHub Actions jobs)
+## Pipeline (10 GitHub Actions jobs)
 
 | Agent | Schedule | What it does |
 |---|---|---|
@@ -32,6 +32,7 @@ and learns from outcomes via per-agent EMA weights.
 | `thesis_agent`        | `*/5 * * * *`     | Cluster rule (≥2 distinct agents within 5-minute bucket, with narrow high-severity exceptions) → 100-pt weighted score → action → Telegram dispatch. Reads live `stock_agent_weights` to amplify reliable agents and dampen chronically-wrong ones. Includes chase-risk downgrade if price already moved >5% since cluster start. |
 | `earnings_agent`      | weekly Sun 12:00 UTC | yfinance earnings dates per stock → upcoming + recently-released into `stock_normalized_events` |
 | `price_agent`         | weekday 21:30 UTC | yfinance EOD closes → outcome audit → EMA weight update per agent → digest |
+| `paper_trade_agent`   | `*/15 * * * *`    | live signals + historical audit → calibrated paper forecasts (`prob_win`, expected value, sample size, target/stop) |
 | `backtester`          | manual / weekly   | 180-day replay (filings + earnings + momentum) → Sharpe, precision, calibration metrics |
 | `site_generator`      | `*/15 * * * *`    | Supabase → Jinja2 HTML → FTPS auto-deploy to Hostinger |
 | `source_review_agent` | `0 13 1 * *`      | Monthly health check on every external feed → Telegram digest |
@@ -49,9 +50,17 @@ and learns from outcomes via per-agent EMA weights.
 - **AVOID_CHASE** — score ≥50, bearish cluster (S-3, 8-K dilution flagged via primaryDocDescription, earnings miss, downgrade, bearish news)
 - **CHASE_RISK**  — would-be WATCH/RESEARCH on a ticker that already moved >5% since the cluster's earliest event. Recorded for review, not dispatched to Telegram.
 
+## Paper forecast vocabulary
+
+- **PAPER_LONG** — calibrated probability and expected value are positive with enough similar historical samples
+- **PAPER_WATCH** — interesting setup, but sample size or edge is not strong enough
+- **PAPER_AVOID** — negative expected value, bearish setup, or poor historical follow-through
+- **PAPER_CHASE_RISK** — signal exists, but the move is likely already priced in
+- **NO_TRADE** — insufficient comparable history for a realistic paper forecast
+
 ## Dashboard tabs
 
-`Dashboard · Signals · Events · Agents · Backtest · Learning` — plus per-ticker chart pages
+`Dashboard · Signals · Events · Agents · Backtest · Paper Trades · Learning` — plus per-ticker chart pages
 under `/ticker/{TICKER}.html` (180-day price + filing + earnings overlay + "Big Moves" explanation
 table) and per-alert detail pages under `/alert/{id}.html` for the link in every Telegram message.
 
@@ -76,6 +85,7 @@ table) and per-alert detail pages under `/alert/{id}.html` for the link in every
 - `sql/0005_extend_status_and_data_sources.sql` — `status_v2='backtest'` + data sources registry
 - `sql/0006_add_closed_status.sql` — `status_v2='closed'` for matured signals (price_agent loop)
 - `sql/0007_allow_chase_risk.sql` — `action='CHASE_RISK'` plus latest signal status constraint
+- `sql/0008_paper_forecasts.sql` — Phase 6A calibrated paper forecast table
 
 ## GitHub Actions secrets
 
@@ -126,8 +136,9 @@ Jinja `tojson`, not raw `|safe`.
 4. Push to `main` — every cron-scheduled workflow starts running
 5. Run `historical_ingest.yml` once with `sections=all` (6-month backfill)
 6. Run `backtester.yml` once to populate `stock_agent_weights` and `stock_forecast_audit`
-7. Wait one `*/15` cycle for `site_generator` to render and deploy
-8. After a few weeks of live signals, `price_agent`'s EMA loop populates per-agent weights
+7. Run `paper_trade_agent.yml` once to seed `stock_paper_forecasts` from current live signals
+8. Wait one `*/15` cycle for `site_generator` to render and deploy
+9. After a few weeks of live signals, `price_agent`'s EMA loop populates per-agent weights
    that `thesis_agent` then uses to amplify reliable agents
 
 ## Security note

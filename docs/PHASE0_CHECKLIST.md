@@ -40,6 +40,7 @@ When all five are done, the EDGAR filing agent will run every 5 minutes on GitHu
    - `sql/0005_extend_status_and_data_sources.sql` → Run (adds status_v2='backtest' + data sources registry)
    - `sql/0006_add_closed_status.sql` → Run (adds status_v2='closed')
    - `sql/0007_allow_chase_risk.sql` → Run (adds action='CHASE_RISK')
+   - `sql/0008_paper_forecasts.sql` → Run (adds calibrated paper forecasts)
 7. Verify: **Table Editor** should show the `stock_*` tables incl. `stock_job_runs`, `stock_dead_letter_events`, `stock_data_sources`
 8. Get your credentials: **Project Settings → API**:
    - Copy `Project URL` → this is `SUPABASE_URL`

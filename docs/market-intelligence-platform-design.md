@@ -5,7 +5,7 @@ Date: 2026-04-26
 Owner: Nishant
 Supersedes: v1 (paid-stack assumptions: Supabase Pro, Polygon, Next.js on Hostinger Node)
 
-> **Current state (2026-05-01):** 9 GitHub Actions jobs + a one-time backfill helper, all live.
+> **Current state (2026-05-02):** 10 GitHub Actions jobs + a one-time backfill helper, all live.
 > Signal vocabulary: WATCH / RESEARCH / AVOID_CHASE / CHASE_RISK (the last is a downgrade
 > when price already moved >5% since the cluster's earliest event — recorded but not pushed).
 > Static dashboard auto-deploys to hub4apps.com/stock_app/ via FTPS every 15 min, with
@@ -16,6 +16,9 @@ Supersedes: v1 (paid-stack assumptions: Supabase Pro, Polygon, Next.js on Hostin
 > `thesis_agent` reads those weights on every run and applies them per source-agent so
 > chronically-wrong agents are dampened and reliable ones amplified. Snapshots of the
 > weights actually used are persisted in `stock_signals.weight_at_time` for audit.
+> Phase 6A adds `paper_trade_agent`: it converts live signals into paper-only calibrated
+> forecasts with empirical `prob_win`, sample size, expected value, and target/stop levels
+> in `stock_paper_forecasts`. The vocabulary remains paper-only.
 >
 > Recent additions worth noting (not yet woven into the v2 narrative below):
 > - 8-K dilution detection via EDGAR's `primaryDocDescription` (PIPE / underwriting /
@@ -25,6 +28,8 @@ Supersedes: v1 (paid-stack assumptions: Supabase Pro, Polygon, Next.js on Hostin
 >   in `stock_normalized_events`
 > - Per-ticker chart pages render 180 days of price + filing/earnings event dots and a
 >   "Big Moves" table (any |daily return| > 5% with the prior 2-day events as candidate causes)
+> - Paper Trades dashboard tab shows `PAPER_LONG` / `PAPER_WATCH` / `PAPER_AVOID` /
+>   `PAPER_CHASE_RISK` / `NO_TRADE` forecasts and closes them through `price_agent`
 >
 > Sections of this doc that predate those changes (notably §7.5 Price-Action Agent and
 > §7.7 Reconciliation Agent) describe future work; the live agent inventory is in `README.md`.
@@ -459,6 +464,7 @@ Sufficient for personal use with disciplined retention.
 - `agent_weights` (NEW — one row per agent per day with `accuracy_ema`, `weight`)
 - `telegram_dispatch_log` (NEW — every push attempt with delivery status)
 - `paper_trades` (NEW — user's Bought/Sold/Skipped responses)
+- `paper_forecasts` (NEW — model-generated paper-only probability, EV, risk/reward, outcome)
 - `backtest_runs`
 - `backtest_trades`
 - `model_registry`
@@ -753,6 +759,13 @@ This rubric is the v1 thesis function. It is fully transparent — every point o
 
 ### Phase 5 — Hardening (ongoing)
 - Monitoring, dedupe tuning, source expansion, model governance, performance tuning.
+
+### Phase 6A — Probability-Calibrated Paper Forecasts
+- `paper_trade_agent.yml` reads live `stock_signals` and audited historical outcomes.
+- Forecast probability uses empirical shrinkage toward the base rate; scores are not treated as probabilities.
+- Writes `stock_paper_forecasts` with `prob_win`, `expected_value`, `sample_size`, `entry_price`, `target_price`, and `stop_price`.
+- `price_agent.yml` closes paper forecasts when the underlying signal matures.
+- Dashboard adds a Paper Trades tab for paper-only review.
 
 ## 19. Honest Accuracy Targets
 
