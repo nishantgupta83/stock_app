@@ -193,6 +193,9 @@ def main() -> int:
                     "prior_event_severity":  e.get("severity"),
                     "prior_event_age_hours": round(age_hours, 2),
                     "source":                "market_scanner",
+                    # Must match key set of the no_tracked_event branch above —
+                    # PostgREST rejects mixed key sets on bulk insert (PGRST102).
+                    "notes":                 None,
                 })
 
         n_observations = write_observations(rows_to_write)
