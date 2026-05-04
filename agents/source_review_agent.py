@@ -275,6 +275,28 @@ def main() -> int:
         lines.append("<b>Per-agent success (last 30d):</b>")
         for agent, st in success.items():
             lines.append(f"  <code>{agent:<22}</code> {st.get('success_rate',0):.0%}  (n={st.get('total',0)})")
+
+        # Phase 2 visibility: how many keyword routing rules are live in DB.
+        # Also counts events classified by DB rules vs hardcoded fallback in
+        # the last 30 days so a Supabase outage doesn't go silent.
+        try:
+            kr = requests.get(
+                f"{SUPABASE_URL}/rest/v1/stock_keyword_rules",
+                headers=HEADERS_SB,
+                params={"select": "kind", "enabled": "eq.true", "limit": "1000"},
+                timeout=10,
+            )
+            kw_counts = defaultdict(int)
+            for row in (kr.json() if kr.status_code == 200 else []):
+                kw_counts[row.get("kind", "?")] += 1
+            lines.append("")
+            lines.append("<b>Keyword routing rules (DB-editable):</b>")
+            for k, n in sorted(kw_counts.items()):
+                lines.append(f"  <code>{k:<14}</code> {n} enabled")
+            if not kw_counts:
+                lines.append("  (none — agents falling back to hardcoded rules)")
+        except Exception as e:  # noqa: BLE001 — never break the digest
+            lines.append(f"  keyword_rules count failed: {e}")
         if recs:
             lines.append("")
             lines.append("<b>Recommendations:</b>")

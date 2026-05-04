@@ -42,8 +42,15 @@ jobs:
           SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
         run: python agents/site_generator.py
 
-      - name: Deploy to Hostinger via FTPS
+      # FTPS deploy with up to 3 attempts. Hostinger's FTPS control socket
+      # times out intermittently (~10% of runs). Cascading if-conditions only
+      # fire each attempt when the prior one failed; on first-try success the
+      # later steps no-op via `if: failure()`. Worst-case 3*120s = 6 min still
+      # under the workflow's timeout-minutes: 8 budget.
+      - name: Deploy to Hostinger via FTPS (attempt 1)
+        id: deploy1
         uses: SamKirkland/FTP-Deploy-Action@v4.3.5
+        continue-on-error: true
         with:
           server:          ftp.hub4apps.com
           username:        ${{ secrets.HOSTINGER_FTP_USER }}
@@ -55,6 +62,37 @@ jobs:
           # FTP user u832160935.stock_app is chrooted DIRECTLY at the served
           # folder /public_html/stock_app/. Verified by curl listing showing
           # index.html / styles.css at the FTP root. So server-dir is ./.
+          server-dir:      ./
+          dangerous-clean-slate: false
+
+      - name: Deploy to Hostinger via FTPS (attempt 2 — only if attempt 1 failed)
+        id: deploy2
+        if: steps.deploy1.outcome == 'failure'
+        uses: SamKirkland/FTP-Deploy-Action@v4.3.5
+        continue-on-error: true
+        with:
+          server:          ftp.hub4apps.com
+          username:        ${{ secrets.HOSTINGER_FTP_USER }}
+          password:        ${{ secrets.HOSTINGER_FTP_PASS }}
+          protocol:        ftps
+          port:            21
+          timeout:         120000
+          local-dir:       ./dist/
+          server-dir:      ./
+          dangerous-clean-slate: false
+
+      - name: Deploy to Hostinger via FTPS (attempt 3 — only if 1 and 2 failed)
+        if: steps.deploy1.outcome == 'failure' && steps.deploy2.outcome == 'failure'
+        uses: SamKirkland/FTP-Deploy-Action@v4.3.5
+        # NO continue-on-error — third failure should fail the workflow
+        with:
+          server:          ftp.hub4apps.com
+          username:        ${{ secrets.HOSTINGER_FTP_USER }}
+          password:        ${{ secrets.HOSTINGER_FTP_PASS }}
+          protocol:        ftps
+          port:            21
+          timeout:         120000
+          local-dir:       ./dist/
           server-dir:      ./
           dangerous-clean-slate: false
       - name: Record workflow finish

@@ -44,6 +44,7 @@ The current technical diagram and operational runbook live in
 | `thesis_agent`        | `*/5 * * * *`     | Cluster rule (≥2 distinct agents within 5-minute bucket, with narrow high-severity exceptions) → 100-pt weighted score → action → Telegram dispatch. Reads live `stock_agent_weights` to amplify reliable agents and dampen chronically-wrong ones. Includes chase-risk downgrade if price already moved >5% since cluster start. |
 | `earnings_agent`      | weekly Sun 12:00 UTC | yfinance earnings dates per stock → upcoming + recently-released into `stock_normalized_events` |
 | `price_agent`         | weekday 21:30 UTC | yfinance EOD closes → outcome audit → EMA weight update per agent → digest |
+| `market_scanner_agent`| weekday 21:30 UTC | Tracked-stock daily scan: any \|move\|≥3% → write candidate-cause rows to `stock_event_outcome_observations` for future calibration of per-event scoring (observation-only) |
 | `paper_trade_agent`   | `*/15 * * * *`    | live signals + historical audit → calibrated paper forecasts (`prob_win`, expected value, sample size, target/stop). Manual `shadow_30d` mode replays historical backtest signals day-by-day for UI/calibration review. |
 | `backtester`          | manual only       | 180-day replay (filings + earnings + momentum) → precision/calibration metrics. Not cron-scheduled because replay must be deliberate. |
 | `site_generator`      | `*/15 * * * *`    | Supabase → Jinja2 HTML → FTPS auto-deploy to Hostinger |
@@ -112,6 +113,8 @@ table) and per-alert detail pages under `/alert/{id}.html` for the link in every
 - `sql/0008_paper_forecasts.sql` — Phase 6A calibrated paper forecast table
 - `sql/0009_paper_forecast_modes.sql` — separates live paper forecasts from historical `shadow_backtest` replay rows
 - `sql/0010_reliability_and_calibration.sql` — audit/evidence uniqueness, dispatch retry status, outcome-price fields, source registry refresh, calibration summary view
+- `sql/0011_keyword_rules.sql` — DB-editable keyword routing for news + Truth Social (`stock_keyword_rules`); seeds with the existing hardcoded rules so behavior is identical day-1
+- `sql/0012_event_outcome_observations.sql` — per-day per-ticker (move %, prior event) rows from `market_scanner_agent` for future scoring calibration
 
 ## GitHub Actions secrets
 

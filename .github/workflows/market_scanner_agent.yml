@@ -1,0 +1,49 @@
+name: market_scanner_agent
+
+# Weekday EOD: scan tracked stocks for >=3% daily moves and record prior 2-day events as candidate causes.
+# Output goes to stock_event_outcome_observations (observation-only, does NOT
+# change scoring weights; aggregates inform future calibration of thesis_agent).
+
+on:
+  schedule:
+    - cron: "30 21 * * 1-5"  # weekdays 21:30 UTC (after US market close)
+  workflow_dispatch:
+
+concurrency:
+  group: market_scanner_agent
+  cancel-in-progress: true
+
+jobs:
+  fetch:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+      - name: Record workflow start
+        env:
+          SUPABASE_URL:         ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
+        run: python agents/ops_recorder.py --phase start --agent workflow_market_scanner_agent
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+
+      - name: Install deps
+        run: pip install -r requirements.txt
+
+      - name: Run market scanner
+        env:
+          SUPABASE_URL:         ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
+        run: python agents/market_scanner_agent.py
+      - name: Record workflow finish
+        if: always()
+        env:
+          SUPABASE_URL:         ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
+          WORKFLOW_STATUS:      ${{ job.status }}
+        run: python agents/ops_recorder.py --phase finish --agent workflow_market_scanner_agent --status "$WORKFLOW_STATUS"

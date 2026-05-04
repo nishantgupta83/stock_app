@@ -34,62 +34,91 @@ HEADERS_SB = {
 
 # ============================================================
 # Classifier — deterministic keyword router (§7.9 of design doc)
-# Returns list of (ticker, direction_prior, rule_label) tuples.
-# direction_prior ∈ {"long","short"}
+# Routing rules now live in stock_keyword_rules (Supabase) so the user can add
+# new keywords (Iran, Hormuz, Venezuela, …) without a code deploy. The agent
+# loads rules at run-start; if Supabase is unreachable, falls back to a small
+# hardcoded safety net so classification never silently breaks.
+#
+# Each loaded rule has:
+#   keyword          str — substring or regex
+#   match_type       'icontains' | 'regex'
+#   direction_prior  'long' | 'short' | 'neutral'
+#   tickers          list[str]   — ticker basket (empty = sentiment-only)
+#   rule_label       str         — short trace label
 # ============================================================
 
-# Pre-compile patterns once at import for speed
-_RULES = [
-    # (regex, [tickers], direction_prior, label)
-    (re.compile(r"\btariff(s)?\b", re.I),                   ["XLI", "XLB", "XLY"],          "short", "tariff_general"),
-    (re.compile(r"\bchina|xi\s+jinping|ccp\b", re.I),       ["AAPL", "NVDA", "TSLA", "FXI"], "short", "china"),
-    (re.compile(r"\b(fed|powell|interest\s+rate)\b", re.I), ["TLT", "XLF"],                  "long",  "rates_dovish_or_hawkish"),
-    (re.compile(r"\b(oil|drill(ing)?|opec)\b", re.I),       ["XLE", "XOM"],                  "long",  "oil"),
-    (re.compile(r"\b(crypto|bitcoin|btc)\b", re.I),         ["COIN", "MSTR"],                "long",  "crypto"),
-    (re.compile(r"\b(djt|truth\s+social)\b", re.I),         ["DJT"],                         "long",  "djt_self"),
+# Hardcoded fallback used only when Supabase is unreachable. Keep it small so
+# we always classify the most market-moving keywords even on DB outage.
+_FALLBACK_RULES: list[dict] = [
+    {"keyword": r"\btariff(s)?\b",                      "match_type": "regex",     "direction_prior": "short", "tickers": ["XLI","XLB","XLY"],          "rule_label": "tariff_general"},
+    {"keyword": r"\bchina|xi\s+jinping|ccp\b",          "match_type": "regex",     "direction_prior": "short", "tickers": ["AAPL","NVDA","TSLA","FXI"], "rule_label": "china"},
+    {"keyword": r"\b(oil|drill(ing)?|opec)\b",          "match_type": "regex",     "direction_prior": "long",  "tickers": ["XLE","XOM"],                "rule_label": "oil"},
+    {"keyword": r"\b(crypto|bitcoin|btc)\b",            "match_type": "regex",     "direction_prior": "long",  "tickers": ["COIN","MSTR"],              "rule_label": "crypto"},
+    {"keyword": r"\b(djt|truth\s+social)\b",            "match_type": "regex",     "direction_prior": "long",  "tickers": ["DJT"],                      "rule_label": "djt_self"},
 ]
 
-# Explicit S&P 500 company-name → ticker map for direct mentions.
-# Conservative: only the names a Trump post is plausibly going to use.
-_COMPANY_MAP = {
-    "apple":      "AAPL",
-    "nvidia":     "NVDA",
-    "microsoft":  "MSFT",
-    "amazon":     "AMZN",
-    "google":     "GOOGL",
-    "alphabet":   "GOOGL",
-    "meta":       "META",
-    "facebook":   "META",
-    "tesla":      "TSLA",
-    "berkshire":  "BRK.B",
-    "jpmorgan":   "JPM",
-    "exxon":      "XOM",
-    "walmart":    "WMT",
-    "netflix":    "NFLX",
-    "costco":     "COST",
-    "visa":       "V",
-    "mastercard": "MA",
-    "amd":        "AMD",
-    "coinbase":   "COIN",
-}
+
+def load_rules() -> tuple[list[dict], str]:
+    """Fetch enabled keyword rules from Supabase. Returns (rules, source_tag).
+    source_tag is 'keyword_db' on success, 'keyword_fallback' if we used the
+    in-process safety net so events can be attributed in audits."""
+    try:
+        r = requests.get(
+            f"{SUPABASE_URL}/rest/v1/stock_keyword_rules",
+            headers=HEADERS_SB,
+            params={
+                "kind":    "eq.truth_social",
+                "enabled": "eq.true",
+                "select":  "keyword,match_type,direction_prior,tickers,rule_label",
+                "limit":   "500",
+            },
+            timeout=15,
+        )
+        if r.status_code == 200:
+            rows = r.json()
+            if rows:
+                return rows, "keyword_db"
+    except Exception as e:  # noqa: BLE001
+        print(f"  load_rules: DB fetch failed, using fallback ({e})", file=sys.stderr)
+    return _FALLBACK_RULES, "keyword_fallback"
+
+
+# Module-level cache; populated once per main() run.
+_RULES_CACHE: list[dict] = []
+_RULES_SOURCE: str = "keyword_fallback"
+_REGEX_CACHE: dict[str, re.Pattern] = {}
+
+
+def _matches(text: str, rule: dict) -> bool:
+    kw = rule["keyword"]
+    if rule.get("match_type") == "regex":
+        pattern = _REGEX_CACHE.get(kw)
+        if pattern is None:
+            try:
+                pattern = re.compile(kw, re.I)
+            except re.error:
+                return False
+            _REGEX_CACHE[kw] = pattern
+        return bool(pattern.search(text))
+    return kw.lower() in text.lower()
 
 
 def classify(text: str) -> list[dict]:
-    """Return list of {ticker, direction_prior, rule_label} per matched rule."""
+    """Return list of {ticker, direction_prior, rule_label, classified_by} per matched rule."""
     if not text:
         return []
     hits: dict[str, dict] = {}
-    text_low = text.lower()
-    # Keyword rules
-    for pattern, tickers, direction, label in _RULES:
-        if pattern.search(text):
-            for t in tickers:
-                hits.setdefault(t, {"ticker": t, "direction_prior": direction, "rule_label": label})
-    # Direct company name mentions (override direction = "neutral" until sentiment added)
-    for name, ticker in _COMPANY_MAP.items():
-        if name in text_low:
-            # If a keyword rule also matched, keep it; otherwise add neutral entry.
-            hits.setdefault(ticker, {"ticker": ticker, "direction_prior": "neutral", "rule_label": f"direct_mention_{name}"})
+    for rule in _RULES_CACHE:
+        if not _matches(text, rule):
+            continue
+        for t in rule.get("tickers") or []:
+            # First match wins per ticker — preserves direction priors set earlier.
+            hits.setdefault(t, {
+                "ticker":          t,
+                "direction_prior": rule.get("direction_prior") or "neutral",
+                "rule_label":      rule.get("rule_label") or rule["keyword"][:40],
+                "classified_by":   _RULES_SOURCE,
+            })
     return list(hits.values())
 
 
@@ -208,6 +237,7 @@ def emit_truth_events(posts: list[dict], raw_ids: dict[str, int]) -> int:
                     "post_id":         p["post_id"],
                     "rule_label":      h["rule_label"],
                     "direction_prior": h["direction_prior"],
+                    "classified_by":   h.get("classified_by") or _RULES_SOURCE,
                     "post_excerpt":    p["content"][:200],
                     "url":             p.get("url"),
                 },
@@ -227,11 +257,17 @@ def emit_truth_events(posts: list[dict], raw_ids: dict[str, int]) -> int:
 
 
 def main() -> int:
+    global _RULES_CACHE, _RULES_SOURCE
     started = time.time()
     run_id = job_run_start("truth_social_agent")
     n_posts_in = 0
     n_posts_new = 0
     n_events = 0
+
+    # Load DB-backed keyword rules once per run; falls back to hardcoded set on
+    # any DB issue. The classify() helper reads _RULES_CACHE / _RULES_SOURCE.
+    _RULES_CACHE, _RULES_SOURCE = load_rules()
+    print(f"Loaded {len(_RULES_CACHE)} keyword rules from {_RULES_SOURCE}")
 
     try:
         feed = feedparser.parse(FEED_URL, request_headers={"User-Agent": "Hub4Apps Market Intel/1.0"})

@@ -88,6 +88,74 @@ _BEARISH_RE = re.compile(
     r"disappointing|warning|loss(es)?|below\s+expectations)\b", re.I
 )
 
+# DB-backed override layer. Loaded by load_rules() at start of main() so the
+# user can add tickers + sentiment phrases via INSERTs into stock_keyword_rules
+# without redeploying. The hardcoded constants above stay as a safety net for
+# Supabase outages — see _RULES_SOURCE for which path was used in any given run.
+_RULES_NAME_HITS: list[dict] = []        # ticker rules: {keyword, match_type, tickers, rule_label}
+_RULES_BULLISH:   list[dict] = []        # sentiment rules with direction_prior=long
+_RULES_BEARISH:   list[dict] = []        # sentiment rules with direction_prior=short
+_RULES_SOURCE:    str         = "keyword_fallback"
+_REGEX_CACHE:     dict[str, re.Pattern] = {}
+
+
+def load_rules() -> str:
+    """Populate _RULES_NAME_HITS / _RULES_BULLISH / _RULES_BEARISH from Supabase.
+    Returns the source tag used ('keyword_db' or 'keyword_fallback')."""
+    global _RULES_NAME_HITS, _RULES_BULLISH, _RULES_BEARISH
+    try:
+        r = requests.get(
+            f"{SUPABASE_URL}/rest/v1/stock_keyword_rules",
+            headers=HEADERS_SB,
+            params={
+                "kind":    "eq.news",
+                "enabled": "eq.true",
+                "select":  "keyword,match_type,direction_prior,tickers,rule_label",
+                "limit":   "500",
+            },
+            timeout=15,
+        )
+        if r.status_code == 200:
+            rows = r.json() or []
+            ticker_rules = [r_ for r_ in rows if r_.get("tickers")]
+            sentiment_rules = [r_ for r_ in rows if not r_.get("tickers")]
+            if ticker_rules or sentiment_rules:
+                _RULES_NAME_HITS = ticker_rules
+                _RULES_BULLISH = [r_ for r_ in sentiment_rules if r_.get("direction_prior") == "long"]
+                _RULES_BEARISH = [r_ for r_ in sentiment_rules if r_.get("direction_prior") == "short"]
+                return "keyword_db"
+    except Exception as e:  # noqa: BLE001
+        print(f"  load_rules: DB fetch failed, using fallback ({e})", file=sys.stderr)
+
+    # Fallback: derive from the in-process constants so we always classify the
+    # core mega-cap names + the existing bullish/bearish regex sentiment.
+    _RULES_NAME_HITS = [
+        {"keyword": name, "match_type": "icontains", "tickers": [ticker],
+         "direction_prior": "neutral", "rule_label": f"name_{ticker}"}
+        for name, ticker in _COMPANY_MAP.items()
+    ]
+    _RULES_BULLISH = [{"keyword": _BULLISH_RE.pattern, "match_type": "regex",
+                       "tickers": [], "direction_prior": "long",
+                       "rule_label": "sentiment_bullish"}]
+    _RULES_BEARISH = [{"keyword": _BEARISH_RE.pattern, "match_type": "regex",
+                       "tickers": [], "direction_prior": "short",
+                       "rule_label": "sentiment_bearish"}]
+    return "keyword_fallback"
+
+
+def _matches(text: str, rule: dict) -> bool:
+    kw = rule["keyword"]
+    if rule.get("match_type") == "regex":
+        pattern = _REGEX_CACHE.get(kw)
+        if pattern is None:
+            try:
+                pattern = re.compile(kw, re.I)
+            except re.error:
+                return False
+            _REGEX_CACHE[kw] = pattern
+        return bool(pattern.search(text))
+    return kw.lower() in text.lower()
+
 
 def _article_id(entry: dict, source: str) -> str:
     raw = entry.get("id") or entry.get("guid") or entry.get("link") or ""
@@ -95,29 +163,37 @@ def _article_id(entry: dict, source: str) -> str:
 
 
 def classify(text: str) -> list[dict]:
-    """Return list of {ticker, direction_prior, sentiment_label} for tickers mentioned."""
+    """Return list of {ticker, direction_prior, sentiment_label, classified_by} for
+    tickers mentioned. Uses DB-loaded rules + watchlist symbol scan."""
     if not text:
         return []
-    text_low = text.lower()
     hits: dict[str, dict] = {}
 
-    # Direct ticker symbol match (e.g. "NVDA", "BRK.B")
+    # 1. Raw ticker symbols still come from the in-process watchlist — these are
+    # uppercase tokens, not "rules" worth editing in DB. Symbols are derived from
+    # stock_watchlists at deploy time.
     for ticker in _WATCHLIST_TICKERS:
-        pattern = re.compile(r"\b" + re.escape(ticker) + r"\b", re.I)
+        pattern = _REGEX_CACHE.get(f"sym_{ticker}")
+        if pattern is None:
+            pattern = re.compile(r"\b" + re.escape(ticker) + r"\b", re.I)
+            _REGEX_CACHE[f"sym_{ticker}"] = pattern
         if pattern.search(text):
             hits.setdefault(ticker, {"ticker": ticker})
 
-    # Company name match
-    for name, ticker in _COMPANY_MAP.items():
-        if name in text_low:
-            hits.setdefault(ticker, {"ticker": ticker})
+    # 2. DB-loaded company-name rules (icontains / regex per row).
+    for rule in _RULES_NAME_HITS:
+        if not _matches(text, rule):
+            continue
+        for t in rule.get("tickers") or []:
+            hits.setdefault(t, {"ticker": t})
 
     if not hits:
         return []
 
-    # Determine sentiment once for the article, apply to all matched tickers
-    bullish = bool(_BULLISH_RE.search(text))
-    bearish = bool(_BEARISH_RE.search(text))
+    # 3. Article-wide sentiment from DB-loaded sentiment rules. First-match wins
+    # per direction; conflict (both long + short matched) → neutral.
+    bullish = any(_matches(text, r) for r in _RULES_BULLISH)
+    bearish = any(_matches(text, r) for r in _RULES_BEARISH)
     if bullish and not bearish:
         direction, label = "long",    "positive"
     elif bearish and not bullish:
@@ -128,6 +204,7 @@ def classify(text: str) -> list[dict]:
     for t in hits:
         hits[t]["direction_prior"]  = direction
         hits[t]["sentiment_label"]  = label
+        hits[t]["classified_by"]    = _RULES_SOURCE
 
     return list(hits.values())
 
@@ -266,6 +343,7 @@ def emit_news_events(articles: list[dict], raw_ids: dict[tuple[str, str], int]) 
                     "url":             a.get("url"),
                     "source":          a["source"],
                     "direction_prior": h["direction_prior"],
+                    "classified_by":   h.get("classified_by") or _RULES_SOURCE,
                 },
             })
     if not rows:
@@ -317,9 +395,16 @@ def poll_feed(source_name: str, feed_url: str) -> list[dict]:
 
 
 def main() -> int:
+    global _RULES_SOURCE
     run_id = job_run_start("news_agent")
     total_in     = 0
     total_events = 0
+
+    # Load DB-backed keyword rules once per run; sets module-level caches.
+    _RULES_SOURCE = load_rules()
+    print(f"Loaded {len(_RULES_NAME_HITS)} ticker rules + "
+          f"{len(_RULES_BULLISH)} bullish + {len(_RULES_BEARISH)} bearish "
+          f"sentiment rules from {_RULES_SOURCE}")
 
     try:
         all_articles: list[dict] = []
