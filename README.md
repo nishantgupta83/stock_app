@@ -115,6 +115,7 @@ table) and per-alert detail pages under `/alert/{id}.html` for the link in every
 - `sql/0010_reliability_and_calibration.sql` — audit/evidence uniqueness, dispatch retry status, outcome-price fields, source registry refresh, calibration summary view
 - `sql/0011_keyword_rules.sql` — DB-editable keyword routing for news + Truth Social (`stock_keyword_rules`); seeds with the existing hardcoded rules so behavior is identical day-1
 - `sql/0012_event_outcome_observations.sql` — per-day per-ticker (move %, prior event) rows from `market_scanner_agent` for future scoring calibration
+- `sql/0013_event_outcome_observations_uniq_fix.sql` — replaces the partial unique index from 0012 with a non-partial one so PostgREST's `ON CONFLICT` upsert resolves correctly
 
 ## GitHub Actions secrets
 
