@@ -65,11 +65,15 @@ _DIRECTION_DEFAULT: dict[str, str] = {
 
 def fetch_tradeable_kinds() -> dict[str, str]:
     """{ticker → kind} for kind in (stock, etf). Mutual funds use NAV pricing
-    and don't fit the next-session-close paper-trade contract."""
+    and don't fit the next-session-close paper-trade contract.
+
+    PostgREST embedded-column filters: `stock_symbols.kind=in.(stock,etf)`
+    works; `or=(...)` does not on embedded columns (PGRST100). Lesson stays
+    in this comment so the next person doesn't relearn it."""
     url = (
         f"{SUPABASE_URL}/rest/v1/stock_watchlists"
         f"?select=ticker,stock_symbols!inner(kind)"
-        f"&or=(stock_symbols.kind.eq.stock,stock_symbols.kind.eq.etf)"
+        f"&stock_symbols.kind=in.(stock,etf)"
     )
     r = requests.get(url, headers=HEADERS_SB, timeout=30)
     if r.status_code != 200:
