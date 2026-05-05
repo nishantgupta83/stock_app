@@ -499,12 +499,54 @@ def signal_direction(events: list[dict]) -> str:
     return "neutral"
 
 
-def action_for(score: float, direction: str) -> str:
+def action_for(score: float, direction: str, has_mature_rule: bool = False) -> str:
+    """Map (score, direction, maturity) to the action vocabulary.
+
+    Maturity gate: when the cluster includes ≥1 rule whose paper-trade accuracy
+    has crossed 0.90 with n≥30 (per stock_rule_calibration.is_mature), the
+    bot is allowed to use BUY / SELL — the system has earned the directional
+    vocabulary on that rule. Without a mature rule, the bot stays paper-only:
+    WATCH / RESEARCH / AVOID_CHASE / CHASE_RISK.
+    """
+    if has_mature_rule:
+        if direction == "bearish" and score >= 50:
+            return "SELL"
+        if direction == "bullish" and score >= 70:
+            return "BUY"
     if direction == "bearish" and score >= 50:
         return "AVOID_CHASE"
     if score >= 70: return "WATCH"
     if score >= 50: return "RESEARCH"
     return ""  # suppress
+
+
+def fetch_rule_calibration() -> dict[str, dict]:
+    """{rule_key → {accuracy, n_observations, is_mature}} from stock_rule_calibration.
+    Empty dict on any failure → callers fall through to base scoring (no learned weight)."""
+    try:
+        r = requests.get(
+            f"{SUPABASE_URL}/rest/v1/stock_rule_calibration",
+            headers=HEADERS_SB,
+            params={"select": "rule_key,accuracy,n_observations,is_mature", "limit": "500"},
+            timeout=10,
+        )
+        if r.status_code != 200:
+            return {}
+        return {row["rule_key"]: row for row in r.json() if row.get("rule_key")}
+    except Exception as e:  # noqa: BLE001
+        print(f"  fetch_rule_calibration failed (using empty): {e}", file=sys.stderr)
+        return {}
+
+
+def cluster_has_mature_rule(events: list[dict], calibration: dict[str, dict]) -> bool:
+    """True if any event in the cluster maps to an is_mature rule_key."""
+    for e in events:
+        et = e["event_type"]
+        sub = (e.get("event_subtype") or "").strip()
+        for key in (f"{et}:{sub}" if sub else None, et):
+            if key and calibration.get(key, {}).get("is_mature"):
+                return True
+    return False
 
 
 def horizon_for(events: list[dict]) -> str:
@@ -704,6 +746,16 @@ def main() -> int:
         else:
             print("No agent_weights yet — using default 1.0 for all (cold start)")
 
+        # Phase 7 — per-rule calibration. Maturity gate (≥0.90 accuracy with n≥30
+        # closed paper trades) unlocks BUY/SELL action vocabulary for any cluster
+        # that contains at least one mature rule.
+        rule_calibration = fetch_rule_calibration()
+        mature_keys = [k for k, v in rule_calibration.items() if v.get("is_mature")]
+        if mature_keys:
+            print(f"Mature rules ({len(mature_keys)}): {sorted(mature_keys)[:6]}{'...' if len(mature_keys) > 6 else ''}")
+        else:
+            print("No mature rules yet — BUY/SELL gated; staying paper-only")
+
         # Group by (ticker, 5-min bucket)
         clusters: dict[tuple[str, str], list[dict]] = defaultdict(list)
         for e in events:
@@ -725,7 +777,8 @@ def main() -> int:
             ok, cluster_label = cluster_passes(ev_list)
             score, breakdown = score_evidence(ev_list, agent_weights=agent_weights)
             direction = signal_direction(ev_list)
-            action = action_for(score, direction)
+            mature = cluster_has_mature_rule(ev_list, rule_calibration)
+            action = action_for(score, direction, has_mature_rule=mature)
             scored.append({
                 "ticker":   ticker,
                 "bucket":   bucket,

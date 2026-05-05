@@ -1,0 +1,94 @@
+{% extends "_layout.html.j2" %}
+{% block content %}
+<h2>Calibration <span style="color:var(--muted);font-size:13px;font-weight:normal">— per-rule paper-trade accuracy. Mature rules (≥{{ maturity_acc_pct }}% with n≥{{ maturity_min_n }}) unlock BUY/SELL.</span></h2>
+
+<div class="cards" style="margin-bottom:16px">
+  <div class="card">
+    <div class="label">Open paper trades</div>
+    <div class="value">{{ open_paper_count }}</div>
+    <div class="sub">opened by event_paper_agent, awaiting EOD reconcile</div>
+  </div>
+  <div class="card">
+    <div class="label">Closed (last 30 days)</div>
+    <div class="value">{{ closed_30d_count }}</div>
+    <div class="sub">{% if closed_30d_count %}{{ "%.1f"|format(closed_30d_winrate * 100) }}% win rate · avg return {{ "%+.2f%%"|format(closed_30d_avg_ret * 100) }}{% else %}no closed trades yet{% endif %}</div>
+  </div>
+  <div class="card {% if mature_rules|length > 0 %}ok{% endif %}">
+    <div class="label">Mature rules (BUY/SELL unlocked)</div>
+    <div class="value">{{ mature_rules|length }}</div>
+    <div class="sub">{% if mature_rules %}{{ mature_rules[:3]|join(", ") }}{% if mature_rules|length > 3 %}, …{% endif %}{% else %}none yet — keep accumulating data{% endif %}</div>
+  </div>
+  <div class="card">
+    <div class="label">Total observations</div>
+    <div class="value">{{ total_obs }}</div>
+    <div class="sub">across {{ rule_rows|length }} distinct rules</div>
+  </div>
+</div>
+
+<h3>Per-rule accuracy</h3>
+<p style="color:var(--muted);font-size:12px">A rule is one event_type[:event_subtype] combination. Sorted by absolute mean return × log(n+1), so a strong rule with many samples ranks above a marginal rule with few. Sample size column shaded green when n ≥ {{ maturity_min_n }}.</p>
+<table>
+  <thead>
+    <tr>
+      <th>Rule</th>
+      <th class="num">N</th>
+      <th class="num">Accuracy</th>
+      <th class="num">Mean realized</th>
+      <th>Status</th>
+      <th>Last updated</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for r in rule_rows %}
+    <tr>
+      <td><code>{{ r.rule_key }}</code></td>
+      <td class="num" style="background:{% if r.n_observations >= maturity_min_n %}#163b2c{% else %}transparent{% endif %};color:{% if r.n_observations >= maturity_min_n %}#7adfb0{% else %}var(--muted){% endif %}">{{ r.n_observations }}</td>
+      <td class="num" style="color:{% if r.accuracy >= 0.7 %}var(--ok){% elif r.accuracy >= 0.5 %}var(--warn){% else %}var(--bad){% endif %}">
+        {{ "%.1f%%"|format(r.accuracy * 100) }}
+      </td>
+      <td class="num" style="color:{% if r.mean_realized_pct and r.mean_realized_pct > 0 %}var(--ok){% elif r.mean_realized_pct and r.mean_realized_pct < 0 %}var(--bad){% else %}var(--muted){% endif %}">
+        {% if r.mean_realized_pct is not none %}{{ "%+.2f%%"|format(r.mean_realized_pct * 100) }}{% else %}—{% endif %}
+      </td>
+      <td>
+        {% if r.is_mature %}<span class="tag ok">MATURE · BUY/SELL allowed</span>
+        {% elif r.n_observations < 10 %}<span class="tag" style="color:var(--muted)">needs data (n&lt;10)</span>
+        {% else %}<span class="tag" style="color:var(--warn)">building</span>{% endif %}
+      </td>
+      <td style="font-size:12px;color:var(--muted)">{{ (r.last_updated or "")[:10] }}</td>
+    </tr>
+    {% else %}
+    <tr><td colspan="6" class="empty">No calibration data yet. event_paper_agent runs hourly; price_agent reconciles weekday EOD. First closed trade should appear within 1 trading day.</td></tr>
+    {% endfor %}
+  </tbody>
+</table>
+
+<h3 style="margin-top:24px">Recently closed paper trades</h3>
+<table>
+  <thead>
+    <tr>
+      <th>Closed</th>
+      <th>Ticker</th>
+      <th>Direction</th>
+      <th>Rule</th>
+      <th class="num">Return</th>
+      <th>Outcome</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for t in recent_closed %}
+    <tr>
+      <td style="font-size:12px">{{ (t.exit_at or "")[:16] }}</td>
+      <td><strong><a href="ticker/{{ t.ticker }}.html" style="color:var(--ok)">{{ t.ticker }}</a></strong></td>
+      <td><span class="tag {{ t.direction }}">{{ t.direction }}</span></td>
+      <td style="font-size:12px"><code>{{ t.rule_key }}</code></td>
+      <td class="num" style="color:{% if t.realized_return and t.realized_return > 0 %}var(--ok){% else %}var(--bad){% endif %}">
+        {{ "%+.2f%%"|format((t.realized_return or 0) * 100) }}
+      </td>
+      <td style="text-align:center;font-size:18px">{% if t.correct %}✅{% else %}❌{% endif %}</td>
+    </tr>
+    {% else %}
+    <tr><td colspan="6" class="empty">No closed paper trades yet.</td></tr>
+    {% endfor %}
+  </tbody>
+</table>
+{% endblock %}

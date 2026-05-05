@@ -1,0 +1,67 @@
+name: event_paper_agent
+
+# Hourly: every meaningful event (severity ≥ 2) becomes a paper trade in stock_event_paper_trades.
+# Outcomes are reconciled by price_agent at EOD; per-rule accuracy lands in stock_rule_calibration
+# and feeds back into thesis_agent scoring on the next */5 cron tick.
+
+on:
+  schedule:
+    - cron: "5 * * * *"  # top of every hour, 5 min in to dodge cron-tower contention
+  workflow_dispatch:
+    inputs:
+      backfill_days:
+        description: "Unused for this agent (kept for shared template parity)"
+        type: string
+        required: false
+        default: "0"
+
+concurrency:
+  group: event_paper_agent
+  cancel-in-progress: true
+
+jobs:
+  fetch:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+      - name: Record workflow start
+        env:
+          SUPABASE_URL:         ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
+        run: python agents/ops_recorder.py --phase start --agent workflow_event_paper_agent
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+
+      - name: Install deps
+        run: pip install -r requirements.txt
+
+      - name: Run event paper agent
+        env:
+          SUPABASE_URL:         ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
+          BACKFILL_DAYS:        ${{ inputs.backfill_days }}
+        run: |
+          # BACKFILL_DAYS comes from workflow_dispatch input (string), default "0".
+          # Validate strictly numeric to block any shell-injection via the env var.
+          BACKFILL_DAYS="${BACKFILL_DAYS:-0}"
+          case "$BACKFILL_DAYS" in
+            ''|*[!0-9]*) echo "invalid backfill_days: $BACKFILL_DAYS"; exit 1 ;;
+          esac
+          if [ "$BACKFILL_DAYS" -gt 0 ]; then
+            python agents/event_paper_agent.py --backfill-days "$BACKFILL_DAYS"
+          else
+            python agents/event_paper_agent.py
+          fi
+      - name: Record workflow finish
+        if: always()
+        env:
+          SUPABASE_URL:         ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
+          WORKFLOW_STATUS:      ${{ job.status }}
+        run: python agents/ops_recorder.py --phase finish --agent workflow_event_paper_agent --status "$WORKFLOW_STATUS"

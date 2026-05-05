@@ -1,0 +1,68 @@
+name: crypto_macro_agent
+
+
+# Daily after market close: BTC/ETH price probe -> emit crypto_macro_move events for
+# COIN/MSTR (and any crypto-correlated tickers) when abs(daily move) >= 5%. Closes the
+# 75pct no_tracked_event coverage gap that the 90-day market_scanner backfill surfaced.
+
+on:
+  schedule:
+    - cron: "35 21 * * 1-5"  # weekday 21:35 UTC, after price closes settle on yfinance
+  workflow_dispatch:
+    inputs:
+      backfill_days:
+        description: "Unused for this agent (kept for shared template parity)"
+        type: string
+        required: false
+        default: "0"
+
+concurrency:
+  group: crypto_macro_agent
+  cancel-in-progress: true
+
+jobs:
+  fetch:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+      - name: Record workflow start
+        env:
+          SUPABASE_URL:         ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
+        run: python agents/ops_recorder.py --phase start --agent workflow_crypto_macro_agent
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+
+      - name: Install deps
+        run: pip install -r requirements.txt
+
+      - name: Run event paper agent
+        env:
+          SUPABASE_URL:         ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
+          BACKFILL_DAYS:        ${{ inputs.backfill_days }}
+        run: |
+          # BACKFILL_DAYS comes from workflow_dispatch input (string), default "0".
+          # Validate strictly numeric to block any shell-injection via the env var.
+          BACKFILL_DAYS="${BACKFILL_DAYS:-0}"
+          case "$BACKFILL_DAYS" in
+            ''|*[!0-9]*) echo "invalid backfill_days: $BACKFILL_DAYS"; exit 1 ;;
+          esac
+          if [ "$BACKFILL_DAYS" -gt 0 ]; then
+            python agents/crypto_macro_agent.py --backfill-days "$BACKFILL_DAYS"
+          else
+            python agents/crypto_macro_agent.py
+          fi
+      - name: Record workflow finish
+        if: always()
+        env:
+          SUPABASE_URL:         ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
+          WORKFLOW_STATUS:      ${{ job.status }}
+        run: python agents/ops_recorder.py --phase finish --agent workflow_crypto_macro_agent --status "$WORKFLOW_STATUS"

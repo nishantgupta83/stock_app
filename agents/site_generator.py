@@ -296,6 +296,53 @@ def fetch_forecast_audit() -> list[dict]:
     })
 
 
+def fetch_rule_calibration() -> list[dict]:
+    """Per-event-type calibration rows; used by the Calibration dashboard tab."""
+    rows = sb_get("stock_rule_calibration", {
+        "select": "rule_key,n_observations,n_correct,accuracy,mean_realized_pct,is_mature,matured_at,last_updated",
+        "order":  "n_observations.desc",
+        "limit":  "200",
+    })
+    # Sort by signal-strength × log(sample): strong-effect rules with N rank first
+    import math
+    def rank(r: dict) -> float:
+        m = float(r.get("mean_realized_pct") or 0)
+        n = int(r.get("n_observations") or 0)
+        return abs(m) * math.log1p(n)
+    rows.sort(key=rank, reverse=True)
+    return rows
+
+
+def fetch_event_paper_trades(only_status: str | None = None, limit: int = 200) -> list[dict]:
+    params = {
+        "select": "id,event_type,event_subtype,ticker,direction,entry_at,entry_price,"
+                  "exit_at,exit_price,realized_return,correct,status,rule_key",
+        "order":  "entry_at.desc",
+        "limit":  str(limit),
+    }
+    if only_status:
+        params["status"] = f"eq.{only_status}"
+    return sb_get("stock_event_paper_trades", params)
+
+
+def derive_calibration_summary(cal_rows: list[dict],
+                               closed_trades: list[dict]) -> dict:
+    """Headline KPIs for the Calibration tab."""
+    from datetime import timedelta as _td
+    cutoff_30 = (datetime.now(timezone.utc) - _td(days=30)).isoformat()
+    closed_30 = [t for t in closed_trades if (t.get("exit_at") or "") >= cutoff_30]
+    n_closed = len(closed_30)
+    n_correct = sum(1 for t in closed_30 if t.get("correct"))
+    avg_ret = (sum(float(t.get("realized_return") or 0) for t in closed_30) / n_closed) if n_closed else 0.0
+    return {
+        "total_obs":          sum(int(r.get("n_observations") or 0) for r in cal_rows),
+        "mature_rules":       [r["rule_key"] for r in cal_rows if r.get("is_mature")],
+        "closed_30d_count":   n_closed,
+        "closed_30d_winrate": (n_correct / n_closed) if n_closed else 0.0,
+        "closed_30d_avg_ret": avg_ret,
+    }
+
+
 def _fetch_paper_forecast_page(limit: int, mode: str | None = None,
                                include_mode_col: bool = True) -> tuple[int, list[dict], str]:
     select_cols = (
@@ -811,6 +858,23 @@ def render_all() -> int:
         calibration_groups=calibration_groups,
         paper_job=paper_job,
         thesis_job=thesis_job,
+    ))
+
+    # Calibration — per-rule paper-trade accuracy + open trades + mature rules.
+    # Maturity gate: rule needs ≥0.90 accuracy with n≥30 closed trades to unlock BUY/SELL.
+    cal_rows = fetch_rule_calibration()
+    open_paper = fetch_event_paper_trades(only_status="open", limit=500)
+    closed_paper = fetch_event_paper_trades(only_status="closed", limit=200)
+    cal_summary = derive_calibration_summary(cal_rows, closed_paper)
+    (DIST_DIR / "calibration.html").write_text(env.get_template("calibration.html.j2").render(
+        **common,
+        title="Calibration", active="calibration",
+        rule_rows=cal_rows,
+        recent_closed=closed_paper[:30],
+        open_paper_count=len(open_paper),
+        maturity_acc_pct=90,
+        maturity_min_n=30,
+        **cal_summary,
     ))
 
     # Learning — agent weight evolution over time + paper-trade audit

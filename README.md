@@ -34,19 +34,21 @@ The current technical diagram and operational runbook live in
 - core table responsibilities and forecast modes
 - current verification snapshot from the Phase 6B rollout
 
-## Pipeline (10 GitHub Actions jobs)
+## Pipeline (12 GitHub Actions jobs)
 
 | Agent | Schedule | What it does |
 |---|---|---|
 | `filing_agent`        | `*/5 * * * *`     | EDGAR → 8-K (with item parsing), 10-K/Q, Form 4, 13D/G, S-3 → `stock_raw_filings` + `stock_normalized_events` |
-| `news_agent`          | `*/5 * * * *`     | CNBC / MarketWatch / Seeking Alpha RSS → `stock_raw_news` + ticker mention + sentiment classifier → `stock_normalized_events` |
-| `truth_social_agent`  | `*/5 * * * *`     | Trump Truth Social RSS → keyword router → `stock_normalized_events` |
-| `thesis_agent`        | `*/5 * * * *`     | Cluster rule (≥2 distinct agents within 5-minute bucket, with narrow high-severity exceptions) → 100-pt weighted score → action → Telegram dispatch. Reads live `stock_agent_weights` to amplify reliable agents and dampen chronically-wrong ones. Includes chase-risk downgrade if price already moved >5% since cluster start. |
-| `earnings_agent`      | weekly Sun 12:00 UTC | yfinance earnings dates per stock → upcoming + recently-released into `stock_normalized_events` |
-| `price_agent`         | weekday 21:30 UTC | yfinance EOD closes → outcome audit → EMA weight update per agent → digest |
-| `market_scanner_agent`| weekday 21:30 UTC | Tracked-stock daily scan: any \|move\|≥3% → write candidate-cause rows to `stock_event_outcome_observations` for future calibration of per-event scoring (observation-only) |
-| `paper_trade_agent`   | `*/15 * * * *`    | live signals + historical audit → calibrated paper forecasts (`prob_win`, expected value, sample size, target/stop). Manual `shadow_30d` mode replays historical backtest signals day-by-day for UI/calibration review. |
-| `backtester`          | manual only       | 180-day replay (filings + earnings + momentum) → precision/calibration metrics. Not cron-scheduled because replay must be deliberate. |
+| `news_agent`          | `*/5 * * * *`     | CNBC / MarketWatch / Seeking Alpha RSS → `stock_raw_news` + DB-loaded keyword rules → `stock_normalized_events` |
+| `truth_social_agent`  | `*/5 * * * *`     | Trump Truth Social RSS → DB-loaded keyword rules → `stock_normalized_events` |
+| `thesis_agent`        | `*/5 * * * *`     | Cluster rule (≥2 agents, 5-min bucket) → 100-pt weighted score → action. Reads `stock_agent_weights` (per-agent EMA) AND `stock_rule_calibration` (per-rule paper-trade accuracy). When a cluster contains a **mature rule** (accuracy ≥ 0.90, n ≥ 30), action escalates from WATCH → **BUY** or AVOID_CHASE → **SELL**. |
+| `earnings_agent`      | weekly Sun 12:00 UTC | yfinance earnings dates per stock → `stock_normalized_events` |
+| `event_paper_agent`   | hourly (5 min in) | Every event with severity ≥ 2 becomes a paper trade in `stock_event_paper_trades` with status=open, entry_price=latest close, horizon=1d. Idempotent on (event_id, ticker, direction). |
+| `price_agent`         | weekday 21:30 UTC | yfinance EOD closes → close mature signals + EMA weight update + close mature paper trades + update `stock_rule_calibration`. Flags rules that crossed the maturity gate. |
+| `market_scanner_agent`| weekday 21:30 UTC | Tracked-stock daily scan: any \|move\|≥3% → `stock_event_outcome_observations` (correlation rows for future calibration QA) |
+| `crypto_macro_agent`  | weekday 21:35 UTC | BTC/ETH daily probe → emits `crypto_macro_move` events for COIN/MSTR when \|move\|≥5%. Closes the 75% no_tracked_event coverage gap on crypto-correlated names. |
+| `paper_trade_agent`   | `*/15 * * * *`    | Codex's earlier path: signal-driven calibrated forecasts in `stock_paper_forecasts` (separate table from `stock_event_paper_trades`). Both run in parallel. |
+| `backtester`          | manual only       | 180-day replay → precision/calibration metrics |
 | `site_generator`      | `*/15 * * * *`    | Supabase → Jinja2 HTML → FTPS auto-deploy to Hostinger |
 | `source_review_agent` | `0 13 1 * *`      | Monthly health check on every external feed → Telegram digest |
 
@@ -58,10 +60,17 @@ The current technical diagram and operational runbook live in
 
 ## Signal vocabulary
 
+Paper-only (default — what the bot uses on day 1):
 - **WATCH**       — score ≥70, bullish cluster (≥2 agents agree)
 - **RESEARCH**    — score ≥50, single strong signal or weaker cluster
-- **AVOID_CHASE** — score ≥50, bearish cluster (S-3, 8-K dilution flagged via primaryDocDescription, earnings miss, downgrade, bearish news)
-- **CHASE_RISK**  — would-be WATCH/RESEARCH on a ticker that already moved >5% since the cluster's earliest event. Recorded for review, not dispatched to Telegram.
+- **AVOID_CHASE** — score ≥50, bearish cluster (S-3, 8-K dilution, earnings miss, downgrade, bearish news)
+- **CHASE_RISK**  — would-be WATCH/RESEARCH on a ticker that already moved >5% since the cluster's earliest event. Recorded for review, not dispatched.
+
+Graduated vocabulary (Phase 7 maturity gate):
+- **BUY**  — score ≥70 bullish AND the cluster contains a rule whose paper-trade accuracy crossed ≥90% with n≥30 closed observations (per `stock_rule_calibration`)
+- **SELL** — score ≥50 bearish AND the cluster contains a mature rule
+
+The system stays on the paper-only vocabulary until a rule earns BUY/SELL through measured accuracy. See the **Calibration** dashboard tab for live status.
 
 ## Paper forecast vocabulary
 
@@ -84,9 +93,11 @@ Probability caveats:
 
 ## Dashboard tabs
 
-`Dashboard · Signals · Events · Agents · Backtest · Paper Trades · Learning` — plus per-ticker chart pages
-under `/ticker/{TICKER}.html` (180-day price + filing + earnings overlay + "Big Moves" explanation
-table) and per-alert detail pages under `/alert/{id}.html` for the link in every Telegram message.
+`Dashboard · Signals · Events · Agents · Backtest · Paper Trades · Calibration · Learning` — plus
+per-ticker chart pages under `/ticker/{TICKER}.html` (180-day price + filing/earnings overlay +
+"Big Moves" explanations) and per-alert detail pages under `/alert/{id}.html` for the link in
+every Telegram message. The new **Calibration** tab surfaces per-rule paper-trade accuracy and
+flags any rule that's crossed the BUY/SELL maturity gate.
 
 ## Layout
 
@@ -116,6 +127,7 @@ table) and per-alert detail pages under `/alert/{id}.html` for the link in every
 - `sql/0011_keyword_rules.sql` — DB-editable keyword routing for news + Truth Social (`stock_keyword_rules`); seeds with the existing hardcoded rules so behavior is identical day-1
 - `sql/0012_event_outcome_observations.sql` — per-day per-ticker (move %, prior event) rows from `market_scanner_agent` for future scoring calibration
 - `sql/0013_event_outcome_observations_uniq_fix.sql` — replaces the partial unique index from 0012 with a non-partial one so PostgREST's `ON CONFLICT` upsert resolves correctly
+- `sql/0014_event_paper_trades_and_calibration.sql` — Phase 7 closed learning loop: `stock_event_paper_trades`, `stock_rule_calibration`, plus BUY/SELL allowed in `stock_signals.action`
 
 ## GitHub Actions secrets
 

@@ -405,6 +405,167 @@ def job_run_finish(run_id: int | None, status: str, rows_in: int, rows_out: int,
 # Main
 # ============================================================
 
+# ============================================================
+# Phase 7 — close event paper trades + update per-rule calibration.
+# Runs at the end of each EOD pass after the signal-level reconcile.
+# ============================================================
+
+# Maturity gate: a rule (event_type[:subtype]) is "mature" when paper trades
+# tied to it have ≥ 90% accuracy across at least 30 closed observations.
+# Mature rules unlock BUY/SELL action vocabulary in thesis_agent.
+MATURITY_ACCURACY = 0.90
+MATURITY_MIN_N    = 30
+
+
+def fetch_open_paper_trades_to_close() -> list[dict]:
+    """Open trades whose horizon has expired (entry + horizon_days session
+    close has passed). Conservative: include trades older than 1 day so we
+    don't try to reconcile something opened 5 minutes ago."""
+    cutoff = (datetime.now(timezone.utc) - timedelta(days=1)).date().isoformat()
+    return sb_get("stock_event_paper_trades", {
+        "status":   "eq.open",
+        "entry_at": f"lte.{cutoff}T23:59:59+00:00",
+        "select":   "id,event_id,event_type,event_subtype,ticker,direction,"
+                    "entry_at,entry_price,horizon_days,rule_key,vehicle_type",
+        "order":    "entry_at.asc",
+        "limit":    "500",
+    })
+
+
+def fetch_calibration_map() -> dict[str, dict]:
+    """{rule_key → {n_observations, n_correct, mean_realized_pct, is_mature}}"""
+    rows = sb_get("stock_rule_calibration", {
+        "select": "rule_key,n_observations,n_correct,accuracy,mean_realized_pct,is_mature,matured_at",
+    })
+    return {r["rule_key"]: r for r in rows}
+
+
+def upsert_calibration(rule_key: str, current: dict | None,
+                       new_correct: bool, new_return: float) -> bool:
+    """Increment counters for one rule_key. Returns True if the rule just
+    crossed the maturity threshold on this update."""
+    cur = current or {}
+    n_obs   = int(cur.get("n_observations") or 0) + 1
+    n_corr  = int(cur.get("n_correct") or 0) + (1 if new_correct else 0)
+    # Streaming mean: prev_mean + (x - prev_mean) / n
+    prev_mean = float(cur.get("mean_realized_pct") or 0)
+    mean_new  = prev_mean + (new_return - prev_mean) / n_obs
+    accuracy  = n_corr / n_obs if n_obs > 0 else 0.5
+    was_mature = bool(cur.get("is_mature"))
+    is_mature  = (accuracy >= MATURITY_ACCURACY) and (n_obs >= MATURITY_MIN_N)
+    just_matured = is_mature and not was_mature
+
+    payload = {
+        "rule_key":          rule_key,
+        "n_observations":    n_obs,
+        "n_correct":         n_corr,
+        "accuracy":          round(accuracy, 6),
+        "mean_realized_pct": round(mean_new, 6),
+        "is_mature":         is_mature,
+        "matured_at":        datetime.now(timezone.utc).isoformat() if just_matured else cur.get("matured_at"),
+        "last_updated":      datetime.now(timezone.utc).isoformat(),
+    }
+    sb_upsert("stock_rule_calibration", [payload], on_conflict="rule_key")
+    return just_matured
+
+
+def compute_paper_outcome(trade: dict, bars: dict[date, dict[str, float]]) -> dict | None:
+    """Direction-aware close-to-close return (entry close → exit close),
+    same slippage convention as signal reconciliation."""
+    entry_date = datetime.fromisoformat(trade["entry_at"].replace("Z", "+00:00")).date()
+    horizon = int(trade.get("horizon_days") or 1)
+    exit_target = entry_date + timedelta(days=horizon)
+    exit_pair = close_on_or_after(bars, exit_target)
+    if not exit_pair:
+        return None
+    exit_date, exit_price = exit_pair
+    try:
+        entry_price = float(trade["entry_price"])
+    except (TypeError, ValueError):
+        return None
+    if entry_price <= 0:
+        return None
+    raw_return = (exit_price - entry_price) / entry_price
+    # Direction-aware: short trades flip the sign of "correctness"
+    direction = trade.get("direction") or "long"
+    direction_mult = 1.0 if direction == "long" else -1.0
+    realized = raw_return * direction_mult
+    return {
+        "exit_at":         exit_date.isoformat() + "T00:00:00+00:00",
+        "exit_price":      round(exit_price, 4),
+        "realized_return": round(realized, 6),
+        "correct":         realized > 0,
+    }
+
+
+def reconcile_event_paper_trades() -> tuple[int, int, int]:
+    """Close mature paper trades, update per-rule calibration, return
+    (n_closed, n_rules_updated, n_newly_matured)."""
+    trades = fetch_open_paper_trades_to_close()
+    if not trades:
+        return 0, 0, 0
+
+    cal = fetch_calibration_map()
+    n_closed = n_rules_updated = n_matured = 0
+
+    # Cache bars per ticker — avoid yfinance round-trips for the same ticker
+    bars_cache: dict[str, dict] = {}
+
+    for t in trades:
+        ticker = t["ticker"]
+        try:
+            entry_date = datetime.fromisoformat(t["entry_at"].replace("Z", "+00:00")).date()
+        except Exception:
+            continue
+        horizon = int(t.get("horizon_days") or 1)
+        end_date = entry_date + timedelta(days=horizon + 3)   # buffer for weekends/holidays
+        if ticker not in bars_cache:
+            bars_cache[ticker] = fetch_bars(ticker, entry_date, end_date)
+        bars = bars_cache[ticker]
+        if not bars:
+            continue
+
+        outcome = compute_paper_outcome(t, bars)
+        if outcome is None:
+            continue
+
+        # 1. Close the trade row
+        sb_patch(f"stock_event_paper_trades?id=eq.{t['id']}", {
+            "status":          "closed",
+            "exit_at":         outcome["exit_at"],
+            "exit_price":      outcome["exit_price"],
+            "realized_return": outcome["realized_return"],
+            "correct":         outcome["correct"],
+        })
+        n_closed += 1
+
+        # 2. Update per-rule calibration
+        rk = t.get("rule_key") or t["event_type"]
+        just_mature = upsert_calibration(
+            rk, cal.get(rk),
+            new_correct=outcome["correct"],
+            new_return=outcome["realized_return"],
+        )
+        # Refresh in-memory cache so subsequent trades for the same rule see updated counts
+        cal[rk] = {
+            **(cal.get(rk) or {}),
+            "n_observations": int((cal.get(rk) or {}).get("n_observations") or 0) + 1,
+            "n_correct":      int((cal.get(rk) or {}).get("n_correct") or 0) + (1 if outcome["correct"] else 0),
+            "is_mature":      just_mature or (cal.get(rk) or {}).get("is_mature"),
+        }
+        n_rules_updated += 1
+        if just_mature:
+            n_matured += 1
+            print(f"  🎓 rule '{rk}' matured: ≥{MATURITY_ACCURACY*100:.0f}% accuracy "
+                  f"with n≥{MATURITY_MIN_N} — BUY/SELL unlocked")
+
+    return n_closed, n_rules_updated, n_matured
+
+
+# ============================================================
+# Main
+# ============================================================
+
 def main() -> int:
     run_id   = job_run_start()
     rows_in  = 0
@@ -464,6 +625,20 @@ def main() -> int:
 
         if results:
             send_digest(results)
+
+        # Phase 7 — close mature event paper trades + update per-rule calibration.
+        # Runs after signals so we don't double-fetch yfinance bars for the same
+        # ticker. Failure here doesn't block signal close above.
+        try:
+            n_paper_closed, n_rules_updated, n_matured = reconcile_event_paper_trades()
+            if n_paper_closed or n_rules_updated:
+                print(f"Paper trades closed: {n_paper_closed}, "
+                      f"rules updated: {n_rules_updated}, "
+                      f"newly mature: {n_matured}")
+            rows_out += n_paper_closed
+        except Exception as e:  # noqa: BLE001 — never let learning loop crash the EOD job
+            import traceback
+            print(f"  paper-trade reconcile failed: {e}\n{traceback.format_exc()}", file=sys.stderr)
 
         print(f"Closed {rows_out}/{len(pending)} signals")
         job_run_finish(run_id, "ok", rows_in, rows_out)
