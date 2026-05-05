@@ -8,6 +8,12 @@ on:
   schedule:
     - cron: "30 21 * * 1-5"  # weekdays 21:30 UTC (after US market close)
   workflow_dispatch:
+    inputs:
+      backfill_days:
+        description: "Days of history to replay (0 = today only). Use 90 to seed."
+        type: string
+        required: false
+        default: "0"
 
 concurrency:
   group: market_scanner_agent
@@ -39,7 +45,19 @@ jobs:
         env:
           SUPABASE_URL:         ${{ secrets.SUPABASE_URL }}
           SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
-        run: python agents/market_scanner_agent.py
+          BACKFILL_DAYS:        ${{ inputs.backfill_days }}
+        run: |
+          # BACKFILL_DAYS comes from workflow_dispatch input (string), default "0".
+          # Validate strictly numeric to block any shell-injection via the env var.
+          BACKFILL_DAYS="${BACKFILL_DAYS:-0}"
+          case "$BACKFILL_DAYS" in
+            ''|*[!0-9]*) echo "invalid backfill_days: $BACKFILL_DAYS"; exit 1 ;;
+          esac
+          if [ "$BACKFILL_DAYS" -gt 0 ]; then
+            python agents/market_scanner_agent.py --backfill-days "$BACKFILL_DAYS"
+          else
+            python agents/market_scanner_agent.py
+          fi
       - name: Record workflow finish
         if: always()
         env:
