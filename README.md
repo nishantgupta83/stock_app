@@ -129,6 +129,7 @@ flags any rule that's crossed the BUY/SELL maturity gate.
 - `sql/0013_event_outcome_observations_uniq_fix.sql` — replaces the partial unique index from 0012 with a non-partial one so PostgREST's `ON CONFLICT` upsert resolves correctly
 - `sql/0014_event_paper_trades_and_calibration.sql` — Phase 7 closed learning loop: `stock_event_paper_trades`, `stock_rule_calibration`, plus BUY/SELL allowed in `stock_signals.action`
 - `sql/0015_event_paper_trades_uniq_fix.sql` — non-partial unique index on `(event_id, ticker, direction)` so `ON CONFLICT` works (same lesson as `0013`)
+- `sql/0016_holistic_review_fixes.sql` — RLS for `stock_job_runs` / `stock_dead_letter_events` / `stock_data_sources`, `stock_signals(status_v2, fired_at)` index for hot path, restore `TRIM` to the action allow-list
 
 ## GitHub Actions secrets
 
