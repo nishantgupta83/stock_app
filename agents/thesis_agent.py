@@ -404,6 +404,21 @@ def score_evidence(events: list[dict],
                 add("momentum_strong_short", 20, e["id"], f"{rs:.1f}% vs SPY 20d")
             elif rs < -5:
                 add("momentum_moderate_short", 10, e["id"], f"{rs:.1f}% vs SPY 20d")
+        # Phase 8 — institutional flows from flows_agent. Direction priors are
+        # carried in payload.direction_prior so signal_direction() routes the
+        # cluster correctly. Calibration will refine these per (institution,
+        # change_type) over time; the maturity gate decides whether
+        # "BRK new_position" eventually graduates to BUY.
+        elif et == "institutional_new_position":
+            add("inst_new_position", 25, e["id"], (e.get("event_subtype") or ""))
+        elif et == "institutional_exit":
+            add("inst_exit",         20, e["id"], (e.get("event_subtype") or ""))
+        elif et == "institutional_increase":
+            add("inst_increase",     15, e["id"], (e.get("event_subtype") or ""))
+        elif et == "institutional_decrease":
+            add("inst_decrease",     12, e["id"], (e.get("event_subtype") or ""))
+        elif et == "activist_5pct_crossed":
+            add("activist_5pct",     30, e["id"], (e.get("event_subtype") or ""))
         # Other filings carry only the severity component
         elif et.startswith("filing_") and sev > 0:
             add(f"filing_other_sev{sev}", min(15, sev * 4), e["id"])
@@ -494,6 +509,13 @@ def signal_direction(events: list[dict]) -> str:
                 rs = 0.0
             if rs < -5: bear += 1
             elif rs > 5: bull += 1
+        elif et in ("institutional_new_position", "institutional_increase", "activist_5pct_crossed"):
+            bull += 1
+        elif et in ("institutional_exit", "institutional_decrease"):
+            bear += 1
+        elif et == "crypto_macro_move":
+            if d == "short": bear += 1
+            elif d == "long": bull += 1
     if bear > bull:  return "bearish"
     if bull > 0:     return "bullish"
     return "neutral"

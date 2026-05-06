@@ -34,7 +34,7 @@ The current technical diagram and operational runbook live in
 - core table responsibilities and forecast modes
 - current verification snapshot from the Phase 6B rollout
 
-## Pipeline (12 GitHub Actions jobs)
+## Pipeline (13 GitHub Actions jobs)
 
 | Agent | Schedule | What it does |
 |---|---|---|
@@ -47,6 +47,7 @@ The current technical diagram and operational runbook live in
 | `price_agent`         | weekday 21:30 UTC | yfinance EOD closes → close mature signals + EMA weight update + close mature paper trades + update `stock_rule_calibration`. Flags rules that crossed the maturity gate. |
 | `market_scanner_agent`| weekday 21:30 UTC | Tracked-stock daily scan: any \|move\|≥3% → `stock_event_outcome_observations` (correlation rows for future calibration QA) |
 | `crypto_macro_agent`  | weekday 21:35 UTC | BTC/ETH daily probe → emits `crypto_macro_move` events for COIN/MSTR when \|move\|≥5%. Closes the 75% no_tracked_event coverage gap on crypto-correlated names. |
+| `flows_agent`         | weekly Sun 14:00 UTC | Parses 13F-HR information_table.xml from Berkshire / BlackRock / Vanguard / Bridgewater / Scion / Pershing Square. Diffs vs prior quarter snapshot → `institutional_new_position` / `exit` / `increase` / `decrease` events keyed to the affected ticker. |
 | `paper_trade_agent`   | `*/15 * * * *`    | Codex's earlier path: signal-driven calibrated forecasts in `stock_paper_forecasts` (separate table from `stock_event_paper_trades`). Both run in parallel. |
 | `backtester`          | manual only       | 180-day replay → precision/calibration metrics |
 | `site_generator`      | `*/15 * * * *`    | Supabase → Jinja2 HTML → FTPS auto-deploy to Hostinger |
@@ -130,6 +131,7 @@ flags any rule that's crossed the BUY/SELL maturity gate.
 - `sql/0014_event_paper_trades_and_calibration.sql` — Phase 7 closed learning loop: `stock_event_paper_trades`, `stock_rule_calibration`, plus BUY/SELL allowed in `stock_signals.action`
 - `sql/0015_event_paper_trades_uniq_fix.sql` — non-partial unique index on `(event_id, ticker, direction)` so `ON CONFLICT` works (same lesson as `0013`)
 - `sql/0016_holistic_review_fixes.sql` — RLS for `stock_job_runs` / `stock_dead_letter_events` / `stock_data_sources`, `stock_signals(status_v2, fired_at)` index for hot path, restore `TRIM` to the action allow-list
+- `sql/0017_institutional_holdings_snapshot.sql` — Phase 8 `stock_institutional_holdings_snapshot` for `flows_agent` per-quarter 13F snapshots
 
 ## GitHub Actions secrets
 
@@ -186,6 +188,24 @@ Jinja `tojson`, not raw `|safe`.
 9. Wait one `*/15` cycle for `site_generator` to render and deploy
 10. After a few weeks of live signals, `price_agent`'s EMA loop populates per-agent weights
    that `thesis_agent` then uses to amplify reliable agents
+
+## Future roadmap
+
+Items proposed but deliberately deferred. Listed here so context isn't lost when the next
+session picks them up. Each is bounded effort; none requires a paid API.
+
+| Item | Why deferred | Estimated effort |
+|---|---|---|
+| **Form 4 buy/sell transaction split** | Form 4 currently lumps insider buys, sells, and option exercises into a single event. Empirical data (n=218) shows the aggregate is bearish on average — but BUYS and SELLS likely have opposite signs. Splitting requires fetching + parsing the Form 4 XML doc (transaction code + shares). Would let `thesis_agent` score insider buys as bullish, sells as bearish, instead of treating both the same. | 3-4h |
+| **Intraday "beat-but-falling" detector** | The META / TSLA case: earnings beat fires bullish signal, stock falls anyway because of capex / guidance. Would need a 30-min after-open price check post-earnings; if down despite beat → emit `beat_but_weak` with `direction_prior=short`. Requires intraday price data (yfinance 1-min or 15-min bars). | 2h once intraday data path exists |
+| **Hybrid keyword + LLM classifier** | Truth Social / news keyword router goes stale (Iran/Hormuz this week, something else next week). Hybrid: keyword hits use deterministic path; misses fall through to a single Anthropic Haiku call (~$0.10/month at current volume). Deferred per "no API spend" constraint — re-open if you want to revisit. | 2h |
+| **Auto-tune scoring weights from observations** | Today, `thesis_agent` rule weights are static constants. With 90 days of `stock_event_outcome_observations` data we can derive empirical weights weekly: `weight = clip(2 × win_rate, 0.1, 2.0)`. Closes the loop at the rubric level, not just per-agent. | 3h |
+| **Mutual fund NAV-based paper trades** | `event_paper_agent` skips kind=mutual_fund (NAV pricing, T+1 settlement). Would need a separate paper-trade contract: entry at next NAV, exit at horizon NAV. Fits if you ever start trading VFIAX / SWPPX / FXAIX directly. | 3h |
+| **Expanded crypto-correlated tickers** | `crypto_macro_agent` currently emits events for COIN + MSTR only. Adding MARA, RIOT, IBIT, FBTC would cover more crypto-correlated coverage gaps. Requires adding them to the watchlist first. | 30min once tickers are in watchlist |
+| **OpenFIGI CUSIP → ticker integration** | `flows_agent` matches 13F holdings by company name, which works for our mega-cap watchlist but misses anything where the SEC name doesn't normalize cleanly. OpenFIGI's free API (25 req/sec) gives accurate CUSIP→ticker mapping. Would let `flows_agent` cover Berkshire's smaller positions too. | 2h |
+| **Activist 13D activity tracker** | When Pershing Square / Scion file an SC 13D on a NEW target (one we don't yet track), it might be worth adding that ticker dynamically to the watchlist. Currently their 13Ds on non-watchlist tickers get logged but produce no events. | 2h |
+| **Real BUY/SELL graduation digest** | When a rule crosses the maturity gate (>=90% accuracy, n>=30) and `is_mature` flips true, send a Telegram alert: "Rule X has graduated to BUY/SELL. Next signal containing this rule will fire as BUY/SELL instead of WATCH/AVOID_CHASE." Currently surfaces in the Calibration tab only. | 30min |
+| **Calibration → SQL nightly aggregation cron** | Replace ad-hoc SQL with a nightly view-refresh that pre-computes accuracy, mean return, sample size per `(rule_key, lookback_window)`. Removes load from `thesis_agent` reads. | 1h |
 
 ## Security note
 

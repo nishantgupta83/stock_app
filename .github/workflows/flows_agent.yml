@@ -1,0 +1,52 @@
+name: flows_agent
+
+
+# Weekly: parse 13F-HR information_table.xml from Berkshire/BlackRock/Vanguard/
+# Bridgewater/Scion/Pershing Square. Diff vs prior quarter snapshot, emit
+# institutional_new_position / exit / increase / decrease events keyed to the
+# affected ticker so the closed learning loop can score smart-money signals.
+
+on:
+  schedule:
+    - cron: "0 14 * * 0"  # Sundays 14:00 UTC, after weekend SEC catch-up
+  workflow_dispatch:
+
+concurrency:
+  group: flows_agent
+  cancel-in-progress: true
+
+jobs:
+  fetch:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+      - name: Record workflow start
+        env:
+          SUPABASE_URL:         ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
+        run: python agents/ops_recorder.py --phase start --agent workflow_flows_agent
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+
+      - name: Install deps
+        run: pip install -r requirements.txt
+
+      - name: Run flows agent
+        env:
+          SUPABASE_URL:         ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
+          EDGAR_USER_AGENT:     ${{ secrets.EDGAR_USER_AGENT }}
+        run: python agents/flows_agent.py
+      - name: Record workflow finish
+        if: always()
+        env:
+          SUPABASE_URL:         ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
+          WORKFLOW_STATUS:      ${{ job.status }}
+        run: python agents/ops_recorder.py --phase finish --agent workflow_flows_agent --status "$WORKFLOW_STATUS"
