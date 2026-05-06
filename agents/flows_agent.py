@@ -178,25 +178,32 @@ def fetch_information_table(cik: str, accession_number: str) -> list[dict]:
         print(f"  index.json fetch failed for {accession_number}: {e}", file=sys.stderr)
         return []
 
-    xml_candidates = [f["name"] for f in files if (f.get("name") or "").lower().endswith(".xml")]
+    xml_candidates = [f["name"] for f in files
+                      if (f.get("name") or "").lower().endswith(".xml")
+                      and "primary_doc" not in (f.get("name") or "").lower()]
     if not xml_candidates:
         return []
 
-    # Prefer files with "informationtable" or "infotable" in the name.
-    table_files = [n for n in xml_candidates if "informationtable" in n.lower() or "infotable" in n.lower()]
-    chosen = table_files[0] if table_files else (
-        xml_candidates[1] if len(xml_candidates) > 1 else xml_candidates[0]
-    )
-
-    time.sleep(EDGAR_SLEEP)
-    try:
-        r = requests.get(f"{base}/{chosen}", headers=HEADERS_SEC, timeout=30)
-        if r.status_code != 200:
-            return []
-        return _parse_information_table_xml(r.content)
-    except Exception as e:  # noqa: BLE001
-        print(f"  info-table fetch failed for {accession_number}: {e}", file=sys.stderr)
-        return []
+    # Filers don't agree on a naming convention — Bridgewater + Pershing use
+    # "informationtable.xml", but Berkshire's filer (Donnelley) uses a numeric
+    # name like "50240.xml". Try preferred names first then fall through, and
+    # accept the first XML that actually parses to non-empty holdings.
+    preferred = [n for n in xml_candidates
+                 if "informationtable" in n.lower() or "infotable" in n.lower()]
+    others    = [n for n in xml_candidates if n not in preferred]
+    for filename in preferred + others:
+        time.sleep(EDGAR_SLEEP)
+        try:
+            r = requests.get(f"{base}/{filename}", headers=HEADERS_SEC, timeout=30)
+            if r.status_code != 200:
+                continue
+            holdings = _parse_information_table_xml(r.content)
+            if holdings:
+                return holdings
+        except Exception as e:  # noqa: BLE001
+            print(f"  {accession_number}/{filename}: {e}", file=sys.stderr)
+            continue
+    return []
 
 
 def _parse_information_table_xml(xml_bytes: bytes) -> list[dict]:
