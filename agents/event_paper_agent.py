@@ -38,7 +38,13 @@ from filing_agent import (   # type: ignore
 
 LOOKBACK_MIN = 75               # 60min cron + 15min buffer for the previous run
 SEVERITY_FLOOR = 2              # ignore noise events
-HORIZON_DAYS_DEFAULT = 1        # next-session close
+# Multi-horizon: every event opens four parallel paper trades. Same direction,
+# same entry price, different exit horizons. rule_key carries the horizon so
+# stock_rule_calibration tracks accuracy per (event_type:subtype:hNd) — the
+# system learns whether "earnings_release:beat" plays out at 1d (front-running),
+# 7d (settlement), 15d (PEAD window), or 30d (longer drift). User intent: learn
+# WHICH horizon each signal type rewards instead of guessing.
+HORIZONS = (1, 7, 15, 30)
 TARGET_PCT = 0.05
 STOP_PCT = 0.03
 INSERT_CHUNK = 200
@@ -157,41 +163,48 @@ def derive_direction(event: dict) -> str:
     return _DIRECTION_DEFAULT.get(et, "long")
 
 
-def derive_rule_key(event: dict) -> str:
-    """Granular rule identity. Subtype included when present so beat vs miss
-    earn separate calibration tracks."""
+def derive_rule_key(event: dict, horizon_days: int) -> str:
+    """Granular rule identity. Subtype + horizon included so beat vs miss AND
+    1d vs 7d vs 15d vs 30d earn separate calibration tracks. Format:
+        event_type:subtype:hNd        (when subtype present)
+        event_type::hNd               (subtype empty — keep the empty middle
+                                        field so split() always yields 3 parts)"""
     et = event["event_type"]
     sub = (event.get("event_subtype") or "").strip()
-    if sub:
-        return f"{et}:{sub}"
-    return et
+    return f"{et}:{sub}:h{horizon_days}d"
 
 
-def build_paper_trade(event: dict, ticker_kind: str, latest_close: dict) -> dict | None:
-    """One open paper trade row. Returns None if entry price unavailable."""
+def build_paper_trades(event: dict, ticker_kind: str, latest_close: dict) -> list[dict]:
+    """Four open paper trades per event — one per horizon in HORIZONS.
+    Returns [] if entry price is unavailable (yfinance backfill gap)."""
     try:
         entry_price = float(latest_close["close"])
     except (TypeError, ValueError, KeyError):
-        return None
+        return []
     if entry_price <= 0:
-        return None
-    return {
-        "event_id":       event["id"],
-        "event_type":     event["event_type"],
-        "event_subtype":  event.get("event_subtype"),
-        "ticker":         event["ticker"],
-        "vehicle_type":   ticker_kind,
-        "direction":      derive_direction(event),
-        "entry_at":       latest_close["ts"],
-        "entry_price":    round(entry_price, 4),
-        "horizon_days":   HORIZON_DAYS_DEFAULT,
-        "target_pct":     TARGET_PCT,
-        "stop_pct":       STOP_PCT,
-        # exit_at/exit_price/realized_return/correct populated by reconciler
-        "status":         "open",
-        "rule_key":       derive_rule_key(event),
-        "notes":          None,
-    }
+        return []
+    direction = derive_direction(event)
+    rows = []
+    for h in HORIZONS:
+        rows.append({
+            "event_id":       event["id"],
+            "event_type":     event["event_type"],
+            "event_subtype":  event.get("event_subtype"),
+            "ticker":         event["ticker"],
+            "vehicle_type":   ticker_kind,
+            "direction":      direction,
+            "entry_at":       latest_close["ts"],
+            "entry_price":    round(entry_price, 4),
+            "horizon_days":   h,
+            # target/stop scale loosely with horizon — longer holds need wider
+            # bands to accommodate normal volatility around the trend.
+            "target_pct":     round(TARGET_PCT * (1 + (h - 1) * 0.05), 4),
+            "stop_pct":       round(STOP_PCT  * (1 + (h - 1) * 0.05), 4),
+            "status":         "open",
+            "rule_key":       derive_rule_key(event, h),
+            "notes":          None,
+        })
+    return rows
 
 
 def write_paper_trades(rows: list[dict]) -> int:
@@ -248,9 +261,8 @@ def main() -> int:
             close_row = closes.get(t)
             if not close_row:
                 continue
-            row = build_paper_trade(e, kinds[t], close_row)
-            if row:
-                rows.append(row)
+            # 4 trades per event — one per horizon in HORIZONS
+            rows.extend(build_paper_trades(e, kinds[t], close_row))
         n_built = len(rows)
         n_written = write_paper_trades(rows)
 

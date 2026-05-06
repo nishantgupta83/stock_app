@@ -48,7 +48,14 @@ HEADERS_SB = {
 # dedupe_key prevents duplicate signals, so a wider replay window is safer than
 # missing a valid cluster.
 FRESHNESS_WINDOW_MIN = 180
-CLUSTER_WINDOW_MIN   = 5
+# Cluster window widened from 5→30 min after AMD's 2026-05-05 earnings missed
+# clustering: earnings_release landed at 20:00 UTC, the matching 8-K landed at
+# 20:16 UTC, both single-source in different 5-min buckets. Both clearly
+# describe the same coordinated information event. 30 min comfortably bundles
+# pre-market opens, after-hours releases, and same-press-conference reactions
+# from filing_agent / news_agent / earnings_agent. cluster_passes still gates
+# on ≥2 distinct AGENTS, so wider window doesn't relax the multi-source rule.
+CLUSTER_WINDOW_MIN   = 30
 MAX_ALERTS_PER_DAY   = 5
 # Chase-risk threshold: if the price has already moved >5% in the cluster's
 # direction since the earliest event, downgrade WATCH→RESEARCH (the move is

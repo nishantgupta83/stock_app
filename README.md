@@ -132,6 +132,7 @@ flags any rule that's crossed the BUY/SELL maturity gate.
 - `sql/0015_event_paper_trades_uniq_fix.sql` — non-partial unique index on `(event_id, ticker, direction)` so `ON CONFLICT` works (same lesson as `0013`)
 - `sql/0016_holistic_review_fixes.sql` — RLS for `stock_job_runs` / `stock_dead_letter_events` / `stock_data_sources`, `stock_signals(status_v2, fired_at)` index for hot path, restore `TRIM` to the action allow-list
 - `sql/0017_institutional_holdings_snapshot.sql` — Phase 8 `stock_institutional_holdings_snapshot` for `flows_agent` per-quarter 13F snapshots
+- `sql/0018_intc_ebay_and_horizon_index.sql` — adds INTC + EBAY to core watchlist; widens unique index on `stock_event_paper_trades` to include `horizon_days` so the new multi-horizon paper trades coexist
 
 ## GitHub Actions secrets
 
@@ -206,6 +207,9 @@ session picks them up. Each is bounded effort; none requires a paid API.
 | **Activist 13D activity tracker** | When Pershing Square / Scion file an SC 13D on a NEW target (one we don't yet track), it might be worth adding that ticker dynamically to the watchlist. Currently their 13Ds on non-watchlist tickers get logged but produce no events. | 2h |
 | **Real BUY/SELL graduation digest** | When a rule crosses the maturity gate (>=90% accuracy, n>=30) and `is_mature` flips true, send a Telegram alert: "Rule X has graduated to BUY/SELL. Next signal containing this rule will fire as BUY/SELL instead of WATCH/AVOID_CHASE." Currently surfaces in the Calibration tab only. | 30min |
 | **Calibration → SQL nightly aggregation cron** | Replace ad-hoc SQL with a nightly view-refresh that pre-computes accuracy, mean return, sample size per `(rule_key, lookback_window)`. Removes load from `thesis_agent` reads. | 1h |
+| **Tiered storage — passive history off Supabase Free** | Closed paper trades, prices > 90 days, and 13F snapshots > 1 year live in passive storage (Hostinger 25GB or local Mac SSD). Active tables (open trades, recent events, agent_weights) stay in Supabase. Lets the system carry years of training data without paying for Supabase Pro. Calibration cron reads BOTH active + passive when computing per-rule accuracy. | 4h |
+| **S&P 100 watchlist expansion (~70 more tickers)** | Track the next tier of liquid names beyond our current 30 mega-caps + ETFs. Catches more earnings drama, more 13F positions matching, more news mentions. Storage impact: ~3× event volume, ~3× paper trades. Pairs naturally with the tiered storage item above. CIKs need fetching from SEC's `company_tickers.json`. | 2h once tiered storage is in place |
+| **Auto-add M&A targets dynamically** | When `news_article` mentions an "acquisition" + a non-watchlist ticker, add that ticker to a temporary `mna_watchlist` so subsequent news/filings get tracked. Useful for catching eBay-style M&A moves we currently miss. | 2h |
 
 ## Security note
 
