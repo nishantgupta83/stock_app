@@ -449,7 +449,8 @@ Sufficient for personal use with disciplined retention.
 - `stock_forecast_audit` (one row per signal/horizon after `sql/0010`)
 - `stock_agent_weights` (one row per agent per day with `accuracy_ema`, `weight`)
 - `stock_telegram_dispatch_log` (every push attempt with delivery status)
-- `stock_paper_trades` (user's Bought/Sold/Skipped responses)
+- `stock_event_paper_trades` (system-generated paper trades opened per severity≥2 event in `event_paper_agent`, multi-horizon since sql/0018, reconciled at horizon by `price_agent`; closed rows feed `stock_rule_calibration`)
+- `stock_rule_calibration` (per-rule paper-trade accuracy + sample size, drives the BUY/SELL maturity gate)
 - `stock_paper_forecasts` (model-generated paper-only probability, EV, risk/reward, outcome)
   - `forecast_mode='live'` for true live paper trades
   - `forecast_mode='shadow_backtest'` for historical replay validation rows
@@ -463,12 +464,38 @@ The current live RSS news sources are CNBC markets, MarketWatch top stories,
 and Seeking Alpha market currents. Reuters is tracked as a fallback probe in
 `stock_data_sources`; AP RSS is not currently polled.
 
-### 11.3 Free-tier retention
+### 11.3 Free-tier retention (Phase 9 — tiered storage, v1 design locked)
 
-- Raw tables (`raw_filings`, `raw_news`, `raw_prices`, `raw_truth_posts`) keep 90 days.
-- Older raw rows archived to Supabase Storage as compressed JSON, then deleted from DB.
-- Normalized events and signals retained indefinitely (small).
-- Weekly cron job enforces retention.
+Hot data lives in Supabase Free; cold data lives in Hostinger FTPS archive
+at `/public_html/stock_app/archive/`, web-readable at
+`https://hub4apps.com/stock_app/archive/`. Supabase Storage is **not** used
+for archival — it was a pre-Phase-9 placeholder that this section
+supersedes.
+
+- A weekly `archive_agent` (Sun 03:00 UTC) exports rows past their per-table
+  retention threshold to gzipped JSONL, uploads to Hostinger via the same
+  FTPS pattern as `site_generator`, then DELETEs them from the active tier
+  inside a single transaction so a half-failure can't drop data.
+- Retention is per-table on each table's natural age column
+  (`created_at` / `exit_at` / `fired_at` / `ts` / `filed_at`) rather than a
+  uniform window. Open paper trades and `stock_signals` in
+  `('candidate','sent','dispatch_failed')` always stay active.
+- `archive/index.json` carries per-`rule_key` cumulative counts
+  (n_observations, n_correct, sum_of_returns) computed at archive time.
+  `price_agent`'s calibration loop fetches it once per run and merges
+  archived counts into active totals before applying today's delta, so
+  `stock_rule_calibration.n_observations` IS the global running total
+  across both tiers.
+- `archive_agent` posts a weekly Telegram digest summarising rows archived
+  per table, archive total size, % of Hostinger 25 GB used, and % of
+  Supabase Free 500 MB still hot.
+- An optional Mac-side `bin/stock_app_sync.sh` mirrors the archive
+  to the user's local filesystem for offline DuckDB / pandas analysis.
+
+Full per-table thresholds, build sequence, and failure-mode matrix:
+[`docs/phase9-tiered-storage.md`](phase9-tiered-storage.md). Architecture
+diagram with the archive tier:
+[`docs/technical-architecture.md`](technical-architecture.md).
 
 ### 11.4 Security model
 

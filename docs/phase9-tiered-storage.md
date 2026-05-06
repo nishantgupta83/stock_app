@@ -1,6 +1,6 @@
 # Phase 9 — Tiered Storage
 
-Status: **planned, not built yet**
+Status: **v1 design locked, not built yet**
 Date: 2026-05-06
 Owner: Nishant
 
@@ -34,7 +34,7 @@ training data and the eventual S&P 500.
 │                                                                    │
 │ stock_normalized_events       last 90 days                         │
 │ stock_event_paper_trades      open + closed last 90 days           │
-│ stock_signals                 status_v2 in (candidate, sent)       │
+│ stock_signals                 candidate / sent / dispatch_failed   │
 │ stock_rule_calibration        full table (~500 rows max)           │
 │ stock_agent_weights           full table (~daily rows × 6 agents)  │
 │ stock_raw_prices              last 180 days (chart pages need it)  │
@@ -80,14 +80,17 @@ training data and the eventual S&P 500.
 
 ## Retention thresholds
 
-| Table | Active retention | Why |
-|---|---|---|
-| `stock_normalized_events` | 90 days | thesis_agent looks back at most 180 min; site_generator displays last 200 events. 90d is generous. |
-| `stock_event_paper_trades` | open + closed last 90 days | Calibration aggregates from in-memory union of active + archive when reading. 90d active = recent reconciliation latency. |
-| `stock_signals` | open (candidate, sent) only | Closed signals (status=closed, expired, demoted, suppressed) → archive. backtest signals stay if recent. |
-| `stock_raw_prices` | last 180 days | Ticker chart pages render 180 days. Beyond that = archive. |
-| `stock_raw_filings` | last 180 days | filing_agent dedupes against accession_number; older filings only matter for backtest replay. |
-| `stock_institutional_holdings_snapshot` | current quarter | Quarterly diff only needs current + previous; previous archived after each new filing. |
+Each table has its own natural age column — the index in `sql/0019` is built
+per-table so the partition scan stays selective.
+
+| Table | Active retention | Age column | Why |
+|---|---|---|---|
+| `stock_normalized_events` | 90 days | `created_at` | thesis_agent looks back at most 180 min; site_generator displays last 200 events. 90d is generous. |
+| `stock_event_paper_trades` | open + closed last 90 days | `exit_at` (NULL = open = always active) | Calibration aggregates from in-memory union of active + archive when reading. Open trades never archive. |
+| `stock_signals` | `status_v2 IN ('candidate','sent','dispatch_failed')` stays active | `fired_at` | `dispatch_failed` is retryable per sql/0010 — archiving it would drop in-flight retries. Closed / expired / demoted / suppressed / backtest → archive. |
+| `stock_raw_prices` | last 180 days | `ts` | Ticker chart pages render 180 days. Beyond that = archive. |
+| `stock_raw_filings` | last 180 days | `filed_at` | filing_agent dedupes against accession_number; older filings only matter for backtest replay. |
+| `stock_institutional_holdings_snapshot` | current quarter | `filed_at` | Quarterly diff only needs current + previous; previous archived after each new filing. |
 
 Tables NOT subject to retention (always full):
 - `stock_rule_calibration` — small, hot, every read by thesis_agent
@@ -116,13 +119,14 @@ analysis can verify by joining archive JSONL files directly.
 |---|---|---|
 | `agents/archive_agent.py` | Weekly cron: select rows past retention → JSONL.gz → FTPS upload to `/archive/{year}/W{week}/{table}.jsonl.gz` → update `archive/index.json` (with rule_key cumulative counts) → DELETE archived rows from active tier inside a single transaction so a half-failure doesn't drop data. | 3h |
 | `.github/workflows/archive_agent.yml` | Weekly cron Sun 03:00 UTC, after Saturday's filing flow but before Sunday's flows_agent. workflow_dispatch input `dry_run=true` for testing. | 15min |
-| `sql/0019_retention_columns.sql` | Add `archived_at timestamptz` to the 6 affected tables so we can DELETE WHERE archived_at IS NOT NULL after upload confirms. Index on `(archived_at IS NULL, created_at DESC)` for the partition scan during archive. | 30min |
-| `agents/price_agent.py` extension | When updating `stock_rule_calibration`, fetch `archive/index.json` once at the top of the run, merge cumulative counts into the active `n_observations` / `n_correct` totals before applying today's delta. Falls back gracefully if archive is unreachable (system keeps running on active-only). | 2h |
-| `agents/site_generator.py` extension | Calibration tab gets a sub-line on each rule row: "active 60 / archived 240 / total 300". Makes the tiering visible. | 30min |
+| `sql/0019_retention_columns.sql` | Add `archived_at timestamptz` to all 6 affected tables. Create per-table index on `(archived_at, <age column> DESC)` so the archive partition scan is selective on each table's natural age column (`created_at` / `exit_at` / `fired_at` / `ts` / `filed_at`). All `IF NOT EXISTS` to match the pattern in sql/0010 and sql/0016. | 30min |
+| `agents/price_agent.py` extension | When updating `stock_rule_calibration`, fetch `archive/index.json` once at the top of the run, merge cumulative counts into the active `n_observations` / `n_correct` totals before applying today's delta (the existing streaming-mean math in `upsert_calibration()` already supports this — just merge into the `current` dict before incrementing). Falls back gracefully if archive is unreachable (system keeps running on active-only). | 2h |
+| `agents/site_generator.py` extension | Extend `fetch_rule_calibration()` to attach `n_archived` per `rule_key` from `archive/index.json` before passing to the template. Calibration tab gains a `<small>` sub-line under the N column on each rule row: "active 60 / archived 240 / total 300". Makes the tiering visible. | 30min |
+| `agents/archive_agent.py` Telegram digest | After each archive run, post to existing Telegram channel via `agents/telegram_dispatcher.py`: rows archived per table, archive total size on Hostinger, % of Hostinger 25 GB used, % of Supabase Free 500 MB still hot. Catches silent archive failures fast. | 30min |
 | `bin/stock_app_sync.sh` (Mac) | One-line cron: `curl -sN https://hub4apps.com/stock_app/archive/index.json | jq … | xargs -I@ curl -O https://...@`. User installs once via `crontab -e`. | 30min |
 | `docs/phase9-tiered-storage.md` | This file. | done |
 
-**Total build estimate: ~7 hours over 2-3 sessions.**
+**Total build estimate: ~7.5 hours over 2-3 sessions.**
 
 ## Build order (incremental, each step ships standalone)
 
@@ -161,16 +165,22 @@ point of tiering.
 Comparing: without Phase 9, the same expansion forces Supabase Pro ($25/mo)
 or aggressive truncation (lose training history → calibration regresses).
 
-## Open questions (for the user before code starts)
+## Decisions (v1)
 
-1. **Path on Hostinger**: confirm `/archive/` under `/public_html/stock_app/`
-   (publicly readable but obscure). Safe? Or should it sit alongside but
-   outside `/stock_app/` so it isn't linked from the dashboard?
-2. **Mac sync — yes or skip for v1**? Optional component; defer if you'd
-   rather not run a cron on the Mac.
-3. **Telegram digest from archive_agent**: weekly summary of what was
-   archived (e.g., "archived 2,400 closed paper trades, 18,000 prices,
-   1,200 events. Active tier now 230 MB / 500 MB")? Adds 30 min to build.
+These were the doc's open questions; locked in 2026-05-06.
+
+1. **Archive path on Hostinger:** `/public_html/stock_app/archive/` — under
+   the existing chrooted FTPS user `u832160935.stock_app`. Web-readable at
+   `https://hub4apps.com/stock_app/archive/`. No new credentials, no new
+   FTPS account. Discoverable but obscure (not linked from the dashboard).
+2. **Mac local sync:** **included in v1** as `bin/stock_app_sync.sh`. One
+   `crontab -e` line; user installs once. Optional to enable, but the
+   script ships in the repo so the user doesn't have to write it.
+3. **Telegram weekly archive digest:** **included in v1**. Reuses
+   `agents/telegram_dispatcher.py`. Weekly message: rows archived per
+   table, archive total size, % of Hostinger 25 GB used, % of Supabase
+   Free 500 MB still hot. Catches silent archive failures the same week
+   they happen instead of weeks later via the Calibration tab.
 
 ## Deferred / NOT in Phase 9
 
