@@ -1,0 +1,62 @@
+name: archive_agent
+
+# Phase 9: Tiered storage export agent. Exports rows past retention to Hostinger FTPS
+# archive, updates index.json with manifest, and sends Telegram digest. DRY_RUN=true
+# (default for cron) uploads but skips deletes. Runs Sundays 03:00 UTC, before
+# flows_agent (14:00 UTC) and after Saturday filing flush.
+
+on:
+  schedule:
+    - cron: "0 3 * * 0"  # Sundays 03:00 UTC
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: "Skip Supabase deletes (upload only)"
+        required: false
+        default: "true"
+        type: string
+
+concurrency:
+  group: archive_agent
+  cancel-in-progress: true
+
+jobs:
+  archive:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+      - name: Record workflow start
+        env:
+          SUPABASE_URL:         ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
+        run: python agents/ops_recorder.py --phase start --agent workflow_archive_agent
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+
+      - name: Install deps
+        run: pip install -r requirements.txt
+
+      - name: Run archive agent
+        env:
+          SUPABASE_URL:         ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
+          HOSTINGER_FTP_USER:   ${{ secrets.HOSTINGER_FTP_USER }}
+          HOSTINGER_FTP_PASS:   ${{ secrets.HOSTINGER_FTP_PASS }}
+          TELEGRAM_BOT_TOKEN:   ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID:     ${{ secrets.TELEGRAM_CHAT_ID }}
+          DRY_RUN:              ${{ github.event.inputs.dry_run || 'true' }}
+        run: python agents/archive_agent.py
+
+      - name: Record workflow finish
+        if: always()
+        env:
+          SUPABASE_URL:         ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
+          WORKFLOW_STATUS:      ${{ job.status }}
+        run: python agents/ops_recorder.py --phase finish --agent workflow_archive_agent --status "$WORKFLOW_STATUS"
