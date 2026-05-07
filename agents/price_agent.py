@@ -43,6 +43,7 @@ HEADERS_SB = {
 
 EMA_ALPHA = 0.1   # same as backtester — consistent learning rate across live + replay
 SLIPPAGE_BPS = 5  # same as backtester: 0.05% per side, no commissions
+ARCHIVE_INDEX_URL = "https://hub4apps.com/stock_app/archive/index.json"
 
 
 # ============================================================
@@ -432,6 +433,47 @@ def fetch_open_paper_trades_to_close() -> list[dict]:
     })
 
 
+def fetch_archive_index() -> dict:
+    """Fetch archive/index.json from Hostinger. Returns empty dict if unreachable."""
+    try:
+        r = requests.get(ARCHIVE_INDEX_URL, timeout=10)
+        if r.status_code == 200:
+            return r.json()
+    except Exception as e:
+        print(f"  archive index fetch failed (non-fatal): {e}", file=sys.stderr)
+    return {}
+
+
+def enrich_cal_from_archive(cal: dict, archive_index: dict) -> None:
+    """Boost active calibration counts with archived totals where archive is higher.
+
+    stock_rule_calibration is never pruned so normally its counts already include
+    all history. This merge acts as a floor: if archive shows more observations
+    than the active table (e.g. after an accidental calibration reset), the
+    archived count becomes the new base before today's delta is applied.
+    """
+    for rule_key, arc in archive_index.get("rule_calibration", {}).items():
+        arc_n = int(arc.get("n_observations") or 0)
+        arc_c = int(arc.get("n_correct") or 0)
+        if arc_n == 0:
+            continue
+        cur = cal.get(rule_key)
+        if cur is None:
+            # Rule is in archive but missing from active table — seed it
+            cal[rule_key] = {
+                "rule_key":       rule_key,
+                "n_observations": arc_n,
+                "n_correct":      arc_c,
+                "accuracy":       arc_c / arc_n if arc_n else 0.5,
+                "mean_realized_pct": None,
+                "is_mature":      False,
+            }
+        elif arc_n > int(cur.get("n_observations") or 0):
+            # Archive has higher count — use as floor
+            cur["n_observations"] = arc_n
+            cur["n_correct"]      = arc_c
+
+
 def fetch_calibration_map() -> dict[str, dict]:
     """{rule_key → {n_observations, n_correct, mean_realized_pct, is_mature}}"""
     rows = sb_get("stock_rule_calibration", {
@@ -506,6 +548,8 @@ def reconcile_event_paper_trades() -> tuple[int, int, int]:
         return 0, 0, 0
 
     cal = fetch_calibration_map()
+    archive_index = fetch_archive_index()
+    enrich_cal_from_archive(cal, archive_index)
     n_closed = n_rules_updated = n_matured = 0
 
     # Cache bars per ticker — avoid yfinance round-trips for the same ticker
