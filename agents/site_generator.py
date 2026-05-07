@@ -296,6 +296,17 @@ def fetch_forecast_audit() -> list[dict]:
     })
 
 
+def _fetch_archive_index() -> dict:
+    """Fetch archive/index.json from Hostinger for calibration tier display. Non-fatal."""
+    try:
+        r = requests.get("https://hub4apps.com/stock_app/archive/index.json", timeout=8)
+        if r.status_code == 200:
+            return r.json()
+    except Exception:
+        pass
+    return {}
+
+
 def fetch_rule_calibration() -> list[dict]:
     """Per-event-type calibration rows; used by the Calibration dashboard tab."""
     rows = sb_get("stock_rule_calibration", {
@@ -303,6 +314,11 @@ def fetch_rule_calibration() -> list[dict]:
         "order":  "n_observations.desc",
         "limit":  "200",
     })
+    # Attach n_archived from Hostinger archive index so the template can show tier split.
+    arc_cal = _fetch_archive_index().get("rule_calibration", {})
+    for r in rows:
+        arc = arc_cal.get(r.get("rule_key") or "", {})
+        r["n_archived"] = int(arc.get("n_observations") or 0)
     # Sort by signal-strength × log(sample): strong-effect rules with N rank first
     import math
     def rank(r: dict) -> float:

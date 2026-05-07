@@ -42,7 +42,10 @@
     {% for r in rule_rows %}
     <tr>
       <td><code>{{ r.rule_key }}</code></td>
-      <td class="num" style="background:{% if r.n_observations >= maturity_min_n %}#163b2c{% else %}transparent{% endif %};color:{% if r.n_observations >= maturity_min_n %}#7adfb0{% else %}var(--muted){% endif %}">{{ r.n_observations }}</td>
+      <td class="num" style="background:{% if r.n_observations >= maturity_min_n %}#163b2c{% else %}transparent{% endif %};color:{% if r.n_observations >= maturity_min_n %}#7adfb0{% else %}var(--muted){% endif %}">
+        {{ r.n_observations }}
+        {% if r.n_archived > 0 %}<small style="display:block;font-size:10px;color:var(--muted)">active {{ r.n_observations - r.n_archived }} / archived {{ r.n_archived }}</small>{% endif %}
+      </td>
       <td class="num" style="color:{% if r.accuracy >= 0.7 %}var(--ok){% elif r.accuracy >= 0.5 %}var(--warn){% else %}var(--bad){% endif %}">
         {{ "%.1f%%"|format(r.accuracy * 100) }}
       </td>
