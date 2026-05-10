@@ -620,61 +620,61 @@ def main() -> int:
         rows_in = len(signals)
         print(f"Mature signals to reconcile: {rows_in}")
 
-        if not signals:
-            print("Nothing to close today.")
-            job_run_finish(run_id, "ok", 0, 0)
-            return 0
+        if signals:
+            # Existing audit rows are not ignored: reruns use them to heal dependent
+            # paper_forecasts and signal status without double-counting weights.
+            audits = existing_audits([s["id"] for s in signals])
+            pending = [s for s in signals if s["id"] not in audits]
+            print(f"  {len(audits)} already audited, {len(pending)} to process")
+            for sig in signals:
+                audit = audits.get(int(sig["id"]))
+                if audit:
+                    healed = outcome_from_audit(audit)
+                    if healed:
+                        close_paper_forecasts(sig["id"], sig, healed)
+                    close_signal(sig["id"])
 
-        # Existing audit rows are not ignored: reruns use them to heal dependent
-        # paper_forecasts and signal status without double-counting weights.
-        audits = existing_audits([s["id"] for s in signals])
-        pending = [s for s in signals if s["id"] not in audits]
-        print(f"  {len(audits)} already audited, {len(pending)} to process")
-        for sig in signals:
-            audit = audits.get(int(sig["id"]))
-            if audit:
-                healed = outcome_from_audit(audit)
-                if healed:
-                    close_paper_forecasts(sig["id"], sig, healed)
+            results = []
+            for sig in pending:
+                ticker = sig["ticker"]
+                bars = fetch_bars(ticker, sig["_fired_date"], sig["_exit_date"])
+                if not bars:
+                    print(f"  {ticker} signal {sig['id']}: no price data — skipping", file=sys.stderr)
+                    continue
+
+                outcome = compute_outcome(sig, bars)
+                if outcome is None:
+                    print(f"  {ticker} signal {sig['id']}: price unavailable for window — skipping", file=sys.stderr)
+                    continue
+
+                # Extract contributing agents from weight_at_time snapshot
+                wt     = sig.get("weight_at_time") or {}
+                agents = wt.get("agents", []) if isinstance(wt, dict) else []
+
+                write_forecast_audit(sig["id"], sig, outcome)
+                close_paper_forecasts(sig["id"], sig, outcome)
+                update_agent_weights(agents, outcome["correct"])
                 close_signal(sig["id"])
 
-        results = []
-        for sig in pending:
-            ticker = sig["ticker"]
-            bars = fetch_bars(ticker, sig["_fired_date"], sig["_exit_date"])
-            if not bars:
-                print(f"  {ticker} signal {sig['id']}: no price data — skipping", file=sys.stderr)
-                continue
+                icon = "✅" if outcome["correct"] else "❌"
+                print(f"  {icon} {ticker} signal {sig['id']}: entry={outcome['entry_price']} "
+                      f"exit={outcome['exit_price']} ret={outcome['net_return']:+.4f} "
+                      f"correct={outcome['correct']}")
+                results.append({**sig, "outcome": outcome})
+                rows_out += 1
 
-            outcome = compute_outcome(sig, bars)
-            if outcome is None:
-                print(f"  {ticker} signal {sig['id']}: price unavailable for window — skipping", file=sys.stderr)
-                continue
-
-            # Extract contributing agents from weight_at_time snapshot
-            wt     = sig.get("weight_at_time") or {}
-            agents = wt.get("agents", []) if isinstance(wt, dict) else []
-
-            write_forecast_audit(sig["id"], sig, outcome)
-            close_paper_forecasts(sig["id"], sig, outcome)
-            update_agent_weights(agents, outcome["correct"])
-            close_signal(sig["id"])
-
-            icon = "✅" if outcome["correct"] else "❌"
-            print(f"  {icon} {ticker} signal {sig['id']}: entry={outcome['entry_price']} "
-                  f"exit={outcome['exit_price']} ret={outcome['net_return']:+.4f} "
-                  f"correct={outcome['correct']}")
-            results.append({**sig, "outcome": outcome})
-            rows_out += 1
-
-        if results:
-            send_digest(results)
+            if results:
+                send_digest(results)
+            print(f"Closed {rows_out}/{len(pending)} signals")
+        else:
+            print("No mature signals to close.")
 
         # Phase 7 — close mature event paper trades + update per-rule calibration.
-        # Runs after signals so we don't double-fetch yfinance bars for the same
-        # ticker. Failure here doesn't block signal close above.
+        # Always runs regardless of whether any signals were mature, so open
+        # paper trades are reconciled even on low-signal days.
         try:
             n_paper_closed, n_rules_updated, n_matured = reconcile_event_paper_trades()
+            rows_in += n_paper_closed   # count open trades as input work
             if n_paper_closed or n_rules_updated:
                 print(f"Paper trades closed: {n_paper_closed}, "
                       f"rules updated: {n_rules_updated}, "
@@ -683,8 +683,6 @@ def main() -> int:
         except Exception as e:  # noqa: BLE001 — never let learning loop crash the EOD job
             import traceback
             print(f"  paper-trade reconcile failed: {e}\n{traceback.format_exc()}", file=sys.stderr)
-
-        print(f"Closed {rows_out}/{len(pending)} signals")
         job_run_finish(run_id, "ok", rows_in, rows_out)
         return 0
 
