@@ -339,6 +339,9 @@ def source_agent_for(event: dict) -> str:
     if et in ("price_gap", "volume_anomaly", "volatility_spike", "momentum"): return "price"
     if et in ("news_headline",):    return "news"
     if et.startswith("earnings_"):  return "earnings"
+    if et in ("vix_spike", "yield_milestone", "fomc_decision", "cpi_release",
+              "nfp_release", "yield_snapshot"):
+        return "macro"
     return "unknown"
 
 
@@ -463,6 +466,25 @@ def score_evidence(events: list[dict],
         # Other filings carry only the severity component
         elif et.startswith("filing_") and sev > 0:
             add(f"filing_other_sev{sev}", min(15, sev * 4), e["id"])
+        # Macro regime events from macro_rates_agent. These don't bind to a
+        # single ticker (ticker='MACRO' sentinel) but they still inform
+        # cluster scoring when MACRO events fire alongside ticker-specific
+        # ones in the same time bucket — interpret as "regime-tagged" cluster.
+        elif et == "fomc_decision":
+            sub = (e.get("event_subtype") or "")
+            add(f"fomc_{sub}", 25, e["id"], sub)
+        elif et == "cpi_release":
+            add(f"cpi_{e.get('event_subtype') or 'inline'}",
+                15 if sev >= 4 else 8, e["id"])
+        elif et == "nfp_release":
+            add(f"nfp_{e.get('event_subtype') or 'inline'}",
+                15 if sev >= 4 else 8, e["id"])
+        elif et == "yield_milestone":
+            add(f"yield_{e.get('event_subtype') or 'level'}",
+                20 if sev >= 4 else 12, e["id"])
+        elif et == "vix_spike":
+            add(f"vix_{e.get('event_subtype') or 'stress'}",
+                20 if sev >= 4 else 12, e["id"])
 
         # Staleness penalty — only for short-lived signal types.
         # SEC filings are valid for days; social/news posts expire fast.
@@ -647,25 +669,48 @@ def power_scarcity_active(ticker: str, recent_events: list[dict],
 
 
 def is_risk_off() -> bool:
-    """True if VIX latest close > VIX_RISKOFF_LEVEL. Falls through to False on
-    any data gap — we never want this check to silently SUPPRESS alerts."""
+    """True if VIX > VIX_RISKOFF_LEVEL OR a macro_rates regime alert fired
+    today (vix_spike, yield_milestone, fomc_decision hike). Falls through to
+    False on any data gap — we never want this check to silently SUPPRESS
+    bullish alerts based on a missing data source."""
+    # 1. VIX check — fast, in our DB
     r = requests.get(
         f"{SUPABASE_URL}/rest/v1/stock_raw_prices",
         headers=HEADERS_SB,
-        params={
-            "ticker": "eq.VIX",
-            "select": "close,ts",
-            "order":  "ts.desc",
-            "limit":  "1",
-        },
+        params={"ticker": "eq.VIX", "select": "close,ts", "order": "ts.desc", "limit": "1"},
         timeout=10,
     )
-    if r.status_code != 200 or not r.json():
-        return False
-    try:
-        return float(r.json()[0]["close"]) > VIX_RISKOFF_LEVEL
-    except (TypeError, ValueError, KeyError):
-        return False
+    if r.status_code == 200 and r.json():
+        try:
+            if float(r.json()[0]["close"]) > VIX_RISKOFF_LEVEL:
+                return True
+        except (TypeError, ValueError, KeyError):
+            pass
+
+    # 2. macro_rates_agent regime events in last 24h
+    cutoff = (datetime.now(timezone.utc) - timedelta(hours=24)).isoformat()
+    r2 = requests.get(
+        f"{SUPABASE_URL}/rest/v1/stock_normalized_events",
+        headers=HEADERS_SB,
+        params=[
+            ("ticker",     "eq.MACRO"),
+            ("event_type", "in.(vix_spike,yield_milestone,fomc_decision)"),
+            ("created_at", f"gte.{cutoff}"),
+            ("severity",   "gte.3"),
+            ("select",     "event_type,event_subtype,severity,payload"),
+            ("limit",      "10"),
+        ],
+        timeout=10,
+    )
+    if r2.status_code == 200 and r2.json():
+        for ev in r2.json():
+            # FOMC hike = risk-off; FOMC cut/hold is NOT risk-off
+            if ev.get("event_type") == "fomc_decision":
+                if ev.get("event_subtype") == "hike":
+                    return True
+                continue
+            return True
+    return False
 
 
 def cluster_passes(events: list[dict]) -> tuple[bool, str]:
