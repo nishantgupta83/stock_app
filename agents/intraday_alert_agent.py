@@ -121,17 +121,22 @@ def fetch_intraday_snapshot(tickers: list[str]) -> dict[str, dict]:
 # Context — recent events for the spiking ticker
 # ============================================================
 
-def recent_events_context(ticker: str, hours: int = 48) -> list[dict]:
-    """Pull recent normalized_events for context in the alert body."""
+def recent_events_context(ticker: str, hours: int = 168) -> list[dict]:
+    """Pull recent normalized_events for context in the alert body.
+
+    Filter by event_at (real-world event date) NOT created_at (ingest time),
+    otherwise a backfill makes 6-month-old earnings look like 'recent' events.
+    7-day window catches the actual catalyst — earnings release, 8-K, etc.
+    """
     cutoff = (datetime.now(timezone.utc) - timedelta(hours=hours)).isoformat()
     r = requests.get(
         f"{SUPABASE_URL}/rest/v1/stock_normalized_events",
         headers=HEADERS_SB,
         params=[
             ("ticker",      f"eq.{ticker}"),
-            ("created_at",  f"gte.{cutoff}"),
-            ("select",      "event_type,event_subtype,severity,payload,created_at"),
-            ("order",       "severity.desc,created_at.desc"),
+            ("event_at",    f"gte.{cutoff}"),
+            ("select",      "event_type,event_subtype,severity,payload,event_at"),
+            ("order",       "severity.desc,event_at.desc"),
             ("limit",       "5"),
         ],
         timeout=10,
@@ -142,38 +147,41 @@ def recent_events_context(ticker: str, hours: int = 48) -> list[dict]:
 
 
 def format_context(events: list[dict]) -> str:
-    """Compact human-readable summary of recent events for the alert body."""
+    """Compact human-readable summary of recent events for the alert body.
+    Each event tagged with its real date so users see WHEN the catalyst hit."""
     if not events:
-        return "no recent events — check news / earnings calendar"
+        return "no catalyst in last 7d — check news/sector rotation"
     parts = []
     for e in events[:3]:
         et = e.get("event_type") or "?"
         sub = e.get("event_subtype") or ""
         sev = e.get("severity") or 0
+        date = (e.get("event_at") or "")[:10]
+        date_tag = f" ({date})" if date else ""
         if et == "earnings_release":
             payload = e.get("payload") or {}
             surp = payload.get("surprise_pct")
             tag = f"earnings {sub}"
             if surp is not None:
                 try:
-                    tag += f" ({float(surp):+.1f}%)"
+                    tag += f" {float(surp):+.1f}%"
                 except (TypeError, ValueError):
                     pass
-            parts.append(tag)
+            parts.append(f"{tag}{date_tag}")
         elif et == "8k_material_event":
-            parts.append(f"8-K sev{sev}")
+            parts.append(f"8-K sev{sev}{date_tag}")
         elif et.startswith("filing_"):
-            parts.append(et.replace("filing_", "").upper())
+            parts.append(f"{et.replace('filing_', '').upper()}{date_tag}")
         elif et == "truth_social_post":
-            parts.append(f"Trump: {sub}")
+            parts.append(f"Trump: {sub}{date_tag}")
         elif et == "news_article":
-            parts.append(f"news ({sub})")
+            parts.append(f"news ({sub}){date_tag}")
         elif et.startswith("institutional_"):
-            parts.append(f"{et.replace('institutional_','inst-')} {sub}")
+            parts.append(f"{et.replace('institutional_','inst-')} {sub}{date_tag}")
         elif et == "crypto_macro_move":
-            parts.append(f"crypto {sub}")
+            parts.append(f"crypto {sub}{date_tag}")
         else:
-            parts.append(et)
+            parts.append(f"{et}{date_tag}")
     return " · ".join(parts)
 
 
