@@ -253,18 +253,35 @@ def build_paper_trades(event: dict, ticker_kind: str, latest_close: dict) -> lis
     return rows
 
 
+def fetch_already_traded_event_ids(event_ids: list[int]) -> set[int]:
+    """Return event_ids that already have at least one row in stock_event_paper_trades.
+    Used to skip re-inserting when the same event falls in the lookback window twice."""
+    if not event_ids:
+        return set()
+    in_list = ",".join(str(i) for i in event_ids)
+    r = requests.get(
+        f"{SUPABASE_URL}/rest/v1/stock_event_paper_trades",
+        headers=HEADERS_SB,
+        params={"event_id": f"in.({in_list})", "select": "event_id", "limit": "1000"},
+        timeout=15,
+    )
+    if r.status_code != 200:
+        return set()
+    return {row["event_id"] for row in r.json() if row.get("event_id") is not None}
+
+
 def write_paper_trades(rows: list[dict]) -> int:
+    """Plain INSERT — no ON CONFLICT needed because caller pre-filters duplicate events."""
     if not rows:
         return 0
-    url = (
-        f"{SUPABASE_URL}/rest/v1/stock_event_paper_trades"
-        f"?on_conflict=event_id,ticker,direction"
-    )
-    headers = {**HEADERS_SB, "Prefer": "resolution=ignore-duplicates,return=minimal"}
+    headers = {**HEADERS_SB, "Prefer": "return=minimal"}
     inserted = 0
     for i in range(0, len(rows), INSERT_CHUNK):
         batch = rows[i:i+INSERT_CHUNK]
-        r = requests.post(url, headers=headers, json=batch, timeout=30)
+        r = requests.post(
+            f"{SUPABASE_URL}/rest/v1/stock_event_paper_trades",
+            headers=headers, json=batch, timeout=30,
+        )
         if r.status_code in (200, 201, 204):
             inserted += len(batch)
         else:
@@ -295,6 +312,12 @@ def main() -> int:
         # Filter to events whose ticker is tradeable
         tradeable_events = [e for e in events if (e.get("ticker") or "") in kinds]
         n_skipped = n_events - len(tradeable_events)
+
+        # Skip events already processed in a prior run (idempotency without ON CONFLICT)
+        already_traded = fetch_already_traded_event_ids([e["id"] for e in tradeable_events])
+        if already_traded:
+            print(f"  skipping {len(already_traded)} event(s) already in paper trades")
+        tradeable_events = [e for e in tradeable_events if e["id"] not in already_traded]
         if n_skipped:
             print(f"  skipped {n_skipped} events on non-tradeable tickers (mutual funds, indices, INST_*)")
 
