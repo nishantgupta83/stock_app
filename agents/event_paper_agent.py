@@ -351,4 +351,12 @@ def main() -> int:
 
 
 if __name__ == "__main__":
+    import argparse
+    ap = argparse.ArgumentParser()
+    ap.add_argument("--backfill-days", type=int, default=0,
+                    help="Replay events created in the last N calendar days instead of LOOKBACK_MIN window.")
+    args = ap.parse_args()
+    if args.backfill_days > 0:
+        # Override LOOKBACK_MIN globally so main() uses the wider window
+        LOOKBACK_MIN = args.backfill_days * 24 * 60
     sys.exit(main())
