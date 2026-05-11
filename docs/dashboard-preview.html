@@ -1,0 +1,534 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>HUB4APPS · MARKET INTELLIGENCE TERMINAL</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;0,6..72,600;0,6..72,700;1,6..72,400;1,6..72,500&family=JetBrains+Mono:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --ink:         #0E141B;
+  --ink-2:       #141B24;
+  --ink-3:       #1B2430;
+  --rule:        #2A3441;
+  --parchment:   #EDE3CC;
+  --parchment-2: #C8B894;
+  --parchment-3: #786A4F;
+  --copper:      #C77D2A;
+  --copper-dim:  #8A5618;
+  --oxblood:     #B23A2A;
+  --oxblood-dim: #6E2118;
+  --sage:        #5C8A5C;
+  --sage-dim:    #2D5840;
+  --sky:         #6A9BB5;
+  --amber:       #E5B354;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{background:var(--ink);color:var(--parchment);font-family:'Newsreader',Georgia,serif;font-feature-settings:'ss01','ss02','onum';-webkit-font-smoothing:antialiased}
+body{
+  background-image:
+    radial-gradient(ellipse 1200px 600px at 20% -10%, rgba(199,125,42,0.06), transparent 60%),
+    radial-gradient(ellipse 800px 400px at 90% 110%, rgba(178,58,42,0.05), transparent 60%),
+    repeating-linear-gradient(0deg, transparent 0, transparent 2px, rgba(237,227,204,0.012) 2px, rgba(237,227,204,0.012) 3px);
+  min-height:100vh;
+  padding:0;
+  letter-spacing:0.01em;
+}
+
+/* ============ HEADER ============ */
+.masthead{
+  border-bottom:2px solid var(--parchment);
+  padding:28px 40px 18px;
+  display:grid;grid-template-columns:auto 1fr auto;align-items:end;gap:30px;
+  position:relative;
+}
+.masthead::before{content:'';position:absolute;left:40px;right:40px;bottom:-7px;height:1px;background:var(--parchment-3)}
+.wordmark{
+  font-weight:700;font-size:36px;line-height:1;letter-spacing:-0.02em;
+  font-variant:small-caps;font-feature-settings:'smcp','dlig';
+}
+.wordmark span{color:var(--copper);font-style:italic;font-weight:500}
+.dateline{
+  text-align:center;font-family:'JetBrains Mono',monospace;font-size:11px;
+  color:var(--parchment-2);letter-spacing:0.2em;text-transform:uppercase;
+}
+.dateline strong{display:block;font-size:22px;color:var(--parchment);font-family:'Newsreader',serif;letter-spacing:-0.01em;text-transform:none;font-weight:600;margin-bottom:4px}
+.session-info{text-align:right;font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--parchment-2);line-height:1.7}
+.session-info b{color:var(--sage);font-weight:600}
+.session-info .pulse{display:inline-block;width:6px;height:6px;background:var(--sage);border-radius:50%;margin-right:6px;animation:pulse 2s ease-in-out infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:0.3}}
+
+/* ============ TICKER BAR ============ */
+.ticker{
+  background:var(--ink-2);border-bottom:1px solid var(--rule);
+  overflow:hidden;white-space:nowrap;font-family:'JetBrains Mono',monospace;font-size:13px;
+  padding:11px 0;
+  position:relative;
+}
+.ticker::before,.ticker::after{
+  content:'';position:absolute;top:0;bottom:0;width:80px;z-index:2;pointer-events:none
+}
+.ticker::before{left:0;background:linear-gradient(90deg,var(--ink-2),transparent)}
+.ticker::after{right:0;background:linear-gradient(-90deg,var(--ink-2),transparent)}
+.ticker-track{display:inline-flex;gap:36px;animation:roll 60s linear infinite;padding-left:100%}
+@keyframes roll{from{transform:translateX(0)}to{transform:translateX(-100%)}}
+.tick{display:inline-flex;align-items:baseline;gap:8px}
+.tick .sym{color:var(--parchment);font-weight:600;letter-spacing:0.02em}
+.tick .pct.up{color:var(--sage)}
+.tick .pct.down{color:var(--oxblood)}
+.tick .pct::before{content:'▲ ';font-size:9px;vertical-align:1px}
+.tick .pct.down::before{content:'▼ '}
+
+/* ============ MAIN GRID ============ */
+.shell{padding:40px;display:grid;grid-template-columns:280px 1fr 340px;gap:32px;align-items:start;max-width:1680px;margin:0 auto}
+
+/* SECTION LABELS */
+.section-label{
+  font-family:'JetBrains Mono',monospace;font-size:10px;
+  letter-spacing:0.3em;color:var(--parchment-3);text-transform:uppercase;
+  border-bottom:1px solid var(--rule);padding-bottom:8px;margin-bottom:18px;
+  display:flex;justify-content:space-between;align-items:baseline;
+}
+.section-label .meta{color:var(--copper);font-style:italic;font-family:'Newsreader',serif;font-size:12px;letter-spacing:0;text-transform:none}
+
+/* STATS COLUMN (LEFT) */
+.stat{margin-bottom:30px}
+.stat-num{font-size:64px;line-height:0.9;font-weight:500;color:var(--parchment);font-feature-settings:'lnum','tnum';letter-spacing:-0.04em}
+.stat-num.copper{color:var(--copper)}
+.stat-num.sage{color:var(--sage)}
+.stat-num.oxblood{color:var(--oxblood)}
+.stat-label{font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:0.2em;color:var(--parchment-2);text-transform:uppercase;margin-top:6px}
+.stat-sub{font-style:italic;color:var(--parchment-2);font-size:13px;margin-top:8px;line-height:1.4;border-left:2px solid var(--copper-dim);padding-left:10px}
+
+/* CENTER — HEADLINE STORY */
+.headline{
+  background:var(--ink-2);border:1px solid var(--rule);padding:34px 36px;margin-bottom:32px;
+  position:relative;
+}
+.headline::before{
+  content:'TODAY';position:absolute;top:-9px;left:24px;background:var(--copper);color:var(--ink);
+  font-family:'JetBrains Mono',monospace;font-size:10px;font-weight:700;letter-spacing:0.25em;padding:3px 10px
+}
+.headline h1{
+  font-size:44px;line-height:1.05;font-weight:600;letter-spacing:-0.025em;margin-bottom:14px;color:var(--parchment);
+}
+.headline h1 em{color:var(--copper);font-style:italic;font-weight:500}
+.headline .lede{
+  font-size:17px;line-height:1.5;color:var(--parchment-2);font-style:italic;max-width:60ch;
+  border-top:1px solid var(--rule);padding-top:14px;margin-top:14px;
+}
+.headline .byline{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--parchment-3);letter-spacing:0.2em;margin-top:18px;display:flex;gap:24px}
+
+/* SECTOR ROTATION HEATMAP */
+.rotation{margin-bottom:32px}
+.sectors{display:grid;grid-template-columns:repeat(6,1fr);gap:1px;background:var(--rule)}
+.sector{
+  background:var(--ink-2);padding:18px 16px;cursor:pointer;transition:transform 0.18s ease, background 0.18s ease;
+  position:relative;border:1px solid transparent;
+}
+.sector:hover{background:var(--ink-3);transform:translateY(-2px)}
+.sector .nm{font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:0.15em;color:var(--parchment-3);text-transform:uppercase}
+.sector .val{font-size:32px;font-weight:600;margin-top:6px;letter-spacing:-0.03em;font-feature-settings:'lnum','tnum'}
+.sector .pct{font-family:'JetBrains Mono',monospace;font-size:11px;margin-top:2px}
+.sector.bull{border-color:var(--sage-dim)}
+.sector.bull .val{color:var(--sage)}
+.sector.bull .pct{color:var(--sage)}
+.sector.bear{border-color:var(--oxblood-dim)}
+.sector.bear .val{color:var(--oxblood)}
+.sector.bear .pct{color:var(--oxblood)}
+.sector.neutral .val{color:var(--parchment-2)}
+.sector.neutral .pct{color:var(--parchment-3)}
+.sector .heat{position:absolute;left:0;right:0;bottom:0;height:3px}
+.sector.bull .heat{background:linear-gradient(90deg,var(--sage-dim),var(--sage))}
+.sector.bear .heat{background:linear-gradient(90deg,var(--oxblood-dim),var(--oxblood))}
+
+/* CALIBRATION GRID */
+.calibration{margin-bottom:32px}
+.cal-grid{display:grid;grid-template-columns:1.5fr repeat(4,1fr);gap:1px;background:var(--rule);font-family:'JetBrains Mono',monospace;font-size:12px}
+.cal-head,.cal-cell{background:var(--ink-2);padding:11px 13px}
+.cal-head{color:var(--parchment-3);font-size:10px;letter-spacing:0.2em;text-transform:uppercase}
+.cal-rule{color:var(--parchment);font-size:12px}
+.cal-rule .obs{color:var(--parchment-3);font-size:10px;margin-left:6px;font-style:italic;font-family:'Newsreader',serif}
+.cell{position:relative;text-align:center;font-weight:600;letter-spacing:0.02em;color:var(--parchment-2)}
+.cell.green-1{color:var(--ink);background:#3D5C3D}
+.cell.green-2{color:var(--ink);background:#5C8A5C}
+.cell.green-3{color:var(--ink);background:#7BBE7B;font-weight:700}
+.cell.amber-1{background:#3F2D14;color:var(--amber)}
+.cell.amber-2{background:#7A5618;color:var(--ink);font-weight:700}
+.cell.red-1{background:#3D1F1A;color:var(--oxblood)}
+.cell.empty{color:var(--parchment-3);font-size:14px}
+.cell .star{color:var(--copper);font-size:11px;margin-right:3px;vertical-align:1px}
+
+/* RIGHT — ALERT FEED */
+.feed{display:flex;flex-direction:column;gap:0}
+.alert{
+  border-bottom:1px solid var(--rule);padding:16px 0;
+  display:grid;grid-template-columns:auto 1fr auto;align-items:start;gap:14px;
+  position:relative;
+}
+.alert:first-of-type{border-top:1px solid var(--rule)}
+.alert .arrow{font-size:22px;line-height:1;padding-top:1px}
+.alert.up .arrow{color:var(--sage)}
+.alert.down .arrow{color:var(--oxblood)}
+.alert .body .ticker-row{font-family:'Newsreader',serif;font-size:22px;font-weight:600;letter-spacing:-0.01em;line-height:1;color:var(--parchment)}
+.alert .body .ticker-row .pct{font-family:'JetBrains Mono',monospace;font-size:14px;font-weight:500;margin-left:8px}
+.alert.up .pct{color:var(--sage)}
+.alert.down .pct{color:var(--oxblood)}
+.alert .body .ctx{font-size:12px;color:var(--parchment-2);margin-top:6px;line-height:1.4;font-style:italic}
+.alert .time{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--parchment-3);letter-spacing:0.1em;text-align:right;line-height:1.3}
+
+/* PAPER TRADES TABLE */
+.trades{margin-top:36px}
+.trades table{width:100%;border-collapse:collapse;font-family:'JetBrains Mono',monospace;font-size:12px}
+.trades th{
+  text-align:left;padding:9px 12px 9px 0;
+  font-size:10px;letter-spacing:0.2em;color:var(--parchment-3);text-transform:uppercase;font-weight:500;
+  border-bottom:1px solid var(--rule);
+}
+.trades th.r{text-align:right}
+.trades td{padding:11px 12px 11px 0;border-bottom:1px solid var(--ink-3);color:var(--parchment-2);font-feature-settings:'tnum'}
+.trades td.r{text-align:right}
+.trades td .sym{color:var(--parchment);font-weight:600;font-size:13px;letter-spacing:0.02em}
+.trades td .rule{font-style:italic;color:var(--parchment-3);font-family:'Newsreader',serif;font-size:12px}
+.trades td .dir{display:inline-block;padding:2px 7px;border:1px solid;font-size:10px;letter-spacing:0.15em;font-weight:600}
+.trades td .dir.long{color:var(--sage);border-color:var(--sage-dim)}
+.trades td .dir.short{color:var(--oxblood);border-color:var(--oxblood-dim)}
+.trades td .horizon{color:var(--copper);font-weight:500}
+
+/* FOOTER */
+.colophon{
+  margin-top:60px;padding:24px 40px 40px;border-top:2px solid var(--parchment-3);
+  display:grid;grid-template-columns:1fr 1fr 1fr;gap:24px;
+  font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--parchment-3);letter-spacing:0.15em;
+}
+.colophon b{color:var(--copper);display:block;margin-bottom:6px;font-family:'Newsreader',serif;font-weight:600;font-style:italic;letter-spacing:0;font-size:12px;text-transform:none}
+.colophon .links a{color:var(--parchment-2);text-decoration:none;display:block;margin:3px 0;letter-spacing:0.1em}
+.colophon .links a:hover{color:var(--copper)}
+
+/* INITIAL LOAD STAGGER */
+.fade{opacity:0;animation:fadeIn 0.6s ease forwards}
+.fade.d1{animation-delay:0.05s}
+.fade.d2{animation-delay:0.15s}
+.fade.d3{animation-delay:0.25s}
+.fade.d4{animation-delay:0.35s}
+.fade.d5{animation-delay:0.45s}
+.fade.d6{animation-delay:0.55s}
+@keyframes fadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+
+/* Responsive */
+@media (max-width:1280px){
+  .shell{grid-template-columns:1fr;gap:36px}
+  .sectors{grid-template-columns:repeat(3,1fr)}
+}
+@media (max-width:680px){
+  .masthead{grid-template-columns:1fr;text-align:left;padding:18px 20px}
+  .dateline,.session-info{text-align:left}
+  .shell{padding:24px 20px}
+  .headline h1{font-size:30px}
+  .stat-num{font-size:48px}
+  .sectors{grid-template-columns:repeat(2,1fr)}
+  .cal-grid{font-size:10px}
+}
+</style>
+</head>
+<body>
+
+<!-- ========= MASTHEAD ========= -->
+<header class="masthead fade">
+  <div class="wordmark">Hub4Apps <span>terminal</span></div>
+  <div class="dateline">
+    <strong>Monday · 11 May 2026</strong>
+    <span>vol&nbsp;CXII · no.&nbsp;ccxli · session 14:47 utc</span>
+  </div>
+  <div class="session-info">
+    <div><span class="pulse"></span><b>pipeline online</b></div>
+    <div>14 of 14 agents · 0 dead-letters</div>
+    <div>next ingest in <b>00:13:24</b></div>
+  </div>
+</header>
+
+<!-- ========= TICKER ========= -->
+<div class="ticker fade d1">
+  <div class="ticker-track">
+    <span class="tick"><span class="sym">LITE</span><span class="pct up">16.84%</span></span>
+    <span class="tick"><span class="sym">COHR</span><span class="pct up">13.51%</span></span>
+    <span class="tick"><span class="sym">GLW</span><span class="pct up">11.52%</span></span>
+    <span class="tick"><span class="sym">CRDO</span><span class="pct up">10.71%</span></span>
+    <span class="tick"><span class="sym">VRT</span><span class="pct up">8.83%</span></span>
+    <span class="tick"><span class="sym">MU</span><span class="pct up">8.49%</span></span>
+    <span class="tick"><span class="sym">COIN</span><span class="pct up">7.91%</span></span>
+    <span class="tick"><span class="sym">CIEN</span><span class="pct up">7.10%</span></span>
+    <span class="tick"><span class="sym">FN</span><span class="pct up">5.71%</span></span>
+    <span class="tick"><span class="sym">NVDA</span><span class="pct up">2.18%</span></span>
+    <span class="tick"><span class="sym">VIX</span><span class="pct down">3.42%</span></span>
+    <span class="tick"><span class="sym">10Y</span><span class="pct up">0.04%</span></span>
+    <span class="tick"><span class="sym">TLT</span><span class="pct down">0.71%</span></span>
+    <span class="tick"><span class="sym">BTC</span><span class="pct up">1.20%</span></span>
+    <span class="tick"><span class="sym">LITE</span><span class="pct up">16.84%</span></span>
+    <span class="tick"><span class="sym">COHR</span><span class="pct up">13.51%</span></span>
+    <span class="tick"><span class="sym">GLW</span><span class="pct up">11.52%</span></span>
+    <span class="tick"><span class="sym">CRDO</span><span class="pct up">10.71%</span></span>
+  </div>
+</div>
+
+<!-- ========= MAIN GRID ========= -->
+<main class="shell">
+
+  <!-- ===== LEFT: STAT COLUMN ===== -->
+  <aside class="fade d2">
+    <div class="stat">
+      <div class="stat-num copper">1,604</div>
+      <div class="stat-label">open paper trades</div>
+      <div class="stat-sub">Backfilled 1,596 today from the May&nbsp;1–11 event window after the <em>event_at</em> filter fix.</div>
+    </div>
+    <div class="stat">
+      <div class="stat-num">71</div>
+      <div class="stat-label">signals fired ytd</div>
+    </div>
+    <div class="stat">
+      <div class="stat-num sage">9</div>
+      <div class="stat-label">alerts delivered today</div>
+      <div class="stat-sub">All AI optical — first run of the intraday agent caught the entire sector together.</div>
+    </div>
+    <div class="stat">
+      <div class="stat-num oxblood">0</div>
+      <div class="stat-label">rules matured</div>
+      <div class="stat-sub">Best: <em>news_article:neutral</em> at 7&nbsp;obs, 57%. Maturity gate: ≥30 obs, ≥90%.</div>
+    </div>
+  </aside>
+
+  <!-- ===== CENTER: HEADLINE + SECTORS + CALIBRATION ===== -->
+  <section>
+
+    <!-- HEADLINE -->
+    <article class="headline fade d3">
+      <h1>The whole <em>AI optical</em> bench moved in lockstep — one Lumentum catalyst lit the room.</h1>
+      <p class="lede">Nine watchlist names crossed the 5% intraday gate within minutes of each other after LITE's Q3 beat (+90% YoY) and Nasdaq-100 inclusion. Co-packaged optics is the post-GPU bottleneck and the market just re-rated the supplier chain.</p>
+      <div class="byline"><span>filed&nbsp;14:46&nbsp;UTC</span><span>intraday_alert_agent · sig_id&nbsp;151–159</span></div>
+    </article>
+
+    <!-- SECTOR ROTATION -->
+    <div class="rotation fade d4">
+      <div class="section-label">
+        Sector rotation · ai cluster <span class="meta">last 24h, normalized</span>
+      </div>
+      <div class="sectors">
+        <div class="sector bull">
+          <div class="nm">ai_optical</div>
+          <div class="val">+11.4%</div>
+          <div class="pct">7 of 7 names · 12 events</div>
+          <div class="heat"></div>
+        </div>
+        <div class="sector bull">
+          <div class="nm">ai_servers</div>
+          <div class="val">+5.2%</div>
+          <div class="pct">5 of 6 names · 8 events</div>
+          <div class="heat"></div>
+        </div>
+        <div class="sector bull">
+          <div class="nm">ai_compute</div>
+          <div class="val">+4.8%</div>
+          <div class="pct">4 of 5 names · 7 events</div>
+          <div class="heat"></div>
+        </div>
+        <div class="sector neutral">
+          <div class="nm">ai_power</div>
+          <div class="val">+0.3%</div>
+          <div class="pct">3 of 6 names · 4 events</div>
+          <div class="heat"></div>
+        </div>
+        <div class="sector neutral">
+          <div class="nm">ai_software</div>
+          <div class="val">−0.2%</div>
+          <div class="pct">2 of 7 names · 3 events</div>
+          <div class="heat"></div>
+        </div>
+        <div class="sector bear">
+          <div class="nm">ai_neocloud</div>
+          <div class="val">−1.8%</div>
+          <div class="pct">0 of 2 names · 1 event</div>
+          <div class="heat"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- CALIBRATION -->
+    <div class="calibration fade d5">
+      <div class="section-label">
+        Per-rule calibration <span class="meta">accuracy &amp; sample size by horizon</span>
+      </div>
+      <div class="cal-grid">
+        <div class="cal-head">rule_key</div>
+        <div class="cal-head" style="text-align:center">1d</div>
+        <div class="cal-head" style="text-align:center">7d</div>
+        <div class="cal-head" style="text-align:center">15d</div>
+        <div class="cal-head" style="text-align:center">30d</div>
+
+        <div class="cal-cell cal-rule">news_article:neutral<span class="obs">n=7</span></div>
+        <div class="cal-cell cell amber-1">57%</div>
+        <div class="cal-cell cell empty">—</div>
+        <div class="cal-cell cell empty">—</div>
+        <div class="cal-cell cell empty">—</div>
+
+        <div class="cal-cell cal-rule">earnings_release:scheduled<span class="obs">n=4</span></div>
+        <div class="cal-cell cell red-1">50%</div>
+        <div class="cal-cell cell empty">—</div>
+        <div class="cal-cell cell empty">—</div>
+        <div class="cal-cell cell empty">—</div>
+
+        <div class="cal-cell cal-rule">8k_material_event<span class="obs">n=0 · pending eod</span></div>
+        <div class="cal-cell cell empty">—</div>
+        <div class="cal-cell cell empty">—</div>
+        <div class="cal-cell cell empty">—</div>
+        <div class="cal-cell cell empty">—</div>
+
+        <div class="cal-cell cal-rule">filing_13d<span class="obs">n=0 · pending eod</span></div>
+        <div class="cal-cell cell empty">—</div>
+        <div class="cal-cell cell empty">—</div>
+        <div class="cal-cell cell empty">—</div>
+        <div class="cal-cell cell empty">—</div>
+
+        <div class="cal-cell cal-rule">institutional_new_position<span class="obs">n=0 · pending eod</span></div>
+        <div class="cal-cell cell empty">—</div>
+        <div class="cal-cell cell empty">—</div>
+        <div class="cal-cell cell empty">—</div>
+        <div class="cal-cell cell empty">—</div>
+      </div>
+    </div>
+
+    <!-- ACTIVE PAPER TRADES -->
+    <div class="trades fade d6">
+      <div class="section-label">
+        Active book · top 8 by score <span class="meta">all 4 horizons collapsed</span>
+      </div>
+      <table>
+        <thead>
+          <tr>
+            <th>ticker</th><th>signal</th><th>direction</th>
+            <th class="r">entry</th><th class="r">target</th><th class="r">horizon</th><th class="r">opened</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr><td><span class="sym">LITE</span></td><td><span class="rule">earnings_release:beat</span></td><td><span class="dir long">LONG</span></td><td class="r">$899.95</td><td class="r">+5.0%</td><td class="r"><span class="horizon">1d</span></td><td class="r">14:46</td></tr>
+          <tr><td><span class="sym">COHR</span></td><td><span class="rule">earnings_release:beat</span></td><td><span class="dir long">LONG</span></td><td class="r">$379.97</td><td class="r">+5.0%</td><td class="r"><span class="horizon">7d</span></td><td class="r">14:46</td></tr>
+          <tr><td><span class="sym">GLW</span></td><td><span class="rule">institutional_new_position:BRDGW</span></td><td><span class="dir long">LONG</span></td><td class="r">$207.82</td><td class="r">+5.3%</td><td class="r"><span class="horizon">15d</span></td><td class="r">14:46</td></tr>
+          <tr><td><span class="sym">CRDO</span></td><td><span class="rule">earnings_release:beat</span></td><td><span class="dir long">LONG</span></td><td class="r">$207.37</td><td class="r">+5.0%</td><td class="r"><span class="horizon">30d</span></td><td class="r">14:46</td></tr>
+          <tr><td><span class="sym">VRT</span></td><td><span class="rule">earnings_release:beat</span></td><td><span class="dir long">LONG</span></td><td class="r">$370.97</td><td class="r">+5.7%</td><td class="r"><span class="horizon">15d</span></td><td class="r">14:46</td></tr>
+          <tr><td><span class="sym">MU</span></td><td><span class="rule">earnings_release:beat</span></td><td><span class="dir long">LONG</span></td><td class="r">$809.78</td><td class="r">+5.0%</td><td class="r"><span class="horizon">1d</span></td><td class="r">14:46</td></tr>
+          <tr><td><span class="sym">CIEN</span></td><td><span class="rule">earnings_release:beat</span></td><td><span class="dir long">LONG</span></td><td class="r">$585.06</td><td class="r">+6.5%</td><td class="r"><span class="horizon">30d</span></td><td class="r">14:46</td></tr>
+          <tr><td><span class="sym">FN</span></td><td><span class="rule">earnings_release:beat</span></td><td><span class="dir long">LONG</span></td><td class="r">$654.68</td><td class="r">+5.0%</td><td class="r"><span class="horizon">7d</span></td><td class="r">14:46</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+  </section>
+
+  <!-- ===== RIGHT: ALERT FEED ===== -->
+  <aside class="fade d4">
+    <div class="section-label">
+      Wire <span class="meta">intraday alerts</span>
+    </div>
+    <div class="feed">
+      <div class="alert up">
+        <span class="arrow">↗</span>
+        <div class="body">
+          <div class="ticker-row">LITE <span class="pct">+16.8%</span></div>
+          <div class="ctx">earnings beat +4.6% (2026-05-05) · Nasdaq-100 inclusion · severity 4</div>
+        </div>
+        <div class="time">14:46<br>UTC</div>
+      </div>
+      <div class="alert up">
+        <span class="arrow">↗</span>
+        <div class="body">
+          <div class="ticker-row">COHR <span class="pct">+13.5%</span></div>
+          <div class="ctx">earnings beat +1.1% (2026-05-06) · sector echo</div>
+        </div>
+        <div class="time">14:46<br>UTC</div>
+      </div>
+      <div class="alert up">
+        <span class="arrow">↗</span>
+        <div class="body">
+          <div class="ticker-row">GLW <span class="pct">+11.5%</span></div>
+          <div class="ctx">inst-new_position BRDGW · earnings beat +1.2%</div>
+        </div>
+        <div class="time">14:46<br>UTC</div>
+      </div>
+      <div class="alert up">
+        <span class="arrow">↗</span>
+        <div class="body">
+          <div class="ticker-row">CRDO <span class="pct">+10.7%</span></div>
+          <div class="ctx">earnings beat +13.7% (2026-03-02) · sector echo</div>
+        </div>
+        <div class="time">14:46<br>UTC</div>
+      </div>
+      <div class="alert up">
+        <span class="arrow">↗</span>
+        <div class="body">
+          <div class="ticker-row">VRT <span class="pct">+8.8%</span></div>
+          <div class="ctx">earnings beat +15.7% · datacenter cooling tailwind</div>
+        </div>
+        <div class="time">14:46<br>UTC</div>
+      </div>
+      <div class="alert up">
+        <span class="arrow">↗</span>
+        <div class="body">
+          <div class="ticker-row">MU <span class="pct">+8.5%</span></div>
+          <div class="ctx">earnings beat +20.6% · HBM supply tightness</div>
+        </div>
+        <div class="time">14:46<br>UTC</div>
+      </div>
+      <div class="alert up">
+        <span class="arrow">↗</span>
+        <div class="body">
+          <div class="ticker-row">COIN <span class="pct">+7.9%</span></div>
+          <div class="ctx">no catalyst in last 7d — sector rotation tag</div>
+        </div>
+        <div class="time">14:46<br>UTC</div>
+      </div>
+      <div class="alert up">
+        <span class="arrow">↗</span>
+        <div class="body">
+          <div class="ticker-row">CIEN <span class="pct">+7.1%</span></div>
+          <div class="ctx">earnings beat +44.1% (2026-03-05) · re-rate</div>
+        </div>
+        <div class="time">14:46<br>UTC</div>
+      </div>
+      <div class="alert up">
+        <span class="arrow">↗</span>
+        <div class="body">
+          <div class="ticker-row">FN <span class="pct">+5.7%</span></div>
+          <div class="ctx">earnings beat +3.4% (2026-05-04) · last to move</div>
+        </div>
+        <div class="time">14:46<br>UTC</div>
+      </div>
+    </div>
+  </aside>
+
+</main>
+
+<!-- ========= COLOPHON ========= -->
+<footer class="colophon">
+  <div>
+    <b>Pipeline</b>
+    14 agents · supabase · github actions · hostinger ftps<br>
+    33,057 events · 1,604 open trades · 71 signals
+  </div>
+  <div class="links">
+    <b>Sections</b>
+    <a href="#">Dashboard ›</a>
+    <a href="#">Signals ›</a>
+    <a href="#">Events ›</a>
+    <a href="#">Calibration ›</a>
+    <a href="#">Paper trades ›</a>
+    <a href="#">Backtest ›</a>
+  </div>
+  <div>
+    <b>Disclaimer</b>
+    Paper-trading vocabulary only. WATCH · RESEARCH · AVOID_CHASE · CHASE_RISK until rule maturity (≥90% acc, n≥30) unlocks BUY/SELL. Educational use; not financial advice.
+  </div>
+</footer>
+
+</body>
+</html>
