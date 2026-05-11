@@ -29,6 +29,7 @@ import time
 from datetime import datetime, timedelta, timezone
 
 import requests
+import yfinance as yf
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from filing_agent import (   # type: ignore
@@ -36,7 +37,7 @@ from filing_agent import (   # type: ignore
     SUPABASE_URL, HEADERS_SB,
 )
 
-LOOKBACK_MIN = 75               # 60min cron + 15min buffer for the previous run
+LOOKBACK_MIN = 150              # 120min cron window + 30min buffer for GHA queue jitter
 SEVERITY_FLOOR = 2              # ignore noise events
 # Multi-horizon: every event opens four parallel paper trades. Same direction,
 # same entry price, different exit horizons. rule_key carries the horizon so
@@ -101,7 +102,7 @@ def fetch_recent_events(min_severity: int, since_iso: str) -> list[dict]:
         f"{SUPABASE_URL}/rest/v1/stock_normalized_events",
         headers=HEADERS_SB,
         params=[
-            ("event_at", f"gte.{since_iso}"),
+            ("created_at", f"gte.{since_iso}"),
             ("severity", f"gte.{min_severity}"),
             ("ticker",   "not.is.null"),
             ("select",   "id,event_type,event_subtype,ticker,event_at,severity,payload"),
@@ -117,7 +118,12 @@ def fetch_recent_events(min_severity: int, since_iso: str) -> list[dict]:
 
 
 def fetch_latest_closes(tickers: list[str]) -> dict[str, dict]:
-    """{ticker → most recent {ts, close} row} from stock_raw_prices."""
+    """{ticker → most recent {ts, close} row} from stock_raw_prices.
+
+    Falls back to yfinance for any ticker missing from the DB (e.g. INTC, EBAY,
+    newly added sector ETFs) and writes the fetched bar back to stock_raw_prices
+    so subsequent runs are served from the DB.
+    """
     if not tickers:
         return {}
     in_list = ",".join(f'"{t}"' for t in tickers)
@@ -134,13 +140,53 @@ def fetch_latest_closes(tickers: list[str]) -> dict[str, dict]:
         },
         timeout=20,
     )
-    if r.status_code != 200:
-        return {}
     latest: dict[str, dict] = {}
-    for row in r.json():
-        t = row.get("ticker")
-        if t and t not in latest and row.get("close") is not None:
-            latest[t] = row
+    if r.status_code == 200:
+        for row in r.json():
+            t = row.get("ticker")
+            if t and t not in latest and row.get("close") is not None:
+                latest[t] = row
+
+    # yfinance fallback for tickers with no DB price data
+    missing = [t for t in tickers if t not in latest]
+    if missing:
+        end = datetime.now(timezone.utc).date()
+        start = end - timedelta(days=5)
+        backfill_rows: list[dict] = []
+        for ticker in missing:
+            try:
+                df = yf.Ticker(ticker).history(
+                    start=start.isoformat(),
+                    end=(end + timedelta(days=1)).isoformat(),
+                    auto_adjust=True,
+                )
+                if df.empty:
+                    continue
+                row = df.iloc[-1]
+                ts_iso = df.index[-1].isoformat()
+                close = float(row["Close"])
+                if close > 0:
+                    latest[ticker] = {"ticker": ticker, "ts": ts_iso, "close": close}
+                    backfill_rows.append({
+                        "ticker": ticker,
+                        "ts":     ts_iso,
+                        "open":   float(row["Open"]),
+                        "high":   float(row["High"]),
+                        "low":    float(row["Low"]),
+                        "close":  close,
+                        "volume": int(row["Volume"]),
+                        "source": "yfinance_fallback",
+                    })
+            except Exception as exc:
+                print(f"  yfinance fallback {ticker}: {exc}", file=sys.stderr)
+        if backfill_rows:
+            requests.post(
+                f"{SUPABASE_URL}/rest/v1/stock_raw_prices?on_conflict=ticker,ts",
+                headers={**HEADERS_SB, "Prefer": "resolution=ignore-duplicates,return=minimal"},
+                json=backfill_rows,
+                timeout=20,
+            )
+            print(f"  wrote {len(backfill_rows)} yfinance fallback price(s) to stock_raw_prices")
     return latest
 
 

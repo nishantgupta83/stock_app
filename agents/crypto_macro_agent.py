@@ -30,7 +30,7 @@ from filing_agent import (   # type: ignore
 
 # 5% intraday close-to-close on BTC is roughly the threshold above which
 # the COIN / MSTR derivatives consistently move 8-15% (high-beta names).
-MOVE_THRESHOLD = 0.05
+MOVE_THRESHOLD = 0.02
 
 # Crypto-correlated tickers in our universe. COIN (Coinbase) is the most
 # direct exchange exposure; MSTR holds 200k+ BTC on balance sheet; the
