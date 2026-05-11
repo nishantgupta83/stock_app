@@ -9,6 +9,7 @@ and learns from outcomes via per-agent EMA weights.
 **Technical architecture:** [`docs/technical-architecture.md`](docs/technical-architecture.md)
 **Phase 0 setup:** [`docs/PHASE0_CHECKLIST.md`](docs/PHASE0_CHECKLIST.md)
 **Phase 9 plan (tiered storage, planned):** [`docs/phase9-tiered-storage.md`](docs/phase9-tiered-storage.md)
+**Multi-domain roadmap:** [`docs/multi-domain-roadmap.md`](docs/multi-domain-roadmap.md) — six new domain agents (macro, defense, biotech, energy, activist, consumer)
 
 > **Paper-trading vocabulary only.** The bot says **WATCH / RESEARCH / AVOID_CHASE / CHASE_RISK** — never
 > "BUY" or "SELL" — until 60 days of paper trading hits the §17.6 graduation thresholds.
@@ -35,19 +36,20 @@ The current technical diagram and operational runbook live in
 - core table responsibilities and forecast modes
 - current verification snapshot from the Phase 6B rollout
 
-## Pipeline (13 GitHub Actions jobs)
+## Pipeline (14 GitHub Actions jobs)
 
 | Agent | Schedule | What it does |
 |---|---|---|
+| `intraday_alert_agent`| `*/15 13-21 * * 1-5` | **Fast-twitch spike detector** — scans every tradeable ticker every 15 min during US market hours. Detects intraday ≥5% moves (or ≥2% with 2× volume) via yfinance, pulls recent normalized-event context (real `event_at` date), and sends an immediate Telegram alert with the catalyst summary. LITE-style +17% moves now ping within 15 min instead of 3 hours late. Dedupes one alert per ticker per UTC day. |
 | `filing_agent`        | `*/5 * * * *`     | EDGAR → 8-K (with item parsing), 10-K/Q, Form 4, 13D/G, S-3 → `stock_raw_filings` + `stock_normalized_events` |
 | `news_agent`          | `*/5 * * * *`     | CNBC / MarketWatch / Seeking Alpha RSS → `stock_raw_news` + DB-loaded keyword rules → `stock_normalized_events` |
 | `truth_social_agent`  | `*/5 * * * *`     | Trump Truth Social RSS → DB-loaded keyword rules → `stock_normalized_events` |
-| `thesis_agent`        | `*/5 * * * *`     | Cluster rule (≥2 agents, 5-min bucket) → 100-pt weighted score → action. Reads `stock_agent_weights` (per-agent EMA) AND `stock_rule_calibration` (per-rule paper-trade accuracy). When a cluster contains a **mature rule** (accuracy ≥ 0.90, n ≥ 30), action escalates from WATCH → **BUY** or AVOID_CHASE → **SELL**. |
+| `thesis_agent`        | `*/5 * * * *`     | Cluster rule (≥2 agents, 30-min bucket) → 100-pt weighted score → action. Reads `stock_agent_weights` (per-agent EMA) AND `stock_rule_calibration` (per-rule paper-trade accuracy). **Intelligence layer** applies four cross-rule bonuses: `sector_cluster_bonus` (+20 when 2+ same-sector watchlist peers fire same direction), `hyperscaler_capex_echo` (+12 when MSFT/GOOG/META/AMZN/ORCL 8-K mentions capex → fans out to mapped suppliers), `power_scarcity_active` (+15 when CEG/VST/TLN/NRG file sev-4 8-K → boosts AI compute/servers/optical), and `risk_off` filter (VIX > 25 tightens bullish thresholds +10 pts). Severity-4 events bypass the 5-alerts/day cap. When a cluster contains a **mature rule** (accuracy ≥ 0.90, n ≥ 30), action escalates from WATCH → **BUY** or AVOID_CHASE → **SELL**. |
 | `earnings_agent`      | weekly Sun 12:00 UTC | yfinance earnings dates per stock → `stock_normalized_events` |
-| `event_paper_agent`   | hourly (5 min in) | Every event with severity ≥ 2 becomes a paper trade in `stock_event_paper_trades` with status=open, entry_price=latest close, horizon=1d. Idempotent on (event_id, ticker, direction). |
+| `event_paper_agent`   | hourly (5 min in) | Every event with severity ≥ 2 (150-min lookback) becomes a paper trade in `stock_event_paper_trades` with status=open, entry_price from `stock_raw_prices` (yfinance fallback writes back to DB self-healing), horizon=1d/7d/15d/30d. Filters by `created_at` (ingest time) not `event_at` so historical filings ingested today are picked up correctly. Pre-filters event_ids that already have trades for idempotency (PostgREST partial-index workaround). Supports `--backfill-days N` to replay events from the last N days. |
 | `price_agent`         | weekday 21:30 UTC | yfinance EOD closes → close mature signals + EMA weight update + close mature paper trades + update `stock_rule_calibration`. Flags rules that crossed the maturity gate. |
 | `market_scanner_agent`| weekday 21:30 UTC | Tracked-stock daily scan: any \|move\|≥3% → `stock_event_outcome_observations` (correlation rows for future calibration QA) |
-| `crypto_macro_agent`  | weekday 21:35 UTC | BTC/ETH daily probe → emits `crypto_macro_move` events for COIN/MSTR when \|move\|≥5%. Closes the 75% no_tracked_event coverage gap on crypto-correlated names. |
+| `crypto_macro_agent`  | weekday 21:35 UTC | BTC/ETH daily probe → emits `crypto_macro_move` events for COIN/MSTR when \|move\|≥2% (lowered from 5% so signals actually fire). |
 | `flows_agent`         | weekly Sun 14:00 UTC | Parses 13F-HR information_table.xml from Berkshire / BlackRock / Vanguard / Bridgewater / Scion / Pershing Square. Diffs vs prior quarter snapshot → `institutional_new_position` / `exit` / `increase` / `decrease` events keyed to the affected ticker. |
 | `paper_trade_agent`   | `*/15 * * * *`    | Codex's earlier path: signal-driven calibrated forecasts in `stock_paper_forecasts` (separate table from `stock_event_paper_trades`). Both run in parallel. |
 | `backtester`          | manual only       | 180-day replay → precision/calibration metrics |
@@ -59,6 +61,28 @@ The current technical diagram and operational runbook live in
 | Script | When | Purpose |
 |---|---|---|
 | `historical_ingest.py` | Run once via `historical_ingest.yml` workflow_dispatch | 6-month backfill of EDGAR filings + earnings + daily prices so the backtester has a real history to learn from |
+
+## Watchlist universe (Phase 10 — AI cluster expansion)
+
+The pipeline tracks 56 stocks + 15 ETFs across categorized watchlists. The AI cluster
+was added 2026-05-11; each subdomain is a separate watchlist so cross-domain signals
+(sector cluster bonus, hyperscaler echo) can identify peer co-movement.
+
+| Watchlist | Tickers |
+|---|---|
+| `core` | AAPL, AMD, AMZN, AVGO, BRK.B, COST, DJT, EBAY, GOOG, GOOGL, INTC, JNJ, JPM, LLY, MA, META, MSFT, NFLX, NVDA, TSLA, V, WMT, XOM |
+| `context` | COIN, FXI, MSTR, QQQ, SPY, TLT, VIX, XLB, XLC, XLE, XLF, XLI, XLK, XLP, XLRE, XLU, XLV, XLY |
+| `ai_compute`  | MU, MRVL, TSM, ASML, ALAB |
+| `ai_optical`  | LITE, COHR, CIEN, ANET, GLW, FN, CRDO |
+| `ai_servers`  | SMCI, DELL, HPE, VRT, NVT, MOD |
+| `ai_power`    | CEG, VST, GEV, ETN, TLN, NRG |
+| `ai_software` | ORCL, PLTR, CRWD, NOW, SNOW, AI, PATH |
+| `ai_neocloud` | IREN, CRWV |
+| `institutions` | INST_BLK, INST_BRDGW, INST_BRK, INST_PERSH, INST_SCION, INST_VG (13F holders, not tradeable) |
+| `mutual_funds` | FXAIX, SWPPX, VFIAX, VTSAX |
+
+Multi-domain expansion (defense, biotech, energy_transition, macro_rates, activist_insider,
+consumer_health) is mapped in [`docs/multi-domain-roadmap.md`](docs/multi-domain-roadmap.md).
 
 ## Signal vocabulary
 
@@ -134,6 +158,8 @@ flags any rule that's crossed the BUY/SELL maturity gate.
 - `sql/0016_holistic_review_fixes.sql` — RLS for `stock_job_runs` / `stock_dead_letter_events` / `stock_data_sources`, `stock_signals(status_v2, fired_at)` index for hot path, restore `TRIM` to the action allow-list
 - `sql/0017_institutional_holdings_snapshot.sql` — Phase 8 `stock_institutional_holdings_snapshot` for `flows_agent` per-quarter 13F snapshots
 - `sql/0018_intc_ebay_and_horizon_index.sql` — adds INTC + EBAY to core watchlist; widens unique index on `stock_event_paper_trades` to include `horizon_days` so the new multi-horizon paper trades coexist
+- `sql/0019_retention_columns.sql` — tiered storage retention markers (Phase 9 prep)
+- `sql/0020_sector_etf_symbols.sql` — adds XLY, XLB, XLC, XLP, XLV, XLU, XLRE to `stock_symbols` so `truth_social_agent` tariff/macro posts on sector ETFs generate paper trades (previously dropped by the watchlist JOIN). Direct DB inserts already applied; this file is the canonical migration.
 
 ## GitHub Actions secrets
 
@@ -193,8 +219,13 @@ Jinja `tojson`, not raw `|safe`.
 
 ## Future roadmap
 
-Items proposed but deliberately deferred. Listed here so context isn't lost when the next
-session picks them up. Each is bounded effort; none requires a paid API.
+The big-picture **multi-domain expansion** plan (six new domain agents: macro_rates,
+defense, biotech, energy_transition, activist_insider, consumer_health) is in
+[`docs/multi-domain-roadmap.md`](docs/multi-domain-roadmap.md). Build order, ticker
+baskets, event types, catalysts, and cross-domain leverage examples are documented there.
+
+The items below are smaller bounded enhancements that don't require a new agent.
+Each is bounded effort; none requires a paid API.
 
 | Item | Why deferred | Estimated effort |
 |---|---|---|
