@@ -510,11 +510,12 @@ def score_evidence(events: list[dict],
 # ============================================================
 
 def fetch_watchlist_map() -> dict[str, set[str]]:
-    """{watchlist_name: {tickers}} for sector-cluster lookups."""
+    """{watchlist_name: {tickers}} for sector-cluster lookups.
+    Limit set high enough to avoid silent truncation as watchlists grow."""
     r = requests.get(
         f"{SUPABASE_URL}/rest/v1/stock_watchlists",
         headers=HEADERS_SB,
-        params={"select": "name,ticker", "limit": "500"},
+        params={"select": "name,ticker", "limit": "5000"},
         timeout=10,
     )
     if r.status_code != 200:

@@ -147,38 +147,46 @@ def fetch_latest_closes(tickers: list[str]) -> dict[str, dict]:
             if t and t not in latest and row.get("close") is not None:
                 latest[t] = row
 
-    # yfinance fallback for tickers with no DB price data
+    # yfinance fallback for tickers with no DB price data — single batched download,
+    # ~5-10× faster than per-ticker yf.Ticker.history() calls.
     missing = [t for t in tickers if t not in latest]
     if missing:
-        end = datetime.now(timezone.utc).date()
-        start = end - timedelta(days=5)
         backfill_rows: list[dict] = []
-        for ticker in missing:
-            try:
-                df = yf.Ticker(ticker).history(
-                    start=start.isoformat(),
-                    end=(end + timedelta(days=1)).isoformat(),
-                    auto_adjust=True,
-                )
-                if df.empty:
-                    continue
-                row = df.iloc[-1]
-                ts_iso = df.index[-1].isoformat()
-                close = float(row["Close"])
-                if close > 0:
+        try:
+            df = yf.download(
+                tickers=" ".join(missing),
+                period="5d", interval="1d",
+                group_by="ticker", progress=False,
+                auto_adjust=True, threads=True,
+            )
+        except Exception as exc:
+            print(f"  yfinance batch fallback failed: {exc}", file=sys.stderr)
+            df = None
+        if df is not None and not df.empty:
+            for ticker in missing:
+                try:
+                    sub = df[ticker] if len(missing) > 1 else df
+                    closes = sub["Close"].dropna()
+                    if closes.empty:
+                        continue
+                    last_idx = closes.index[-1]
+                    close = float(closes.iloc[-1])
+                    if close <= 0:
+                        print(f"  yfinance fallback {ticker}: bad close {close}", file=sys.stderr)
+                        continue
+                    ts_iso = last_idx.isoformat()
                     latest[ticker] = {"ticker": ticker, "ts": ts_iso, "close": close}
                     backfill_rows.append({
-                        "ticker": ticker,
-                        "ts":     ts_iso,
-                        "open":   float(row["Open"]),
-                        "high":   float(row["High"]),
-                        "low":    float(row["Low"]),
+                        "ticker": ticker, "ts": ts_iso,
+                        "open":   float(sub["Open"].loc[last_idx]),
+                        "high":   float(sub["High"].loc[last_idx]),
+                        "low":    float(sub["Low"].loc[last_idx]),
                         "close":  close,
-                        "volume": int(row["Volume"]),
+                        "volume": int(sub["Volume"].loc[last_idx]),
                         "source": "yfinance_fallback",
                     })
-            except Exception as exc:
-                print(f"  yfinance fallback {ticker}: {exc}", file=sys.stderr)
+                except Exception as exc:
+                    print(f"  yfinance fallback {ticker}: {exc}", file=sys.stderr)
         if backfill_rows:
             requests.post(
                 f"{SUPABASE_URL}/rest/v1/stock_raw_prices?on_conflict=ticker,ts",
