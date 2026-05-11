@@ -64,7 +64,41 @@ MAX_ALERTS_PER_DAY   = 5
 CHASE_RISK_PCT = 0.05
 DEDUPE_WINDOW_MIN    = 60
 
-MODEL_VERSION = "rubric-v1.0"
+MODEL_VERSION = "rubric-v1.1"
+
+# ============================================================
+# Intelligence layer constants
+# ============================================================
+
+# Hyperscaler → supplier fan-out. When a hyperscaler files an 8-K mentioning
+# capex/infrastructure/AI, suppliers get a +12 score boost. Mapping reflects
+# disclosed partnerships and supply chain relationships (Stargate, NVDA $40B
+# equity bets, hyperscaler PPAs).
+HYPERSCALER_SUPPLIERS: dict[str, list[str]] = {
+    "MSFT":  ["NVDA","AMD","AVGO","ANET","VRT","CEG","DELL","SMCI","CRWD","MU","CRWV"],
+    "GOOGL": ["AVGO","NVDA","ANET","TSM","BRCM"],
+    "GOOG":  ["AVGO","NVDA","ANET","TSM"],
+    "META":  ["NVDA","AVGO","ANET","ASML","TSM","ARM"],
+    "AMZN":  ["NVDA","AMD","AVGO","ANET","INTC"],
+    "ORCL":  ["NVDA","AMD","DELL","CEG"],
+}
+HYPERSCALER_TICKERS = set(HYPERSCALER_SUPPLIERS.keys())
+CAPEX_KEYWORDS = ("capex","capital expenditure","ai infrastructure","data center",
+                  "compute capacity","gpu","ai cluster")
+
+# Power utilities — when these file severity-4 8-K (typically a hyperscaler PPA),
+# treat as AI demand confirmation. Boost all AI compute + server tickers.
+POWER_UTILITIES = {"CEG","VST","TLN","NRG"}
+POWER_SCARCITY_BENEFICIARY_LISTS = ("ai_compute","ai_servers","ai_optical")
+POWER_SCARCITY_LOOKBACK_HOURS = 7 * 24
+
+# VIX risk-off threshold. Above this, downgrade bullish actions one tier.
+VIX_RISKOFF_LEVEL = 25.0
+
+# Severity-4 priority alert: bypass the 5-alert daily cap so we never miss a
+# critical event (major 8-K, earnings beat >10% surprise). This is the LITE-style
+# spike fix — when something hits at severity 4, you hear about it immediately.
+SEV4_PRIORITY_BYPASS_CAP = True
 
 
 # ============================================================
@@ -471,6 +505,168 @@ def score_evidence(events: list[dict],
     return score, breakdown
 
 
+# ============================================================
+# Intelligence layer — cross-rule signals
+# ============================================================
+
+def fetch_watchlist_map() -> dict[str, set[str]]:
+    """{watchlist_name: {tickers}} for sector-cluster lookups."""
+    r = requests.get(
+        f"{SUPABASE_URL}/rest/v1/stock_watchlists",
+        headers=HEADERS_SB,
+        params={"select": "name,ticker", "limit": "500"},
+        timeout=10,
+    )
+    if r.status_code != 200:
+        return {}
+    by_list: dict[str, set[str]] = defaultdict(set)
+    for row in r.json():
+        if row.get("name") and row.get("ticker"):
+            by_list[row["name"]].add(row["ticker"])
+    return dict(by_list)
+
+
+def fetch_recent_events_window(hours: int) -> list[dict]:
+    """All severity≥2 events in last N hours — used for cross-ticker signals."""
+    cutoff = (datetime.now(timezone.utc) - timedelta(hours=hours)).isoformat()
+    r = requests.get(
+        f"{SUPABASE_URL}/rest/v1/stock_normalized_events",
+        headers=HEADERS_SB,
+        params=[
+            ("created_at", f"gte.{cutoff}"),
+            ("severity",   "gte.2"),
+            ("ticker",     "not.is.null"),
+            ("select",     "ticker,event_type,severity,payload,created_at"),
+            ("order",      "created_at.desc"),
+            ("limit",      "500"),
+        ],
+        timeout=15,
+    )
+    if r.status_code != 200:
+        return []
+    return r.json()
+
+
+def sector_cluster_bonus(ticker: str, direction: str, recent_events: list[dict],
+                          watchlist_map: dict[str, set[str]]) -> tuple[int, str]:
+    """+20 if 2+ other tickers in the same sector watchlist fired same-direction
+    events in the last 24h. This catches sector rotations early (AI optical
+    melt-up, power-scarcity buying, etc)."""
+    if direction == "neutral":
+        return 0, ""
+    # Find which sector watchlist(s) contain this ticker
+    my_lists = [name for name, tickers in watchlist_map.items()
+                if ticker in tickers and name.startswith("ai_")]
+    if not my_lists:
+        return 0, ""
+    # Count same-direction events on other tickers in those watchlists
+    peers = set()
+    for name in my_lists:
+        peers.update(watchlist_map.get(name, set()))
+    peers.discard(ticker)
+    if not peers:
+        return 0, ""
+    same_dir_peers: set[str] = set()
+    for ev in recent_events:
+        t = ev.get("ticker")
+        if t not in peers:
+            continue
+        # Crude direction proxy from event payload + type
+        d = (ev.get("payload") or {}).get("direction_prior") or ""
+        et = ev.get("event_type") or ""
+        is_bull = (d == "long" or et in ("8k_material_event","filing_13d",
+                                          "institutional_new_position","institutional_increase",
+                                          "earnings_release"))
+        is_bear = (d == "short" or et in ("filing_s-3","filing_s-3/a","filing_dilution",
+                                           "institutional_exit","institutional_decrease"))
+        if direction == "bullish" and is_bull and not is_bear:
+            same_dir_peers.add(t)
+        elif direction == "bearish" and is_bear:
+            same_dir_peers.add(t)
+    if len(same_dir_peers) >= 2:
+        # +20 base + extra +5 per additional confirming peer (cap +35)
+        bonus = min(35, 20 + (len(same_dir_peers) - 2) * 5)
+        detail = f"{my_lists[0]}: {len(same_dir_peers)} peers ({','.join(sorted(same_dir_peers)[:4])})"
+        return bonus, detail
+    return 0, ""
+
+
+def hyperscaler_capex_echo(ticker: str, recent_events: list[dict]) -> tuple[int, str]:
+    """+12 if ticker is a known supplier and a hyperscaler fired 8-K with
+    capex/AI-infrastructure keywords in the last 24h."""
+    # Which hyperscalers can affect this ticker?
+    relevant_hs = [hs for hs, suppliers in HYPERSCALER_SUPPLIERS.items()
+                   if ticker in suppliers]
+    if not relevant_hs:
+        return 0, ""
+    for ev in recent_events:
+        if ev.get("ticker") not in relevant_hs:
+            continue
+        if ev.get("event_type") != "8k_material_event":
+            continue
+        payload = ev.get("payload") or {}
+        # Scan payload for capex keywords (description, headline, primary_doc_desc)
+        haystack = " ".join(str(payload.get(k) or "") for k in
+                            ("primary_doc_desc","headline","title","8k_items")).lower()
+        if any(kw in haystack for kw in CAPEX_KEYWORDS):
+            return 12, f"hyperscaler capex: {ev.get('ticker')} 8-K"
+        # Sev-4 hyperscaler 8-Ks count even without keyword match — major
+        # filings rarely fail to be AI-related given 2026 capex mix.
+        if (ev.get("severity") or 0) >= 4:
+            return 10, f"hyperscaler sev4 8-K: {ev.get('ticker')}"
+    return 0, ""
+
+
+def power_scarcity_active(ticker: str, recent_events: list[dict],
+                           watchlist_map: dict[str, set[str]]) -> tuple[int, str]:
+    """+15 if a power utility fired a severity-4 8-K in last 7 days AND
+    this ticker is an AI compute/server/optical beneficiary."""
+    # Is this ticker an AI beneficiary?
+    is_beneficiary = any(ticker in watchlist_map.get(name, set())
+                         for name in POWER_SCARCITY_BENEFICIARY_LISTS)
+    if not is_beneficiary:
+        return 0, ""
+    # Was there a severity-4 utility 8-K recently?
+    cutoff = datetime.now(timezone.utc) - timedelta(hours=POWER_SCARCITY_LOOKBACK_HOURS)
+    for ev in recent_events:
+        if ev.get("ticker") not in POWER_UTILITIES:
+            continue
+        if ev.get("event_type") != "8k_material_event":
+            continue
+        if (ev.get("severity") or 0) < 4:
+            continue
+        try:
+            ts = datetime.fromisoformat((ev.get("created_at") or "").replace("Z","+00:00"))
+            if ts < cutoff:
+                continue
+        except Exception:
+            continue
+        return 15, f"power scarcity: {ev.get('ticker')} 8-K sev4"
+    return 0, ""
+
+
+def is_risk_off() -> bool:
+    """True if VIX latest close > VIX_RISKOFF_LEVEL. Falls through to False on
+    any data gap — we never want this check to silently SUPPRESS alerts."""
+    r = requests.get(
+        f"{SUPABASE_URL}/rest/v1/stock_raw_prices",
+        headers=HEADERS_SB,
+        params={
+            "ticker": "eq.VIX",
+            "select": "close,ts",
+            "order":  "ts.desc",
+            "limit":  "1",
+        },
+        timeout=10,
+    )
+    if r.status_code != 200 or not r.json():
+        return False
+    try:
+        return float(r.json()[0]["close"]) > VIX_RISKOFF_LEVEL
+    except (TypeError, ValueError, KeyError):
+        return False
+
+
 def cluster_passes(events: list[dict]) -> tuple[bool, str]:
     """§15.3 cluster rule: ≥2 distinct source agents OR a single-source exception."""
     agents = {source_agent_for(e) for e in events}
@@ -528,22 +724,36 @@ def signal_direction(events: list[dict]) -> str:
     return "neutral"
 
 
-def action_for(score: float, direction: str, has_mature_rule: bool = False) -> str:
-    """Map (score, direction, maturity) to the action vocabulary.
+def action_for(score: float, direction: str, has_mature_rule: bool = False,
+                risk_off: bool = False) -> str:
+    """Map (score, direction, maturity, macro) to the action vocabulary.
 
     Maturity gate: when the cluster includes ≥1 rule whose paper-trade accuracy
     has crossed 0.90 with n≥30 (per stock_rule_calibration.is_mature), the
     bot is allowed to use BUY / SELL — the system has earned the directional
     vocabulary on that rule. Without a mature rule, the bot stays paper-only:
     WATCH / RESEARCH / AVOID_CHASE / CHASE_RISK.
+
+    Risk-off (VIX > 25): bullish thresholds shift up by 10 points — fewer
+    LONG signals fire during volatile macro. Bearish thresholds unchanged
+    (AVOID_CHASE/SELL stays just as sensitive, since downside risk INCREASES
+    in risk-off regimes).
     """
+    bull_buy   = 70 + (10 if risk_off else 0)
+    bull_watch = 70 + (10 if risk_off else 0)
+    bull_res   = 50 + (10 if risk_off else 0)
     if has_mature_rule:
         if direction == "bearish" and score >= 50:
             return "SELL"
-        if direction == "bullish" and score >= 70:
+        if direction == "bullish" and score >= bull_buy:
             return "BUY"
     if direction == "bearish" and score >= 50:
         return "AVOID_CHASE"
+    if direction == "bullish" and score >= bull_watch:
+        return "WATCH"
+    if direction == "bullish" and score >= bull_res:
+        return "RESEARCH"
+    # Non-bullish neutral high-score case (e.g., earnings_release uncertain direction)
     if score >= 70: return "WATCH"
     if score >= 50: return "RESEARCH"
     return ""  # suppress
@@ -800,14 +1010,39 @@ def main() -> int:
 
         print(f"Alerts already sent today: {already_today} (cap remaining after retries: {cap_remaining})")
 
+        # Intelligence layer — cross-rule context for sector/hyperscaler/power signals
+        watchlist_map = fetch_watchlist_map()
+        wide_events = fetch_recent_events_window(hours=POWER_SCARCITY_LOOKBACK_HOURS)
+        risk_off = is_risk_off()
+        if risk_off:
+            print("⚠️  Macro risk-off active (VIX > 25) — bullish thresholds tightened +10")
+
         # Score and rank
         scored = []
         for (ticker, bucket), ev_list in clusters.items():
             ok, cluster_label = cluster_passes(ev_list)
             score, breakdown = score_evidence(ev_list, agent_weights=agent_weights)
             direction = signal_direction(ev_list)
+
+            # Apply intelligence bonuses
+            sb, sb_detail = sector_cluster_bonus(ticker, direction, wide_events, watchlist_map)
+            if sb:
+                score += sb
+                breakdown.append({"rule": "sector_cluster_bonus", "points": sb,
+                                  "event_id": None, "detail": sb_detail})
+            hb, hb_detail = hyperscaler_capex_echo(ticker, wide_events)
+            if hb:
+                score += hb
+                breakdown.append({"rule": "hyperscaler_capex_echo", "points": hb,
+                                  "event_id": None, "detail": hb_detail})
+            pb, pb_detail = power_scarcity_active(ticker, wide_events, watchlist_map)
+            if pb:
+                score += pb
+                breakdown.append({"rule": "power_scarcity_boost", "points": pb,
+                                  "event_id": None, "detail": pb_detail})
+
             mature = cluster_has_mature_rule(ev_list, rule_calibration)
-            action = action_for(score, direction, has_mature_rule=mature)
+            action = action_for(score, direction, has_mature_rule=mature, risk_off=risk_off)
             scored.append({
                 "ticker":   ticker,
                 "bucket":   bucket,
@@ -878,15 +1113,24 @@ def main() -> int:
             )
             if sig_id is None:
                 continue
-            # Cap: WATCH and AVOID_CHASE both dispatch (directional alerts are high value)
-            if cand["action"] in ("WATCH", "AVOID_CHASE") and cap_remaining > 0:
+            # Severity-4 events bypass the daily cap (LITE-style critical alerts).
+            # RESEARCH gets promoted to dispatch when a sev4 event is present.
+            max_sev = max((e.get("severity") or 0) for e in cand["events"])
+            priority = max_sev >= 4 and SEV4_PRIORITY_BYPASS_CAP
+            dispatchable_actions = ("WATCH", "AVOID_CHASE", "BUY", "SELL")
+            if priority and cand["action"] == "RESEARCH":
+                dispatchable_actions = dispatchable_actions + ("RESEARCH",)
+
+            if cand["action"] in dispatchable_actions and (cap_remaining > 0 or priority):
                 from telegram_dispatcher import dispatch_signal
                 ok = dispatch_signal(sig_id)
                 if ok:
                     mark_signal_status(sig_id, "sent")
-                    cap_remaining -= 1
+                    if not priority:
+                        cap_remaining -= 1
                     sent += 1
-                    print(f"  {ticker}: SENT (score={cand['score']:.0f}, sig_id={sig_id})")
+                    tag = " [SEV4-PRIORITY]" if priority else ""
+                    print(f"  {ticker}: SENT{tag} (score={cand['score']:.0f}, sig_id={sig_id})")
                 else:
                     mark_signal_status(sig_id, "dispatch_failed")
                     print(f"  {ticker}: dispatch failed (sig_id={sig_id})")
