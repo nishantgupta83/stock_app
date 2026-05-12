@@ -6,9 +6,26 @@ name: site_generator
 # Safety: no untrusted PR/issue inputs are interpolated into shell.
 
 on:
+  # Primary cadence — cron is best-effort on GitHub Actions and can drift
+  # by 30-60 min during high load (observed 2026-05-12: 1h 55min skipped).
+  # workflow_run below provides event-driven refresh after each upstream
+  # data-producer completes, so status.json stays fresh even when cron
+  # is throttled. Cron remains as a baseline for fully-idle periods.
+  # No untrusted inputs used — workflow_run filters by hardcoded names + main branch.
   schedule:
     - cron: "*/15 * * * *"
   workflow_dispatch:
+  workflow_run:
+    workflows:
+      - intraday_alert_agent
+      - thesis_agent
+      - news_agent
+      - truth_social_agent
+      - paper_trade_agent
+      - filing_agent
+      - event_paper_agent
+    types: [completed]
+    branches: [main]
 
 concurrency:
   group: site_generator
