@@ -897,6 +897,19 @@ def derive_calibration_groups(forecasts: list[dict], limit: int = 20) -> list[di
 # Render
 # ============================================================
 
+# Two-tier maturity gates surfaced in status.json. The production gate
+# (0.90 accuracy, n>=30) is canonical and lives in price_agent.py; the
+# training gate is a parallel surface used by the digest routines and
+# dashboard so paper-mode rule progress is visible before production
+# graduation. Lowering the training gate does NOT change BUY/SELL emission
+# in thesis_agent — that stays gated on the production tier. Training-tier
+# rules are paper-only and slated for PROVISIONAL_LONG/SHORT emission in a
+# follow-up (see docs/next-phases-roadmap.md).
+MATURITY_PRODUCTION_ACC = 0.90
+MATURITY_TRAINING_ACC   = 0.70
+MATURITY_MIN_N          = 30
+
+
 def _emit_status_json(
     *,
     dist_dir: Path,
@@ -904,6 +917,7 @@ def _emit_status_json(
     cal_rows: list[dict],
     cal_summary: dict,
     open_paper: list[dict],
+    closed_paper: list[dict],
     signals: list[dict],
     events: list[dict],
     failures: list[dict],
@@ -915,10 +929,9 @@ def _emit_status_json(
 
     Consumers (morning routine, external monitors) read this instead of
     scraping the dashboard HTML. AGENT_INVENTORY is the single source of
-    truth for expected_minutes — emitting it inline ensures consumers can't
-    drift from the dashboard's own staleness rules. Schema is intentionally
-    raw (last_seen + expected_minutes per agent) so callers decide their
-    own thresholds rather than us pre-baking a stale/healthy verdict.
+    truth for expected_minutes; production/training maturity constants are
+    defined at module top so the dashboard, digest, and any future consumer
+    all reference the same numbers.
     """
     import json
     now = datetime.now(timezone.utc)
@@ -967,19 +980,55 @@ def _emit_status_json(
                 and (s.get("fired_at") or "").startswith(today_prefix)):
             by_action[s.get("action") or "unknown"] += 1
 
+    # Tag every rule with both gates so consumers (digest, dashboard) can
+    # filter by either. is_mature is canonical (set by price_agent on the
+    # production gate); is_mature_training is derived here from the same
+    # underlying numbers using the lower threshold.
+    def _tier_flags(r: dict) -> dict:
+        n   = int(r.get("n_observations") or 0)
+        acc = float(r.get("accuracy") or 0)
+        return {
+            "meets_training_gate":   (n >= MATURITY_MIN_N) and (acc >= MATURITY_TRAINING_ACC),
+            "meets_production_gate": (n >= MATURITY_MIN_N) and (acc >= MATURITY_PRODUCTION_ACC),
+        }
+
+    mature_production_keys = [r["rule_key"] for r in cal_rows
+                              if r.get("is_mature") and r.get("rule_key")]
+    # Training-mature includes production-mature (production is a superset)
+    mature_training_keys = [r["rule_key"] for r in cal_rows
+                            if _tier_flags(r)["meets_training_gate"] and r.get("rule_key")]
+
     closest = sorted(
-        (r for r in cal_rows if not r.get("is_mature")),
+        (r for r in cal_rows if not _tier_flags(r)["meets_training_gate"]),
         key=lambda r: (int(r.get("n_observations") or 0),
                        float(r.get("accuracy") or 0)),
         reverse=True,
     )[:10]
     closest_out = [{
-        "rule_key":       r.get("rule_key"),
-        "n_observations": int(r.get("n_observations") or 0),
-        "n_correct":      int(r.get("n_correct") or 0),
-        "accuracy":       float(r.get("accuracy") or 0),
-        "is_mature":      bool(r.get("is_mature")),
+        "rule_key":              r.get("rule_key"),
+        "n_observations":        int(r.get("n_observations") or 0),
+        "n_correct":             int(r.get("n_correct") or 0),
+        "accuracy":              float(r.get("accuracy") or 0),
+        "is_mature":             bool(r.get("is_mature")),
+        **_tier_flags(r),
     } for r in closest]
+
+    # Today's closed paper trades — surfaced for the 4 PM market-close digest.
+    closed_today = [t for t in closed_paper
+                    if (t.get("exit_at") or "").startswith(today_prefix)]
+    n_closed_today = len(closed_today)
+    n_correct_today = sum(1 for t in closed_today if t.get("correct"))
+    avg_ret_today = (sum(float(t.get("realized_return") or 0) for t in closed_today)
+                     / n_closed_today) if n_closed_today else 0.0
+    closed_today_out = [{
+        "ticker":          t.get("ticker"),
+        "rule_key":        t.get("rule_key"),
+        "direction":       t.get("direction"),
+        "entry_at":        t.get("entry_at"),
+        "exit_at":         t.get("exit_at"),
+        "realized_return": float(t.get("realized_return") or 0),
+        "correct":         bool(t.get("correct")),
+    } for t in closed_today[:20]]
 
     inventory_out = {
         k: {"job": v["job"], "expected_minutes": v["expected_minutes"]}
@@ -987,25 +1036,46 @@ def _emit_status_json(
     }
 
     payload = {
-        "schema_version": "1.0",
+        "schema_version": "1.1",
         "generated_at":   now.strftime("%Y-%m-%dT%H:%M:%SZ"),
         "generator":      "site_generator",
         "platform": {
             "name":  "stock_app · Hub4Apps Terminal",
-            "phase": "calibration accumulation",
+            "phase": "calibration accumulation · two-tier maturity",
             "vocabulary": {
-                "pre_maturity":    ["WATCH", "RESEARCH", "AVOID_CHASE", "CHASE_RISK"],
-                "post_maturity":   ["BUY", "SELL"],
-                "graduation_rule": "A rule_key earns BUY/SELL only when "
-                                   "n_observations >= 30 AND accuracy >= 0.90",
+                "pre_maturity":   ["WATCH", "RESEARCH", "AVOID_CHASE", "CHASE_RISK"],
+                "training_tier":  ["PROVISIONAL_LONG", "PROVISIONAL_SHORT"],
+                "production_tier": ["BUY", "SELL"],
+                "emission_status": {
+                    "pre_maturity":     "live (thesis_agent emits these now)",
+                    "training_tier":    "planned (see docs/next-phases-roadmap.md) "
+                                        "— rules can graduate at training gate today, "
+                                        "but thesis_agent vocabulary wiring is pending",
+                    "production_tier":  "live but gated (no rule has crossed 0.90 yet)",
+                },
             },
-            "maturity_gate": {"min_observations": 30, "min_accuracy": 0.90},
-            "alerting":      {"daily_cap": 5, "severity_4_bypass": True},
+            "maturity_gate": {
+                "production": {
+                    "min_observations": MATURITY_MIN_N,
+                    "min_accuracy":     MATURITY_PRODUCTION_ACC,
+                    "vocabulary":       ["BUY", "SELL"],
+                    "purpose":          "Canonical maturity — unlocks BUY/SELL in Telegram alerts.",
+                },
+                "training": {
+                    "min_observations": MATURITY_MIN_N,
+                    "min_accuracy":     MATURITY_TRAINING_ACC,
+                    "vocabulary":       ["PROVISIONAL_LONG", "PROVISIONAL_SHORT"],
+                    "purpose":          "Visibility tier — rules that have shown signal but aren't "
+                                        "production-ready. Paper-trade outcomes feed calibration.",
+                },
+            },
+            "alerting":   {"daily_cap": 5, "severity_4_bypass": True},
             "data_notes": [
                 "event_at = real-world event date; created_at = DB landing time.",
                 "Use created_at when filtering for recent activity.",
                 "4 paper trades emitted per event (horizons 1d/7d/15d/30d).",
                 "Staleness rule of thumb: minutes_since_last > 2 * expected_minutes.",
+                "Training tier is a superset of production tier (every prod-mature rule is also training-mature).",
             ],
         },
         "agents": {
@@ -1014,12 +1084,14 @@ def _emit_status_json(
         },
         "calibration": {
             "summary": {
-                "total_observations":    cal_summary.get("total_obs", 0),
-                "n_mature_rules":        len(cal_summary.get("mature_rules") or []),
-                "mature_rule_keys":      cal_summary.get("mature_rules") or [],
-                "closed_30d_count":      cal_summary.get("closed_30d_count", 0),
-                "closed_30d_winrate":    cal_summary.get("closed_30d_winrate", 0.0),
-                "closed_30d_avg_return": cal_summary.get("closed_30d_avg_ret", 0.0),
+                "total_observations":     cal_summary.get("total_obs", 0),
+                "n_mature_production":    len(mature_production_keys),
+                "mature_production_keys": mature_production_keys,
+                "n_mature_training":      len(mature_training_keys),
+                "mature_training_keys":   mature_training_keys,
+                "closed_30d_count":       cal_summary.get("closed_30d_count", 0),
+                "closed_30d_winrate":     cal_summary.get("closed_30d_winrate", 0.0),
+                "closed_30d_avg_return":  cal_summary.get("closed_30d_avg_ret", 0.0),
             },
             "closest_to_maturity": closest_out,
         },
@@ -1033,7 +1105,11 @@ def _emit_status_json(
             "open_candidates":            open_signals,
         },
         "paper_trades": {
-            "open_count": len(open_paper),
+            "open_count":           len(open_paper),
+            "closed_today_count":   n_closed_today,
+            "closed_today_winrate": (n_correct_today / n_closed_today) if n_closed_today else 0.0,
+            "closed_today_avg_return": avg_ret_today,
+            "closed_today":         closed_today_out,
         },
         "recent_failures": [
             {
@@ -1318,6 +1394,7 @@ def render_all() -> int:
         cal_rows=cal_rows,
         cal_summary=cal_summary,
         open_paper=open_paper,
+        closed_paper=closed_paper,
         signals=signals,
         events=events,
         failures=failures,

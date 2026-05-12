@@ -110,6 +110,44 @@ This is the transition from **intelligence pipeline** (signals + paper trades) t
 
 ---
 
+## Phase 11.5 — Two-tier maturity + learning-loop precision
+
+**Trigger:** 2026-05-12 — `status.json` v1.1 already exposes both tiers (`production` = 0.90 acc, `training` = 0.70 acc). Wiring the rest happens here.
+**Effort:** ~4–6 hours across 3 incremental commits.
+**Risk:** low — purely additive (production gate untouched).
+
+### What's already in place (2026-05-12)
+- `status.json` surfaces `n_mature_production` and `n_mature_training` separately, with their respective vocabularies and gates.
+- `is_mature_training` derived in `site_generator.py` from the same numbers `price_agent` uses for `is_mature`; both consumers (dashboard + digest routines) read the same definitions.
+- First training-tier graduate: `8k_material_event::h7d` (n=115, acc=71.3%).
+
+### Phase 11.5a — Wire training-tier emission into thesis_agent
+- Add `cluster_has_training_mature_rule()` mirroring `cluster_has_mature_rule()` in `agents/thesis_agent.py`.
+- Extend `action_for()` to return `PROVISIONAL_LONG` / `PROVISIONAL_SHORT` when the cluster has only training-mature rules (not production-mature).
+- Telegram dispatcher: prepend `[TRAINING]` to subject line for these signals so the user can never confuse them with production BUY/SELL.
+- Open question: do training-tier signals count against `MAX_ALERTS_PER_DAY = 5`? Default: yes, but lift the daily cap to 8 to make room.
+
+### Phase 11.5b — Platt scaling on closed_30d
+- Replace raw frequency `accuracy = n_correct / n_observations` with logistic-regressed probability calibrated on `stock_forecast_audit` rows.
+- Output `accuracy_calibrated` alongside the raw value. Gate uses the calibrated version.
+- Reason: at low n the raw rate is noisy; Platt scaling pulls toward the prior, dampening false-positive maturity.
+
+### Phase 11.5c — Decay-weighted calibration
+- Add `time_decay_weight = 0.5 ** (days_since_observation / 90)` to each observation when computing accuracy.
+- Reason: rules can decay (alpha decay). A rule that worked 6 months ago shouldn't dominate today's accuracy because it had 50 observations then.
+- Recompute matured_at when decay pushes accuracy back below either gate.
+
+### Acceptance criteria
+- After 11.5a: at least one `[TRAINING] PROVISIONAL_LONG` alert lands in Telegram for `8k_material_event::h7d`.
+- After 11.5b: `accuracy_calibrated` field visible in `status.json` and dashboard calibration page.
+- After 11.5c: `matured_at` can NULL-out for a previously-mature rule that has decayed.
+
+### Out of scope (this phase)
+- Production-tier vocabulary changes — BUY/SELL emission still gated on 0.90 + n≥30.
+- Auto-tuning the training threshold — kept manual at 0.70 until we have ≥30 closed training-tier trades to evaluate.
+
+---
+
 ## Phase 13+ — Future considerations (not committed)
 
 - **Real-time WebSocket dashboard** — replaces 15-min Hostinger refresh with live updates. Requires moving off static hosting.
