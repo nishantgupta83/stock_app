@@ -897,6 +897,160 @@ def derive_calibration_groups(forecasts: list[dict], limit: int = 20) -> list[di
 # Render
 # ============================================================
 
+def _emit_status_json(
+    *,
+    dist_dir: Path,
+    freshness: list[dict],
+    cal_rows: list[dict],
+    cal_summary: dict,
+    open_paper: list[dict],
+    signals: list[dict],
+    events: list[dict],
+    failures: list[dict],
+    alerts_today: int,
+    open_signals: int,
+    fresh_events: int,
+) -> None:
+    """Emit dist/status.json — machine-readable view of pipeline state.
+
+    Consumers (morning routine, external monitors) read this instead of
+    scraping the dashboard HTML. AGENT_INVENTORY is the single source of
+    truth for expected_minutes — emitting it inline ensures consumers can't
+    drift from the dashboard's own staleness rules. Schema is intentionally
+    raw (last_seen + expected_minutes per agent) so callers decide their
+    own thresholds rather than us pre-baking a stale/healthy verdict.
+    """
+    import json
+    now = datetime.now(timezone.utc)
+    today_prefix = now.date().isoformat()
+    cutoff_24h = now - timedelta(hours=24)
+
+    freshness_out = []
+    for f in freshness:
+        agent_name = f.get("agent") or ""
+        short = agent_name.replace("workflow_", "")
+        inv = AGENT_INVENTORY.get(short)
+        if inv is None:
+            for v in AGENT_INVENTORY.values():
+                if v["job"] == short:
+                    inv = v
+                    break
+        expected = (inv or {}).get("expected_minutes")
+        last_seen = f.get("last_seen") or ""
+        minutes_since = None
+        try:
+            t = datetime.fromisoformat(last_seen.replace("Z", "+00:00"))
+            minutes_since = int((now - t).total_seconds() / 60)
+        except Exception:
+            pass
+        freshness_out.append({
+            "agent":              agent_name,
+            "last_seen":          last_seen,
+            "last_status":        f.get("last_status") or "",
+            "stale_running":      int(f.get("stale_running") or 0),
+            "minutes_since_last": minutes_since,
+            "expected_minutes":   expected,
+        })
+
+    by_event_type: Counter = Counter()
+    for e in events:
+        try:
+            t = datetime.fromisoformat((e.get("event_at") or "").replace("Z", "+00:00"))
+        except Exception:
+            continue
+        if t >= cutoff_24h:
+            by_event_type[e.get("event_type") or "unknown"] += 1
+
+    by_action: Counter = Counter()
+    for s in signals:
+        if (s.get("status_v2") == "sent"
+                and (s.get("fired_at") or "").startswith(today_prefix)):
+            by_action[s.get("action") or "unknown"] += 1
+
+    closest = sorted(
+        (r for r in cal_rows if not r.get("is_mature")),
+        key=lambda r: (int(r.get("n_observations") or 0),
+                       float(r.get("accuracy") or 0)),
+        reverse=True,
+    )[:10]
+    closest_out = [{
+        "rule_key":       r.get("rule_key"),
+        "n_observations": int(r.get("n_observations") or 0),
+        "n_correct":      int(r.get("n_correct") or 0),
+        "accuracy":       float(r.get("accuracy") or 0),
+        "is_mature":      bool(r.get("is_mature")),
+    } for r in closest]
+
+    inventory_out = {
+        k: {"job": v["job"], "expected_minutes": v["expected_minutes"]}
+        for k, v in AGENT_INVENTORY.items()
+    }
+
+    payload = {
+        "schema_version": "1.0",
+        "generated_at":   now.strftime("%Y-%m-%dT%H:%M:%SZ"),
+        "generator":      "site_generator",
+        "platform": {
+            "name":  "stock_app · Hub4Apps Terminal",
+            "phase": "calibration accumulation",
+            "vocabulary": {
+                "pre_maturity":    ["WATCH", "RESEARCH", "AVOID_CHASE", "CHASE_RISK"],
+                "post_maturity":   ["BUY", "SELL"],
+                "graduation_rule": "A rule_key earns BUY/SELL only when "
+                                   "n_observations >= 30 AND accuracy >= 0.90",
+            },
+            "maturity_gate": {"min_observations": 30, "min_accuracy": 0.90},
+            "alerting":      {"daily_cap": 5, "severity_4_bypass": True},
+            "data_notes": [
+                "event_at = real-world event date; created_at = DB landing time.",
+                "Use created_at when filtering for recent activity.",
+                "4 paper trades emitted per event (horizons 1d/7d/15d/30d).",
+                "Staleness rule of thumb: minutes_since_last > 2 * expected_minutes.",
+            ],
+        },
+        "agents": {
+            "inventory": inventory_out,
+            "freshness": freshness_out,
+        },
+        "calibration": {
+            "summary": {
+                "total_observations":    cal_summary.get("total_obs", 0),
+                "n_mature_rules":        len(cal_summary.get("mature_rules") or []),
+                "mature_rule_keys":      cal_summary.get("mature_rules") or [],
+                "closed_30d_count":      cal_summary.get("closed_30d_count", 0),
+                "closed_30d_winrate":    cal_summary.get("closed_30d_winrate", 0.0),
+                "closed_30d_avg_return": cal_summary.get("closed_30d_avg_ret", 0.0),
+            },
+            "closest_to_maturity": closest_out,
+        },
+        "events": {
+            "fresh_last_180min": fresh_events,
+            "by_event_type_24h": dict(by_event_type),
+        },
+        "signals": {
+            "dispatched_today":           alerts_today,
+            "dispatched_today_by_action": dict(by_action),
+            "open_candidates":            open_signals,
+        },
+        "paper_trades": {
+            "open_count": len(open_paper),
+        },
+        "recent_failures": [
+            {
+                "occurred_at": f.get("occurred_at"),
+                "agent":       f.get("agent"),
+                "reason":      f.get("reason"),
+                "detail":      f.get("detail"),
+            }
+            for f in failures[:10]
+        ],
+    }
+
+    text = json.dumps(payload, indent=2, sort_keys=False)
+    (dist_dir / "status.json").write_text(text)
+    print(f"Wrote status.json ({len(text)} bytes)")
+
+
 def render_all() -> int:
     env = Environment(
         loader=FileSystemLoader(str(TEMPLATES_DIR)),
@@ -1157,6 +1311,20 @@ def render_all() -> int:
         ))
     # Copy styles.css into alert/ so relative links work when opened standalone
     shutil.copy(DIST_DIR / "styles.css", alert_dir / "styles.css")
+
+    _emit_status_json(
+        dist_dir=DIST_DIR,
+        freshness=freshness,
+        cal_rows=cal_rows,
+        cal_summary=cal_summary,
+        open_paper=open_paper,
+        signals=signals,
+        events=events,
+        failures=failures,
+        alerts_today=alerts_today,
+        open_signals=open_signals,
+        fresh_events=fresh_events,
+    )
 
     total_html = len(list(DIST_DIR.glob("*.html"))) + len(list(alert_dir.glob("*.html")))
     print(f"Wrote {total_html} HTML files (incl. {len(signals)} alert pages) + styles.css to {DIST_DIR}")
