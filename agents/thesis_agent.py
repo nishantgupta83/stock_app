@@ -340,8 +340,16 @@ def source_agent_for(event: dict) -> str:
     if et in ("news_headline",):    return "news"
     if et.startswith("earnings_"):  return "earnings"
     if et in ("vix_spike", "yield_milestone", "fomc_decision", "cpi_release",
-              "nfp_release", "yield_snapshot"):
+              "nfp_release", "yield_snapshot", "consumer_sentiment", "traffic_data"):
         return "macro"
+    if et in ("activist_initial_position", "insider_cluster_buy"):
+        return "activist"
+    if et == "dod_contract_award":
+        return "defense"
+    if et in ("fda_pdufa_decision", "clinical_readout"):
+        return "biotech"
+    if et == "nuclear_license_approval":
+        return "energy"
     return "unknown"
 
 
@@ -485,6 +493,34 @@ def score_evidence(events: list[dict],
         elif et == "vix_spike":
             add(f"vix_{e.get('event_subtype') or 'stress'}",
                 20 if sev >= 4 else 12, e["id"])
+        # Activist 13D + insider clusters from activist_insider_agent — strong fundamentals
+        elif et == "activist_initial_position":
+            add("activist_13d", 30, e["id"], e.get("event_subtype") or "")
+        elif et == "insider_cluster_buy":
+            add("insider_cluster", 20, e["id"],
+                f"{(e.get('payload') or {}).get('filer_count','?')} filers")
+        # Defense DoD contract awards
+        elif et == "dod_contract_award":
+            sub = e.get("event_subtype") or ""
+            add(f"dod_{sub}", 25 if sub == "mega" else 12, e["id"],
+                f"${(e.get('payload') or {}).get('amount','?')}")
+        # Biotech FDA decisions
+        elif et == "fda_pdufa_decision":
+            sub = e.get("event_subtype") or "approval"
+            pts = 35 if sub in ("approval","rejection") else 15
+            add(f"fda_{sub}", pts, e["id"])
+        elif et == "clinical_readout":
+            add(f"clinical_{e.get('event_subtype') or 'update'}", 12, e["id"])
+        # Energy transition catalysts
+        elif et == "nuclear_license_approval":
+            sub = e.get("event_subtype") or "filing"
+            pts = 25 if sub == "approval" else 15 if sub == "denial" else 8
+            add(f"nuclear_{sub}", pts, e["id"])
+        # Consumer health cycle signals
+        elif et == "consumer_sentiment":
+            add(f"umich_{sev}", 20 if sev >= 4 else 10, e["id"])
+        elif et == "traffic_data":
+            add("tsa_yoy", 12 if sev >= 3 else 6, e["id"])
 
         # Staleness penalty — only for short-lived signal types.
         # SEC filings are valid for days; social/news posts expire fast.
