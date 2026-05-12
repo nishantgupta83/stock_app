@@ -87,6 +87,30 @@ _RULES_CACHE: list[dict] = []
 _RULES_SOURCE: str = "keyword_fallback"
 _REGEX_CACHE: dict[str, re.Pattern] = {}
 
+# Truth Social posts can match multiple thematic rules at once (e.g. "china"
+# rule baskets AAPL+NVDA+TSLA+FXI), so a single political post can balloon to
+# 5+ normalized events. Audit on 2026-05-12 showed 5% of posts fan-out to 4-5
+# tickers, polluting calibration with low-relevance observations. Cap total
+# ticker emission per post at 3, prioritizing rules with smaller (more
+# precise) ticker baskets — e.g. an explicit "apple" name-rule wins a slot
+# before the broad "china" thematic basket.
+MAX_TICKERS_PER_POST = 3
+
+# Strip HTML tags + entities so post_excerpt, content snippets, and rule
+# classification all see clean text. The Truth Social RSS feed wraps post
+# bodies in <p>...</p>; if not stripped at ingest, the literal "<p>" leaks
+# into the dashboard's event content column.
+_HTML_TAG_RE = re.compile(r"<[^>]+>")
+_HTML_ENTITY_RE = re.compile(r"&(?:#[0-9]+|[a-zA-Z]+);")
+
+
+def _strip_html(text: str) -> str:
+    if not text:
+        return ""
+    text = _HTML_TAG_RE.sub(" ", text)
+    text = _HTML_ENTITY_RE.sub(" ", text)
+    return re.sub(r"\s+", " ", text).strip()
+
 
 def _matches(text: str, rule: dict) -> bool:
     kw = rule["keyword"]
@@ -103,21 +127,31 @@ def _matches(text: str, rule: dict) -> bool:
 
 
 def classify(text: str) -> list[dict]:
-    """Return list of {ticker, direction_prior, rule_label, classified_by} per matched rule."""
+    """Return list of {ticker, direction_prior, rule_label, classified_by} per matched rule.
+
+    Rules with smaller ticker baskets (e.g. explicit name_AAPL → [AAPL]) are
+    applied first so they reserve slots before broad thematic rules
+    (china → [AAPL, NVDA, TSLA, FXI]) consume the MAX_TICKERS_PER_POST cap.
+    """
     if not text:
         return []
     hits: dict[str, dict] = {}
-    for rule in _RULES_CACHE:
-        if not _matches(text, rule):
-            continue
+    matched = [r for r in _RULES_CACHE if _matches(text, r)]
+    matched.sort(key=lambda r: len(r.get("tickers") or []))
+    for rule in matched:
+        if len(hits) >= MAX_TICKERS_PER_POST:
+            break
         for t in rule.get("tickers") or []:
-            # First match wins per ticker — preserves direction priors set earlier.
-            hits.setdefault(t, {
+            if t in hits:
+                continue
+            if len(hits) >= MAX_TICKERS_PER_POST:
+                break
+            hits[t] = {
                 "ticker":          t,
                 "direction_prior": rule.get("direction_prior") or "neutral",
                 "rule_label":      rule.get("rule_label") or rule["keyword"][:40],
                 "classified_by":   _RULES_SOURCE,
-            })
+            }
     return list(hits.values())
 
 
@@ -294,7 +328,7 @@ def main() -> int:
                 datetime(*posted[:6], tzinfo=timezone.utc).isoformat()
                 if posted else datetime.now(timezone.utc).isoformat()
             )
-            content = e.get("summary") or e.get("title") or ""
+            content = _strip_html(e.get("summary") or e.get("title") or "")
             candidates.append({
                 "post_id":    str(post_id),
                 "posted_at":  posted_at,

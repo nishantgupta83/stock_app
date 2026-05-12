@@ -1249,7 +1249,18 @@ def render_all() -> int:
         signals_json=signals,
     ))
 
-    # Events
+    # Events — annotate with drove_signal flag so the Events tab can mark
+    # high-leverage rows. Heuristic: same ticker + same hour bucket as any
+    # signal fired today. Cheap O(n+m) in-memory join; no extra DB calls.
+    signal_buckets = {
+        (s["ticker"], (s.get("fired_at") or "")[:13])
+        for s in signals
+        if s.get("ticker") and s.get("fired_at")
+    }
+    for e in events:
+        bucket = (e.get("ticker"), (e.get("event_at") or "")[:13])
+        e["drove_signal"] = bucket in signal_buckets
+
     (DIST_DIR / "events.html").write_text(env.get_template("events.html.j2").render(
         **common,
         title="Events", active="events",

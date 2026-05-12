@@ -635,6 +635,25 @@ td code {
   line-height: 1.3;
 }
 
+/* ============ EVENTS TAB — severity color + signal badge ============ */
+/* Severity column color cue. Low (0-2) stays muted; elevated (3) goes amber;
+   critical (4) is coral and bold. Matches the global pastel palette — no
+   purple. Defined for both the cell class (.sev) and inline tagged spans. */
+.sev { font-variant-numeric: tabular-nums; font-weight: 500; }
+.sev-0, .sev-1, .sev-2 { color: var(--muted); }
+.sev-3                 { color: var(--amber); }
+.sev-4                 { color: var(--coral); font-weight: 700; }
+
+/* Star badge marking events that coincided with a fired signal. Subtle copper
+   accent — eye-catching without screaming. */
+.sig-badge {
+  color: var(--accent);
+  font-size: 11px;
+  margin-right: 4px;
+  vertical-align: middle;
+  cursor: help;
+}
+
 /* ============ RESPONSIVE ============ */
 @media (max-width: 1100px) {
   .shell { grid-template-columns: 1fr; gap: 36px; }

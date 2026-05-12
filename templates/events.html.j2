@@ -1,7 +1,7 @@
 {% extends "_layout.html.j2" %}
 {% block content %}
 <h2>Events stream</h2>
-<p style="color:var(--muted);font-size:12px">Raw normalized events from every agent. Last 200, ordered by event time. Use this to verify what each agent is seeing.</p>
+<p style="color:var(--muted);font-size:12px">Raw normalized events from every agent. Last 200, ordered by event time. The <span class="sig-badge" title="this event coincided with a signal">★</span> marks events that coincided with a fired signal. Severity is colored: <span class="sev sev-2">low</span> · <span class="sev sev-3">elevated</span> · <span class="sev sev-4">critical</span>.</p>
 
 <div class="filters">
   <label>Type</label>
@@ -13,6 +13,7 @@
   <input id="f-ticker" type="text" placeholder="NVDA" oninput="render()" style="width:80px">
   <label>Min severity</label>
   <input id="f-sev" type="number" min="0" max="4" value="0" oninput="render()" style="width:60px">
+  <label><input id="f-sig" type="checkbox" onchange="render()"> Only signal-driving</label>
   <span class="count" id="count">— rows</span>
 </div>
 
@@ -27,14 +28,14 @@
     </tr>
   </thead>
   <tbody id="rows">
-    {# Server-rendered fallback — first 25 events. JS filter replaces this. #}
+    {# Server-rendered fallback — first 25 events with same logic JS uses. #}
     {% for r in events_json[:25] %}
     <tr>
       <td>{{ (r.event_at or '')[:16] }}</td>
-      <td>{{ r.ticker or '' }}</td>
+      <td>{% if r.drove_signal %}<span class="sig-badge" title="coincided with a signal">★</span> {% endif %}<strong>{{ r.ticker or '—' }}</strong></td>
       <td>{{ r.event_type or '' }}{% if r.event_subtype %} / {{ r.event_subtype }}{% endif %}</td>
-      <td class="num">{{ r.severity|default(0) }}</td>
-      <td>{{ (((r.payload or {}).get('headline') or (r.payload or {}).get('title') or (r.payload or {}).get('primary_doc_desc') or '')|string)[:120] }}</td>
+      <td class="num sev sev-{{ r.severity|default(0) }}">{{ r.severity|default(0) }}</td>
+      <td>{{ (((r.payload or {}).get('headline') or (r.payload or {}).get('title') or (r.payload or {}).get('primary_doc_desc') or (r.payload or {}).get('post_excerpt') or '')|string)|truncate(120, false, '…') }}</td>
     </tr>
     {% endfor %}
   </tbody>
@@ -43,64 +44,117 @@
 
 <script id="data" type="application/json">{{ events_json|tojson }}</script>
 <script>
-// HTML-escape — Trump post payloads contain raw HTML, must never reach innerHTML unescaped.
-function esc(s) {
-  if (s === null || s === undefined) return '';
-  return String(s).replace(/[&<>"']/g, c => ({
-    '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'
-  }[c]));
-}
 const DATA = JSON.parse(document.getElementById('data').textContent);
+
+function extractContent(r) {
+  const p = r.payload || {};
+  if (r.event_type === 'news_article') return p.headline || p.url || '';
+  if (r.event_type === 'truth_social_post') return p.post_excerpt || p.content_snippet || '';
+  if (r.event_type === '8k_material_event') {
+    const items = p['8k_items'] ? ' [items: ' + p['8k_items'] + ']' : '';
+    return (p.company_name || p.form_type || '8-K') + items;
+  }
+  if (r.event_type && r.event_type.startsWith('filing_')) {
+    return p.form_type || r.event_type.replace('filing_', '').toUpperCase();
+  }
+  return p.rule_label || r.event_subtype || '';
+}
+
+// Word-boundary truncation. Avoids "down! C" — cuts at the last space within
+// the visible window. Falls back to hard cut if no whitespace in the first
+// half (e.g., URL with no breaks).
+function truncWord(s, maxLen) {
+  if (!s) return '';
+  s = String(s);
+  if (s.length <= maxLen) return s;
+  const slice = s.substring(0, maxLen);
+  const lastSpace = slice.lastIndexOf(' ');
+  const cut = (lastSpace >= Math.floor(maxLen / 2)) ? lastSpace : maxLen;
+  return s.substring(0, cut).trimEnd() + '…';
+}
+
+// Group rows that share (minute, event_type, headline). Coalesces multi-ticker
+// fanout (AMD + AVGO on the same article) into a single row with comma-joined
+// tickers — preserves the underlying DB rows but reduces visual noise.
+function groupRows(rows) {
+  const out = [];
+  const idx = new Map();
+  for (const r of rows) {
+    const minute = (r.event_at || '').substring(0, 16);
+    const content = extractContent(r);
+    const key = minute + '||' + (r.event_type || '') + '||' + content;
+    const existing = idx.get(key);
+    if (existing) {
+      if (r.ticker && !existing._tickers.has(r.ticker)) existing._tickers.add(r.ticker);
+      // Promote drove_signal to the group if any constituent triggered one.
+      if (r.drove_signal) existing.drove_signal = true;
+      // Promote highest severity.
+      if ((r.severity || 0) > (existing.severity || 0)) existing.severity = r.severity;
+    } else {
+      const copy = Object.assign({}, r, { _tickers: new Set(r.ticker ? [r.ticker] : []) });
+      out.push(copy);
+      idx.set(key, copy);
+    }
+  }
+  return out;
+}
+
 function render() {
   const fT = document.getElementById('f-type').value;
   const fTick = document.getElementById('f-ticker').value.trim().toUpperCase();
   const fSev = parseInt(document.getElementById('f-sev').value) || 0;
+  const fSig = document.getElementById('f-sig').checked;
   const tbody = document.getElementById('rows');
   while (tbody.firstChild) tbody.removeChild(tbody.firstChild);
-  let n = 0;
+
+  // Apply filters BEFORE grouping so ticker filter still works on raw rows.
+  let filtered = [];
   for (const r of DATA) {
     if (fT && r.event_type !== fT) continue;
     if (fTick && (r.ticker || '').toUpperCase().indexOf(fTick) === -1) continue;
-    if (r.severity < fSev) continue;
-    n++;
-    // Extract the most human-readable content from payload
-    let content = '';
-    const p = r.payload || {};
-    if (r.event_type === 'news_article') {
-      content = p.headline || p.url || '';
-    } else if (r.event_type === 'truth_social_post') {
-      content = p.post_excerpt || p.content_snippet || '';
-    } else if (r.event_type === '8k_material_event') {
-      const items = p['8k_items'] ? ' [items: ' + p['8k_items'] + ']' : '';
-      content = (p.company_name || p.form_type || '8-K') + items;
-    } else if (r.event_type && r.event_type.startsWith('filing_')) {
-      content = p.form_type || r.event_type.replace('filing_', '').toUpperCase();
-    } else {
-      content = p.rule_label || r.event_subtype || '';
-    }
-    content = String(content).substring(0, 120);
+    if ((r.severity || 0) < fSev) continue;
+    if (fSig && !r.drove_signal) continue;
+    filtered.push(r);
+  }
+  const grouped = groupRows(filtered);
 
+  for (const g of grouped) {
     const tr = document.createElement('tr');
-    // Build cells via DOM — no innerHTML with user content
     function cell(text, cls) {
       const td = document.createElement('td');
       if (cls) td.className = cls;
       td.textContent = text || '';
       return td;
     }
-    tr.appendChild(cell((r.event_at || '').substring(0, 16)));
+    tr.appendChild(cell((g.event_at || '').substring(0, 16)));
+
+    // Ticker cell: optional ★ badge + comma-joined ticker list
     const tickerTd = document.createElement('td');
+    if (g.drove_signal) {
+      const star = document.createElement('span');
+      star.className = 'sig-badge';
+      star.title = 'coincided with a signal';
+      star.textContent = '★';
+      tickerTd.appendChild(star);
+      tickerTd.appendChild(document.createTextNode(' '));
+    }
     const b = document.createElement('strong');
-    b.textContent = r.ticker || '—';
+    const tickers = Array.from(g._tickers || []);
+    b.textContent = tickers.length ? tickers.join(', ') : '—';
     tickerTd.appendChild(b);
     tr.appendChild(tickerTd);
-    tr.appendChild(cell(r.event_type));
-    tr.appendChild(cell(String(Number(r.severity) || 0), 'num'));
-    tr.appendChild(cell(content));
+
+    tr.appendChild(cell(g.event_type + (g.event_subtype ? (' / ' + g.event_subtype) : '')));
+
+    const sev = Number(g.severity) || 0;
+    tr.appendChild(cell(String(sev), 'num sev sev-' + sev));
+
+    tr.appendChild(cell(truncWord(extractContent(g), 120)));
     tbody.appendChild(tr);
   }
-  document.getElementById('count').textContent = `${n} of ${DATA.length} rows`;
-  document.getElementById('empty').style.display = n === 0 ? 'block' : 'none';
+
+  document.getElementById('count').textContent = `${grouped.length} of ${DATA.length} rows`;
+  document.getElementById('empty').style.display = grouped.length === 0 ? 'block' : 'none';
 }
 render();
 </script>
