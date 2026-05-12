@@ -114,14 +114,16 @@ def match_tickers(text: str) -> list[str]:
 
 def fetch_recent_phase3_readouts(sponsor_name: str) -> list[dict]:
     """Query ctgov for Phase 3 trials sponsored by a given company with
-    recent status updates (results posted, completed, terminated). Returns
-    list of trial dicts."""
+    recent status updates. Date range computed at call time so the filter
+    doesn't silently expire at a hardcoded boundary."""
+    end_date = (datetime.now(timezone.utc) + timedelta(days=365)).date().isoformat()
+    start_date = (datetime.now(timezone.utc) - timedelta(days=90)).date().isoformat()
     try:
         r = requests.get(
             CTGOV_API,
             params={
                 "query.term":  f"{sponsor_name} AND Phase 3",
-                "filter.advanced": "AREA[LastUpdatePostDate]RANGE[2026-04-01,2026-12-31]",
+                "filter.advanced": f"AREA[LastUpdatePostDate]RANGE[{start_date},{end_date}]",
                 "fields":      "NCTId,BriefTitle,OverallStatus,LastUpdatePostDate,LeadSponsorName,Phase",
                 "pageSize":    "10",
             },

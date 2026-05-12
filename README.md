@@ -36,7 +36,12 @@ The current technical diagram and operational runbook live in
 - core table responsibilities and forecast modes
 - current verification snapshot from the Phase 6B rollout
 
-## Pipeline (14 GitHub Actions jobs)
+## Pipeline (23 GitHub Actions jobs)
+
+`ls .github/workflows/*.yml | wc -l` for the live count. The roadmap calls for
+six domain agents (macro_rates, activist_insider, defense, biotech,
+energy_transition, consumer_health) on top of the original 14 — those are now
+all live, plus intraday_alert and archive helpers.
 
 | Agent | Schedule | What it does |
 |---|---|---|

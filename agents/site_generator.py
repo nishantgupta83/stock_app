@@ -41,30 +41,39 @@ HEADERS_SB = {
 SB_ERRORS: list[str] = []
 
 # Known agent inventory — drives the agents tab even if agent has no signals yet
-KNOWN_AGENTS = [
-    "filing", "news", "truth_social", "thesis", "earnings", "price",
-    "paper_trade", "backtester", "site_generator", "source_review", "telegram_dispatcher",
-    "workflow_filing_agent", "workflow_news_agent", "workflow_truth_social_agent",
-    "workflow_thesis_agent", "workflow_earnings_agent", "workflow_price_agent",
-    "workflow_paper_trade_agent", "workflow_backtester", "workflow_site_generator",
-    "workflow_source_review_agent", "workflow_historical_ingest",
-]
-
-# Maps short display name → job_runs agent string (fixes last_seen showing "—")
-_JOB_NAME = {
-    "filing":              "filing_agent",
-    "truth_social":        "truth_social_agent",
-    "thesis":              "thesis_agent",
-    "news":                "news_agent",
-    "earnings":            "earnings_agent",
-    "price":               "price_agent",
-    "paper_trade":         "paper_trade_agent",
-    "backtester":          "backtester",
-    "source_review":       "source_review_agent",
-    "telegram_dispatcher": "telegram_dispatcher",
-    "flows":               "flows_agent",
-    "site_generator":      "site_generator",
+# Single source of truth for agent inventory + expected freshness SLA.
+# expected_minutes = wall clock between consecutive successful runs;
+# anything past 2x that is considered stale. Set to None for manual-only.
+AGENT_INVENTORY: dict[str, dict] = {
+    "filing":              {"job": "filing_agent",              "expected_minutes": 360},   # every 6h
+    "news":                {"job": "news_agent",                "expected_minutes": 60},
+    "truth_social":        {"job": "truth_social_agent",        "expected_minutes": 60},
+    "thesis":              {"job": "thesis_agent",              "expected_minutes": 60},
+    "earnings":            {"job": "earnings_agent",            "expected_minutes": 10080},  # weekly
+    "price":               {"job": "price_agent",               "expected_minutes": 1440},   # daily EOD
+    "paper_trade":         {"job": "paper_trade_agent",         "expected_minutes": 60},
+    "backtester":          {"job": "backtester",                "expected_minutes": None},   # manual
+    "source_review":       {"job": "source_review_agent",       "expected_minutes": 43200},  # monthly
+    "telegram_dispatcher": {"job": "telegram_dispatcher",       "expected_minutes": 60},
+    "flows":               {"job": "flows_agent",               "expected_minutes": 10080},  # weekly Sun
+    "site_generator":      {"job": "site_generator",            "expected_minutes": 60},
+    "event_paper":         {"job": "event_paper_agent",         "expected_minutes": 90},
+    "market_scanner":      {"job": "market_scanner_agent",      "expected_minutes": 1440},   # daily EOD
+    "crypto_macro":        {"job": "crypto_macro_agent",        "expected_minutes": 1440},   # daily EOD
+    "archive":             {"job": "archive_agent",             "expected_minutes": 10080},  # weekly Sun
+    "intraday_alert":      {"job": "intraday_alert_agent",      "expected_minutes": 15},     # market hours
+    "macro_rates":         {"job": "macro_rates_agent",         "expected_minutes": 1440},   # daily
+    "activist_insider":    {"job": "activist_insider_agent",    "expected_minutes": 120},
+    "defense":             {"job": "defense_agent",             "expected_minutes": 1440},   # daily
+    "biotech":             {"job": "biotech_agent",             "expected_minutes": 1440},   # daily
+    "energy_transition":   {"job": "energy_transition_agent",   "expected_minutes": 1440},   # daily
+    "consumer_health":     {"job": "consumer_health_agent",     "expected_minutes": 1440},   # daily
 }
+KNOWN_AGENTS = list(AGENT_INVENTORY.keys()) + [
+    f"workflow_{v['job']}" for v in AGENT_INVENTORY.values()
+    if v["job"] not in ("backtester", "site_generator", "telegram_dispatcher")
+]
+_JOB_NAME = {k: v["job"] for k, v in AGENT_INVENTORY.items()}
 
 
 def sb_get(path: str, params: dict | list[tuple[str, str]] | None = None) -> list[dict]:
@@ -251,10 +260,13 @@ def count_open_signals() -> int:
 
 
 def count_fresh_events() -> int:
+    """Events that LANDED in the last 180 minutes. Filter by created_at, not
+    event_at — same bug class as event_paper_agent (fixed May 2026): event_at
+    is the real-world event date which can be days/weeks old for backfilled
+    SEC filings or institutional 13F-HR submissions."""
     cutoff = (datetime.now(timezone.utc) - timedelta(minutes=180)).isoformat()
     rows = sb_get("stock_normalized_events", [
-        ("event_at", f"gte.{cutoff}"),
-        ("event_at", f"lte.{datetime.now(timezone.utc).isoformat()}"),
+        ("created_at", f"gte.{cutoff}"),
         ("select", "id"),
     ])
     return len(rows)
@@ -602,6 +614,27 @@ def derive_dashboard_metrics(events: list[dict], freshness: list[dict]) -> dict:
     cutoff_24h = datetime.now(timezone.utc) - timedelta(hours=24)
     by_agent = defaultdict(int)
     samples = {}
+    # Central event_type → agent mapping so news, macro, defense, biotech,
+    # energy, consumer-health activity is visible in the dashboard summary
+    # (previously everything except filings + truth_social got bucketed into "other").
+    def _agent_for(event_type: str) -> str:
+        et = event_type
+        if et.startswith("filing_") or et == "8k_material_event": return "filing"
+        if et == "truth_social_post":                              return "truth_social"
+        if et == "news_article":                                   return "news"
+        if et.startswith("earnings_"):                             return "earnings"
+        if et.startswith("institutional_") or et == "activist_initial_position" \
+           or et == "insider_cluster_buy":                         return "activist"
+        if et == "crypto_macro_move":                              return "crypto_macro"
+        if et == "dod_contract_award":                             return "defense"
+        if et in ("fda_pdufa_decision", "clinical_readout"):       return "biotech"
+        if et == "nuclear_license_approval":                       return "energy"
+        if et in ("consumer_sentiment", "traffic_data"):           return "consumer"
+        if et in ("vix_spike", "yield_milestone", "yield_snapshot",
+                  "fomc_decision", "cpi_release", "nfp_release"):  return "macro"
+        if et == "momentum":                                       return "price"
+        return "other"
+
     for e in events:
         try:
             t = datetime.fromisoformat(e["event_at"].replace("Z", "+00:00"))
@@ -609,34 +642,56 @@ def derive_dashboard_metrics(events: list[dict], freshness: list[dict]) -> dict:
             continue
         if t < cutoff_24h:
             continue
-        # Map event_type → agent
-        et = e["event_type"]
-        agent = "filing" if et.startswith("filing_") or et == "8k_material_event" else (
-                "truth_social" if et == "truth_social_post" else "other")
+        agent = _agent_for(e["event_type"])
         by_agent[agent] += 1
-        samples.setdefault(agent, e.get("event_subtype") or et)
+        samples.setdefault(agent, e.get("event_subtype") or e["event_type"])
 
-    # Agent health: latest run must be recent and finished ok/partial.
-    cutoff_health = datetime.now(timezone.utc) - timedelta(minutes=30)
+    # Agent health: schedule-aware. Each agent's SLA defines its own stale
+    # threshold (2x expected_minutes); manual-only agents are skipped from
+    # the health roster entirely so they don't poison the dashboard count.
+    now = datetime.now(timezone.utc)
     healthy = []
     stale = []
+    manual = []
     for f in freshness:
+        agent_name = f.get("agent") or ""
+        # Strip "workflow_" prefix to find the inventory entry
+        short = agent_name.replace("workflow_", "")
+        # Try direct + reverse-mapped lookup
+        inv = AGENT_INVENTORY.get(short)
+        if inv is None:
+            for k, v in AGENT_INVENTORY.items():
+                if v["job"] == short:
+                    inv = v
+                    break
+        expected = (inv or {}).get("expected_minutes")
+        if expected is None:
+            manual.append(agent_name)
+            continue
+        # Schedule-aware threshold: 2x expected interval, min 30 min, max 24h
+        threshold_min = max(30, min(expected * 2, 1440))
+        cutoff = now - timedelta(minutes=threshold_min)
         last = f.get("last_seen") or ""
         try:
             t = datetime.fromisoformat(last.replace("Z", "+00:00"))
             latest_status = f.get("last_status") or ""
             stale_running = int(f.get("stale_running") or 0)
-            if t > cutoff_health and latest_status in ("ok", "partial") and stale_running == 0:
-                healthy.append(f["agent"])
+            if t > cutoff and latest_status in ("ok", "partial") and stale_running == 0:
+                healthy.append(agent_name)
             else:
-                stale.append(f["agent"])
+                stale.append(agent_name)
         except Exception:
-            stale.append(f["agent"])
+            stale.append(agent_name)
 
+    # Surface all event-source agents in the activity row so news/macro/defense/
+    # biotech/energy/consumer/activist/crypto are visible.
+    activity_agents = ("filing", "news", "truth_social", "thesis", "macro", "activist",
+                       "defense", "biotech", "energy", "consumer", "crypto_macro")
     return {
-        "agent_activity": [(a, by_agent[a], samples.get(a, "")) for a in ("filing", "truth_social", "thesis")],
+        "agent_activity": [(a, by_agent[a], samples.get(a, "")) for a in activity_agents if by_agent[a] > 0],
         "healthy_agents": healthy,
         "stale_agents":   stale,
+        "manual_agents":  manual,
     }
 
 

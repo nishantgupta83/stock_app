@@ -35,8 +35,11 @@ from filing_agent import (   # type: ignore
 BOT_TOKEN = os.environ.get("TELEGRAM_BOT_TOKEN", "")
 CHAT_ID   = os.environ.get("TELEGRAM_CHAT_ID", "")
 
-# NRC press releases RSS
-NRC_RSS = "https://www.nrc.gov/public-involve/public-meetings/schedule/all-meetings.rss"
+# NRC news releases RSS (license actions, approvals, denials). The prior URL
+# (public-involve/public-meetings/schedule/all-meetings.rss) returned the
+# meetings schedule — those entries rarely contain "approval"/"license"
+# keywords, silently producing zero events.
+NRC_RSS = "https://www.nrc.gov/reading-rm/doc-collections/news/nrc.xml"
 
 # Sub-watchlist ticker mappings used to score policy mentions
 ENERGY_TICKERS = {

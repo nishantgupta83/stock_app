@@ -149,10 +149,16 @@ def emit_event(event_type: str, severity: int, payload: dict, ticker: str,
 
 
 def send_alert(ticker: str, amount: int, title: str, link: str) -> bool:
-    """Telegram for $1B+ contracts on tracked tickers."""
+    """Telegram for $1B+ contracts on tracked tickers.
+
+    Dedupe key uses the link (or title hash if link missing) — NOT the parsed
+    amount, which can vary between RSS rewordings of the same award and
+    silently double-fire alerts.
+    """
     if not BOT_TOKEN or not CHAT_ID:
         return False
-    dedupe = f"defense_contract_{ticker}_{amount}_{datetime.now(timezone.utc).date()}"
+    stable_id = link or str(hash(title))
+    dedupe = f"defense_contract_alert_{ticker}_{stable_id}"
     existing = requests.get(
         f"{SUPABASE_URL}/rest/v1/stock_signals?dedupe_key=eq.{dedupe}&select=id&limit=1",
         headers=HEADERS_SB, timeout=10,

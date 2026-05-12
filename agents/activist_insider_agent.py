@@ -116,15 +116,23 @@ def fetch_recent_form4(days: int) -> list[dict]:
 
 
 def detect_clusters(form4s: list[dict]) -> list[dict]:
-    """{ticker, filer_count, filings: [filing], window_start, window_end}
-    where filer_count >= INSIDER_CLUSTER_MIN_FILERS within INSIDER_CLUSTER_WINDOW_DAYS.
+    """{ticker, filer_count, filings, filers} where filer_count >=
+    INSIDER_CLUSTER_MIN_FILERS within INSIDER_CLUSTER_WINDOW_DAYS.
 
-    Form 4 contains both buys and sells in our v1 ingest — cluster signal
-    is most meaningful when accompanied by net buys. We approximate by
-    counting unique filers per ticker; a refined version would check the
-    transaction code (P=purchase, S=sale)."""
+    Form 4 transaction_code: P=purchase, S=sale, A=grant/award, M=option
+    exercise. We only count P/A (insider buying or being granted shares —
+    bullish signal); sells flip the signal direction so they must NOT
+    increment the buy-cluster counter. Filings without a transaction_code
+    in payload are dropped (cannot determine direction)."""
     by_ticker: dict[str, list[dict]] = defaultdict(list)
     for f in form4s:
+        p = f.get("payload") or {}
+        code = (p.get("transaction_code") or "").upper()
+        # Only purchases + grants. Treat unknown/missing transaction_code as
+        # ambiguous and skip — better to under-fire than to flip a sell into
+        # a bullish alert.
+        if code not in ("P", "A"):
+            continue
         if f.get("ticker"):
             by_ticker[f["ticker"]].append(f)
 
@@ -138,10 +146,10 @@ def detect_clusters(form4s: list[dict]) -> list[dict]:
                 filers.add(owner)
         if len(filers) >= INSIDER_CLUSTER_MIN_FILERS:
             clusters.append({
-                "ticker":   ticker,
+                "ticker":      ticker,
                 "filer_count": len(filers),
-                "filings":  filings,
-                "filers":   sorted(filers)[:10],
+                "filings":     filings,
+                "filers":      sorted(filers)[:10],
             })
     return clusters
 

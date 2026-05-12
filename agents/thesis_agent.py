@@ -860,11 +860,27 @@ def fetch_rule_calibration() -> dict[str, dict]:
 
 
 def cluster_has_mature_rule(events: list[dict], calibration: dict[str, dict]) -> bool:
-    """True if any event in the cluster maps to an is_mature rule_key."""
+    """True if any event in the cluster maps to an is_mature rule_key.
+
+    event_paper_agent.derive_rule_key emits horizon-suffixed keys
+    (e.g. "8k_material_event::h1d", "earnings_release:beat:h7d"). Older keys
+    without the :hNd suffix also exist for legacy compatibility. Check all
+    variants to ensure maturity actually unlocks BUY/SELL when any horizon
+    crosses the threshold.
+    """
+    HORIZONS = (1, 7, 15, 30)
     for e in events:
         et = e["event_type"]
         sub = (e.get("event_subtype") or "").strip()
-        for key in (f"{et}:{sub}" if sub else None, et):
+        candidates = []
+        # legacy non-horizoned keys
+        if sub:
+            candidates.append(f"{et}:{sub}")
+        candidates.append(et)
+        # horizon-suffixed keys produced by current event_paper_agent
+        for h in HORIZONS:
+            candidates.append(f"{et}:{sub}:h{h}d")
+        for key in candidates:
             if key and calibration.get(key, {}).get("is_mature"):
                 return True
     return False
