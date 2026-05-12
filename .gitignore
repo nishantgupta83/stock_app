@@ -13,3 +13,6 @@ dist/alert/*.html
 .vscode/
 .claude/
 *.bak
+# Supabase CLI workspace — contains project ref + pooler connection string in .temp/.
+# We track migrations in sql/ rather than supabase/migrations/, so the whole folder is safe to ignore.
+supabase/
