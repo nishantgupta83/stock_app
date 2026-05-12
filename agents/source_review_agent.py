@@ -312,7 +312,7 @@ def main() -> int:
 
         job_run_finish(run_id, "ok", len(sources))
         return 0
-    except Exception as e:
+    except Exception:  # noqa: BLE001
         import traceback
         print(traceback.format_exc(), file=sys.stderr)
         job_run_finish(run_id, "failed", 0)

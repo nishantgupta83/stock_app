@@ -26,7 +26,18 @@
       <th>Content / headline</th>
     </tr>
   </thead>
-  <tbody id="rows"></tbody>
+  <tbody id="rows">
+    {# Server-rendered fallback — first 25 events. JS filter replaces this. #}
+    {% for r in events_json[:25] %}
+    <tr>
+      <td>{{ (r.event_at or '')[:16] }}</td>
+      <td>{{ r.ticker or '' }}</td>
+      <td>{{ r.event_type or '' }}{% if r.event_subtype %} / {{ r.event_subtype }}{% endif %}</td>
+      <td class="num">{{ r.severity|default(0) }}</td>
+      <td>{{ (((r.payload or {}).get('headline') or (r.payload or {}).get('title') or (r.payload or {}).get('primary_doc_desc') or '')|string)[:120] }}</td>
+    </tr>
+    {% endfor %}
+  </tbody>
 </table>
 <div id="empty" class="empty" style="display:none">No events match.</div>
 

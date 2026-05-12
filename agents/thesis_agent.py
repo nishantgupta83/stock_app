@@ -1078,7 +1078,7 @@ def main() -> int:
         # cold start is fine — score_evidence treats missing as weight=1.0.
         agent_weights = fetch_latest_agent_weights()
         if agent_weights:
-            print(f"Agent weights in effect: " +
+            print("Agent weights in effect: " +
                   ", ".join(f"{a}={w:.2f}" for a, w in sorted(agent_weights.items())))
         else:
             print("No agent_weights yet — using default 1.0 for all (cold start)")

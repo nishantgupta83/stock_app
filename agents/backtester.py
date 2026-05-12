@@ -51,7 +51,7 @@ from curl_cffi import requests as cffi_requests
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from thesis_agent import (   # type: ignore
     score_evidence as _score_filings_truth, cluster_passes,
-    action_for, signal_direction, source_agent_for, horizon_for, evidence_summary,
+    action_for, signal_direction, source_agent_for, evidence_summary,
 )
 
 
@@ -74,7 +74,6 @@ def _score_earnings_momentum(events: list[dict]) -> tuple[float, list[dict]]:
     for e in events:
         et = e["event_type"]
         sub = e.get("event_subtype") or ""
-        sev = e.get("severity") or 0
         payload = e.get("payload") or {}
 
         if et == "earnings_pre":
@@ -748,7 +747,6 @@ def compute_metrics(signals: list[dict]) -> dict:
     if not signals:
         return {"days": 0, "signals_total": 0}
 
-    returns   = [s["outcome"]["net_return"] for s in signals]
     confs     = [s["score"] / 100 for s in signals]
     correct   = [s["outcome"]["correct"] for s in signals]
 

@@ -45,7 +45,22 @@
       <th>Status</th>
     </tr>
   </thead>
-  <tbody id="rows"></tbody>
+  <tbody id="rows">
+    {# Server-rendered fallback rows — first 25 most recent signals.
+       Visible by default for crawlers / no-JS clients; replaced live by render()
+       below when JavaScript filters fire. #}
+    {% for r in signals_json[:25] %}
+    <tr>
+      <td>{{ (r.fired_at or '')[:16] }}</td>
+      <td>{{ r.ticker }}</td>
+      <td>{{ r.display_action or r.action or '' }}</td>
+      <td class="num">{{ r.score|default(0)|round(0,'floor') }}</td>
+      <td>{{ (r.evidence_summary or '')[:120] }}</td>
+      <td>{{ (r.agents or [])|join(', ') }}</td>
+      <td>{{ r.status_v2 or '' }}</td>
+    </tr>
+    {% endfor %}
+  </tbody>
 </table>
 <div id="empty" class="empty" style="display:none">No signals match the current filter.</div>
 

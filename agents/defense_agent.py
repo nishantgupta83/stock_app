@@ -27,8 +27,7 @@ import requests
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from filing_agent import (   # type: ignore
-    job_run_start, job_run_finish, dead_letter,
-    SUPABASE_URL, HEADERS_SB,
+    job_run_start, job_run_finish, SUPABASE_URL, HEADERS_SB,
 )
 
 BOT_TOKEN = os.environ.get("TELEGRAM_BOT_TOKEN", "")

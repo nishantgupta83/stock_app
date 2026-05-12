@@ -33,5 +33,6 @@ create index concurrently if not exists stock_signals_dispatch_failed_idx
   where status_v2 = 'dispatch_failed';
 
 -- stock_event_paper_trades — fetch_already_traded_event_ids uses event_id IN (...).
--- event_id is unique-indexed via the existing _uniq from 0015 (event_id, ticker, direction)
--- which is fine for IN lookups (leading column hit). No new index needed.
+-- event_id is the leading column of the current unique index (event_id, ticker,
+-- direction, horizon_days) from sql/0018, which supports our IN lookups by
+-- leading-column scan. No new index needed.

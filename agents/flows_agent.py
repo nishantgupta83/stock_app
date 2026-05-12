@@ -32,7 +32,6 @@ import os
 import re
 import sys
 import time
-from collections import defaultdict
 from datetime import datetime, timedelta, timezone
 from xml.etree import ElementTree as ET
 

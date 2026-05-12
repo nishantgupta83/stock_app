@@ -13,7 +13,6 @@ from __future__ import annotations
 import os
 import re
 import sys
-import time
 from datetime import datetime, timezone
 
 import feedparser
@@ -258,7 +257,6 @@ def emit_truth_events(posts: list[dict], raw_ids: dict[str, int]) -> int:
 
 def main() -> int:
     global _RULES_CACHE, _RULES_SOURCE
-    started = time.time()
     run_id = job_run_start("truth_social_agent")
     n_posts_in = 0
     n_posts_new = 0
