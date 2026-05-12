@@ -1,97 +1,189 @@
 {% extends "_layout.html.j2" %}
 {% block content %}
-<h2>Today at a glance</h2>
 
-<div class="cards">
-  <div class="card {% if alerts_today >= 5 %}warn{% else %}ok{% endif %}">
-    <div class="label">Alerts sent today (UTC)</div>
-    <div class="value">{{ alerts_today }} <span style="font-size:14px;color:var(--muted)">/ 5 cap</span></div>
-    <div class="sub">{{ 5 - alerts_today }} remaining today</div>
-  </div>
-  <div class="card">
-    <div class="label">Open candidates</div>
-    <div class="value">{{ open_signals }}</div>
-    <div class="sub">awaiting cluster confirmation or cap</div>
-  </div>
-  <div class="card">
-    <div class="label">Fresh events (last 180m)</div>
-    <div class="value">{{ fresh_events }}</div>
-    <div class="sub">across all agents</div>
-  </div>
-  <div class="card {% if all_agents_healthy %}ok{% else %}bad{% endif %}">
-    <div class="label">Agent health</div>
-    <div class="value">{{ healthy_agent_count }} / {{ total_agent_count }}</div>
-    <div class="sub">{% if all_agents_healthy %}all agents reporting{% else %}stale: {{ stale_agents|join(', ') }}{% endif %}</div>
-  </div>
+<div class="shell">
+
+  {# ===== LEFT: STATS COLUMN ===== #}
+  <aside>
+    <div class="bigstat">
+      <span class="num accent">{{ open_signals }}</span>
+      <div class="lbl">open candidates</div>
+      <div class="sub">awaiting cluster confirmation or alert cap</div>
+    </div>
+    <div class="bigstat">
+      <span class="num {% if alerts_today >= 5 %}bear{% else %}bull{% endif %}">{{ alerts_today }}</span>
+      <div class="lbl">alerts sent today</div>
+      <div class="sub">{{ 5 - alerts_today }} remaining of the daily cap; severity-4 events bypass the cap.</div>
+    </div>
+    <div class="bigstat">
+      <span class="num">{{ fresh_events }}</span>
+      <div class="lbl">fresh events · 180m</div>
+      <div class="sub">across all 20 agents</div>
+    </div>
+    <div class="bigstat">
+      <span class="num {% if all_agents_healthy %}bull{% else %}bear{% endif %}">{{ healthy_agent_count }}/{{ total_agent_count }}</span>
+      <div class="lbl">agent health</div>
+      <div class="sub">
+        {% if all_agents_healthy %}all agents reporting on schedule.
+        {% else %}stale: {{ stale_agents[:4]|join(', ') }}{% if stale_agents|length > 4 %}, +{{ stale_agents|length - 4 }} more{% endif %}.
+        {% endif %}
+      </div>
+    </div>
+  </aside>
+
+  {# ===== CENTER: HEADLINE + SECTORS + ACTIVITY ===== #}
+  <section>
+
+    {# Headline auto-derived from today's strongest sector move #}
+    {% set top_sector = sector_rows | selectattr('n_events') | sort(attribute='score', reverse=true) | first %}
+    {% set top_bear   = sector_rows | selectattr('n_events') | sort(attribute='score') | first %}
+    {% if intraday_alerts %}
+      {% set top_spike = intraday_alerts[0] %}
+      <article class="headline">
+        <h1>
+          {{ top_spike.ticker }}
+          <em>{% if top_spike.direction == 'bullish' %}leads{% else %}falls{% endif %}</em>
+          today's session.
+        </h1>
+        <p class="lede">{{ top_spike.evidence_summary }}</p>
+      </article>
+    {% elif top_sector and top_sector.n_events > 0 %}
+      <article class="headline">
+        <h1>
+          <em>{{ top_sector.label }}</em>
+          {% if top_sector.direction == 'bull' %}leads{% elif top_sector.direction == 'bear' %}lags{% else %}stirs{% endif %}
+          the tape — {{ top_sector.n_events }} events on {{ top_sector.n_tickers }} names in 24h.
+        </h1>
+        <p class="lede">Cross-sector flow surfaces below.  Wire feed on the right tracks intraday spikes within 15 minutes of the move.</p>
+      </article>
+    {% endif %}
+
+    {# Sector rotation heatmap #}
+    <div class="section-label">
+      sector rotation <span class="meta-note">last 24 hours · all watchlists</span>
+    </div>
+    <div class="sectors">
+      {% for s in sector_rows %}
+        <div class="sector {{ s.direction }}">
+          <div class="nm">{{ s.label }}</div>
+          <div class="val">
+            {% if s.n_events == 0 %}—{% else %}{{ s.n_events }}{% endif %}
+          </div>
+          <div class="ct">
+            {% if s.n_events %}{{ s.n_tickers }} ticker{{ 's' if s.n_tickers != 1 else '' }} · score {{ '%+d' | format(s.score) }}{% else %}quiet{% endif %}
+          </div>
+          <div class="heat"></div>
+        </div>
+      {% endfor %}
+    </div>
+
+    {# Top recent events by agent — uses existing agent_activity #}
+    <div class="section-label">
+      agent activity <span class="meta-note">events in last 24h</span>
+    </div>
+    {% if agent_activity %}
+    <div class="cards">
+      {% for agent_name, n_recent, sample in agent_activity %}
+      <div class="card">
+        <div class="label">{{ agent_name }}</div>
+        <div class="value">{{ n_recent }}</div>
+        <div class="sub">{% if sample %}latest: {{ sample[:60] }}{% endif %}</div>
+      </div>
+      {% endfor %}
+    </div>
+    {% endif %}
+
+    {# Recent live signals #}
+    <h3>Recent live signals</h3>
+    {% if recent_signals %}
+    <table>
+      <thead>
+        <tr><th>Fired</th><th>Ticker</th><th>Action</th><th class="num">Score</th><th>Summary</th><th>Status</th></tr>
+      </thead>
+      <tbody>
+        {% for s in recent_signals %}
+        {% set action = s.display_action or s.action %}
+        <tr>
+          <td>{{ s.fired_at[:16] }}</td>
+          <td><strong>{{ s.ticker }}</strong></td>
+          <td><span class="tag {{ action }}">{{ action }}</span></td>
+          <td class="num">
+            {{ s.score|int }}
+            <span class="score-bar"><span class="fill" style="width: {{ s.score_pct|round|int }}%"></span></span>
+          </td>
+          <td>{{ s.evidence_summary }}</td>
+          <td><span class="tag {{ s.status_v2 }}">{{ s.status_v2 }}</span></td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    {% else %}
+    <div class="empty">No live signals yet — backtest rows are kept out so live paper review stays separate.</div>
+    {% endif %}
+
+    {# Building-toward-signal candidates #}
+    <h3>Building toward a signal <span>past 5 days</span></h3>
+    {% if candidates %}
+    <table>
+      <thead>
+        <tr><th>Ticker</th><th>Sources</th><th class="num">Events</th><th>Latest</th></tr>
+      </thead>
+      <tbody>
+        {% for c in candidates %}
+        <tr>
+          <td><strong>
+            {% if c.ticker in signal_tickers %}<a href="ticker/{{ c.ticker }}.html">{{ c.ticker }}</a>
+            {% else %}{{ c.ticker }}{% endif %}
+          </strong></td>
+          <td>
+            {% for a in c.agents %}<span class="tag agent-{{ a }}">{{ a }}</span> {% endfor %}
+          </td>
+          <td class="num">{{ c.event_count }}</td>
+          <td>{{ c.latest }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    {% else %}
+    <div class="empty">No tickers accumulating evidence in the last 5 days.</div>
+    {% endif %}
+
+    <div class="note">
+      <strong>Reading guide</strong> · WATCH = ≥2 agents agree, score ≥70. RESEARCH = single strong signal. AVOID_CHASE = bearish or cautionary setup. CHASE_RISK = bullish setup where price already moved before the alert. BUY/SELL only fire when the cluster contains a rule with proven calibration history (≥90% accuracy, n≥30).
+    </div>
+
+  </section>
+
+  {# ===== RIGHT: WIRE FEED ===== #}
+  <aside>
+    <div class="section-label">
+      wire <span class="meta-note">intraday alerts</span>
+    </div>
+    <div class="feed">
+      {% for a in intraday_alerts %}
+        {% set up = a.direction == 'bullish' %}
+        <div class="alert {{ 'up' if up else 'down' }}">
+          <span class="arrow">{% if up %}↗{% else %}↘{% endif %}</span>
+          <div class="body">
+            <div class="row1">{{ a.ticker }}
+              <span class="pct">
+                {% set pct = (a.evidence_summary | default('')) %}
+                {% set m = pct.split('%')[0].split(' ')[-1] %}
+                {{ m }}%
+              </span>
+            </div>
+            <div class="ctx">{{ (a.evidence_summary or '')[:120] }}</div>
+          </div>
+          <div class="time">
+            {{ a.fired_at[11:16] if a.fired_at else '' }}<br>UTC
+          </div>
+        </div>
+      {% else %}
+        <div class="empty">No intraday spikes detected yet today.</div>
+      {% endfor %}
+    </div>
+  </aside>
+
 </div>
 
-<h3>Recent live signals</h3>
-{% if recent_signals %}
-<table>
-  <thead>
-    <tr><th>Fired</th><th>Ticker</th><th>Action</th><th class="num">Score</th><th>Summary</th><th>Status</th></tr>
-  </thead>
-  <tbody>
-    {% for s in recent_signals %}
-    {% set action = s.display_action or s.action %}
-    <tr>
-      <td>{{ s.fired_at[:16] }}</td>
-      <td><strong>{{ s.ticker }}</strong></td>
-      <td><span class="tag {{ action }}">{{ action }}</span></td>
-      <td class="num">
-        {{ s.score|int }}
-        <span class="score-bar"><span class="fill" style="width: {{ s.score_pct|round|int }}%"></span></span>
-      </td>
-      <td>{{ s.evidence_summary }}</td>
-      <td><span class="tag {{ s.status_v2 }}">{{ s.status_v2 }}</span></td>
-    </tr>
-    {% endfor %}
-  </tbody>
-</table>
-{% else %}
-<div class="empty">No live signals yet. Backtest rows are kept out of this dashboard summary so live paper review stays separate.</div>
-{% endif %}
-
-<h3>Building toward a signal <span style="color:var(--muted);font-size:13px;font-weight:normal">— past tracked events, last 5 days</span></h3>
-{% if candidates %}
-<table>
-  <thead>
-    <tr><th>Ticker</th><th>Sources</th><th>Events</th><th>Latest activity</th></tr>
-  </thead>
-  <tbody>
-    {% for c in candidates %}
-    <tr>
-      <td><strong>
-        {% if c.ticker in signal_tickers %}
-          <a href="ticker/{{ c.ticker }}.html" style="color:var(--ok)">{{ c.ticker }}</a>
-        {% else %}{{ c.ticker }}{% endif %}
-      </strong></td>
-      <td>
-        {% for a in c.agents %}<span class="tag agent-{{ a }}">{{ a }}</span> {% endfor %}
-        {% if c.agent_count >= 2 %}<span style="color:var(--ok);font-size:11px">✓ cluster ready</span>{% endif %}
-      </td>
-      <td class="num">{{ c.event_count }}</td>
-      <td style="color:var(--muted);font-size:12px">{{ c.latest }}</td>
-    </tr>
-    {% endfor %}
-  </tbody>
-</table>
-{% else %}
-<div class="empty">No tickers accumulating evidence in the last 5 days.</div>
-{% endif %}
-
-<h3>Top recent events by agent</h3>
-<div class="cards">
-  {% for agent_name, n_recent, sample in agent_activity %}
-  <div class="card">
-    <div class="label"><span class="tag agent-{{ agent_name }}">{{ agent_name }}</span></div>
-    <div class="value">{{ n_recent }}</div>
-    <div class="sub">events in last 24h{% if sample %}<br>latest: {{ sample[:60] }}{% endif %}</div>
-  </div>
-  {% endfor %}
-</div>
-
-<div class="note">
-  <strong>Reading guide:</strong> WATCH = ≥2 agents agree, score ≥70. RESEARCH = single strong signal. AVOID_CHASE = bearish or cautionary setup. CHASE_RISK = bullish setup where price already moved before the alert. All language is paper-only.
-</div>
 {% endblock %}

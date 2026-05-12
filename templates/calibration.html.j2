@@ -25,6 +25,39 @@
   </div>
 </div>
 
+<h3>Per-rule × horizon heatmap <span>top 20 by sample size</span></h3>
+{% if heatmap_rows %}
+<div class="heatmap" style="grid-template-columns: minmax(220px,1.5fr) repeat({{ horizons|length }}, 1fr);">
+  <div class="h left">rule_key</div>
+  {% for h in horizons %}<div class="h">h{{ h }}d</div>{% endfor %}
+  {% for g in heatmap_rows %}
+    <div class="c rule-name">
+      <code>{{ g.base or g.rule_key }}</code>
+      <span class="obs">n={{ g.total_obs }}</span>
+    </div>
+    {% for h in horizons %}
+      {% set cell = g.horizons.get(h) %}
+      {% if cell and cell.n_observations %}
+        {% set acc = (cell.accuracy or 0) %}
+        {% set band = 'green-3' if (acc >= 0.85 and cell.n_observations >= 20)
+                      else 'green-2' if acc >= 0.75
+                      else 'green-1' if acc >= 0.6
+                      else 'amber-2' if (acc >= 0.5 and cell.n_observations >= 30)
+                      else 'amber-1' if acc >= 0.4
+                      else 'red-1' %}
+        <div class="c {{ band }}">
+          {% if cell.is_mature %}<span class="star">★</span>{% endif %}{{ '%.0f%%' | format(acc * 100) }}
+          <div style="font-size:9px;opacity:0.7;margin-top:2px">n={{ cell.n_observations }}</div>
+        </div>
+      {% else %}
+        <div class="c empty">—</div>
+      {% endif %}
+    {% endfor %}
+  {% endfor %}
+</div>
+<p style="color:var(--muted);font-size:11px;font-family:var(--font-mono);margin-bottom:24px">★ = mature (n≥30, acc≥90%) · cell color = accuracy band</p>
+{% endif %}
+
 <h3>Per-rule accuracy</h3>
 <p style="color:var(--muted);font-size:12px">A rule is one event_type[:event_subtype] combination. Sorted by absolute mean return × log(n+1), so a strong rule with many samples ranks above a marginal rule with few. Sample size column shaded green when n ≥ {{ maturity_min_n }}.</p>
 <table>

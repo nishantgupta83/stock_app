@@ -540,6 +540,124 @@ def fetch_events_for_tickers(tickers: list[str], days: int = 180) -> dict[str, l
     return result
 
 
+def sector_rotation_data(events: list[dict]) -> list[dict]:
+    """Per-watchlist activity in the last 24h: count of events, dominant direction.
+    Drives the dashboard's sector heatmap.
+
+    Returns a list of dicts:
+        [{"name":..., "label":..., "n_events":..., "n_tickers":..., "direction":...,
+          "score": int (-100..100)}, ...]
+    where direction is one of 'bull'/'bear'/'neutral' and score sums per-event
+    bull (+1) and bear (-1) tagging from the event_type + payload.direction_prior.
+    """
+    cutoff = datetime.now(timezone.utc) - timedelta(hours=24)
+
+    # Pull watchlist memberships (ticker → set of watchlist names)
+    rows = sb_get("stock_watchlists", {"select": "name,ticker", "limit": "5000"})
+    ticker_to_lists: dict[str, list[str]] = {}
+    for r in rows:
+        t = r.get("ticker"); n = r.get("name")
+        if t and n:
+            ticker_to_lists.setdefault(t, []).append(n)
+
+    # Watchlists we surface on the dashboard, in display order
+    SURFACED = [
+        ("ai_compute",    "AI · compute"),
+        ("ai_optical",    "AI · optical"),
+        ("ai_servers",    "AI · servers"),
+        ("ai_power",      "AI · power"),
+        ("ai_software",   "AI · software"),
+        ("ai_neocloud",   "AI · neocloud"),
+        ("defense_primes","defense · primes"),
+        ("defense_cyber", "defense · cyber"),
+        ("biotech_glp1",  "biotech · GLP-1"),
+        ("pharma_majors", "pharma · majors"),
+        ("ev_makers",     "energy · EV"),
+        ("nuclear",       "energy · nuclear"),
+        ("retail_big_box","consumer · retail"),
+        ("travel_leisure","consumer · travel"),
+        ("macro_rates",   "macro · rates"),
+    ]
+
+    def _bull_bear(ev: dict) -> int:
+        """+1 bull, -1 bear, 0 neutral from event_type + direction_prior."""
+        d = ((ev.get("payload") or {}).get("direction_prior") or "").lower()
+        if d == "long":  return 1
+        if d == "short": return -1
+        et = ev.get("event_type") or ""
+        if et in ("8k_material_event", "filing_13d", "institutional_new_position",
+                  "institutional_increase", "activist_initial_position",
+                  "insider_cluster_buy", "fda_pdufa_decision",
+                  "nuclear_license_approval", "dod_contract_award"):
+            sub = (ev.get("event_subtype") or "").lower()
+            if sub == "rejection":
+                return -1
+            return 1
+        if et in ("filing_s-3", "filing_s-3/a", "filing_dilution",
+                  "institutional_exit", "institutional_decrease",
+                  "vix_spike", "yield_milestone"):
+            return -1
+        if et == "earnings_release":
+            sub = (ev.get("event_subtype") or "").lower()
+            if sub == "beat":  return 1
+            if sub == "miss":  return -1
+        return 0
+
+    # Aggregate per watchlist
+    by_list: dict[str, dict] = {}
+    for ev in events:
+        try:
+            ts = datetime.fromisoformat((ev.get("event_at") or "").replace("Z","+00:00"))
+        except Exception:
+            continue
+        if ts < cutoff:
+            continue
+        t = ev.get("ticker") or ""
+        wls = ticker_to_lists.get(t, [])
+        bb = _bull_bear(ev)
+        for wl in wls:
+            agg = by_list.setdefault(wl, {"n": 0, "score": 0, "tickers": set()})
+            agg["n"] += 1
+            agg["score"] += bb
+            agg["tickers"].add(t)
+
+    out: list[dict] = []
+    for wl, label in SURFACED:
+        agg = by_list.get(wl, {"n": 0, "score": 0, "tickers": set()})
+        if agg["n"] == 0:
+            direction = "neutral"
+        elif agg["score"] > 0:
+            direction = "bull"
+        elif agg["score"] < 0:
+            direction = "bear"
+        else:
+            direction = "neutral"
+        out.append({
+            "name":      wl,
+            "label":     label,
+            "n_events":  agg["n"],
+            "n_tickers": len(agg["tickers"]),
+            "direction": direction,
+            "score":     agg["score"],
+        })
+    return out
+
+
+def recent_intraday_alerts(limit: int = 9) -> list[dict]:
+    """Intraday spike alerts for the dashboard wire feed.
+
+    Pulls today's intraday_alert_agent signals (dedupe_key starts with
+    'intraday_spike_'). Returns enough context for the alert card."""
+    today = datetime.now(timezone.utc).date().isoformat()
+    rows = sb_get("stock_signals", {
+        "dedupe_key": f"like.intraday_spike_*_{today}",
+        "select":     "ticker,action,score,fired_at,evidence_summary,direction",
+        "order":      "score.desc",
+        "limit":      str(limit),
+    })
+    return rows
+
+
 def build_pre_signal_candidates(events: list[dict]) -> list[dict]:
     """Tickers with events in the last 5 days that haven't yet clustered into a signal.
     Shows the user what's building toward a signal."""
@@ -873,6 +991,8 @@ def render_all() -> int:
     )
 
     # Dashboard
+    sector_rows = sector_rotation_data(events)
+    intraday_alerts = recent_intraday_alerts(limit=9)
     (DIST_DIR / "index.html").write_text(env.get_template("index.html.j2").render(
         **common,
         title="Dashboard", active="index",
@@ -887,6 +1007,8 @@ def render_all() -> int:
         stale_agents=dash["stale_agents"],
         candidates=candidates,
         signal_tickers=set(prices.keys()),
+        sector_rows=sector_rows,
+        intraday_alerts=intraday_alerts,
     ))
 
     # Signals (with embedded JSON for client-side filter)
@@ -937,6 +1059,32 @@ def render_all() -> int:
     open_paper = fetch_event_paper_trades(only_status="open", limit=500)
     closed_paper = fetch_event_paper_trades(only_status="closed", limit=200)
     cal_summary = derive_calibration_summary(cal_rows, closed_paper)
+
+    # Per-rule × horizon heatmap. event_paper_agent stores rule_keys as
+    # "event_type:subtype:hNd" with N ∈ (1,7,15,30). Group rows by the base
+    # rule (event_type:subtype) and surface one column per horizon.
+    HORIZONS = (1, 7, 15, 30)
+    heat_groups: dict[str, dict] = {}
+    for r in cal_rows:
+        rk = r.get("rule_key") or ""
+        base, _, htag = rk.rpartition(":")
+        # htag like "h1d" / "h30d"; legacy keys without :hNd suffix get base=rk
+        if not (htag.startswith("h") and htag.endswith("d")):
+            base = rk; horizon = None
+        else:
+            try:
+                horizon = int(htag[1:-1])
+            except (TypeError, ValueError):
+                horizon = None
+        grp = heat_groups.setdefault(base, {"base": base, "horizons": {}, "total_obs": 0})
+        if horizon is not None:
+            grp["horizons"][horizon] = r
+        else:
+            # legacy: surface in 1d column for visibility
+            grp["horizons"].setdefault(1, r)
+        grp["total_obs"] += int(r.get("n_observations") or 0)
+    heatmap_rows = sorted(heat_groups.values(), key=lambda g: -g["total_obs"])[:20]
+
     (DIST_DIR / "calibration.html").write_text(env.get_template("calibration.html.j2").render(
         **common,
         title="Calibration", active="calibration",
@@ -945,6 +1093,8 @@ def render_all() -> int:
         open_paper_count=len(open_paper),
         maturity_acc_pct=90,
         maturity_min_n=30,
+        heatmap_rows=heatmap_rows,
+        horizons=HORIZONS,
         **cal_summary,
     ))
 

@@ -3,40 +3,39 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
-  <meta http-equiv="refresh" content="900">  <!-- self-refresh every 15 min -->
-  <title>{{ title }} · Hub4Apps Market Intel</title>
+  <meta http-equiv="refresh" content="900">
+  <title>{{ title }} · Hub4Apps Terminal</title>
   {% set rp = root_path | default("") %}
   <link rel="stylesheet" href="{{ rp }}styles.css">
 </head>
 <body>
   <header>
     <div class="brand">
-      <span class="logo">📈</span>
-      <h1>Hub4Apps Market Intel</h1>
-      <span class="subtitle">private · educational · not financial advice</span>
+      <span class="logo">⌬</span>
+      <h1>Hub4Apps <em>terminal</em></h1>
+      <span class="subtitle">private · educational</span>
     </div>
     <nav>
-      <a href="{{ rp }}index.html"     class="{% if active=='index' %}active{% endif %}">Dashboard</a>
-      <a href="{{ rp }}signals.html"   class="{% if active=='signals' %}active{% endif %}">Signals</a>
-      <a href="{{ rp }}events.html"    class="{% if active=='events' %}active{% endif %}">Events</a>
-      <a href="{{ rp }}agents.html"    class="{% if active=='agents' %}active{% endif %}">Agents</a>
-      <a href="{{ rp }}backtest.html"  class="{% if active=='backtest' %}active{% endif %}">Backtest</a>
-      <a href="{{ rp }}paper_trades.html" class="{% if active=='paper_trades' %}active{% endif %}">Paper Trades</a>
+      <a href="{{ rp }}index.html"        class="{% if active=='index' %}active{% endif %}">Dashboard</a>
+      <a href="{{ rp }}signals.html"      class="{% if active=='signals' %}active{% endif %}">Signals</a>
+      <a href="{{ rp }}events.html"       class="{% if active=='events' %}active{% endif %}">Events</a>
+      <a href="{{ rp }}agents.html"       class="{% if active=='agents' %}active{% endif %}">Agents</a>
+      <a href="{{ rp }}backtest.html"     class="{% if active=='backtest' %}active{% endif %}">Backtest</a>
+      <a href="{{ rp }}paper_trades.html" class="{% if active=='paper_trades' %}active{% endif %}">Paper</a>
       <a href="{{ rp }}calibration.html"  class="{% if active=='calibration' %}active{% endif %}">Calibration</a>
-      <a href="{{ rp }}learning.html"  class="{% if active=='learning' %}active{% endif %}">Learning</a>
+      <a href="{{ rp }}learning.html"     class="{% if active=='learning' %}active{% endif %}">Learning</a>
     </nav>
     <div class="meta">
-      <span>generated {{ generated_at }} UTC</span>
+      <div>session</div>
+      <div>{{ generated_at }} utc</div>
     </div>
   </header>
   <main>
     {% block content %}{% endblock %}
   </main>
   <footer>
-    <p>v1 paper-trading vocabulary: <strong>WATCH</strong> / <strong>RESEARCH</strong> / <strong>AVOID_CHASE</strong> / <strong>CHASE_RISK</strong>.
-    Phase 6A paper forecasts use <strong>PAPER_LONG</strong> / <strong>PAPER_WATCH</strong> / <strong>PAPER_AVOID</strong> / <strong>PAPER_CHASE_RISK</strong> / <strong>NO_TRADE</strong>.
-    Phase 7 maturity gate: <strong>BUY</strong> / <strong>SELL</strong> only fire when a cluster contains a rule whose paper-trade accuracy has reached ≥90% with ≥30 closed observations (see Calibration tab).</p>
-    <p>Data: SEC EDGAR · trumpstruth.org RSS · yfinance. Free-tier stack: GitHub Actions + Supabase Free + Hostinger static.</p>
+    <p><strong>Vocabulary</strong> · WATCH · RESEARCH · AVOID_CHASE · CHASE_RISK paper-only until rule maturity (≥90% accuracy with n≥30) unlocks BUY / SELL.</p>
+    <p><strong>Stack</strong> · SEC EDGAR · trumpstruth.org RSS · FRED · FDA · DoD · NRC · clinicaltrials.gov · TSA · yfinance.  GitHub Actions + Supabase Free + Hostinger static.  Not financial advice.</p>
   </footer>
 </body>
 </html>
