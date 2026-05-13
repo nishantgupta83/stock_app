@@ -767,14 +767,34 @@ def derive_dashboard_metrics(events: list[dict], freshness: list[dict]) -> dict:
     # Agent health: schedule-aware. Each agent's SLA defines its own stale
     # threshold (2x expected_minutes); manual-only agents are skipped from
     # the health roster entirely so they don't poison the dashboard count.
+    #
+    # Dedupe first: stock_agent_freshness contains BOTH the agent's internal
+    # heartbeat row (e.g. filing_agent) AND the workflow wrapper row
+    # (workflow_filing_agent) emitted by ops_recorder. Counting both inflates
+    # the "X / Y healthy" denominator. Prefer the bare row because it reflects
+    # whether data work actually completed; the wrapper row can be "ok" even
+    # if the agent itself produced nothing useful (e.g. deps installed but
+    # agent main() short-circuited).
+    by_canonical: dict[str, dict] = {}
+    for f in freshness:
+        name = f.get("agent") or ""
+        canonical = name[len("workflow_"):] if name.startswith("workflow_") else name
+        stored = by_canonical.get(canonical)
+        if stored is None:
+            by_canonical[canonical] = f
+        else:
+            stored_is_wrapper = (stored.get("agent") or "").startswith("workflow_")
+            current_is_wrapper = name.startswith("workflow_")
+            if stored_is_wrapper and not current_is_wrapper:
+                by_canonical[canonical] = f
+
     now = datetime.now(timezone.utc)
     healthy = []
     stale = []
     manual = []
-    for f in freshness:
+    for f in by_canonical.values():
         agent_name = f.get("agent") or ""
-        # Strip "workflow_" prefix to find the inventory entry
-        short = agent_name.replace("workflow_", "")
+        short = agent_name[len("workflow_"):] if agent_name.startswith("workflow_") else agent_name
         # Try direct + reverse-mapped lookup
         inv = AGENT_INVENTORY.get(short)
         if inv is None:
