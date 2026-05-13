@@ -73,7 +73,15 @@ def _run_id_path(agent: str) -> Path:
     return Path(f".ops_run_id_{safe}")
 
 
-def start(agent: str, meta: dict) -> int:
+def start(agent: str, meta: dict, parent_run_id: int | None = None,
+          stage: str | None = None) -> int:
+    """Record a workflow-wrapper start in stock_job_runs.
+
+    run_type is always 'wrapper' for ops_recorder writes — this distinguishes
+    YAML scaffold rows from agent code rows (which default to 'agent' via the
+    DB column default set in sql/0022). parent_run_id and stage are optional
+    lineage hooks; both default to NULL for backward compatibility.
+    """
     env = _env()
     if env is None:
         return 0
@@ -82,7 +90,12 @@ def start(agent: str, meta: dict) -> int:
         "agent": agent,
         "status": "running",
         "meta": meta,
+        "run_type": "wrapper",
     }
+    if parent_run_id is not None:
+        payload["parent_run_id"] = parent_run_id
+    if stage is not None:
+        payload["stage"] = stage
     status, parsed, body = _request(
         "POST",
         f"{url}/rest/v1/stock_job_runs",
@@ -132,6 +145,10 @@ def main(argv: list[str] | None = None) -> int:
     ap.add_argument("--agent", required=True)
     ap.add_argument("--status", default="running")
     ap.add_argument("--error", default=None)
+    ap.add_argument("--parent-run-id", type=int, default=None,
+                    help="Optional parent stock_job_runs.id for lineage")
+    ap.add_argument("--stage", default=None,
+                    help="Optional sub-stage label (e.g. 'fetch', 'classify', 'deploy')")
     args = ap.parse_args(argv)
 
     meta = {
@@ -143,7 +160,7 @@ def main(argv: list[str] | None = None) -> int:
         "github_sha": os.environ.get("GITHUB_SHA"),
     }
     if args.phase == "start":
-        return start(args.agent, meta)
+        return start(args.agent, meta, parent_run_id=args.parent_run_id, stage=args.stage)
     return finish(args.agent, args.status, args.error)
 
 
