@@ -50,6 +50,14 @@ TARGET_PCT = 0.05
 STOP_PCT = 0.03
 INSERT_CHUNK = 200
 
+# Stale-price gate: if the most recent close from stock_raw_prices is older
+# than this many days, skip the paper trade for that ticker. Reason: silently
+# entering at a 5-day-old "latest close" on an illiquid ticker pollutes
+# calibration with a near-meaningless entry price. Default 3 days covers
+# the longest US market closure (3-day weekend + holiday) without false
+# positives during normal trading.
+STALE_PRICE_MAX_AGE_DAYS = 3
+
 # Per-event-type default direction when payload.direction_prior is absent.
 # Keep narrow — most rules should set direction_prior explicitly upstream.
 _DIRECTION_DEFAULT: dict[str, str] = {
@@ -332,16 +340,44 @@ def main() -> int:
         tickers = sorted({e["ticker"] for e in tradeable_events})
         closes = fetch_latest_closes(tickers)
 
+        # Stale-price gate: drop tickers whose latest close is older than
+        # STALE_PRICE_MAX_AGE_DAYS. Logged so we can audit how many
+        # would-be paper trades are skipped due to stale data — high
+        # stale-skip count is a sign the ingest path needs attention.
+        now_utc = datetime.now(timezone.utc)
+        stale_threshold = now_utc - timedelta(days=STALE_PRICE_MAX_AGE_DAYS)
+        stale_tickers: dict[str, str] = {}
+        for t, row in list(closes.items()):
+            ts_raw = row.get("ts") or ""
+            try:
+                ts = datetime.fromisoformat(ts_raw.replace("Z", "+00:00"))
+            except (TypeError, ValueError):
+                stale_tickers[t] = "unparseable_ts"
+                del closes[t]
+                continue
+            if ts < stale_threshold:
+                age_days = (now_utc - ts).days
+                stale_tickers[t] = f"close_{age_days}d_old"
+                del closes[t]
+
         rows: list[dict] = []
+        n_skipped_stale = 0
         for e in tradeable_events:
             t = e["ticker"]
             close_row = closes.get(t)
             if not close_row:
+                if t in stale_tickers:
+                    n_skipped_stale += 1
                 continue
             # 4 trades per event — one per horizon in HORIZONS
             rows.extend(build_paper_trades(e, kinds[t], close_row))
         n_built = len(rows)
         n_written = write_paper_trades(rows)
+
+        if stale_tickers:
+            print(f"  STALE-PRICE GATE: dropped {len(stale_tickers)} tickers, "
+                  f"skipping {n_skipped_stale} events. Sample: "
+                  f"{dict(list(stale_tickers.items())[:5])}")
 
         elapsed = time.time() - started
         print(f"DONE in {elapsed:.1f}s — {n_events} events seen, {n_built} paper trades built, "
