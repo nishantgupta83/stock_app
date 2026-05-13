@@ -44,6 +44,45 @@ HEADERS_SB = {
     "Prefer":        "resolution=ignore-duplicates,return=minimal",
 }
 
+# Alpha-decay TTL per event type. write_signal computes valid_until as
+# fired_at + max(SIGNAL_TTL_HOURS[event_type]) across the cluster, so a
+# signal stays valid as long as any of its evidence remains fresh. Values
+# reflect typical informational half-life: news decays in hours, filings
+# in days, binary catalysts (FDA/clinical/DoD) over a fortnight.
+SIGNAL_TTL_HOURS: dict[str, float] = {
+    # Fast-decay sentiment
+    "news_article":            4,
+    "truth_social_post":       6,
+    # Macro releases — pricing absorbs within a day or two
+    "vix_spike":              24,
+    "yield_milestone":        48,
+    "yield_snapshot":         48,
+    "fomc_decision":          48,
+    "cpi_release":            48,
+    "nfp_release":            48,
+    "crypto_macro_move":      48,
+    "momentum":               24,
+    # Operational events — multi-day reaction window
+    "8k_material_event":     120,    # 5d
+    "earnings_release":       72,    # 3d
+    "consumer_sentiment":    120,
+    "traffic_data":          120,
+    # Slower-burn position / catalyst events
+    "filing_13g":            168,    # 7d
+    "filing_4":              168,
+    "filing_13d":            336,    # 14d — activist take-up takes time
+    "institutional_buy":     336,
+    "institutional_sell":    336,
+    "activist_initial_position": 336,
+    "insider_cluster_buy":   336,
+    # Binary catalysts — held to event date
+    "fda_pdufa_decision":    336,
+    "clinical_readout":      336,
+    "nuclear_license_approval": 336,
+    "dod_contract_award":    336,
+}
+DEFAULT_SIGNAL_TTL_HOURS = 72  # 3 days for unknown event types
+
 # Look back this far for "fresh" events. GitHub cron can be delayed or skipped;
 # dedupe_key prevents duplicate signals, so a wider replay window is safer than
 # missing a valid cluster.
@@ -943,16 +982,77 @@ def write_signal_evidence(signal_id: int, events: list[dict]) -> None:
         )
 
 
+def decompose_breakdown(breakdown: list[dict], *, risk_off: bool = False,
+                         has_mature_rule: bool = False) -> dict:
+    """Group breakdown items into named explainability channels.
+
+    The flat `items` list is preserved for backward compatibility (existing
+    dashboard rendering reads it). Named channels make it easy for the
+    digest routine, future risk_agent, and human reviewers to see WHY a
+    score reached its final value rather than parsing a 10-item flat list.
+    """
+    base = 0.0
+    weight_mod = 0.0
+    sector_b = 0.0
+    hyper_b = 0.0
+    power_b = 0.0
+    for item in breakdown:
+        rule = item.get("rule") or ""
+        try:
+            pts = float(item.get("points") or 0)
+        except (TypeError, ValueError):
+            pts = 0.0
+        if rule == "sector_cluster_bonus":
+            sector_b += pts
+        elif rule == "hyperscaler_capex_echo":
+            hyper_b += pts
+        elif rule == "power_scarcity_boost":
+            power_b += pts
+        elif rule.startswith("weight_adj_"):
+            weight_mod += pts
+        else:
+            base += pts
+    intel_bonus = sector_b + hyper_b + power_b
+    return {
+        "items":                  breakdown,
+        "base_event_score":       round(base, 2),
+        "agent_weight_modifier":  round(weight_mod, 2),
+        "sector_bonus":           round(sector_b, 2),
+        "hyperscaler_bonus":      round(hyper_b, 2),
+        "power_bonus":            round(power_b, 2),
+        "intelligence_bonus_total": round(intel_bonus, 2),
+        "regime_active":          bool(risk_off),
+        "has_mature_rule":        bool(has_mature_rule),
+    }
+
+
+def compute_valid_until(events: list[dict], fired_at: datetime) -> str:
+    """Alpha-decay TTL: fired_at + max(SIGNAL_TTL_HOURS) across cluster events.
+
+    Anchored on fired_at (not event_at) so signals fired today off old events
+    still get the full decay window. Returns ISO-8601 UTC string.
+    """
+    from datetime import timedelta as _td
+    ttls = [SIGNAL_TTL_HOURS.get(e.get("event_type") or "", DEFAULT_SIGNAL_TTL_HOURS)
+            for e in events]
+    hours = max(ttls) if ttls else DEFAULT_SIGNAL_TTL_HOURS
+    return (fired_at + _td(hours=hours)).isoformat()
+
+
 def write_signal(ticker: str, score: float, action: str, direction: str,
                  breakdown: list[dict], events: list[dict], dedupe_key: str,
                  agent_weights: dict[str, float] | None = None,
-                 fallback_action: str | None = None) -> int | None:
+                 fallback_action: str | None = None,
+                 risk_off: bool = False,
+                 has_mature_rule: bool = False) -> int | None:
     weights = agent_weights or {}
     cluster_agents = list({source_agent_for(e) for e in events})
     event_types = sorted({e.get("event_type") for e in events if e.get("event_type")})
+    fired_at = datetime.now(timezone.utc)
     payload = {
         "ticker":           ticker,
-        "fired_at":         datetime.now(timezone.utc).isoformat(),
+        "fired_at":         fired_at.isoformat(),
+        "valid_until":      compute_valid_until(events, fired_at),
         "direction":        direction,
         "confidence":       round(min(max(score, 0), 100) / 100, 4),
         "horizon_days":     1 if horizon_for(events) == "1d" else 0,
@@ -969,7 +1069,8 @@ def write_signal(ticker: str, score: float, action: str, direction: str,
         "status":           "open",
         "action":           action,
         "score":            round(min(max(score, 0), 100), 2),
-        "score_breakdown":  {"items": breakdown},
+        "score_breakdown":  decompose_breakdown(breakdown, risk_off=risk_off,
+                                                has_mature_rule=has_mature_rule),
         "evidence_summary": evidence_summary(events),
         "dedupe_key":       dedupe_key,
         "status_v2":        "candidate",
@@ -1152,6 +1253,8 @@ def main() -> int:
                 "cluster_label": cluster_label,
                 "breakdown": breakdown,
                 "dedupe_key": f"thesis_{ticker}_{bucket}",
+                "has_mature_rule": mature,
+                "risk_off": risk_off,
             })
 
         # Filter: must pass cluster + have non-empty action
@@ -1208,6 +1311,8 @@ def main() -> int:
                 dedupe_key=cand["dedupe_key"],
                 agent_weights=agent_weights,
                 fallback_action=cand.get("original_action"),
+                risk_off=cand.get("risk_off", False),
+                has_mature_rule=cand.get("has_mature_rule", False),
             )
             if sig_id is None:
                 continue
