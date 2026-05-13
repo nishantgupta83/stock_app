@@ -806,8 +806,12 @@ def derive_dashboard_metrics(events: list[dict], freshness: list[dict]) -> dict:
         if expected is None:
             manual.append(agent_name)
             continue
-        # Schedule-aware threshold: 2x expected interval, min 30 min, max 24h
-        threshold_min = max(30, min(expected * 2, 1440))
+        # Schedule-aware threshold: 2x expected interval, floor 30 min.
+        # No upper cap — earlier formula capped at 24h, which falsely flagged
+        # weekly (expected=10080) and monthly (expected=43200) agents as stale
+        # whenever they hadn't run in a day. 2x their natural cadence is the
+        # right window: weekly tolerates 14d, monthly tolerates ~60d.
+        threshold_min = max(30, expected * 2)
         cutoff = now - timedelta(minutes=threshold_min)
         last = f.get("last_seen") or ""
         try:
