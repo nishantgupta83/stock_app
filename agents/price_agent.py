@@ -147,7 +147,11 @@ def _yf_ticker(sym: str) -> yf.Ticker:
 
 
 def fetch_bars(ticker: str, start: date, end: date) -> dict[date, dict[str, float]]:
-    """Return adjusted daily OHLC bars between start and end+7 days."""
+    """Return adjusted daily OHLC bars between start and end+7 days.
+
+    H/L are included so reconciliation can compute MFE/MAE and approximate
+    stop/target hit detection without fetching intraday data.
+    """
     try:
         t = _yf_ticker(ticker)
         df = t.history(
@@ -162,6 +166,8 @@ def fetch_bars(ticker: str, start: date, end: date) -> dict[date, dict[str, floa
             d = ts.date() if hasattr(ts, "date") else ts.to_pydatetime().date()
             result[d] = {
                 "open":  float(row["Open"]),
+                "high":  float(row["High"]),
+                "low":   float(row["Low"]),
                 "close": float(row["Close"]),
             }
         return result
@@ -512,8 +518,20 @@ def upsert_calibration(rule_key: str, current: dict | None,
 
 
 def compute_paper_outcome(trade: dict, bars: dict[date, dict[str, float]]) -> dict | None:
-    """Direction-aware close-to-close return (entry close → exit close),
-    same slippage convention as signal reconciliation."""
+    """Direction-aware close-to-close return + MFE/MAE + stop/target hit audit.
+
+    realized_return remains close-to-close (the canonical truth for
+    calibration). The new fields are informational:
+      mfe_pct   — best excursion in our favor between entry and exit
+      mae_pct   — worst excursion against us between entry and exit
+      target_hit — True if daily High (long) / Low (short) ever breached
+                   target_pct between entry+1 and exit
+      stop_hit   — True if daily Low (long) / High (short) ever breached
+                   stop_pct between entry+1 and exit
+
+    This is the "daily-HL audit" approximation. A full intraday audit would
+    require 1-min or 5-min bars which we don't ingest yet.
+    """
     entry_date = datetime.fromisoformat(trade["entry_at"].replace("Z", "+00:00")).date()
     horizon = int(trade.get("horizon_days") or 1)
     exit_target = entry_date + timedelta(days=horizon)
@@ -528,15 +546,61 @@ def compute_paper_outcome(trade: dict, bars: dict[date, dict[str, float]]) -> di
     if entry_price <= 0:
         return None
     raw_return = (exit_price - entry_price) / entry_price
-    # Direction-aware: short trades flip the sign of "correctness"
     direction = trade.get("direction") or "long"
     direction_mult = 1.0 if direction == "long" else -1.0
     realized = raw_return * direction_mult
+
+    # MFE/MAE + stop/target audit over the holding period.
+    target_pct = float(trade.get("target_pct") or 0)
+    stop_pct = float(trade.get("stop_pct") or 0)
+    if direction == "long":
+        target_px = entry_price * (1 + target_pct) if target_pct else None
+        stop_px = entry_price * (1 - stop_pct) if stop_pct else None
+    else:
+        target_px = entry_price * (1 - target_pct) if target_pct else None
+        stop_px = entry_price * (1 + stop_pct) if stop_pct else None
+
+    mfe_pct = 0.0
+    mae_pct = 0.0
+    target_hit = False
+    stop_hit = False
+    for d in sorted(bars):
+        if d <= entry_date or d > exit_date:
+            continue
+        bar = bars[d]
+        hi = bar.get("high")
+        lo = bar.get("low")
+        if hi is None or lo is None:
+            continue
+        # Excursions, direction-aware
+        if direction == "long":
+            up_excursion = (hi - entry_price) / entry_price
+            down_excursion = (lo - entry_price) / entry_price
+            mfe_pct = max(mfe_pct, up_excursion)
+            mae_pct = min(mae_pct, down_excursion)
+            if target_px is not None and hi >= target_px:
+                target_hit = True
+            if stop_px is not None and lo <= stop_px:
+                stop_hit = True
+        else:
+            up_excursion = (entry_price - lo) / entry_price
+            down_excursion = (entry_price - hi) / entry_price
+            mfe_pct = max(mfe_pct, up_excursion)
+            mae_pct = min(mae_pct, down_excursion)
+            if target_px is not None and lo <= target_px:
+                target_hit = True
+            if stop_px is not None and hi >= stop_px:
+                stop_hit = True
+
     return {
         "exit_at":         exit_date.isoformat() + "T00:00:00+00:00",
         "exit_price":      round(exit_price, 4),
         "realized_return": round(realized, 6),
         "correct":         realized > 0,
+        "mfe_pct":         round(mfe_pct, 6),
+        "mae_pct":         round(mae_pct, 6),
+        "target_hit":      target_hit,
+        "stop_hit":        stop_hit,
     }
 
 
@@ -573,13 +637,17 @@ def reconcile_event_paper_trades() -> tuple[int, int, int]:
         if outcome is None:
             continue
 
-        # 1. Close the trade row
+        # 1. Close the trade row (includes the daily-HL audit fields)
         sb_patch(f"stock_event_paper_trades?id=eq.{t['id']}", {
             "status":          "closed",
             "exit_at":         outcome["exit_at"],
             "exit_price":      outcome["exit_price"],
             "realized_return": outcome["realized_return"],
             "correct":         outcome["correct"],
+            "mfe_pct":         outcome.get("mfe_pct"),
+            "mae_pct":         outcome.get("mae_pct"),
+            "target_hit":      outcome.get("target_hit"),
+            "stop_hit":        outcome.get("stop_hit"),
         })
         n_closed += 1
 
@@ -603,7 +671,66 @@ def reconcile_event_paper_trades() -> tuple[int, int, int]:
             print(f"  🎓 rule '{rk}' matured: ≥{MATURITY_ACCURACY*100:.0f}% accuracy "
                   f"with n≥{MATURITY_MIN_N} — BUY/SELL unlocked")
 
+    # 3. Recompute per-rule payoff aggregates for every rule that saw an
+    # update this run. Cheap: pulls closed trades for the rule and reduces.
+    rules_touched = {(t.get("rule_key") or t["event_type"]) for t in trades}
+    for rk in rules_touched:
+        recompute_rule_payoff(rk)
+
     return n_closed, n_rules_updated, n_matured
+
+
+def recompute_rule_payoff(rule_key: str) -> None:
+    """Pull all closed trades for a rule and recompute payoff aggregates.
+
+    Adds to stock_rule_calibration: median_return_pct, avg_win_pct,
+    avg_loss_pct, profit_factor, target_hit_rate, stop_hit_rate,
+    mean_mfe_pct, mean_mae_pct. Skipped if the rule has < 5 closed trades
+    (not enough sample to be meaningful).
+    """
+    rows = sb_get("stock_event_paper_trades", {
+        "rule_key": f"eq.{rule_key}",
+        "status":   "eq.closed",
+        "select":   "realized_return,correct,mfe_pct,mae_pct,target_hit,stop_hit",
+        "limit":    "1000",
+    })
+    if not rows or len(rows) < 5:
+        return
+
+    returns = [float(r.get("realized_return") or 0) for r in rows]
+    wins = [v for v in returns if v > 0]
+    losses = [v for v in returns if v <= 0]
+    sum_wins = sum(wins)
+    sum_losses = sum(losses)
+
+    median_return = sorted(returns)[len(returns) // 2]
+    avg_win = (sum_wins / len(wins)) if wins else None
+    avg_loss = (sum_losses / len(losses)) if losses else None
+    profit_factor = (sum_wins / abs(sum_losses)) if sum_losses < 0 else None
+
+    target_hits = [r for r in rows if r.get("target_hit") is True]
+    stop_hits = [r for r in rows if r.get("stop_hit") is True]
+    target_hit_rate = len(target_hits) / len(rows)
+    stop_hit_rate = len(stop_hits) / len(rows)
+
+    mfe_values = [float(r.get("mfe_pct")) for r in rows if r.get("mfe_pct") is not None]
+    mae_values = [float(r.get("mae_pct")) for r in rows if r.get("mae_pct") is not None]
+    mean_mfe = (sum(mfe_values) / len(mfe_values)) if mfe_values else None
+    mean_mae = (sum(mae_values) / len(mae_values)) if mae_values else None
+
+    payload = {
+        "rule_key":                   rule_key,
+        "median_return_pct":          round(median_return, 6),
+        "avg_win_pct":                round(avg_win, 6) if avg_win is not None else None,
+        "avg_loss_pct":               round(avg_loss, 6) if avg_loss is not None else None,
+        "profit_factor":              round(profit_factor, 4) if profit_factor is not None else None,
+        "target_hit_rate":            round(target_hit_rate, 4),
+        "stop_hit_rate":              round(stop_hit_rate, 4),
+        "mean_mfe_pct":               round(mean_mfe, 6) if mean_mfe is not None else None,
+        "mean_mae_pct":               round(mean_mae, 6) if mean_mae is not None else None,
+        "last_payoff_recomputed_at":  datetime.now(timezone.utc).isoformat(),
+    }
+    sb_upsert("stock_rule_calibration", [payload], on_conflict="rule_key")
 
 
 # ============================================================
