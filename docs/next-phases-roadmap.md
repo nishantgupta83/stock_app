@@ -183,12 +183,42 @@ sequencing. Each stage shipped as one or more atomic commits with a quality gate
 - `intraday_alert_agent` running at ~9% of scheduled cadence due to GH
   Actions cron drift. Not blocking; the workflow_run chain mitigates for
   most downstream consumers.
-- `thesis_agent` emitted 0 signals after May 15. Cause not yet identified —
-  events still ingested, runs still complete OK, but clusters not forming
-  past the cluster_rule gate. Worth a separate diagnostic stage.
+- ~~`thesis_agent` emitted 0 signals after May 15.~~ **FIXED** in `a2e71e8`:
+  root cause was the cluster rule requiring ≥2 distinct source agents, but
+  new domain agents (biotech / FDA / DoD / nuclear / insider) emit
+  inherently single-source events. Extended single-source exceptions for
+  these binary-catalyst event types. Verified: `in=24, out=3` after fix vs
+  `in=24, out=0` before.
 - `8k_material_event::h7d` regressed from 71.3% acc (n=115) on May 12 to
-  65.1% (n=232) by May 18. Still profit_factor 9.15. Below training-tier
-  gate now but the payoff edge is intact.
+  65.1% (n=232) by May 18. Still profit_factor 9.15 — payoff edge intact.
+  Below training-tier gate now but worth watching as more obs accumulate.
+
+---
+
+## Phase 11.7 — Strategic-feedback improvements (2026-05-18, shipped same day)
+
+Direct response to the external "solo algorithmic trading" review (the
+"Cohen/Lou edge" + "out-of-sample validation" + "small-cap focus" guidance).
+Each shipped as an atomic commit with a verification:
+
+| Item | Status | Commit |
+|---|---|---|
+| Cluster-rule fix for domain binary catalysts (unsticks thesis_agent) | ✅ | `a2e71e8` |
+| `is_near_52w_low()` + severity escalation for insider cluster buys | ✅ | `0a9a718` |
+| Small-cap insider watchlist (8 starter names: HMST, SAVA, AGX, BJRI, AROC, KRYS, BOOT, IMVT) | ✅ | sql/0027 + `af9681f` |
+| OOS train/test split + drift verdict in backtester | ✅ | `af9681f` |
+
+### Next from the strategic-feedback list (NOT shipped — future cycles)
+- **Replace yfinance fallback on the decision path** with a primary
+  point-in-time data source (the feedback recommended EODHD). Today's
+  fallback is informational; would matter if we ever connect a broker.
+- **Multi-factor regime detection** — today's regime layer is just
+  `VIX > 25 = risk_off`. Strategic feedback calls for liquidity / rates /
+  vol / sector-momentum regimes.
+- **Live LLM-classified events with budget guardrail** — feedback's
+  "degradation ladder" pattern (80% alert / 90% downgrade Opus→Haiku /
+  100% hard stop). Not applicable today since the pipeline uses no LLM
+  agents.
 
 ---
 

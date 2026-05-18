@@ -1,19 +1,56 @@
 # Hub4Apps Market Intelligence
 
-Real-time stock event triage. Monitors SEC filings, market news, and Trump posts. Clusters
-multi-source evidence, fires Telegram alerts, reconciles each signal against actual price reality,
-and learns from outcomes via per-agent EMA weights.
+A six-layer event-driven trading intelligence pipeline that runs **without a human** on free-tier
+infrastructure. Ingests SEC filings, market news, Truth Social posts, FDA/clinical readouts,
+DoD contract awards, insider Form 4 filings, and macro releases; clusters multi-source evidence
+into scored signals; converts signals into trade setups; gates capital with hardcoded risk rules;
+reconciles paper trades against actual price reality; and learns from outcomes via per-agent EMA
+weights + per-rule payoff calibration.
 
-**Live dashboard:** https://hub4apps.com/stock_app/
-**Design doc:** [`docs/market-intelligence-platform-design.md`](docs/market-intelligence-platform-design.md)
-**Technical architecture:** [`docs/technical-architecture.md`](docs/technical-architecture.md)
-**Phase 0 setup:** [`docs/PHASE0_CHECKLIST.md`](docs/PHASE0_CHECKLIST.md)
-**Phase 9 plan (tiered storage, planned):** [`docs/phase9-tiered-storage.md`](docs/phase9-tiered-storage.md)
-**Multi-domain roadmap:** [`docs/multi-domain-roadmap.md`](docs/multi-domain-roadmap.md) — six new domain agents (macro, defense, biotech, energy, activist, consumer)
+**Live dashboard:** https://hub4apps.com/stock_app/  · `status.json` machine-readable feed at
+[`/status.json`](https://hub4apps.com/stock_app/status.json)
+**Live count:** 25 GitHub Actions agents, 6 architectural layers, 27 SQL migrations applied.
+**Read the architecture first:** [`CLAUDE.md`](CLAUDE.md) has the six-layer diagram and table boundaries.
+**Active roadmap & decisions log:** [`docs/next-phases-roadmap.md`](docs/next-phases-roadmap.md) — Phase 11.6
+documents every stage shipped 2026-05-12 through 2026-05-18 with commit hashes.
 
-> **Paper-trading vocabulary only.** The bot says **WATCH / RESEARCH / AVOID_CHASE / CHASE_RISK** — never
-> "BUY" or "SELL" — until 60 days of paper trading hits the §17.6 graduation thresholds.
-> Educational use; not financial advice.
+> **Paper-trading vocabulary only.** The bot says **WATCH / RESEARCH / AVOID_CHASE / CHASE_RISK** —
+> never "BUY" or "SELL" — until a rule's calibration crosses the **production maturity gate**
+> (`accuracy ≥ 0.90 AND n_observations ≥ 30`). A **training tier** at `accuracy ≥ 0.70` exists as
+> a parallel surface for visibility but does not unlock BUY/SELL emission. Educational use only;
+> not financial advice.
+
+## Why this exists
+
+A solopreneur cannot beat institutional HFT desks on speed or capital. What a solopreneur CAN
+beat them on is **discipline + niche discovery + capital preservation**. This system encodes
+those three constraints in code:
+
+- **Layer 4 (`risk_agent`) has hardcoded survival rules.** Van Tharp position sizing
+  (Capital × Risk% / Stop Distance), drawdown circuit breaker at −10% 30-day mean realized,
+  daily risk budget at 3% NAV in flight, concentration cap at 3 open positions per rule_key.
+  Constants are module-level Python — not configurable from env or DB — so a misconfigured
+  env can never relax them.
+- **Maturity gate prevents premature BUY/SELL.** The vocabulary stays in paper terms until
+  outcomes prove edge.
+- **Calibration tracks payoff, not just accuracy.** A 55% rule with 5:1 win/loss beats a 90%
+  rule with 1:5 win/loss. `stock_rule_calibration` records `profit_factor`, `mfe_pct`,
+  `mae_pct`, `target_hit_rate`, `stop_hit_rate`, `avg_win_pct`, `avg_loss_pct`.
+- **Backtester has out-of-sample validation built in.** Chronological 70/30 split with an
+  explicit `OVERFIT_RISK_HIGH` verdict if test-half performance drops by ≥10 pts.
+- **Insider edge follows Cohen/Lou (2012).** `activist_insider_agent` escalates severity
+  3 → 4 when a 3+ Form-4-buyer cluster fires within 15% of the ticker's 52-week low — the
+  single largest documented retail edge in the academic literature.
+
+## Detailed design docs
+
+- [`docs/market-intelligence-platform-design.md`](docs/market-intelligence-platform-design.md) — original platform design
+- [`docs/technical-architecture.md`](docs/technical-architecture.md) — runtime topology, sequence diagrams
+- [`docs/PHASE0_CHECKLIST.md`](docs/PHASE0_CHECKLIST.md) — initial setup
+- [`docs/phase9-tiered-storage.md`](docs/phase9-tiered-storage.md) — tiered-storage plan
+- [`docs/multi-domain-roadmap.md`](docs/multi-domain-roadmap.md) — six domain-agent expansion
+- [`docs/next-phases-roadmap.md`](docs/next-phases-roadmap.md) — phase ledger + open backlog
+- [`docs/RUNBOOK.md`](docs/RUNBOOK.md) — autonomous operation, failure modes, recovery
 
 ## Stack
 
