@@ -1,0 +1,56 @@
+name: risk_agent
+
+# Layer 4: Capital allocation / survival layer. Reads stock_trade_setups,
+# applies hardcoded risk rules (Van Tharp position sizing + drawdown circuit
+# breaker + daily risk budget + concentration caps), and writes one decision
+# per setup to stock_risk_decisions.
+#
+# Cadence: every 30 min cron + workflow_run after trade_setup_agent.
+#
+# Safety: only repo secrets via env: and job.status (sanitized) are interpolated.
+# No untrusted user inputs reach any run: command.
+
+on:
+  schedule:
+    - cron: "*/30 * * * *"
+  workflow_dispatch:
+  workflow_run:
+    workflows:
+      - trade_setup_agent
+    types: [completed]
+    branches: [main]
+
+concurrency:
+  group: risk_agent
+  cancel-in-progress: false
+
+jobs:
+  size-or-skip:
+    runs-on: ubuntu-latest
+    timeout-minutes: 4
+    steps:
+      - uses: actions/checkout@v4
+      - name: Record workflow start
+        env:
+          SUPABASE_URL:         ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
+        run: python agents/ops_recorder.py --phase start --agent workflow_risk_agent
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+      - name: Install deps
+        run: pip install -r requirements.txt
+      - name: Run risk_agent
+        env:
+          SUPABASE_URL:         ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
+          PYTHONPATH:           agents
+        run: python agents/risk_agent.py
+      - name: Record workflow finish
+        if: always()
+        env:
+          SUPABASE_URL:         ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
+          WORKFLOW_STATUS:      ${{ job.status }}
+        run: python agents/ops_recorder.py --phase finish --agent workflow_risk_agent --status "$WORKFLOW_STATUS"
