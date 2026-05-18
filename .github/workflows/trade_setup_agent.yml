@@ -1,0 +1,57 @@
+name: trade_setup_agent
+
+# Layer 3: Trade construction. Reads recent stock_signals, derives a tradable
+# proposal for each (entry style, stop/target, validity window, confidence,
+# reason_to_skip) and writes to stock_trade_setups. Does NOT size capital —
+# that is risk_agent's job (Layer 4).
+#
+# Cadence: every 30 min cron + workflow_run on thesis_agent completion so a
+# new signal becomes a setup within minutes of being scored.
+#
+# Safety: only repo secrets via env: and job.status (sanitized) are interpolated.
+# No untrusted user inputs reach any run: command.
+
+on:
+  schedule:
+    - cron: "*/30 * * * *"
+  workflow_dispatch:
+  workflow_run:
+    workflows:
+      - thesis_agent
+    types: [completed]
+    branches: [main]
+
+concurrency:
+  group: trade_setup_agent
+  cancel-in-progress: false
+
+jobs:
+  build-setups:
+    runs-on: ubuntu-latest
+    timeout-minutes: 4
+    steps:
+      - uses: actions/checkout@v4
+      - name: Record workflow start
+        env:
+          SUPABASE_URL:         ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
+        run: python agents/ops_recorder.py --phase start --agent workflow_trade_setup_agent
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+      - name: Install deps
+        run: pip install -r requirements.txt
+      - name: Run trade_setup_agent
+        env:
+          SUPABASE_URL:         ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
+          PYTHONPATH:           agents
+        run: python agents/trade_setup_agent.py
+      - name: Record workflow finish
+        if: always()
+        env:
+          SUPABASE_URL:         ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
+          WORKFLOW_STATUS:      ${{ job.status }}
+        run: python agents/ops_recorder.py --phase finish --agent workflow_trade_setup_agent --status "$WORKFLOW_STATUS"
