@@ -148,6 +148,50 @@ This is the transition from **intelligence pipeline** (signals + paper trades) t
 
 ---
 
+---
+
+## Phase 11.6 — Trading-pipeline backlog (2026-05-18: STAGES 1-6 SHIPPED)
+
+Backlog from the 2026-05-13 validation review + the 4th external review's
+sequencing. Each stage shipped as one or more atomic commits with a quality gate.
+
+| Stage | Items | Status | Commit(s) |
+|---|---|---|---|
+| 1A  | Dedupe `workflow_*` rows in dashboard health | ✅ | `2ec0905` |
+| 1A.1 | Fix 24h staleness cap that misflagged weekly agents | ✅ | `0e90534` |
+| 1B  | `parent_run_id` / `run_type` / `stage` on `stock_job_runs` | ✅ | `ee3a08d` + sql/0022 |
+| 2   | Structured `score_breakdown` + `valid_until` per signal | ✅ | `2931985` + sql/0023 |
+| 3   | Stale-price gate in `event_paper_agent` | ✅ | `d4627b3` (+ hotfix `6e1c88f`) |
+| 4   | MFE/MAE + payoff metrics + daily-HL stop/target audit | ✅ | `864a949` + sql/0024 |
+| 5   | **Layer 3 — `trade_setup_agent`** + `stock_trade_setups` | ✅ | `a71c372` + sql/0025 |
+| 6   | **Layer 4 — `risk_agent`** + `stock_risk_decisions` | ✅ | `7c218f5` + sql/0026 |
+| 7   | Documentation update (this doc + README + CLAUDE.md) | ✅ | this commit |
+
+### Still deferred (NOT shipped — explicitly out of scope)
+- Stage 9 / Item #10: Alpaca broker adapter. Gated on a production-mature
+  rule existing — none today. The current `risk_agent` produces paper-only
+  decisions; adding a broker would require a separate execution adapter
+  that translates `size_pct_portfolio` into qty.
+- True intraday-bar audit (1-min / 5-min bars). The Stage 4 daily-HL
+  approximation covers the gap; a real intraday path requires new
+  ingestion + storage.
+- Multi-factor regime detection beyond the single VIX > 25 check.
+- Portfolio correlation filter beyond the simple `MAX_SAME_RULE_OPEN`
+  concentration cap.
+
+### Outstanding gaps surfaced during Stage 6 audit (2026-05-18)
+- `intraday_alert_agent` running at ~9% of scheduled cadence due to GH
+  Actions cron drift. Not blocking; the workflow_run chain mitigates for
+  most downstream consumers.
+- `thesis_agent` emitted 0 signals after May 15. Cause not yet identified —
+  events still ingested, runs still complete OK, but clusters not forming
+  past the cluster_rule gate. Worth a separate diagnostic stage.
+- `8k_material_event::h7d` regressed from 71.3% acc (n=115) on May 12 to
+  65.1% (n=232) by May 18. Still profit_factor 9.15. Below training-tier
+  gate now but the payoff edge is intact.
+
+---
+
 ## Phase 13+ — Future considerations (not committed)
 
 - **Real-time WebSocket dashboard** — replaces 15-min Hostinger refresh with live updates. Requires moving off static hosting.

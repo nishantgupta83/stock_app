@@ -71,31 +71,58 @@ PostgREST `execute_sql` via MCP, or direct INSERTs for DML.
 
 ## Architecture quick map
 
+Six-layer pipeline with strict boundaries — each layer reads from layers
+below and writes only to its own output table. Bugs in one layer cannot
+corrupt the layers above.
+
 ```
-Inputs:      EDGAR (filing) · RSS (news) · Truth Social · yfinance (price/earnings) · 13F-HR
-   ↓
-Ingest:      filing_agent · news_agent · truth_social_agent · earnings_agent · crypto_macro_agent · flows_agent
-   ↓
-Event bus:   stock_normalized_events  ← every agent writes here
-   ↓
-Score:       thesis_agent (5-min cluster, 100-pt rubric, intelligence layer bonuses)
-   ↓
-Paper trade: event_paper_agent (4 horizons/event: 1d/7d/15d/30d)
-   ↓
-Reconcile:   price_agent (EOD close, EMA weight update, rule calibration)
-   ↓
-Notify:      Telegram (thesis_agent dispatch + intraday_alert_agent spikes)
-   ↓
-Surface:     site_generator → Hostinger FTPS → hub4apps.com/stock_app/
+Layer 1 — INGEST
+  in:  external (EDGAR, RSS, Truth Social, FRED, FDA, ctgov, yfinance, 13F-HR)
+  out: stock_normalized_events
+  agents: filing_agent, news_agent, truth_social_agent, earnings_agent,
+          crypto_macro_agent, flows_agent, biotech_agent, defense_agent,
+          energy_transition_agent, activist_insider_agent, consumer_health_agent,
+          macro_rates_agent, intraday_alert_agent, market_scanner_agent
+
+Layer 2 — INTELLIGENCE
+  in:  stock_normalized_events + stock_rule_calibration
+  out: stock_signals (vocabulary-gated by maturity tier; valid_until per signal)
+  agent: thesis_agent (cluster + 100-pt rubric + intelligence bonuses)
+
+Layer 3 — TRADE CONSTRUCTION                                     (added 2026-05-18)
+  in:  stock_signals
+  out: stock_trade_setups (entry style, stop/target, valid_until, confidence, reason_to_skip)
+  agent: trade_setup_agent
+
+Layer 4 — RISK / CAPITAL ALLOCATION                              (added 2026-05-18)
+  in:  stock_trade_setups + stock_event_paper_trades + stock_rule_calibration
+  out: stock_risk_decisions (sized or skip, with rules_applied audit trail)
+  agent: risk_agent (HARDCODED rules: Van Tharp sizing, drawdown circuit
+         breaker, daily risk budget, rule-concentration cap, stop sanity)
+
+Layer 5 — LEARNING
+  in:  stock_signals + stock_event_paper_trades + price data
+  out: stock_rule_calibration, stock_agent_weights
+  agents: event_paper_agent (opens 4 horizons/event), price_agent (EOD
+          reconcile + MFE/MAE + payoff metrics), paper_trade_agent,
+          backtester
+
+Layer 6 — PRESENTATION (read-only)
+  in:  everything
+  out: hub4apps.com/stock_app/{dashboard, status.json}, Telegram alerts
+  agents: site_generator, telegram_dispatcher
 ```
 
 **Key tables:**
-- `stock_normalized_events` — universal event bus (all agents write)
-- `stock_event_paper_trades` — open trades (4 horizons each)
-- `stock_rule_calibration` — per-rule accuracy (maturity gate)
-- `stock_signals` — fired signals (Telegram alerts)
+- `stock_normalized_events` — universal event bus (Layer 1 output)
+- `stock_signals` — scored intelligence (Layer 2 output; has valid_until + structured score_breakdown)
+- `stock_trade_setups` — tradable proposals (Layer 3 output)
+- `stock_risk_decisions` — sized or skipped (Layer 4 output; has rules_applied audit)
+- `stock_event_paper_trades` — open/closed paper trades with MFE/MAE/target_hit/stop_hit
+- `stock_rule_calibration` — per-rule accuracy + payoff (profit_factor, avg_win/loss, hit rates)
 - `stock_agent_weights` — per-agent EMA learned weights
-- `stock_watchlists` — categorized ticker baskets (`core`, `context`, `ai_compute`, `ai_optical`, …)
+- `stock_job_runs` — operational log; has run_type ('agent' vs 'wrapper') + parent_run_id lineage
+- `stock_watchlists` — categorized ticker baskets
 
 **Watchlists** (Phase 10 AI cluster, May 2026):
 `core`, `context`, `ai_compute`, `ai_optical`, `ai_servers`, `ai_power`, `ai_software`, `ai_neocloud`,

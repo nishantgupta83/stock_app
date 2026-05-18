@@ -36,12 +36,16 @@ The current technical diagram and operational runbook live in
 - core table responsibilities and forecast modes
 - current verification snapshot from the Phase 6B rollout
 
-## Pipeline (23 GitHub Actions jobs)
+## Pipeline (25 GitHub Actions jobs across 6 layers)
 
-`ls .github/workflows/*.yml | wc -l` for the live count. The roadmap calls for
-six domain agents (macro_rates, activist_insider, defense, biotech,
-energy_transition, consumer_health) on top of the original 14 — those are now
-all live, plus intraday_alert and archive helpers.
+`ls .github/workflows/*.yml | wc -l` for the live count. Layers are isolated:
+ingest → intelligence → trade construction → risk → learning → presentation.
+Each layer reads from layers below and writes only to its own output table.
+
+**Layer 3+4 added 2026-05-18:** `trade_setup_agent` (signal → tradable setup)
+and `risk_agent` (Van Tharp position sizing + drawdown circuit breaker +
+hardcoded daily risk budget). All decisions are paper-only; a broker
+adapter is explicitly NOT in this cycle.
 
 | Agent | Schedule | What it does |
 |---|---|---|
@@ -57,8 +61,10 @@ all live, plus intraday_alert and archive helpers.
 | `crypto_macro_agent`  | weekday 21:35 UTC | BTC/ETH daily probe → emits `crypto_macro_move` events for COIN/MSTR when \|move\|≥2% (lowered from 5% so signals actually fire). |
 | `flows_agent`         | weekly Sun 14:00 UTC | Parses 13F-HR information_table.xml from Berkshire / BlackRock / Vanguard / Bridgewater / Scion / Pershing Square. Diffs vs prior quarter snapshot → `institutional_new_position` / `exit` / `increase` / `decrease` events keyed to the affected ticker. |
 | `paper_trade_agent`   | `*/15 * * * *`    | Codex's earlier path: signal-driven calibrated forecasts in `stock_paper_forecasts` (separate table from `stock_event_paper_trades`). Both run in parallel. |
+| `trade_setup_agent`   | `*/30 * * * *` + workflow_run on `thesis_agent` | **Layer 3 — trade construction.** Reads recent `stock_signals`, derives a tradable proposal per signal (entry style: next_open / limit_pullback / breakout / vwap_band; stop_pct, target_pct, valid_until, confidence). Writes `stock_trade_setups`. Populates `reason_to_skip` when expired signal, AVOID_CHASE/CHASE_RISK action, neutral direction, or rule lacks edge — those rows still get written for audit but the risk_agent skips them. |
+| `risk_agent`          | `*/30 * * * *` + workflow_run on `trade_setup_agent` | **Layer 4 — capital allocation / survival.** Reads `stock_trade_setups`, applies HARDCODED rules (Van Tharp position sizing, drawdown circuit breaker at -10% 30d mean, daily risk budget at 3% NAV, concentration cap at 3 open per rule_key, stop sanity at [0.5%, 20%]). Writes `stock_risk_decisions` with `decision in ('size','skip')`, `size_pct_portfolio`, `max_loss_dollars`, and a `rules_applied` JSONB audit trail of every gate that ran. Paper-only / advisory; broker adapter not connected. |
 | `backtester`          | manual only       | 180-day replay → precision/calibration metrics |
-| `site_generator`      | `*/15 * * * *`    | Supabase → Jinja2 HTML → FTPS auto-deploy to Hostinger |
+| `site_generator`      | `*/15 * * * *` + workflow_run on 7 upstream agents | Supabase → Jinja2 HTML → FTPS auto-deploy to Hostinger. workflow_run chain reduces cron drift impact (cron is best-effort on GHA). Emits machine-readable `status.json` v1.1 with tiered maturity. |
 | `source_review_agent` | `0 13 1 * *`      | Monthly health check on every external feed → Telegram digest |
 
 ### One-time helper
@@ -165,6 +171,12 @@ flags any rule that's crossed the BUY/SELL maturity gate.
 - `sql/0018_intc_ebay_and_horizon_index.sql` — adds INTC + EBAY to core watchlist; widens unique index on `stock_event_paper_trades` to include `horizon_days` so the new multi-horizon paper trades coexist
 - `sql/0019_retention_columns.sql` — tiered storage retention markers (Phase 9 prep)
 - `sql/0020_sector_etf_symbols.sql` — adds XLY, XLB, XLC, XLP, XLV, XLU, XLRE to `stock_symbols` so `truth_social_agent` tariff/macro posts on sector ETFs generate paper trades (previously dropped by the watchlist JOIN). Direct DB inserts already applied; this file is the canonical migration.
+- `sql/0021_normalized_events_perf_indexes.sql` — performance indexes on `stock_normalized_events` for hot freshness/window queries.
+- `sql/0022_run_lineage.sql` — adds `parent_run_id`, `run_type` (`'agent'`/`'wrapper'`), `stage` to `stock_job_runs` so the dashboard health metric distinguishes agent code rows from yaml wrapper rows. Backfills historical `workflow_*` rows.
+- `sql/0023_signal_validity.sql` — adds `valid_until` to `stock_signals` for alpha-decay TTL. `thesis_agent` populates per event type (news 4h, filings 7-14d, FDA/clinical 14d).
+- `sql/0024_calibration_payoff.sql` — extends `stock_rule_calibration` with `median_return_pct`, `avg_win_pct`, `avg_loss_pct`, `profit_factor`, `target_hit_rate`, `stop_hit_rate`, `mean_mfe_pct`, `mean_mae_pct`. Adds `mfe_pct`, `mae_pct`, `target_hit`, `stop_hit` per-trade fields. `price_agent.recompute_rule_payoff` populates aggregates each reconciliation pass.
+- `sql/0025_trade_setups.sql` — **NEW LAYER 3 table** `stock_trade_setups` (Stage 5, 2026-05-18). One setup per signal, idempotent via `unique(signal_id)`. Written by `trade_setup_agent`.
+- `sql/0026_risk_decisions.sql` — **NEW LAYER 4 table** `stock_risk_decisions` (Stage 6, 2026-05-18). One decision per setup, idempotent via `unique(setup_id)`. Written by `risk_agent` with hardcoded survival rules and a `rules_applied` JSONB audit trail.
 
 ## GitHub Actions secrets
 
