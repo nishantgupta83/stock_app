@@ -351,6 +351,12 @@ def main() -> int:
             ts_raw = row.get("ts") or ""
             try:
                 ts = datetime.fromisoformat(ts_raw.replace("Z", "+00:00"))
+                # Supabase returns timestamptz as "2026-05-11T00:00:00+00:00"
+                # but legacy/migrated rows may be naive. Force tz-aware to
+                # avoid "can't compare offset-naive and offset-aware datetimes"
+                # (regression introduced in commit d4627b3, observed 2026-05-13+).
+                if ts.tzinfo is None:
+                    ts = ts.replace(tzinfo=timezone.utc)
             except (TypeError, ValueError):
                 stale_tickers[t] = "unparseable_ts"
                 del closes[t]
