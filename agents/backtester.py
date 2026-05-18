@@ -834,6 +834,65 @@ def compute_metrics(signals: list[dict]) -> dict:
     }
 
 
+def compute_oos_split_metrics(signals: list[dict], train_frac: float = 0.70) -> dict:
+    """Out-of-sample split: chronologically sort signals, run compute_metrics
+    on the first train_frac (in-sample) AND on the remainder (out-of-sample).
+
+    The strategic-feedback discipline (Cohen/Lou; quant trading literature):
+    a strategy that prints money on training data but collapses on the held-out
+    set is overfit. The drift block surfaces this explicitly so an operator
+    cannot accept a backtest that "looks great" without inspecting OOS.
+
+    Returns:
+      {"split_date": iso, "train": <metrics>, "test": <metrics>, "drift": {...}}
+    """
+    if not signals or len(signals) < 20:
+        return {"warning": "sample too small for OOS split (<20 signals)"}
+
+    chrono = sorted(signals, key=lambda s: s["fired_at"])
+    cut = int(len(chrono) * train_frac)
+    train, test = chrono[:cut], chrono[cut:]
+    if not test:
+        return {"warning": "no out-of-sample signals after split"}
+    split_date = test[0]["fired_at"][:10]
+
+    train_m = compute_metrics(train)
+    test_m  = compute_metrics(test)
+
+    def diff(field: str) -> float:
+        return round((test_m.get(field, 0) or 0) - (train_m.get(field, 0) or 0), 4)
+
+    drift_acc = diff("dir_accuracy")
+    drift_p5 = diff("precision_at_5")
+    drift_sharpe = diff("sharpe")
+    # Verdict heuristics — flag overfitting OR pleasant surprise
+    if drift_acc < -0.10 or drift_p5 < -0.10:
+        verdict = "OVERFIT_RISK_HIGH"
+    elif drift_acc < -0.05 or drift_p5 < -0.05:
+        verdict = "overfit_risk_moderate"
+    elif drift_acc > 0.05:
+        verdict = "oos_better_than_train (suspicious — verify sample sizes)"
+    else:
+        verdict = "stable (within ±5%)"
+
+    return {
+        "train_frac":     train_frac,
+        "split_date":     split_date,
+        "train_n":        len(train),
+        "test_n":         len(test),
+        "train_metrics":  {k: train_m.get(k) for k in (
+            "dir_accuracy", "precision_at_5", "brier", "sharpe", "max_dd")},
+        "test_metrics":   {k: test_m.get(k) for k in (
+            "dir_accuracy", "precision_at_5", "brier", "sharpe", "max_dd")},
+        "drift": {
+            "dir_accuracy":   drift_acc,
+            "precision_at_5": drift_p5,
+            "sharpe":         drift_sharpe,
+        },
+        "verdict": verdict,
+    }
+
+
 # ============================================================
 # Main
 # ============================================================
@@ -919,9 +978,21 @@ def main() -> int:
     persist_agent_weights(agent_state_history)
 
     metrics = compute_metrics(all_signals)
+    # OOS validation: chronological 70/30 split. Strategic-feedback principle:
+    # never accept a backtest "headline number" without inspecting the held-out
+    # half. Drift block flags overfit risk explicitly.
+    oos = compute_oos_split_metrics(all_signals, train_frac=0.70)
+    metrics["oos_split"] = oos
+
     elapsed = time.time() - started
     print(f"Backtest done in {elapsed:.1f}s")
-    print(f"Metrics: {metrics}")
+    print(f"Metrics: dir_acc={metrics.get('dir_accuracy')} p@5={metrics.get('precision_at_5')} "
+          f"sharpe={metrics.get('sharpe')} max_dd={metrics.get('max_dd')}")
+    if "verdict" in oos:
+        print(f"OOS split ({oos.get('split_date')}): train n={oos.get('train_n')} "
+              f"acc={oos.get('train_metrics',{}).get('dir_accuracy')} | "
+              f"test n={oos.get('test_n')} acc={oos.get('test_metrics',{}).get('dir_accuracy')} "
+              f"→ {oos['verdict']}")
 
     if run_id:
         sb_patch(f"stock_backtest_runs?id=eq.{run_id}", {
