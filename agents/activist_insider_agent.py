@@ -52,7 +52,46 @@ TRACKED_ACTIVISTS = {
 INSIDER_CLUSTER_MIN_FILERS = 3      # need 3+ distinct insiders
 INSIDER_CLUSTER_WINDOW_DAYS = 7
 
+# Cohen/Lou (2012) and Jeng/Metrick/Zeckhauser (2003): insider cluster
+# buys near multi-year lows generate the largest abnormal returns. When
+# we detect a cluster buy AND the price is within 52W_LOW_TOLERANCE_PCT
+# of its 52-week low, escalate severity 3 → 4. The thesis_agent's score
+# rubric gives sev=4 events more points; downstream paper trades inherit
+# this priority weighting.
+NEAR_52W_LOW_PCT = 0.15             # within 15% of the 52w low → "near low"
 LOOKBACK_HOURS = 24
+
+
+def is_near_52w_low(ticker: str, tolerance_pct: float = NEAR_52W_LOW_PCT) -> tuple[bool, dict]:
+    """True if ticker's current close is within tolerance_pct of its 52-week
+    low. Returns (flag, detail_dict) where detail carries the actual numbers
+    for the event payload — operators can verify the call from the row alone.
+
+    Uses yfinance directly; the lookup is small (1 ticker × 252 trading days)
+    and only fires when a cluster has already been detected, so the rate is
+    bounded by how often cluster buys happen (rare).
+    """
+    detail: dict = {"checked": False, "tolerance_pct": tolerance_pct}
+    try:
+        import yfinance as yf      # noqa: PLC0415 — lazy import for cold path
+        hist = yf.Ticker(ticker).history(period="1y", auto_adjust=True)
+        if hist.empty or "Close" not in hist or "Low" not in hist:
+            return False, detail
+        current = float(hist["Close"].iloc[-1])
+        low_52w = float(hist["Low"].min())
+        if low_52w <= 0 or current <= 0:
+            return False, detail
+        proximity_pct = (current - low_52w) / low_52w
+        detail.update({
+            "checked":       True,
+            "current_close": round(current, 4),
+            "low_52w":       round(low_52w, 4),
+            "proximity_pct": round(proximity_pct, 4),
+        })
+        return proximity_pct <= tolerance_pct, detail
+    except Exception as exc:
+        detail["error"] = str(exc)[:100]
+        return False, detail
 
 
 # ============================================================
@@ -289,20 +328,27 @@ def main() -> int:
             ticker = c["ticker"]
             today = datetime.now(timezone.utc).date().isoformat()
             dedupe = f"insider_cluster_{ticker}_{today}"
+            # Cohen/Lou (2012) edge check: cluster + near 52-week low.
+            near_low, low_detail = is_near_52w_low(ticker)
+            severity = 4 if near_low else 3
             payload = {
                 "filer_count":    c["filer_count"],
                 "filers":         c["filers"],
                 "window_days":    INSIDER_CLUSTER_WINDOW_DAYS,
                 "direction_prior":"long",
+                "near_52w_low":   near_low,
+                "low_check":      low_detail,
                 "dedupe_key":     dedupe,
             }
-            if emit_event("insider_cluster_buy", 3, payload, ticker):
+            if emit_event("insider_cluster_buy", severity, payload, ticker):
                 n_events += 1
+            low_tag = " · near 52w low 📉" if near_low else ""
             if send_alert(
-                f"📊 <b>Insider cluster — {ticker}</b>\n"
+                f"📊 <b>Insider cluster — {ticker}</b>{low_tag}\n"
                 f"<b>{c['filer_count']}</b> insiders filed Form 4 within {INSIDER_CLUSTER_WINDOW_DAYS} days.\n"
                 f"<i>Clean fundamental signal — track for follow-through.</i>",
-                dedupe_key=dedupe + "_alert", ticker=ticker, score=70,
+                dedupe_key=dedupe + "_alert", ticker=ticker,
+                score=80 if near_low else 70,
             ):
                 n_alerts += 1
 
