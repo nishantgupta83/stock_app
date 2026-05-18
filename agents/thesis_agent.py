@@ -789,7 +789,17 @@ def is_risk_off() -> bool:
 
 
 def cluster_passes(events: list[dict]) -> tuple[bool, str]:
-    """§15.3 cluster rule: ≥2 distinct source agents OR a single-source exception."""
+    """§15.3 cluster rule: ≥2 distinct source agents OR a single-source exception.
+
+    Single-source exceptions cover events whose informational quality is
+    high enough that two-source confirmation is unnecessary. The base set
+    (SC 13D, sev≥3 8-K, sev≥4 earnings) covered SEC/exchange events. The
+    domain-agent additions (biotech / defense / energy / activist) cover
+    scheduled binary catalysts and academically-validated insider edges
+    where a single primary source IS the truth. Audit 2026-05-18: every
+    clinical_readout event arrives at sev=3, so without this rule the
+    biotech catalyst path is silently dropped.
+    """
     agents = {source_agent_for(e) for e in events}
     if len(agents) >= 2:
         return True, f"cluster:{','.join(sorted(agents))}"
@@ -797,12 +807,30 @@ def cluster_passes(events: list[dict]) -> tuple[bool, str]:
     for e in events:
         et = e["event_type"]
         sev = e.get("severity") or 0
+        # SEC / exchange events
         if et == "filing_13d" or e.get("event_subtype") == "13D":
             return True, "exception:sc_13d"
         if et == "8k_material_event" and sev >= 3:
             return True, "exception:8k_sev3"
         if et == "earnings_release" and sev >= 4:
             return True, "exception:earnings_sev4"
+        # Biotech binary catalysts
+        if et == "fda_pdufa_decision":
+            return True, "exception:fda_pdufa"
+        if et == "clinical_readout" and sev >= 3:
+            return True, "exception:clinical_sev3"
+        # Defense / energy regulatory catalysts
+        if et == "dod_contract_award" and sev >= 3:
+            return True, "exception:dod_sev3"
+        if et == "nuclear_license_approval" and sev >= 3:
+            return True, "exception:nuclear_sev3"
+        # Insider buying — academically-validated edge (Cohen/Lou 2012,
+        # Jeng/Metrick/Zeckhauser 2003): cluster buys with own cash, esp.
+        # in small caps with high information asymmetry, generate
+        # statistically significant abnormal returns. Insider SELLS are
+        # excluded by event_type (activist_insider_agent emits buys only).
+        if et == "insider_cluster_buy":
+            return True, "exception:insider_cluster_buy"
     return False, "single_source_no_exception"
 
 
