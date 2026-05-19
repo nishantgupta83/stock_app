@@ -35,6 +35,7 @@ external infrastructure, and what to do when something breaks.
 | `30 21 * * 1-5` | `price_agent`, `market_scanner_agent` | **EOD: close paper trades + update calibration** |
 | `30 22 * * 1-5` | `defense_agent` | After-close DoD contract scan |
 | `35 21 * * 1-5` | `crypto_macro_agent` | After-close BTC/ETH probe |
+| `0 4 * * *` | `audit_agent` | **Daily integrity check** — five cross-table invariants, Telegrams on failure |
 
 **The critical learning step is `price_agent` at 21:30 UTC weekdays.** This is where matured
 paper trades get closed, `stock_rule_calibration` updates, agent EMA weights step, and
@@ -194,12 +195,19 @@ supabase db push --linked
 ## 7. Where to look first when something is wrong
 
 1. **`status.json`** — `https://hub4apps.com/stock_app/status.json` gives a self-describing
-   snapshot. Includes platform vocabulary, maturity gates, agent inventory + freshness, recent
-   failures, and calibration summary.
-2. **Dashboard** — `https://hub4apps.com/stock_app/agents.html` for the per-agent health view.
-3. **`stock_job_runs`** — operational log; `status='failed'` is the canary.
-4. **`stock_dead_letter_events`** — agents that hit unrecoverable errors record here.
-5. **GitHub Actions runs** — `gh run list --repo nishantgupta83/stock_app --limit 30`.
+   snapshot. Includes `git_sha`, `pipeline_version`, `agents.inventory_count`, per-layer
+   counts (ingest / intelligence / trade_construction / risk / learning / presentation),
+   platform vocabulary, maturity gates, agent freshness, recent failures, calibration summary.
+   The `git_sha` field is the single source of truth for what's deployed — compare it against
+   `git rev-parse HEAD` to confirm the FTPS upload completed.
+2. **Dashboard** — `https://hub4apps.com/stock_app/agents.html` for per-agent health view.
+   `trade_setups.html` and `risk_decisions.html` surface Layer 3 + 4 state.
+3. **`audit_agent` Telegram** — daily at 04:00 UTC; alerts on five integrity invariants
+   (dispatch_log match, sized-decision validity, calibration count consistency, no stale
+   opens, event ingest cardinality). Silence = pass.
+4. **`stock_job_runs`** — operational log; `status='failed'` is the canary.
+5. **`stock_dead_letter_events`** — agents that hit unrecoverable errors record here.
+6. **GitHub Actions runs** — `gh run list --repo nishantgupta83/stock_app --limit 30`.
 
 If `status.json` itself is 404, the FTPS deploy or site_generator is the problem — start there.
 

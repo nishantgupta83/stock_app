@@ -58,7 +58,8 @@ beat them on is **discipline + niche discovery + capital preservation**. This sy
 those three constraints in code:
 
 - **Layer 4 (`risk_agent`) has hardcoded survival rules.** Van Tharp position sizing
-  (Capital × Risk% / Stop Distance), drawdown circuit breaker at −10% 30-day mean realized,
+  (Capital × Risk% / Stop Distance), drawdown circuit breaker at −10% **30-day equity-curve
+  max drawdown** (peak-to-trough on cumulative realized return — fix A1, May 2026),
   daily risk budget at 3% NAV in flight, concentration cap at 3 open positions per rule_key.
   Constants are module-level Python — not configurable from env or DB — so a misconfigured
   env can never relax them.
@@ -129,10 +130,11 @@ adapter is explicitly NOT in this cycle.
 | `crypto_macro_agent`  | weekday 21:35 UTC | BTC/ETH daily probe → emits `crypto_macro_move` events for COIN/MSTR when \|move\|≥2% (lowered from 5% so signals actually fire). |
 | `flows_agent`         | weekly Sun 14:00 UTC | Parses 13F-HR information_table.xml from Berkshire / BlackRock / Vanguard / Bridgewater / Scion / Pershing Square. Diffs vs prior quarter snapshot → `institutional_new_position` / `exit` / `increase` / `decrease` events keyed to the affected ticker. |
 | `paper_trade_agent`   | `*/15 * * * *`    | Codex's earlier path: signal-driven calibrated forecasts in `stock_paper_forecasts` (separate table from `stock_event_paper_trades`). Both run in parallel. |
-| `trade_setup_agent`   | `*/30 * * * *` + workflow_run on `thesis_agent` | **Layer 3 — trade construction.** Reads recent `stock_signals`, derives a tradable proposal per signal (entry style: next_open / limit_pullback / breakout / vwap_band; stop_pct, target_pct, valid_until, confidence). Writes `stock_trade_setups`. Populates `reason_to_skip` when expired signal, AVOID_CHASE/CHASE_RISK action, neutral direction, or rule lacks edge — those rows still get written for audit but the risk_agent skips them. |
-| `risk_agent`          | `*/30 * * * *` + workflow_run on `trade_setup_agent` | **Layer 4 — capital allocation / survival.** Reads `stock_trade_setups`, applies HARDCODED rules (Van Tharp position sizing, drawdown circuit breaker at -10% 30d mean, daily risk budget at 3% NAV, concentration cap at 3 open per rule_key, stop sanity at [0.5%, 20%]). Writes `stock_risk_decisions` with `decision in ('size','skip')`, `size_pct_portfolio`, `max_loss_dollars`, and a `rules_applied` JSONB audit trail of every gate that ran. Paper-only / advisory; broker adapter not connected. |
-| `backtester`          | manual only       | 180-day replay → precision/calibration metrics |
-| `site_generator`      | `*/15 * * * *` + workflow_run on 7 upstream agents | Supabase → Jinja2 HTML → FTPS auto-deploy to Hostinger. workflow_run chain reduces cron drift impact (cron is best-effort on GHA). Emits machine-readable `status.json` v1.1 with tiered maturity. |
+| `trade_setup_agent`   | `*/30 * * * *` + workflow_run on `thesis_agent` | **Layer 3 — trade construction.** Reads recent `stock_signals`, derives a tradable proposal per signal (entry style, stop_pct/target_pct, valid_until, confidence). `target_pct`/`stop_pct` adapt to the rule's empirical MFE/MAE once `n_observations ≥ 10` (fix B1) — `target_source` column records `default` vs `calibrated`. Writes `stock_trade_setups`. Populates `reason_to_skip` when expired signal, AVOID_CHASE/CHASE_RISK action, neutral direction, or rule lacks edge — those rows still get written for audit but the risk_agent skips them. |
+| `risk_agent`          | `*/30 * * * *` + workflow_run on `trade_setup_agent` | **Layer 4 — capital allocation / survival.** Reads `stock_trade_setups` where `valid_until > now()` (full alpha window, not last 24h — fix B2). Applies HARDCODED rules: Van Tharp sizing; drawdown breaker at -10% on the 30-day **equity-curve max drawdown** (peak-to-trough on cumulative realized return — fix A1); daily risk budget at 3% NAV; concentration cap at 3 open per rule_key; stop sanity at [0.5%, 20%]. Writes `stock_risk_decisions` with `decision in ('size','skip')`, `size_pct_portfolio`, `max_loss_dollars`, and a `rules_applied` JSONB audit trail. Paper-only / advisory; broker adapter not connected. |
+| `audit_agent`         | `0 4 * * *`       | **Operations.** Daily 04:00 UTC read-only integrity check across 5 invariants: every sent signal has a dispatch_log row; every sized decision references a live (valid_until > now) setup; calibration `n_observations` equals `n_correct + n_incorrect`; no open paper trade past `horizon_days + 5`; 24h event ingest not collapsed vs same-DOW last week. Telegrams on any failure. |
+| `backtester`          | manual only       | 180-day replay → precision/calibration metrics. OOS chronological 70/30 split emits `OVERFIT_RISK_HIGH` when out-of-sample underperforms in-sample. |
+| `site_generator`      | `*/15 * * * *` + workflow_run on 7 upstream agents | Supabase → Jinja2 HTML → FTPS auto-deploy to Hostinger. Post-deploy smoke verifies every tab carries the same `git_sha` meta tag (fix D5 — catches partial FTPS uploads). Emits `status.json` v1.1 with `git_sha`, `pipeline_version`, `agents.inventory_count`, and per-layer counts. Surfaces Layer 3 (Setups) and Layer 4 (Risk) tabs on the dashboard. |
 | `source_review_agent` | `0 13 1 * *`      | Monthly health check on every external feed → Telegram digest |
 
 ### One-time helper
@@ -198,11 +200,27 @@ Probability caveats:
 
 ## Dashboard tabs
 
-`Dashboard · Signals · Events · Agents · Backtest · Paper Trades · Calibration · Learning` — plus
+`Dashboard · Signals · Events · Setups · Risk · Agents · Backtest · Paper Trades · Calibration · Learning` — plus
 per-ticker chart pages under `/ticker/{TICKER}.html` (180-day price + filing/earnings overlay +
 "Big Moves" explanations) and per-alert detail pages under `/alert/{id}.html` for the link in
-every Telegram message. The new **Calibration** tab surfaces per-rule paper-trade accuracy and
+every Telegram message. **Setups** (Layer 3) shows tradable proposals with their stop/target
+and reason-to-skip; **Risk** (Layer 4) shows the size/skip decisions with the full
+`rules_applied` audit trail. The **Calibration** tab surfaces per-rule paper-trade accuracy and
 flags any rule that's crossed the BUY/SELL maturity gate.
+
+## Test suite
+
+```bash
+pip install -r requirements-dev.txt
+pytest tests/
+```
+
+175 unit tests cover the survival-critical functions: drawdown math, `rule_key` derivation,
+`signal_direction` (including the dilution tie-break regression), adaptive target/stop,
+each `risk_agent.evaluate_setup` rule, `cluster_passes` exceptions, long/short symmetry in
+`compute_paper_outcome`, the per-event-type freshness TTL, alert-cap split, audit-agent
+invariants, SQL migration syntax, and import-smoke for every agent module. Runs on every
+push via `.github/workflows/tests.yml`.
 
 ## Layout
 
@@ -245,6 +263,9 @@ flags any rule that's crossed the BUY/SELL maturity gate.
 - `sql/0024_calibration_payoff.sql` — extends `stock_rule_calibration` with `median_return_pct`, `avg_win_pct`, `avg_loss_pct`, `profit_factor`, `target_hit_rate`, `stop_hit_rate`, `mean_mfe_pct`, `mean_mae_pct`. Adds `mfe_pct`, `mae_pct`, `target_hit`, `stop_hit` per-trade fields. `price_agent.recompute_rule_payoff` populates aggregates each reconciliation pass.
 - `sql/0025_trade_setups.sql` — **NEW LAYER 3 table** `stock_trade_setups` (Stage 5, 2026-05-18). One setup per signal, idempotent via `unique(signal_id)`. Written by `trade_setup_agent`.
 - `sql/0026_risk_decisions.sql` — **NEW LAYER 4 table** `stock_risk_decisions` (Stage 6, 2026-05-18). One decision per setup, idempotent via `unique(setup_id)`. Written by `risk_agent` with hardcoded survival rules and a `rules_applied` JSONB audit trail.
+- `sql/0027_small_cap_insider_watchlist.sql` — adds small-cap insider tickers used by `activist_insider_agent`.
+- `sql/0028_trade_setups_target_source.sql` — adds `target_source text` to `stock_trade_setups` (`default` | `calibrated`). Records which logic produced the row's stop/target (fix B1).
+- `sql/0029_signals_direction_check.sql` — backfills legacy `BUY`/`SELL`/`TRIM` values to `bullish`/`bearish`/`neutral` and adds `CHECK (direction IN (...))` constraint to lock the current vocabulary (fix E3).
 
 ## GitHub Actions secrets
 
