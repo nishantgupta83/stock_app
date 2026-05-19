@@ -34,6 +34,8 @@ from typing import Optional
 
 import requests
 
+import _rule_key   # agents/ on sys.path at runtime; canonical rule_key
+
 SUPABASE_URL = os.environ["SUPABASE_URL"].rstrip("/")
 SUPABASE_KEY = os.environ["SUPABASE_SERVICE_KEY"]
 
@@ -164,13 +166,33 @@ def derive_primary_event_type(signal: dict) -> Optional[str]:
     return pet[0] if pet else None
 
 
+def derive_primary_event_subtype(signal: dict) -> str | None:
+    """Subtype set by thesis_agent at signal-fire time. Older signals (written
+    before the subtype was persisted) return None and fall back to subtype-less
+    rule_key lookup."""
+    wt = signal.get("weight_at_time") or {}
+    return wt.get("primary_event_subtype")
+
+
 def derive_rule_key(signal: dict) -> Optional[str]:
+    """Canonical rule_key for this signal — same format event_paper_agent writes
+    to stock_rule_calibration, so the lookup actually finds the row.
+
+    Signals carry horizon_days = 0 (multi-day) or 1 (next-day). Map 0 → 7 so the
+    multi-day playbook anchors to the h7d calibration track (where most
+    event-driven patterns play out).
+
+    The explicit None check matters: `signal.get("horizon_days") or 1` would
+    coerce 0 to 1 via short-circuit, which historically caused every signal to
+    lookup h1d calibration regardless of intent — bug fixed alongside A2."""
     pet = derive_primary_event_type(signal)
     if not pet:
         return None
-    horizon = signal.get("horizon_days") or 1
-    h = 1 if int(horizon) == 1 else 7
-    return f"{pet}::h{h}d"
+    sub = derive_primary_event_subtype(signal)
+    raw_h = signal.get("horizon_days")
+    horizon_int = 1 if raw_h is None else int(raw_h)
+    h = 1 if horizon_int == 1 else 7
+    return _rule_key.derive(pet, sub, h)
 
 
 def _map_direction(raw: str | None) -> tuple[str, str | None]:

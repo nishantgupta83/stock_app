@@ -34,6 +34,8 @@ from datetime import datetime, timedelta, timezone
 
 import requests
 
+import _rule_key   # agents/ is on sys.path at runtime; canonical rule_key
+
 SUPABASE_URL = os.environ["SUPABASE_URL"].rstrip("/")
 SUPABASE_KEY = os.environ["SUPABASE_SERVICE_KEY"]
 
@@ -929,26 +931,18 @@ def fetch_rule_calibration() -> dict[str, dict]:
 def cluster_has_mature_rule(events: list[dict], calibration: dict[str, dict]) -> bool:
     """True if any event in the cluster maps to an is_mature rule_key.
 
-    event_paper_agent.derive_rule_key emits horizon-suffixed keys
-    (e.g. "8k_material_event::h1d", "earnings_release:beat:h7d"). Older keys
-    without the :hNd suffix also exist for legacy compatibility. Check all
-    variants to ensure maturity actually unlocks BUY/SELL when any horizon
-    crosses the threshold.
+    Uses the canonical _rule_key.derive — same format event_paper_agent writes
+    to stock_rule_calibration. The legacy multi-candidate fallback (which tried
+    subtype-less and unsuffixed variants) was a workaround for the inconsistent
+    keying that A2 eliminated.
     """
     HORIZONS = (1, 7, 15, 30)
     for e in events:
         et = e["event_type"]
-        sub = (e.get("event_subtype") or "").strip()
-        candidates = []
-        # legacy non-horizoned keys
-        if sub:
-            candidates.append(f"{et}:{sub}")
-        candidates.append(et)
-        # horizon-suffixed keys produced by current event_paper_agent
+        sub = e.get("event_subtype")
         for h in HORIZONS:
-            candidates.append(f"{et}:{sub}:h{h}d")
-        for key in candidates:
-            if key and calibration.get(key, {}).get("is_mature"):
+            key = _rule_key.derive(et, sub, h)
+            if calibration.get(key, {}).get("is_mature"):
                 return True
     return False
 
@@ -1076,6 +1070,16 @@ def write_signal(ticker: str, score: float, action: str, direction: str,
     weights = agent_weights or {}
     cluster_agents = list({source_agent_for(e) for e in events})
     event_types = sorted({e.get("event_type") for e in events if e.get("event_type")})
+    # Primary event_type for downstream calibration lookup is the
+    # alphabetically-first (matches derive_primary_event_type in
+    # trade_setup_agent). Pull the subtype of the first event of that type so
+    # trade_setup_agent can compute the exact rule_key event_paper_agent wrote.
+    primary_et = event_types[0] if event_types else None
+    primary_subtype = next(
+        ((e.get("event_subtype") or "").strip()
+         for e in events if e.get("event_type") == primary_et),
+        "",
+    )
     fired_at = datetime.now(timezone.utc)
     payload = {
         "ticker":           ticker,
@@ -1093,6 +1097,9 @@ def write_signal(ticker: str, score: float, action: str, direction: str,
             "agents":  cluster_agents,
             "weights": {a: round(weights.get(a, 1.0), 4) for a in cluster_agents},
             "primary_event_types": event_types,
+            # Subtype of the first event of the primary event_type — required for
+            # trade_setup_agent to match the rule_key event_paper_agent writes.
+            "primary_event_subtype": primary_subtype,
         },
         "status":           "open",
         "action":           action,

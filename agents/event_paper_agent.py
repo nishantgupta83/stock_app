@@ -36,6 +36,7 @@ from filing_agent import (   # type: ignore
     job_run_start, job_run_finish, dead_letter,
     SUPABASE_URL, HEADERS_SB,
 )
+import _rule_key   # type: ignore  # agents/ is on sys.path at runtime
 
 LOOKBACK_MIN = 150              # 120min cron window + 30min buffer for GHA queue jitter
 SEVERITY_FLOOR = 2              # ignore noise events
@@ -227,13 +228,10 @@ def derive_direction(event: dict) -> str:
 
 def derive_rule_key(event: dict, horizon_days: int) -> str:
     """Granular rule identity. Subtype + horizon included so beat vs miss AND
-    1d vs 7d vs 15d vs 30d earn separate calibration tracks. Format:
-        event_type:subtype:hNd        (when subtype present)
-        event_type::hNd               (subtype empty — keep the empty middle
-                                        field so split() always yields 3 parts)"""
-    et = event["event_type"]
-    sub = (event.get("event_subtype") or "").strip()
-    return f"{et}:{sub}:h{horizon_days}d"
+    1d vs 7d vs 15d vs 30d earn separate calibration tracks. Delegates to the
+    canonical agents._rule_key.derive so trade_setup_agent and thesis_agent
+    compute the exact same string for the same inputs."""
+    return _rule_key.derive(event["event_type"], event.get("event_subtype"), horizon_days)
 
 
 def build_paper_trades(event: dict, ticker_kind: str, latest_close: dict) -> list[dict]:
