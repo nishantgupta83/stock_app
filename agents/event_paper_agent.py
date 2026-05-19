@@ -285,15 +285,29 @@ def fetch_already_traded_event_ids(event_ids: list[int]) -> set[int]:
 
 
 def write_paper_trades(rows: list[dict]) -> int:
-    """Plain INSERT — no ON CONFLICT needed because caller pre-filters duplicate events."""
+    """INSERT with ON CONFLICT (event_id, ticker, direction) → merge-duplicates.
+
+    Migration sql/0015 made stock_event_paper_trades_uniq a non-partial index,
+    so PostgREST can now route inserts through it cleanly. Before that, the
+    plain INSERT here was the only option (partial indexes failed with 42P10).
+
+    Caller still pre-filters duplicates as a fast-path, but two concurrent
+    runs that both pass the pre-filter would previously race the unique
+    constraint and the second batch would be wholly rejected. With
+    on_conflict=merge-duplicates each chunk is now idempotent.
+    """
     if not rows:
         return 0
-    headers = {**HEADERS_SB, "Prefer": "return=minimal"}
+    headers = {
+        **HEADERS_SB,
+        "Prefer": "return=minimal,resolution=merge-duplicates",
+    }
     inserted = 0
     for i in range(0, len(rows), INSERT_CHUNK):
         batch = rows[i:i+INSERT_CHUNK]
         r = requests.post(
-            f"{SUPABASE_URL}/rest/v1/stock_event_paper_trades",
+            f"{SUPABASE_URL}/rest/v1/stock_event_paper_trades"
+            f"?on_conflict=event_id,ticker,direction",
             headers=headers, json=batch, timeout=30,
         )
         if r.status_code in (200, 201, 204):
