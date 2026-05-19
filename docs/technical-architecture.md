@@ -1,138 +1,155 @@
 # Technical Architecture
 
-Current as of 2026-05-06. This system is a paper-only market intelligence
-pipeline. It does not place trades and does not use BUY/SELL language.
+Current as of 2026-05-19 (Phase 11.6 — risk layer + adaptive setup sizing
+shipped). This system is a six-layer, paper-by-default market intelligence
+pipeline. The maturity gate (≥90% accuracy, n≥30 closed paper trades per
+rule) unlocks BUY/SELL vocabulary on a per-rule basis; until then the bot
+emits WATCH / RESEARCH / AVOID_CHASE / CHASE_RISK. A second `training`
+tier (≥70% accuracy, n≥30) is staged to emit PROVISIONAL_LONG /
+PROVISIONAL_SHORT once the dispatcher wiring is complete.
+
+Layer boundaries are strict: each layer reads from layers below and writes
+only to its own output table. A bug in trade_setup_agent literally cannot
+corrupt stock_signals — the foreign-key direction enforces it.
+
+## Six-Layer Pipeline
+
+```
+Layer 1 — INGEST
+  in:  EDGAR, RSS, Truth Social, FRED, FDA, ctgov, DoD, NRC, yfinance, 13F-HR
+  out: stock_normalized_events
+  agents: filing_agent, news_agent, truth_social_agent, earnings_agent,
+          crypto_macro_agent, flows_agent, biotech_agent, defense_agent,
+          energy_transition_agent, activist_insider_agent,
+          consumer_health_agent, macro_rates_agent, intraday_alert_agent,
+          market_scanner_agent
+
+Layer 2 — INTELLIGENCE
+  in:  stock_normalized_events + stock_rule_calibration + stock_agent_weights
+  out: stock_signals (vocabulary-gated by maturity tier; valid_until per signal)
+  agent: thesis_agent
+
+Layer 3 — TRADE CONSTRUCTION (Phase 11.6)
+  in:  stock_signals
+  out: stock_trade_setups (entry style, stop_pct/target_pct, target_source,
+       valid_until, confidence, reason_to_skip)
+  agent: trade_setup_agent
+
+Layer 4 — RISK / CAPITAL ALLOCATION (Phase 11.6)
+  in:  stock_trade_setups + stock_event_paper_trades + stock_rule_calibration
+  out: stock_risk_decisions (size or skip, with rules_applied audit trail)
+  agent: risk_agent (HARDCODED: Van Tharp sizing, equity-curve drawdown
+         breaker, daily risk budget, rule concentration cap, stop sanity)
+
+Layer 5 — LEARNING
+  in:  stock_signals + stock_event_paper_trades + stock_raw_prices
+  out: stock_rule_calibration, stock_agent_weights
+  agents: event_paper_agent (4 horizons per event: 1d/7d/15d/30d),
+          price_agent (EOD reconcile + MFE/MAE/target_hit/stop_hit audit),
+          paper_trade_agent, backtester
+
+Layer 6 — PRESENTATION
+  in:  everything (read-only)
+  out: hub4apps.com/stock_app/{dashboard tabs, status.json}, Telegram
+  agents: site_generator, telegram_dispatcher
+
+Operations:
+  audit_agent (daily integrity check), ops_recorder (workflow lifecycle),
+  archive_agent (Phase 9 — tiered storage, partially shipped),
+  source_review_agent (monthly feed drift)
+```
+
+23 agents total in `agents/AGENT_INVENTORY` (single source of truth — the
+dashboard and status.json both read it). Cron orchestration is best-effort:
+external `cron-job.org` pingers re-dispatch the seven tightest-cadence
+workflows when GHA-native cron drifts more than 7 minutes
+(see [`RUNBOOK.md`](RUNBOOK.md) §8). `concurrency: cancel-in-progress`
+on each workflow makes the double-dispatch harmless.
 
 ## Runtime Topology
 
 ```mermaid
 flowchart TB
   subgraph Sources["External Sources"]
-    EDGAR["SEC EDGAR submissions"]
-    News["CNBC / MarketWatch / Seeking Alpha RSS"]
+    EDGAR["SEC EDGAR"]
+    RSS["CNBC / MarketWatch / Seeking Alpha RSS"]
     Truth["Truth Social RSS"]
     Yahoo["yfinance prices + earnings"]
     Crypto["yfinance BTC / ETH"]
+    FRED["FRED macro"]
+    FDA["FDA / ctgov"]
+    DoD["DoD contract awards"]
+    NRC["NRC nuclear licenses"]
+    F13F["13F-HR institutional"]
   end
 
-  subgraph Actions["GitHub Actions"]
-    Filing["filing_agent<br/>every 5 min"]
-    NewsAgent["news_agent<br/>every 5 min"]
-    TruthAgent["truth_social_agent<br/>every 5 min"]
-    Earnings["earnings_agent<br/>weekly Sun 12:00 UTC"]
-    Thesis["thesis_agent<br/>every 5 min<br/>180 min freshness window"]
-    EventPaper["event_paper_agent<br/>hourly"]
-    Paper["paper_trade_agent<br/>every 15 min live<br/>manual shadow_30d replay"]
-    Price["price_agent<br/>weekday EOD"]
-    Scanner["market_scanner_agent<br/>weekday EOD"]
-    CryptoAgent["crypto_macro_agent<br/>weekday EOD"]
-    Flows["flows_agent<br/>weekly Sun 14:00 UTC"]
-    ArchiveAgent["archive_agent<br/>weekly Sun 03:00 UTC<br/>(Phase 9 — planned)"]
-    Backtester["backtester<br/>manual only"]
-    Site["site_generator<br/>every 15 min"]
-    SourceReview["source_review_agent<br/>monthly"]
+  subgraph Ingest["Layer 1 · Ingest"]
+    Filing["filing_agent"]
+    NewsAgent["news_agent"]
+    TruthAgent["truth_social_agent"]
+    Earnings["earnings_agent"]
+    Flows["flows_agent"]
+    Biotech["biotech_agent"]
+    Defense["defense_agent"]
+    Energy["energy_transition_agent"]
+    Activist["activist_insider_agent"]
+    Consumer["consumer_health_agent"]
+    Macro["macro_rates_agent"]
+    Intraday["intraday_alert_agent"]
+    Scanner["market_scanner_agent"]
+    CryptoAgent["crypto_macro_agent"]
   end
 
-  subgraph Supabase["Supabase Free (active tier)"]
-    RawFilings["stock_raw_filings"]
-    RawPrices["stock_raw_prices"]
+  subgraph Intel["Layer 2 · Intelligence"]
+    Thesis["thesis_agent"]
+  end
+
+  subgraph Trade["Layer 3 · Trade Construction"]
+    Setup["trade_setup_agent"]
+  end
+
+  subgraph Risk["Layer 4 · Risk"]
+    RiskAgent["risk_agent"]
+  end
+
+  subgraph Learn["Layer 5 · Learning"]
+    EventPaper["event_paper_agent"]
+    Price["price_agent"]
+    Paper["paper_trade_agent"]
+    Backtester["backtester"]
+  end
+
+  subgraph Present["Layer 6 · Presentation"]
+    Site["site_generator"]
+    Telegram["telegram_dispatcher"]
+    Audit["audit_agent"]
+  end
+
+  subgraph DB["Supabase"]
     Events["stock_normalized_events"]
     Signals["stock_signals"]
-    Evidence["stock_signal_evidence"]
-    Audit["stock_forecast_audit"]
+    Setups["stock_trade_setups"]
+    Decisions["stock_risk_decisions"]
+    PaperTrades["stock_event_paper_trades"]
+    Cal["stock_rule_calibration"]
     Weights["stock_agent_weights"]
-    PaperForecasts["stock_paper_forecasts"]
-    EventPaperTrades["stock_event_paper_trades"]
-    Calibration["stock_rule_calibration"]
-    Observations["stock_event_outcome_observations"]
-    Holdings["stock_institutional_holdings_snapshot"]
-    Keywords["stock_keyword_rules"]
-    BacktestRuns["stock_backtest_runs"]
-    Ops["stock_job_runs<br/>stock_dead_letter_events<br/>stock_agent_freshness"]
   end
 
-  subgraph HostingerTier["Hostinger 25 GB (passive tier + dashboard)"]
-    StaticSite["hub4apps.com/stock_app<br/>static dashboard"]
-    ArchiveStore["hub4apps.com/stock_app/archive/<br/>JSONL.gz + index.json<br/>(Phase 9 — planned)"]
-  end
-
-  Telegram["Telegram alerts"]
-
-  EDGAR --> Filing --> RawFilings --> Events
-  News --> NewsAgent --> Events
-  Truth --> TruthAgent --> Events
-  Yahoo --> Earnings --> Events
-  Yahoo --> Price
-  Yahoo --> Backtester
-  Yahoo --> RawPrices
-  Crypto --> CryptoAgent --> Events
-
-  Keywords --> NewsAgent
-  Keywords --> TruthAgent
-
+  Sources --> Ingest --> Events
   Events --> Thesis --> Signals
-  Thesis --> Evidence
-  Thesis --> Telegram
-  Weights --> Thesis
-  Calibration --> Thesis
-
-  Events --> EventPaper --> EventPaperTrades
-  RawPrices --> Scanner --> Observations
-
-  Signals --> Paper --> PaperForecasts
-  Audit --> Paper
-  RawPrices --> Paper
-
-  Signals --> Price --> Audit
+  Signals --> Setup --> Setups
+  Setups --> RiskAgent --> Decisions
+  Signals --> EventPaper --> PaperTrades
+  PaperTrades --> Price --> Cal
   Price --> Weights
-  Price --> PaperForecasts
-  EventPaperTrades --> Price
-  Price --> Calibration
-
-  RawFilings --> Backtester --> Signals
-  Backtester --> Audit
-  Backtester --> Weights
-  Backtester --> BacktestRuns
-  RawFilings --> Flows --> Holdings
-  Flows --> Events
-
-  SourceReview --> Ops
-  Filing --> Ops
-  NewsAgent --> Ops
-  TruthAgent --> Ops
-  Earnings --> Ops
-  Thesis --> Ops
-  EventPaper --> Ops
-  Paper --> Ops
-  Price --> Ops
-  Scanner --> Ops
-  CryptoAgent --> Ops
-  Flows --> Ops
-  Backtester --> Ops
-  Site --> Ops
-  ArchiveAgent --> Ops
-
   Events --> Site
   Signals --> Site
-  Audit --> Site
-  Weights --> Site
-  PaperForecasts --> Site
-  BacktestRuns --> Site
-  RawPrices --> Site
-  EventPaperTrades --> Site
-  Calibration --> Site
-  Holdings --> Site
-  Site --> StaticSite
-
-  Events -.archive on retention.-> ArchiveAgent
-  Signals -.archive on retention.-> ArchiveAgent
-  RawPrices -.archive on retention.-> ArchiveAgent
-  RawFilings -.archive on retention.-> ArchiveAgent
-  EventPaperTrades -.archive on retention.-> ArchiveAgent
-  Holdings -.archive on retention.-> ArchiveAgent
-  ArchiveAgent --> ArchiveStore
-  ArchiveAgent --> Telegram
-  ArchiveStore -.calibration merge.-> Price
+  Setups --> Site
+  Decisions --> Site
+  PaperTrades --> Site
+  Cal --> Site
+  Thesis --> Telegram
+  Audit --> DB
 ```
 
 ## Live Signal Path
@@ -141,178 +158,157 @@ flowchart TB
 sequenceDiagram
   autonumber
   participant Source as External source
-  participant Agent as Ingestion agent
-  participant DB as Supabase
+  participant Ingest as Layer 1 ingest agent
   participant Thesis as thesis_agent
-  participant Paper as paper_trade_agent
+  participant Setup as trade_setup_agent
+  participant Risk as risk_agent
+  participant EventPaper as event_paper_agent
   participant Price as price_agent
   participant Site as site_generator
-  participant User as User
 
-  Source->>Agent: New filing/news/post/earnings data
-  Agent->>DB: Upsert raw rows and normalized events
-  Thesis->>DB: Read recent normalized events
-  Thesis->>DB: Read latest agent EMA weights
-  Thesis->>DB: Write candidate/sent/suppressed signal
-  Thesis-->>User: Telegram alert for WATCH / AVOID_CHASE when dispatch rules pass
-  Paper->>DB: Read live eligible signals
-  Paper->>DB: Read audited historical outcomes
-  Paper->>DB: Write live paper forecast with probability, EV, target, stop
-  Price->>DB: Close matured signals and paper forecasts from EOD prices
-  Price->>DB: Update per-agent EMA weights
-  Site->>DB: Render dashboard, charts, learning, and paper forecast pages
-  Site-->>User: Deploy static HTML to Hostinger by FTPS
+  Source->>Ingest: new filing / news / post / EOD bars
+  Ingest->>DB: write stock_normalized_events
+  Thesis->>DB: read events + weights + calibration
+  Thesis->>DB: write stock_signals (status_v2=candidate)
+  Thesis->>User: Telegram alert (action ∈ dispatchable_actions, cap budget)
+  Setup->>DB: read recent signals + calibration
+  Setup->>DB: write stock_trade_setups (target_source=default|calibrated)
+  Risk->>DB: read setups + open paper trades + calibration
+  Risk->>DB: write stock_risk_decisions (size or skip)
+  EventPaper->>DB: open 4 paper trades per event (1d/7d/15d/30d horizons)
+  Price->>DB: close mature trades + recompute calibration + agent weights
+  Site->>DB: render dashboard + status.json
+  Site->>FTPS: deploy to Hostinger
+  Site->>Site: post-deploy smoke verifies git_sha across all tabs
 ```
+
+## Core Tables
+
+| Layer | Table | Purpose |
+|---|---|---|
+| L1 | `stock_normalized_events` | Universal event bus. Filter for "what landed recently" via `created_at`; `event_at` is real-world event time. |
+| L1 | `stock_raw_filings` / `stock_raw_prices` | Pre-normalized ingest tables. |
+| L2 | `stock_signals` | Scored intelligence with `score_breakdown` JSONB, `valid_until` per signal, `weight_at_time` snapshot (incl. `primary_event_subtype` as of A2). |
+| L2 | `stock_signal_evidence` | Many-to-many link signal ↔ events. |
+| L3 | `stock_trade_setups` | Tradable proposals. Includes `target_source` (default vs calibrated from B1). |
+| L4 | `stock_risk_decisions` | One row per setup. `rules_applied` JSONB carries the audit trail; `portfolio_state` snapshots the risk state at decision time. |
+| L5 | `stock_event_paper_trades` | 4 paper trades per event × horizon. `realized_return`, `mfe_pct`, `mae_pct`, `target_hit`, `stop_hit`. ON CONFLICT idempotency (B3). |
+| L5 | `stock_rule_calibration` | Per-rule accuracy, profit_factor, mean_mfe_pct, mean_mae_pct, target_hit_rate, stop_hit_rate. Maturity gate: ≥90% acc + n≥30. |
+| L5 | `stock_agent_weights` | Per-agent EMA weights blended into thesis scoring. |
+| L5 | `stock_paper_forecasts` | Probability-calibrated forecasts split by `forecast_mode` (live vs shadow_backtest). |
+| L5 | `stock_forecast_audit` | One row per `(signal_id, horizon_days)` after `sql/0010`. |
+| L6 | `stock_telegram_dispatch_log` | One row per send attempt with delivery_ok / error / msg_id. |
+| Ops | `stock_job_runs` | Per-agent run history; `run_type` ∈ ('agent', 'wrapper') with `parent_run_id` lineage (sql/0022). |
+| Ops | `stock_dead_letter_events` | Failed parses with redacted diagnostics. |
+| Ops | `stock_agent_freshness` | Last-seen-on-schedule per agent. |
+| Ref | `stock_watchlists` | Categorized ticker baskets (core, AI cluster, mutual_funds, small_cap_insider, …). |
+| Ref | `stock_symbols` | Symbol metadata with CIK for SEC-tracked names. |
+| Ref | `stock_keyword_rules` | DB-editable keyword routing for news / Truth Social. |
+
+The unified `rule_key` format (`event_type:subtype:hNd`) lives in
+`agents/_rule_key.py`. Both writers (`event_paper_agent`) and readers
+(`trade_setup_agent`, `thesis_agent.cluster_has_mature_rule`) import it
+from there — see A2 in the review fixes for the rationale.
+
+## Survival Rules (Layer 4)
+
+Hardcoded module-level constants in `agents/risk_agent.py` — survival
+rules must not be relaxable by misconfigured env or DB. Each rule
+records pass/fail in `stock_risk_decisions.rules_applied` for audit.
+
+| Rule | Threshold | Source of value |
+|---|---|---|
+| `setup_self_skip` | reason_to_skip non-empty | propagated from trade_setup |
+| `confidence_floor` | `CONFIDENCE_FLOOR = 0.30` | const |
+| `drawdown_circuit_breaker` | `MAX_DRAWDOWN_PCT = 0.10` peak-to-trough on 30d equity curve (A1) | const |
+| `daily_risk_budget` | `MAX_DAILY_RISK_PCT = 0.03` | const |
+| `rule_concentration` | `MAX_SAME_RULE_OPEN = 3` | const |
+| `stop_sanity` | `STOP_PCT_MIN = 0.005`, `STOP_PCT_MAX = 0.20` | const |
+| `maturity_weight` | production: 1.0×, training: 0.5×, immature: 0.25× | const map |
+
+Position size = `NAV × RISK_PER_TRADE_PCT × maturity_multiplier / stop_pct`
+(Van Tharp). Tighter stop → larger size, same dollar risk.
 
 ## Historical Learning Path
 
 ```mermaid
 flowchart LR
-  Ingest["historical_ingest.yml<br/>filings + earnings + prices"] --> Raw["stock_raw_filings<br/>stock_normalized_events<br/>stock_raw_prices"]
-  Raw --> Backtest["backtester.yml<br/>180 day replay"]
+  Ingest["historical_ingest.yml"] --> Raw["stock_raw_filings + stock_raw_prices"]
+  Raw --> Backtest["backtester.yml<br/>180 day replay + OOS 70/30"]
   Backtest --> HistSignals["stock_signals<br/>status_v2 = backtest"]
   Backtest --> Audit["stock_forecast_audit"]
-  Backtest --> Weights["stock_agent_weights"]
-  Backtest --> Runs["stock_backtest_runs"]
+  Backtest --> Runs["stock_backtest_runs<br/>incl. OOS metrics + OVERFIT_RISK_HIGH verdict"]
   HistSignals --> Shadow["paper_trade_agent.yml<br/>mode = shadow_30d"]
   Audit --> Shadow
-  Weights --> Shadow
-  Shadow --> PaperRows["stock_paper_forecasts<br/>forecast_mode = shadow_backtest<br/>status = closed"]
-  PaperRows --> Site["Paper Trades page<br/>shadow rows separated from live rows"]
+  Shadow --> PaperRows["stock_paper_forecasts<br/>forecast_mode = shadow_backtest"]
+  PaperRows --> Site
 ```
 
 The `shadow_backtest` mode is intentionally not counted as live paper-trading
-performance. It exists to validate the UI, calibration logic, and replay process
-using already-audited historical signals. Scheduled `paper_trade_agent` runs stay
-strictly live-only.
+performance. The OOS chronological 70/30 split in `backtester.compute_oos_split_metrics`
+emits an explicit `OVERFIT_RISK_HIGH` verdict when the OOS slice
+underperforms the IS slice by too much — the right discipline against
+in-sample-fit illusions.
 
-## Core Tables
+## Tiered Storage (Phase 9 — partial)
 
-| Table | Purpose |
-|---|---|
-| `stock_watchlists` | Active ticker universe. |
-| `stock_symbols` | Symbol metadata, CIK, asset kind. |
-| `stock_raw_filings` | EDGAR raw filing metadata. |
-| `stock_raw_prices` | Daily OHLCV bars used by charts, chase-risk checks, and paper entries. |
-| `stock_normalized_events` | Cross-source event stream consumed by thesis and site. |
-| `stock_signals` | Thesis outputs: live signals plus backtest replay signals. `status_v2 IN ('candidate','sent','dispatch_failed')` is the in-flight set; closed/expired/demoted/suppressed/backtest archive on retention. |
-| `stock_signal_evidence` | Links signals back to supporting normalized events. |
-| `stock_forecast_audit` | Realized outcomes for matured live/backtest signals. One row per `(signal_id, horizon_days)` after `sql/0010`. |
-| `stock_agent_weights` | Per-agent EMA accuracy and scoring weight. |
-| `stock_paper_forecasts` | Probability-calibrated paper forecasts, split by `forecast_mode`. |
-| `stock_event_paper_trades` | Phase 7 closed learning loop. One paper trade per severity≥2 event × horizon (sql/0014, multi-horizon since sql/0018). Reconciled by `price_agent` at horizon close. |
-| `stock_rule_calibration` | Per-rule paper-trade accuracy, sample size, mean realized return. Maturity gate (≥90% accuracy, n≥30) graduates a rule from WATCH/AVOID_CHASE to BUY/SELL. |
-| `stock_event_outcome_observations` | `market_scanner_agent` per-day per-ticker (move %, prior event) rows for future scoring calibration. |
-| `stock_institutional_holdings_snapshot` | `flows_agent` per-quarter 13F-HR snapshot. Diff vs prior quarter generates institutional events. |
-| `stock_keyword_rules` | DB-editable keyword routing for `news_agent` and `truth_social_agent`. |
-| `stock_backtest_runs` | Backtest metrics and calibration summaries. |
-| `stock_job_runs` | Operational run history per agent. |
-| `stock_dead_letter_events` | Failed parses/fetches with redacted diagnostics. |
+| Tier | Where | Contents |
+|---|---|---|
+| Active | Supabase Free (≤500 MB) | Open paper trades, recent events, calibration, weights, last 90/180 days of high-volume tables |
+| Passive | Hostinger 25 GB at `hub4apps.com/stock_app/archive/` | Closed paper trades, prices >180d, filings >180d, holdings >1q. Gzipped JSONL + per-`rule_key` cumulative `index.json` |
+| Local (optional) | Mac via `bin/stock_app_sync.sh` | Mirror for offline analysis |
 
-## Data Lineage Contract
-
-```mermaid
-flowchart LR
-    RawFilings["stock_raw_filings"]
-    RawNews["stock_raw_news"]
-    RawTruth["stock_raw_truth_posts"]
-    Prices["stock_raw_prices"]
-    Events["stock_normalized_events<br/>source_table + source_id + dedupe_key"]
-    Signals["stock_signals"]
-    Evidence["stock_signal_evidence<br/>unique(signal_id,event_id)"]
-    Forecasts["stock_paper_forecasts<br/>forecast_mode live/shadow"]
-    Audit["stock_forecast_audit<br/>unique(signal_id,horizon_days)"]
-    Weights["stock_agent_weights"]
-    Site["static dashboard"]
-
-    RawFilings --> Events
-    RawNews --> Events
-    RawTruth --> Events
-    Prices --> Signals
-    Events --> Signals
-    Signals --> Evidence
-    Events --> Evidence
-    Signals --> Forecasts
-    Signals --> Audit
-    Audit --> Forecasts
-    Audit --> Weights
-    Forecasts --> Site
-    Evidence --> Site
-    Weights --> Site
-```
-
-## Forecast Modes
-
-| Mode | Source rows | Status behavior | Counts as live paper trading? |
-|---|---|---|---|
-| `live` | `stock_signals.status_v2 in (candidate,sent,suppressed)` | Opens when generated, closes through `price_agent` | Yes |
-| `shadow_backtest` | Audited backtest signals from recent history | Written already closed from historical audit | No |
-
-## Tiered Storage (Phase 9 — planned, v1 design locked)
-
-Three tiers exist by design to keep cloud spend at $0/mo while supporting
-years of training history.
-
-| Tier | Where | Contents | Read/write |
-|---|---|---|---|
-| Active | Supabase Free (≤500 MB) | Open paper trades, recent events, `stock_rule_calibration`, `stock_agent_weights`, `stock_keyword_rules`, last 90/180 days of high-volume tables | Every-N-min agent reads + writes |
-| Passive | Hostinger 25 GB FTPS at `hub4apps.com/stock_app/archive/` | Closed paper trades, prices >180d, filings >180d, holdings >1q, normalized events >90d. Stored as gzipped JSONL with a top-level `archive/index.json` (per-`rule_key` cumulative counts pre-computed at archive time) | Weekly write by `archive_agent`; HTTP read by `price_agent` calibration merge |
-| Local (optional) | Mac filesystem via `bin/stock_app_sync.sh` | Mirror of `archive/` for offline DuckDB / pandas analysis | Weekly cron pull |
-
-Per-table retention thresholds are listed in
-[`docs/phase9-tiered-storage.md`](phase9-tiered-storage.md). Each table
-archives on its natural age column (`created_at` / `exit_at` / `fired_at` /
-`ts` / `filed_at`).
-
-**Calibration reads both tiers.** The maturity gate (≥90% accuracy, n≥30)
-must count all closed paper trades across all time, not just the active
-90-day window. `price_agent` fetches `archive/index.json` once per run,
-merges archived cumulative counts into the active `n_observations` /
-`n_correct` totals, then applies today's delta. The
-`stock_rule_calibration.n_observations` value IS the global running total —
-the math behind it draws from both tiers. If the archive is unreachable,
-calibration falls back to active-only and the maturity gate pauses one
-cycle.
+Calibration reads both tiers — the maturity gate must count all closed
+paper trades across all time, not just the active 90-day window.
+`price_agent` fetches `archive/index.json` once per run and merges the
+cumulative counts. Per-table retention details in
+[`docs/phase9-tiered-storage.md`](phase9-tiered-storage.md).
 
 ## Operational Runbook
 
-Cold start order:
+See [`docs/RUNBOOK.md`](RUNBOOK.md) for the canonical operating procedures.
+Highlights:
 
-1. Apply `sql/*.sql` in order. Current head is `sql/0018_intc_ebay_and_horizon_index.sql`; Phase 9 will add `sql/0019_retention_columns.sql`.
-2. Run `historical_ingest.yml` with `sections=all`.
-3. Run `backtester.yml`.
-4. Run `paper_trade_agent.yml` with `mode=shadow_30d`.
-5. Run `paper_trade_agent.yml` with `mode=live`.
-6. Run `site_generator.yml`.
-7. After Phase 9 ships: run `archive_agent.yml` once with `dry_run=true` to validate FTPS write and `archive/index.json` schema before the weekly cron starts purging.
+- 7 tightest-cadence workflows have external `cron-job.org` pingers
+  staggered off the GHA cron — `concurrency: cancel-in-progress`
+  makes the double-dispatch harmless and gives a hard guarantee of
+  ≤7-minute drift.
+- `site_generator_retry.yml` listens for `site_generator` failures from
+  `schedule` / `workflow_run`, sleeps 5 min (FTP recovery), and
+  re-dispatches via `workflow_dispatch`. Single-shot to prevent
+  cascading.
+- `audit_agent.yml` (daily 04:00 UTC) checks five integrity invariants
+  and Telegrams on failure.
 
-Normal operation:
+## Verification Snapshot
 
-- Ingestion, thesis, paper forecast, and site generation run on cron.
-- `price_agent` closes mature signals and forecasts at weekday EOD.
-- `backtester` remains manual-only so historical replay is deliberate.
-- `source_review_agent` runs monthly to catch feed drift.
+Last verified 2026-05-19 with the post-A1/A2/A3 + B1/B2/B3 + C1/C2 + D1-D5
+fixes landed:
 
-## Current Verification Snapshot
-
-Last verified on 2026-05-02:
-
-- Shadow replay wrote 27 closed `shadow_backtest` paper forecasts before the Phase 7 leakage fix.
-- Live paper forecast pass wrote 0 rows because no live eligible signals existed.
-- Manual thesis run saw 4 fresh events in the 180-minute window and produced 0 candidates.
+- `pytest tests/` — 105 green across 7 files
+- Drawdown circuit breaker now trips on the correct math (was previously
+  the per-trade mean, effectively un-trippable)
+- `rule_key` unified in `agents/_rule_key.py`; subtyped calibration now
+  reaches `trade_setup_agent` (was silently mismatched)
+- Dilution direction routes bearish (was incorrectly bullish on tie)
+- `stock_trade_setups` and `stock_risk_decisions` surfaced on dashboard
+- `status.json` now carries `git_sha`, `pipeline_version`,
+  `agents.inventory_count`, and a per-layer breakdown
+- Alert cap UI shows "X / 5 cap used · Y severity-4 bypass" (was
+  "-26 remaining")
+- Post-deploy smoke confirms every tab carries the same git_sha meta
+  → partial FTPS uploads now fail loudly instead of silently producing
+  stale tabs
 
 ## Outcome Contract
 
-Backtest, live audit, and paper forecast closure use the same paper-only outcome
-contract:
-
 1. Signal fires on day `D`.
 2. Entry is the next available trading session open after `D`.
-3. Exit is the close at `entry_session + horizon_days - 1`, or the next available close.
+3. Exit is the close at `entry_session + horizon_days`, or the next available close.
 4. Net return subtracts 5 bps per side.
-5. `stock_forecast_audit` stores `entry_price`, `exit_price`, `entry_at`, `exit_at`, and `outcome_method='next_session_open_to_horizon_close'`.
-
-Shadow replay calibration filters by audit `computed_at`, not just signal
-`fired_at`, so replay days cannot learn from outcomes that were not known yet.
-- Site generation succeeded after increasing Hostinger FTPS timeout to 120 seconds.
-- Live Paper Trades page rendered `Shadow 30d = 27` and `Shadow Hit Rate = 48%`.
+5. `stock_event_paper_trades` records `entry_price`, `exit_price`,
+   `entry_at`, `exit_at`, `realized_return`, plus MFE/MAE/target_hit/stop_hit
+   from the daily-HL audit.
+6. Shadow replay calibration filters by audit `computed_at`, not signal
+   `fired_at`, so replay days cannot learn from outcomes that were not
+   known yet.
