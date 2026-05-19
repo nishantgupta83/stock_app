@@ -69,7 +69,7 @@ MATURITY_MULTIPLIER = {
     "immature":   0.25,    # everything else
 }
 
-LOOKBACK_HOURS = 24
+SETUP_AGE_FLOOR_DAYS = 14   # sanity belt on fetch_recent_setups (B2)
 
 
 def sb_get(path: str, params: dict) -> list[dict]:
@@ -116,13 +116,32 @@ def job_run_finish(run_id: int | None, status: str,
 
 
 def fetch_recent_setups() -> list[dict]:
-    cutoff = (datetime.now(timezone.utc) - timedelta(hours=LOOKBACK_HOURS)).isoformat()
+    """Setups still inside their alpha window — valid_until > now().
+
+    Pre-B2 this filtered on `created_at gte (now - 24h)`, which
+    silently dropped activist 13D and similar long-horizon signals whose
+    valid_until extends up to 14 days. A setup the risk_agent had to skip
+    yesterday because the daily risk budget was tapped would never get
+    reconsidered today — even though the alpha window was still open.
+
+    Bounding by `valid_until` makes the lookback automatically match each
+    setup's intended horizon. Dedupe vs. already-decided setups is handled by
+    fetch_existing_decision_setup_ids further down — a setup that's already
+    been sized/skipped won't get a second decision regardless of valid_until.
+
+    The 14-day created_at floor is a sanity belt: any setup older than that
+    is either a leftover from a bad migration or someone mis-set valid_until.
+    Better to drop it than to act on it.
+    """
+    now_iso = datetime.now(timezone.utc).isoformat()
+    floor_iso = (datetime.now(timezone.utc) - timedelta(days=SETUP_AGE_FLOOR_DAYS)).isoformat()
     return sb_get("stock_trade_setups", {
-        "created_at": f"gte.{cutoff}",
-        "select":     "id,signal_id,ticker,direction,setup_type,stop_pct,target_pct,"
-                      "horizon_days,confidence,reason_to_skip,rule_key,created_at",
-        "order":      "created_at.desc",
-        "limit":      "500",
+        "valid_until": f"gte.{now_iso}",
+        "created_at":  f"gte.{floor_iso}",
+        "select":      "id,signal_id,ticker,direction,setup_type,stop_pct,target_pct,"
+                       "horizon_days,confidence,reason_to_skip,rule_key,valid_until,created_at",
+        "order":       "created_at.desc",
+        "limit":       "500",
     })
 
 
@@ -378,7 +397,7 @@ def main() -> int:
     try:
         setups = fetch_recent_setups()
         rows_in = len(setups)
-        print(f"Fetched {rows_in} trade setups from last {LOOKBACK_HOURS}h")
+        print(f"Fetched {rows_in} trade setups still inside their valid_until window")
         if not setups:
             job_run_finish(run_id, "ok", 0, 0)
             return 0
