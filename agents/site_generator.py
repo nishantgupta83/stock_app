@@ -1001,6 +1001,9 @@ MATURITY_TRAINING_ACC   = 0.70
 MATURITY_MIN_N          = 30
 
 
+PIPELINE_VERSION = "v1.1"   # bump whenever the cross-layer contract changes
+
+
 def _emit_status_json(
     *,
     dist_dir: Path,
@@ -1013,8 +1016,12 @@ def _emit_status_json(
     events: list[dict],
     failures: list[dict],
     alerts_today: int,
+    alerts_cap_counted: int,
+    alerts_bypass: int,
     open_signals: int,
     fresh_events: int,
+    trade_setups: list[dict],
+    risk_decisions: list[dict],
 ) -> None:
     """Emit dist/status.json — machine-readable view of pipeline state.
 
@@ -1126,10 +1133,18 @@ def _emit_status_json(
         for k, v in AGENT_INVENTORY.items()
     }
 
+    setups_today = [s for s in trade_setups if (s.get("created_at") or "").startswith(today_prefix)]
+    sized_today = [d for d in risk_decisions if d.get("decision") == "size"]
+    skipped_today = [d for d in risk_decisions if d.get("decision") == "skip"]
+    last_event_at = max((e.get("event_at") or "" for e in events), default="")
+    rules_matured_total = len([r for r in cal_rows if r.get("is_mature")])
+
     payload = {
-        "schema_version": "1.1",
-        "generated_at":   now.strftime("%Y-%m-%dT%H:%M:%SZ"),
-        "generator":      "site_generator",
+        "schema_version":   "1.1",
+        "pipeline_version": PIPELINE_VERSION,
+        "git_sha":          os.environ.get("GITHUB_SHA", ""),
+        "generated_at":     now.strftime("%Y-%m-%dT%H:%M:%SZ"),
+        "generator":        "site_generator",
         "platform": {
             "name":  "stock_app · Hub4Apps Terminal",
             "phase": "calibration accumulation · two-tier maturity",
@@ -1170,8 +1185,36 @@ def _emit_status_json(
             ],
         },
         "agents": {
-            "inventory": inventory_out,
-            "freshness": freshness_out,
+            "inventory_count": len(AGENT_INVENTORY),
+            "inventory":       inventory_out,
+            "freshness":       freshness_out,
+        },
+        "layers": {
+            "ingest": {
+                "fresh_events_180min": fresh_events,
+                "last_event_at":       last_event_at,
+            },
+            "intelligence": {
+                "signals_today":   alerts_today,
+                "open_candidates": open_signals,
+            },
+            "trade_construction": {
+                "setups_today":  len(setups_today),
+                "setups_live":   len(trade_setups),
+            },
+            "risk": {
+                "decisions_today": len(risk_decisions),
+                "sized_today":     len(sized_today),
+                "skipped_today":   len(skipped_today),
+            },
+            "learning": {
+                "trades_open":         len(open_paper),
+                "trades_closed_today": len([t for t in closed_paper if (t.get("exit_at") or "").startswith(today_prefix)]),
+                "rules_matured_total": rules_matured_total,
+            },
+            "presentation": {
+                "generated_at": now.strftime("%Y-%m-%dT%H:%M:%SZ"),
+            },
         },
         "calibration": {
             "summary": {
@@ -1523,8 +1566,12 @@ def render_all() -> int:
         events=events,
         failures=failures,
         alerts_today=alerts_today,
+        alerts_cap_counted=alerts_cap_counted,
+        alerts_bypass=alerts_bypass,
         open_signals=open_signals,
         fresh_events=fresh_events,
+        trade_setups=trade_setups,
+        risk_decisions=risk_decisions,
     )
 
     total_html = len(list(DIST_DIR.glob("*.html"))) + len(list(alert_dir.glob("*.html")))
