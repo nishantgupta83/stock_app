@@ -183,23 +183,86 @@ def job_run_finish(run_id: int | None, status: str, rows_in: int, rows_out: int,
 # Fetch fresh evidence
 # ============================================================
 
+# Per-event-type real-world TTL. After fetching by created_at (which gives
+# us events that LANDED in the freshness window), we drop rows whose
+# event_at is older than the TTL — a 13F that landed today but is for a
+# quarter-old position shouldn't pollute a cluster. Defaults err generous
+# so we only filter out the obvious staleness.
+EVENT_REAL_TTL_HOURS: dict[str, int] = {
+    "earnings_release":           72,
+    "8k_material_event":         168,    # 7 days
+    "filing_dilution":           168,
+    "filing_s-3":                168,
+    "filing_s-3/a":              168,
+    "filing_13d":                336,    # 14 days — activist windows are slow
+    "filing_13g":                336,
+    "truth_social_post":          24,
+    "news_article":               48,
+    "institutional_new_position": 720,   # 30 days — 13F arrives weeks after the print
+    "institutional_increase":     720,
+    "institutional_exit":         720,
+    "institutional_decrease":     720,
+    "activist_5pct_crossed":      336,
+    "activist_initial_position":  336,
+    "insider_cluster_buy":        168,
+    "fda_pdufa_decision":         168,
+    "clinical_readout":           168,
+    "dod_contract_award":         168,
+    "nuclear_license_approval":   336,
+    "momentum":                    24,
+    "crypto_macro_move":           24,
+    "price_gap":                   24,
+    "volume_anomaly":              24,
+    "volatility_spike":            24,
+    "vix_spike":                   24,
+    "yield_milestone":             48,
+    "fomc_decision":              168,
+    "cpi_release":                 72,
+    "nfp_release":                 72,
+}
+EVENT_REAL_TTL_DEFAULT_HOURS = 168       # 7 days for any event_type not listed
+
+
+def _event_within_real_ttl(event: dict, now: datetime) -> bool:
+    """True if event_at is recent enough to be relevant per its event_type TTL."""
+    event_at = event.get("event_at")
+    if not event_at:
+        return True   # don't drop on missing field
+    try:
+        ea = datetime.fromisoformat(event_at.replace("Z", "+00:00"))
+    except (TypeError, ValueError):
+        return True
+    ttl_hours = EVENT_REAL_TTL_HOURS.get(event.get("event_type") or "",
+                                         EVENT_REAL_TTL_DEFAULT_HOURS)
+    return (now - ea) <= timedelta(hours=ttl_hours)
+
+
 def fetch_fresh_events() -> list[dict]:
-    """Pull normalized_events from the last FRESHNESS_WINDOW_MIN minutes.
-    Use params= so requests URL-encodes the +00:00 in the ISO timestamp correctly."""
-    cutoff = (datetime.now(timezone.utc) - timedelta(minutes=FRESHNESS_WINDOW_MIN)).isoformat()
-    now = datetime.now(timezone.utc).isoformat()
+    """Pull normalized_events that LANDED in the freshness window, then drop
+    rows whose real-world event_at is older than the per-event_type TTL.
+
+    Pre-E2 this filtered on event_at, contradicting CLAUDE.md rule #1
+    ("for what landed recently, use created_at"). The intelligence layer
+    wants to react to what just arrived, not what just happened in the world
+    — a 13F filed today is news even if the underlying position dates from
+    last quarter. The per-event-type TTL still protects against junk events
+    arriving from a backfill or a long-paused ingester.
+
+    Use params= so requests URL-encodes the +00:00 in the ISO timestamp."""
+    now = datetime.now(timezone.utc)
+    cutoff = (now - timedelta(minutes=FRESHNESS_WINDOW_MIN)).isoformat()
     params = [
-        ("event_at", f"gte.{cutoff}"),
-        ("event_at", f"lte.{now}"),
+        ("created_at", f"gte.{cutoff}"),
         ("ticker", "not.is.null"),
-        ("select", "id,event_type,event_subtype,ticker,event_at,severity,source_table,parser_confidence,payload"),
-        ("order", "event_at.desc"),
+        ("select", "id,event_type,event_subtype,ticker,event_at,created_at,severity,source_table,parser_confidence,payload"),
+        ("order", "created_at.desc"),
         ("limit", "500"),
     ]
     r = requests.get(f"{SUPABASE_URL}/rest/v1/stock_normalized_events",
                      headers=HEADERS_SB, params=params, timeout=20)
     r.raise_for_status()
-    return r.json()
+    raw = r.json()
+    return [e for e in raw if _event_within_real_ttl(e, now)]
 
 
 def fetch_latest_agent_weights() -> dict[str, float]:
