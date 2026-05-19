@@ -11,9 +11,11 @@
       <div class="sub">awaiting cluster confirmation or alert cap</div>
     </div>
     <div class="bigstat">
-      <span class="num {% if alerts_today >= 5 %}bear{% else %}bull{% endif %}">{{ alerts_today }}</span>
+      <span class="num {% if alerts_cap_counted >= 5 %}bear{% else %}bull{% endif %}">{{ alerts_today }}</span>
       <div class="lbl">alerts sent today</div>
-      <div class="sub">{{ 5 - alerts_today }} remaining of the daily cap; severity-4 events bypass the cap.</div>
+      <div class="sub">
+        {{ alerts_cap_counted }} / 5 cap used{% if alerts_bypass %} · {{ alerts_bypass }} severity-4 bypass{% endif %}.
+      </div>
     </div>
     <div class="bigstat">
       <span class="num">{{ fresh_events }}</span>

@@ -251,6 +251,36 @@ def count_alerts_today() -> int:
     return len(rows)
 
 
+def count_alerts_today_split() -> tuple[int, int]:
+    """(cap_counted, bypass) — split today's sent signals by whether they
+    consumed a daily-cap slot or rode the severity-4 bypass.
+
+    Pre-fix the dashboard showed `5 - alerts_today` as "remaining", going
+    negative once severity-4 bypasses pushed sent above 5. Splitting the
+    count exactly lets the template render "X / 5 cap used + Y severity-4
+    bypass" instead of a nonsense negative.
+
+    A signal is classified as bypass if its score_breakdown contains a
+    severity_uplift_sev4 rule entry (added by thesis_agent.score_evidence
+    when any contributing event has severity=4)."""
+    today = datetime.now(timezone.utc).date().isoformat()
+    rows = sb_get("stock_signals", {
+        "fired_at":  f"gte.{today}T00:00:00Z",
+        "status_v2": "eq.sent",
+        "select":    "id,score_breakdown",
+    })
+    bypass = 0
+    for r in rows:
+        breakdown = r.get("score_breakdown") or []
+        if isinstance(breakdown, list) and any(
+            isinstance(b, dict) and b.get("rule") == "severity_uplift_sev4"
+            for b in breakdown
+        ):
+            bypass += 1
+    cap_counted = len(rows) - bypass
+    return cap_counted, bypass
+
+
 def count_open_signals() -> int:
     rows = sb_get("stock_signals", {
         "status_v2": "eq.candidate",
@@ -1125,6 +1155,8 @@ def _emit_status_json(
         },
         "signals": {
             "dispatched_today":           alerts_today,
+            "dispatched_today_cap":       alerts_cap_counted,
+            "dispatched_today_bypass":    alerts_bypass,
             "dispatched_today_by_action": dict(by_action),
             "open_candidates":            open_signals,
         },
@@ -1166,6 +1198,7 @@ def render_all() -> int:
     weights      = fetch_latest_agent_weights()
     backtest     = fetch_latest_backtest()
     alerts_today = count_alerts_today()
+    alerts_cap_counted, alerts_bypass = count_alerts_today_split()
     open_signals = count_open_signals()
     fresh_events = count_fresh_events()
     weight_hist  = fetch_agent_weight_history()
@@ -1251,6 +1284,8 @@ def render_all() -> int:
         **common,
         title="Dashboard", active="index",
         alerts_today=alerts_today,
+        alerts_cap_counted=alerts_cap_counted,
+        alerts_bypass=alerts_bypass,
         open_signals=open_signals,
         fresh_events=fresh_events,
         recent_signals=[s for s in signals if s.get("status_v2") != "backtest"][:10],
