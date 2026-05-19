@@ -155,7 +155,7 @@ def fetch_calibration_for_rule_keys(rule_keys: list[str]) -> dict[str, dict]:
     rows = sb_get("stock_rule_calibration", {
         "rule_key": f"in.({in_list})",
         "select":   "rule_key,n_observations,accuracy,profit_factor,"
-                    "avg_win_pct,avg_loss_pct,is_mature",
+                    "avg_win_pct,avg_loss_pct,mean_mfe_pct,mean_mae_pct,is_mature",
     })
     return {r["rule_key"]: r for r in rows}
 
@@ -208,6 +208,38 @@ def _map_direction(raw: str | None) -> tuple[str, str | None]:
         return "short", None
     # neutral, empty, or unknown — record as long-default but mark for skip
     return "long", "neutral or unknown signal direction"
+
+
+DEFAULT_TARGET_PCT = 0.05
+DEFAULT_STOP_PCT   = 0.03
+
+ADAPTIVE_MIN_N      = 10     # need at least this many closed trades before adapting
+TARGET_MFE_FRACTION = 0.7    # capture 70% of the mean favorable excursion
+STOP_MAE_FRACTION   = 0.5    # cut at half the mean adverse excursion
+TARGET_PCT_MIN      = 0.02
+TARGET_PCT_MAX      = 0.12
+STOP_PCT_MIN        = 0.015
+STOP_PCT_MAX        = 0.06
+
+
+def compute_target_and_stop(rule_cal: dict) -> tuple[float, float, str]:
+    """Pick (target_pct, stop_pct, source) for a setup.
+
+    Returns ("default", value, value) until the rule has ≥ ADAPTIVE_MIN_N
+    closed trades with non-null mean_mfe_pct / mean_mae_pct. Then derives
+    target as a fraction of mean_mfe_pct and stop as a fraction of |mean_mae_pct|,
+    clipped into sane bounds so a noisy calibration window can't produce a
+    1-cent stop or a 50% target. The source field lets the dashboard show
+    which logic produced each setup.
+    """
+    n = int(rule_cal.get("n_observations") or 0)
+    mfe = rule_cal.get("mean_mfe_pct")
+    mae = rule_cal.get("mean_mae_pct")
+    if n < ADAPTIVE_MIN_N or mfe is None or mae is None:
+        return DEFAULT_TARGET_PCT, DEFAULT_STOP_PCT, "default"
+    target = max(TARGET_PCT_MIN, min(float(mfe) * TARGET_MFE_FRACTION, TARGET_PCT_MAX))
+    stop = max(STOP_PCT_MIN, min(abs(float(mae)) * STOP_MAE_FRACTION, STOP_PCT_MAX))
+    return round(target, 4), round(stop, 4), "calibrated"
 
 
 def compute_setup(signal: dict, cal: dict[str, dict]) -> dict:
@@ -264,11 +296,10 @@ def compute_setup(signal: dict, cal: dict[str, dict]) -> dict:
         elif not is_mature and profit_factor is not None and profit_factor < 1.0:
             reason_to_skip = f"rule {rule_key} profit_factor {profit_factor:.2f} < 1.0 (no payoff edge)"
 
-    # Stop/target inherit thesis's horizon scaling. Without explicit
-    # per-event tuning, mirror event_paper_agent's defaults so audits
-    # line up against the same yardstick.
-    target_pct = 0.05
-    stop_pct = 0.03
+    # Stop/target adapt to the rule's empirical payoff envelope once it has
+    # n ≥ 10 closed observations. Before that, fall back to the same defaults
+    # event_paper_agent uses so the calibration audit lines up cleanly.
+    target_pct, stop_pct, target_source = compute_target_and_stop(rule_cal)
     horizon = int(signal.get("horizon_days") or 1)
 
     return {
@@ -278,8 +309,9 @@ def compute_setup(signal: dict, cal: dict[str, dict]) -> dict:
         "setup_type":      setup_type,
         "entry_reference": f"{setup_type} from fired_at={signal.get('fired_at','')[:16]}",
         "entry_ref_price": None,    # populated later when we wire price snapshots
-        "stop_pct":        round(stop_pct, 4),
-        "target_pct":      round(target_pct, 4),
+        "stop_pct":        stop_pct,
+        "target_pct":      target_pct,
+        "target_source":   target_source,
         "horizon_days":    horizon,
         "valid_until":     valid_until,
         "confidence":      round(confidence, 4),
