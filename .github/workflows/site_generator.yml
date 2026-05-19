@@ -112,6 +112,40 @@ jobs:
           local-dir:       ./dist/
           server-dir:      ./
           dangerous-clean-slate: false
+      # Post-deploy smoke test (D5). The 3-attempt FTPS retry can silently
+      # "succeed" if some files upload and others time out, producing a
+      # dashboard where index.html shows today's data but agents.html still
+      # carries last week's. We confirm every tab has the same git_sha meta
+      # tag — site_generator embeds it from GITHUB_SHA. Mismatch = partial
+      # deploy → fail the workflow so site_generator_retry.yml picks it up.
+      #
+      # Only $EXPECTED_SHA (from secrets-free github.sha) reaches the shell —
+      # never untrusted user inputs.
+      - name: Post-deploy smoke test (D5)
+        env:
+          EXPECTED_SHA: ${{ github.sha }}
+        run: |
+          set -eo pipefail
+          BASE="https://hub4apps.com/stock_app"
+          EXPECTED="${EXPECTED_SHA:0:12}"
+          echo "Expecting git_sha=$EXPECTED on every tab"
+          fail=0
+          for tab in index signals events trade_setups risk_decisions agents backtest paper_trades calibration learning; do
+            html=$(curl -fsSL --max-time 30 "$BASE/$tab.html" || echo "")
+            got=$(printf "%s" "$html" | grep -oE 'name="git_sha" content="[^"]*"' | head -1 | grep -oE 'content="[^"]*"' | sed 's/content="//; s/"//' || true)
+            if [ "$got" != "$EXPECTED" ]; then
+              echo "  X $tab.html - got '$got' expected '$EXPECTED'"
+              fail=$((fail + 1))
+            else
+              echo "  ok $tab.html"
+            fi
+          done
+          if [ "$fail" -gt 0 ]; then
+            echo "$fail tabs failed git_sha check - partial deploy detected"
+            exit 1
+          fi
+          echo "All tabs match expected git_sha - deploy verified."
+
       - name: Record workflow finish
         if: always()
         env:

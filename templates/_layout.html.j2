@@ -4,6 +4,8 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
   <meta http-equiv="refresh" content="900">
+  <meta name="git_sha" content="{{ git_sha | default('') }}">
+  <meta name="generated_at" content="{{ generated_at | default('') }}">
   <title>{{ title }} · Hub4Apps Terminal</title>
   {% set rp = root_path | default("") %}
   <link rel="stylesheet" href="{{ rp }}styles.css">

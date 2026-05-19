@@ -1318,6 +1318,9 @@ def render_all() -> int:
 
     common = {
         "generated_at":  datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M"),
+        # Embedded as <meta name="git_sha"> in every page so the post-deploy
+        # smoke test can confirm all tabs landed from the same build (D5).
+        "git_sha":       (os.environ.get("GITHUB_SHA") or "")[:12],
     }
 
     DIST_DIR.mkdir(exist_ok=True)
