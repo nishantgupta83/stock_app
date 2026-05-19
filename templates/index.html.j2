@@ -20,7 +20,7 @@
     <div class="bigstat">
       <span class="num">{{ fresh_events }}</span>
       <div class="lbl">fresh events · 180m</div>
-      <div class="sub">across all 20 agents</div>
+      <div class="sub">across all {{ total_agent_count }} agents</div>
     </div>
     <div class="bigstat">
       <span class="num {% if all_agents_healthy %}bull{% else %}bear{% endif %}">{{ healthy_agent_count }}/{{ total_agent_count }}</span>
