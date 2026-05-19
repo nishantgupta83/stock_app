@@ -1,8 +1,14 @@
 # stock_app — Claude project context
 
-Real-time multi-source market intelligence pipeline. 14 GitHub Actions agents → Supabase →
-Telegram. Paper-trading until rule maturity (>=90% accuracy, n>=30) unlocks BUY/SELL.
-See `README.md` for the full surface; this file is the fast-load context.
+Real-time multi-source market intelligence pipeline. 25 GitHub Actions agents → Supabase →
+Telegram → static dashboard. Paper-trading until rule maturity (>=90% accuracy, n>=30)
+unlocks BUY/SELL. See `README.md` for the full surface; this file is the fast-load context.
+
+**Project scope — read first:** solo-developer project, sole purpose is personal financial
+freedom. Not a commercial product, no clients, no team, no monetization. Free-tier
+infrastructure only. Operational outputs are personal; the public repo exists for
+transparency and to unlock GitHub Actions free minutes. See [`README.md`](README.md)
+"Project scope" for the design constraints that follow from this.
 
 ## Critical rules — bugs we've hit, do not repeat
 
@@ -26,6 +32,31 @@ See `README.md` for the full surface; this file is the fast-load context.
 - Use `/usr/bin/python3` for network servers (Homebrew Python firewalled).
 - BSD sed: `sed -i ''` (with empty string).
 - See `~/.claude/CLAUDE.md` for the full list.
+
+**5. Hostinger FTPS (`ftp.hub4apps.com`) has intermittent control-socket timeouts.**
+- The `site_generator` workflow runs 3 in-line FTPS retries, but all 3 sit inside the
+  same ~10-min window, so a Hostinger outage longer than that burns every attempt.
+- Mitigation: `.github/workflows/site_generator_retry.yml` listens for `site_generator`
+  failures triggered by `schedule` or `workflow_run`, sleeps 5 min (gives the FTP server
+  time to recover), and re-dispatches `site_generator` via `workflow_dispatch`.
+- The retry is single-shot: failures originating from `workflow_dispatch` are NOT
+  retried, so a still-broken Hostinger surfaces as a hard failure after one attempt
+  instead of cascading.
+- External backup beyond that: `cron-job.org` pingers (see RUNBOOK §8) hit
+  `site_generator` every 15 min staggered off the GHA cron, so even a busted retry
+  will be picked up within ~7 min by the next external dispatch.
+
+**6. GitHub Actions cron is best-effort, not a guarantee.**
+- Documented behavior: `schedule:` triggers can be delayed or dropped under runner-pool
+  load. We've observed >90-min gaps in `*/15` workflows.
+- Mitigation: external pingers at `cron-job.org` re-dispatch the 7 tightest-cadence
+  workflows (`site_generator`, `paper_trade_agent`, `intraday_alert_agent`,
+  `filing_agent`, `news_agent`, `thesis_agent`, `truth_social_agent`) staggered off
+  the GHA cron. Bootstrap script: `scripts/bootstrap_cronjob_org.py` (re-runnable,
+  idempotent — see RUNBOOK §8).
+- All seven workflows already have `concurrency: cancel-in-progress: true`, so a
+  duplicate dispatch from GHA cron + pinger is harmless — one is cancelled within
+  ~1 second.
 
 ## Project conventions
 

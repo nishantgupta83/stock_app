@@ -20,6 +20,37 @@ documents every stage shipped 2026-05-12 through 2026-05-18 with commit hashes.
 > a parallel surface for visibility but does not unlock BUY/SELL emission. Educational use only;
 > not financial advice.
 
+## Project scope
+
+This is a **solo-developer project**, built and operated by one person. The **sole purpose
+is personal financial freedom** — using transparent, auditable rules to identify a
+measurable edge over time, on free-tier infrastructure. It is not a commercial product,
+not a SaaS, not a managed service, and not offered to others. No clients, no team, no
+monetization, no advertising. Outputs are not redistributed.
+
+The code is in a public repo for transparency and reproducibility (so the calibration
+metrics and risk rules can be independently audited), and because public-repo GitHub
+Actions minutes are unlimited at zero cost. Forking and reading are welcome; the
+operational outputs (signals, alerts, paper trades) are personal.
+
+This framing matters because the design choices follow from it:
+- **No SLA**, no on-call, no 24/7 monitoring obligation — degradation is acceptable;
+  data loss in `Supabase` is not.
+- **No vendor budget** — every component must run on a free tier or "already paid"
+  infrastructure (one Hostinger plan, one domain). The cron-job.org backup pingers
+  ([see RUNBOOK §8](docs/RUNBOOK.md)) exist because the next reliability tier above
+  GitHub Actions cron is paid; cron-job.org's free tier closes the gap.
+- **No team coordination overhead** — preferences (no purple in UI, paper-vocab
+  discipline, hardcoded survival rules) live in `CLAUDE.md` and global tooling
+  config; there is no PR review process to enforce them externally.
+- **Optimized for solo-dev cognitive load** — `status.json` is the single source of
+  truth, every agent has matching `stock_job_runs` rows, the dashboard surfaces
+  staleness within 15 min of occurrence.
+
+If you are reading this as an external reviewer: the project is not seeking funding,
+collaborators, or production users. Review is welcomed strictly for correctness,
+oversight, or robustness gaps the author would want to know about.
+
 ## Why this exists
 
 A solopreneur cannot beat institutional HFT desks on speed or capital. What a solopreneur CAN
