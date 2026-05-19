@@ -29,6 +29,14 @@ HEADERS_SB = {
 EMOJI = {"WATCH": "🟢", "RESEARCH": "🟡", "AVOID_CHASE": "🔴"}
 SITE_BASE = "https://hub4apps.com/stock_app"
 
+# Feature flag — when False, the inline keyboard is suppressed. Pre-fix the
+# keyboard rendered Researched/Acted/Skipped buttons on every alert but no
+# webhook handler existed (zero rows ever written to stock_user_decisions).
+# Shipping UI that does nothing is a broken promise to the operator. Flip
+# this to True once the webhook handler lands AND stock_user_decisions
+# gains signal_id + decision columns (deferred — see plan F4).
+TELEGRAM_CALLBACKS_ENABLED = False
+
 
 def fetch_signal(signal_id: int) -> dict | None:
     r = requests.get(
@@ -93,11 +101,12 @@ def dispatch_signal(signal_id: int) -> bool:
         print(f"  dispatch: signal {signal_id} not found", file=sys.stderr)
         return False
     text = format_payload(sig)
-    body = {
-        "chat_id":      CHAT_ID,
-        "text":         text,
-        "reply_markup": json.dumps(inline_keyboard(signal_id)),
+    body: dict = {
+        "chat_id": CHAT_ID,
+        "text":    text,
     }
+    if TELEGRAM_CALLBACKS_ENABLED:
+        body["reply_markup"] = json.dumps(inline_keyboard(signal_id))
     try:
         r = requests.post(f"https://api.telegram.org/bot{BOT_TOKEN}/sendMessage",
                           data=body, timeout=15)
