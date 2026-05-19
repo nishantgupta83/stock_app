@@ -73,6 +73,13 @@ transparency and to unlock GitHub Actions free minutes. See [`README.md`](README
 
 **Query the live DB (set once per shell):**
 
+> ⚠️ **Run only in a private shell.** `SUPABASE_SERVICE_KEY` is the
+> service_role token — full DB write access including bypass of RLS.
+> Never paste the value into a chat, screenshot, paste-bin, or shared
+> terminal. The command below stores it in the current shell only; the
+> key never touches stdout. After your session, `unset SUPABASE_SERVICE_KEY`
+> if you're worried about shell-history leakage.
+
 ```bash
 export SUPABASE_URL="https://wlfwdtdtiedlcczfoslt.supabase.co"
 export SUPABASE_SERVICE_KEY="$(supabase projects api-keys --project-ref wlfwdtdtiedlcczfoslt | awk '/service_role/{print $NF}')"
