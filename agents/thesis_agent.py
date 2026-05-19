@@ -837,7 +837,24 @@ def cluster_passes(events: list[dict]) -> tuple[bool, str]:
 
 
 def signal_direction(events: list[dict]) -> str:
-    """Compute net direction of a cluster (bullish / bearish / neutral)."""
+    """Compute net direction of a cluster (bullish / bearish / neutral).
+
+    filing_dilution is emitted alongside its parent 8k_material_event (same
+    accession_number) — see filing_agent. Pre-fix this caused a tie (1 bull
+    + 1 bear → fell through to bull > 0 → returned "bullish"), routing
+    clearly-bearish PIPE/ATM filings to WATCH. Fix: when a dilution event is
+    present, suppress the bull contribution from its matching 8-K so the
+    bearish read dominates. For direct dilution events with no parent 8-K
+    (no accession match), weight filing_dilution heavier (the +12 score in
+    score_evidence already reflects the higher conviction; mirror it here).
+    """
+    dilution_accessions = {
+        (e.get("payload") or {}).get("accession_number")
+        for e in events
+        if e["event_type"] == "filing_dilution"
+    }
+    dilution_accessions.discard(None)
+
     bull, bear = 0, 0
     for e in events:
         et = e["event_type"]
@@ -845,9 +862,28 @@ def signal_direction(events: list[dict]) -> str:
         if et == "truth_social_post":
             if d == "short": bear += 1
             elif d == "long": bull += 1
-        elif et in ("8k_material_event", "filing_13d"):
+        elif et == "8k_material_event":
+            # If a matching filing_dilution is in the cluster, this 8-K is
+            # the dilution itself — don't count it bullish.
+            acc = (e.get("payload") or {}).get("accession_number")
+            if acc not in dilution_accessions:
+                bull += 1
+        elif et == "filing_13d":
             bull += 1
-        elif et in ("filing_s-3", "filing_s-3/a", "filing_dilution"):
+        elif et == "filing_dilution":
+            # Heavier when no parent 8-K is in the cluster (direct dilution).
+            # When there IS a parent 8-K, +1 is enough — the suppression above
+            # already prevents the cancel-out.
+            acc = (e.get("payload") or {}).get("accession_number")
+            if acc and any(
+                ee["event_type"] == "8k_material_event"
+                and (ee.get("payload") or {}).get("accession_number") == acc
+                for ee in events
+            ):
+                bear += 1
+            else:
+                bear += 2
+        elif et in ("filing_s-3", "filing_s-3/a"):
             bear += 1
         elif et == "news_article":
             if d == "short": bear += 1
