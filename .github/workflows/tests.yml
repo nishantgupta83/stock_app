@@ -1,0 +1,33 @@
+name: tests
+
+# Runs pytest on every push and PR. The point of this suite is regression
+# coverage for survival-critical agent logic (drawdown math, signal_direction,
+# cluster_passes, compute_paper_outcome, risk rules). Tests must not hit the
+# live DB; HTTP-issuing functions are mocked.
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+concurrency:
+  group: tests-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  pytest:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+      - name: Install dev deps
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements-dev.txt
+      - name: Run pytest
+        run: pytest -v tests/
