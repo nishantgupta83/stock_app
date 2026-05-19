@@ -17,9 +17,37 @@ from pathlib import Path
 
 # Stub heavy import-time deps before any agent module is imported.
 # Agents only use these for live-data fetches, never in unit-tested code paths.
-for mod_name in ("yfinance", "pandas", "curl_cffi", "lxml", "feedparser"):
+for mod_name in ("yfinance", "pandas", "lxml", "feedparser"):
     if mod_name not in sys.modules:
         sys.modules[mod_name] = types.ModuleType(mod_name)
+
+# curl_cffi: source_review_agent and backtester do `from curl_cffi import
+# requests as cffi_requests`. Provide a submodule .requests attribute.
+if "curl_cffi" not in sys.modules:
+    cc = types.ModuleType("curl_cffi")
+    cc_req = types.ModuleType("curl_cffi.requests")
+    class _StubSession:
+        def __init__(self, *a, **kw): pass
+        def get(self, *a, **kw): raise RuntimeError("curl_cffi.Session.get called in test")
+        def post(self, *a, **kw): raise RuntimeError("curl_cffi.Session.post called in test")
+    cc_req.Session = _StubSession  # type: ignore
+    cc.requests = cc_req            # type: ignore
+    sys.modules["curl_cffi"] = cc
+    sys.modules["curl_cffi.requests"] = cc_req
+
+# jinja2 is used by site_generator at module load (FileSystemLoader path
+# computation). Stub Environment / FileSystemLoader / select_autoescape so
+# imports succeed without the real dep — tests don't render templates.
+if "jinja2" not in sys.modules:
+    jinja2_stub = types.ModuleType("jinja2")
+    class _StubEnv:
+        def __init__(self, *a, **kw): pass
+        def get_template(self, *a, **kw): return self
+        def render(self, *a, **kw): return ""
+    jinja2_stub.Environment = _StubEnv  # type: ignore
+    jinja2_stub.FileSystemLoader = lambda *a, **kw: None  # type: ignore
+    jinja2_stub.select_autoescape = lambda *a, **kw: None  # type: ignore
+    sys.modules["jinja2"] = jinja2_stub
 
 # Make repo root importable so `from agents.foo import bar` works,
 # AND make agents/ importable so the agents' own intra-module imports
