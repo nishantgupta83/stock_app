@@ -167,34 +167,69 @@ def maturity_tier(rule_cal: dict | None) -> str:
     return "immature"
 
 
+def compute_equity_curve_drawdown(closed_trades: list[dict]) -> dict:
+    """Cumulative equity-curve max drawdown over the supplied closed trades.
+
+    Trades must already be sorted by exit_at ascending. realized_return is
+    treated as additive per-trade contribution (equal-weighted equity curve).
+    Drawdown is peak-to-trough — when cumulative dips below its running max,
+    that gap is the drawdown; the most-negative such gap over the window is
+    returned.
+
+    Returns dict with drawdown_pct (≤ 0), sum_return, peak_cumulative, n.
+    """
+    cumulative = 0.0
+    running_peak = 0.0
+    max_dd = 0.0
+    for t in closed_trades:
+        cumulative += float(t.get("realized_return") or 0)
+        if cumulative > running_peak:
+            running_peak = cumulative
+        dd = cumulative - running_peak
+        if dd < max_dd:
+            max_dd = dd
+    return {
+        "drawdown_pct":     round(max_dd, 6),
+        "sum_return":       round(cumulative, 6),
+        "peak_cumulative":  round(running_peak, 6),
+        "n":                len(closed_trades),
+    }
+
+
 def compute_portfolio_state() -> dict:
     """Snapshot of risk-budget state used for sizing decisions.
 
     Returns:
-      drawdown_pct: realized 30-day P&L as a fraction of NAV (negative if losing)
+      drawdown_pct: equity-curve max drawdown over last 30 days (≤ 0)
+      sum_return_30d: cumulative realized return over the window
+      n_closed_30d: number of closed trades contributing
       daily_risk_in_flight_pct: today's already-sized max_loss / NAV
       open_per_rule: {rule_key → count of currently-open paper trades}
     """
     state = {
         "drawdown_pct": 0.0,
+        "sum_return_30d": 0.0,
+        "n_closed_30d": 0,
         "daily_risk_in_flight_pct": 0.0,
         "open_per_rule": {},
         "computed_at": datetime.now(timezone.utc).isoformat(),
     }
 
-    # Drawdown: sum realized_return over closed trades in last 30 days.
+    # Equity-curve max drawdown over the last 30 days of closed trades.
+    # Sorted ascending by exit_at so the curve is built in chronological order.
     cutoff_30 = (datetime.now(timezone.utc) - timedelta(days=30)).isoformat()
     closed = sb_get("stock_event_paper_trades", {
         "status":  "eq.closed",
         "exit_at": f"gte.{cutoff_30}",
-        "select":  "realized_return",
+        "select":  "realized_return,exit_at",
+        "order":   "exit_at.asc",
         "limit":   "5000",
     })
     if closed:
-        total_return = sum(float(t.get("realized_return") or 0) for t in closed) / len(closed)
-        # total_return is per-trade average; drawdown proxy is the worst rolling slice.
-        # Use simple sum-loss as the gate: if 30d mean is negative, multiply by share.
-        state["drawdown_pct"] = round(total_return, 6)
+        dd = compute_equity_curve_drawdown(closed)
+        state["drawdown_pct"]   = dd["drawdown_pct"]
+        state["sum_return_30d"] = dd["sum_return"]
+        state["n_closed_30d"]   = dd["n"]
 
     # Daily risk in flight: sum max_loss_dollars from today's sized decisions.
     today_iso = datetime.now(timezone.utc).date().isoformat()
@@ -251,8 +286,8 @@ def evaluate_setup(setup: dict, cal: dict[str, dict], state: dict) -> dict:
     dd = float(state.get("drawdown_pct") or 0)
     if not rule("drawdown_circuit_breaker",
                 dd > -MAX_DRAWDOWN_PCT,
-                f"30d mean realized_return={dd:.4f} vs threshold={-MAX_DRAWDOWN_PCT}"):
-        return _skip_decision(setup, f"drawdown circuit breaker (30d mean {dd:.4f} ≤ {-MAX_DRAWDOWN_PCT})",
+                f"30d equity-curve max DD={dd:.4f} vs threshold={-MAX_DRAWDOWN_PCT}"):
+        return _skip_decision(setup, f"drawdown circuit breaker (30d max DD {dd:.4f} ≤ {-MAX_DRAWDOWN_PCT})",
                               rules_applied, state)
 
     # 4. Daily risk budget
@@ -361,6 +396,8 @@ def main() -> int:
 
         state = compute_portfolio_state()
         print(f"  portfolio state: drawdown_pct={state['drawdown_pct']:.4f} "
+              f"sum_return_30d={state['sum_return_30d']:.4f} "
+              f"n_closed_30d={state['n_closed_30d']} "
               f"in_flight_pct={state['daily_risk_in_flight_pct']:.4f} "
               f"open_rules={len(state['open_per_rule'])}")
 
