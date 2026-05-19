@@ -1,0 +1,61 @@
+{% extends "_layout.html.j2" %}
+{% block content %}
+<h2>Risk Decisions · Layer 4</h2>
+<p style="color:var(--muted);font-size:12px">
+  Hardcoded survival rules applied to each setup: confidence floor, 30-day equity-curve drawdown breaker, daily risk budget, per-rule concentration cap, stop sanity, maturity-multiplier sizing. <code>size</code> rows allocate hypothetical capital at the $100k baseline NAV; <code>skip</code> rows record exactly which rule blocked the trade. Read <code>rules_applied</code> for the audit trail.
+</p>
+
+<div class="cards">
+  <div class="card">
+    <div class="label">Decisions (today)</div>
+    <div class="value">{{ risk_decisions|length }}</div>
+    <div class="sub">size + skip</div>
+  </div>
+  <div class="card ok">
+    <div class="label">Sized</div>
+    <div class="value">{{ risk_decisions | selectattr('decision','equalto','size') | list | length }}</div>
+    <div class="sub">passed all gates</div>
+  </div>
+  <div class="card warn">
+    <div class="label">Skipped</div>
+    <div class="value">{{ risk_decisions | selectattr('decision','equalto','skip') | list | length }}</div>
+    <div class="sub">blocked by a rule</div>
+  </div>
+</div>
+
+<table>
+  <thead>
+    <tr>
+      <th>Created (UTC)</th>
+      <th>Setup</th>
+      <th>Decision</th>
+      <th class="num">Size %NAV</th>
+      <th class="num">$ at 100k</th>
+      <th class="num">Max loss $</th>
+      <th>Reason</th>
+      <th>Rules applied</th>
+    </tr>
+  </thead>
+  <tbody>
+  {% for d in risk_decisions %}
+    <tr class="{% if d.decision == 'size' %}ok{% else %}muted{% endif %}">
+      <td>{{ d.created_at[:16] if d.created_at else '' }}</td>
+      <td>#{{ d.setup_id }}</td>
+      <td><strong>{{ d.decision }}</strong></td>
+      <td class="num">{% if d.size_pct_portfolio is not none %}{{ "%.2f%%"|format(d.size_pct_portfolio * 100) }}{% else %}—{% endif %}</td>
+      <td class="num">{% if d.size_dollars_at_100k is not none %}${{ "%.0f"|format(d.size_dollars_at_100k) }}{% else %}—{% endif %}</td>
+      <td class="num">{% if d.max_loss_dollars is not none %}${{ "%.0f"|format(d.max_loss_dollars) }}{% else %}—{% endif %}</td>
+      <td style="font-size:11px">{{ d.reason or '' }}</td>
+      <td style="font-family:monospace;font-size:10px">
+        {% for r in d.rules_applied or [] %}
+          {% if r.passed %}✓{% else %}✗{% endif %} {{ r.rule }}{% if not loop.last %} · {% endif %}
+        {% endfor %}
+      </td>
+    </tr>
+  {% endfor %}
+  {% if not risk_decisions %}
+    <tr><td colspan="8" style="text-align:center;color:var(--muted)">No risk decisions written today yet.</td></tr>
+  {% endif %}
+  </tbody>
+</table>
+{% endblock %}

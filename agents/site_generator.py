@@ -371,6 +371,43 @@ def fetch_rule_calibration() -> list[dict]:
     return rows
 
 
+def fetch_recent_trade_setups(limit: int = 200) -> list[dict]:
+    """Layer 3 output: setups still inside their valid_until window.
+
+    Surfaces both sized and skip-tagged setups so an operator can see why
+    the risk layer ignored some of them. Bounded to last 14 days by
+    created_at as a sanity belt against accidentally-distant valid_until.
+    """
+    now_iso = datetime.now(timezone.utc).isoformat()
+    floor_iso = (datetime.now(timezone.utc) - timedelta(days=14)).isoformat()
+    return sb_get("stock_trade_setups", {
+        "valid_until": f"gte.{now_iso}",
+        "created_at":  f"gte.{floor_iso}",
+        "select":      "id,signal_id,ticker,direction,setup_type,confidence,"
+                       "stop_pct,target_pct,target_source,horizon_days,"
+                       "valid_until,reason_to_skip,rule_key,created_at",
+        "order":       "created_at.desc",
+        "limit":       str(limit),
+    })
+
+
+def fetch_recent_risk_decisions(limit: int = 200) -> list[dict]:
+    """Layer 4 output: capital-allocation decisions written today.
+
+    rules_applied is JSONB on the table — PostgREST returns it parsed.
+    The template iterates it to render the audit trail.
+    """
+    today_iso = datetime.now(timezone.utc).date().isoformat()
+    return sb_get("stock_risk_decisions", {
+        "created_at": f"gte.{today_iso}T00:00:00Z",
+        "select":     "id,setup_id,decision,size_pct_portfolio,"
+                      "size_dollars_at_100k,max_loss_dollars,reason,"
+                      "rules_applied,created_at",
+        "order":      "created_at.desc",
+        "limit":      str(limit),
+    })
+
+
 def fetch_event_paper_trades(only_status: str | None = None, limit: int = 200) -> list[dict]:
     params = {
         "select": "id,event_type,event_subtype,ticker,direction,entry_at,entry_price,"
@@ -1340,6 +1377,23 @@ def render_all() -> int:
         **common,
         title="Backtest", active="backtest",
         bt=backtest,
+    ))
+
+    # Trade Setups — Layer 3 output (D2). Surfaces tradable proposals before
+    # the risk layer applies survival rules.
+    trade_setups = fetch_recent_trade_setups()
+    (DIST_DIR / "trade_setups.html").write_text(env.get_template("trade_setups.html.j2").render(
+        **common,
+        title="Trade Setups", active="trade_setups",
+        trade_setups=trade_setups,
+    ))
+
+    # Risk Decisions — Layer 4 output (D2). The "size or skip" audit log.
+    risk_decisions = fetch_recent_risk_decisions()
+    (DIST_DIR / "risk_decisions.html").write_text(env.get_template("risk_decisions.html.j2").render(
+        **common,
+        title="Risk Decisions", active="risk_decisions",
+        risk_decisions=risk_decisions,
     ))
 
     # Paper Trades — calibrated forecasts generated from live signals

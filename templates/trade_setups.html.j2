@@ -1,0 +1,63 @@
+{% extends "_layout.html.j2" %}
+{% block content %}
+<h2>Trade Setups · Layer 3</h2>
+<p style="color:var(--muted);font-size:12px">
+  Tradable shape of each signal. One row per signal — direction, setup type, stop/target, confidence, valid window, reason to skip. <code>target_source = calibrated</code> means stop/target were derived from the rule's empirical MFE/MAE; <code>default</code> means the rule doesn't yet have ≥ 10 closed observations. <strong>Setups are not recommendations</strong>: only those the risk layer subsequently sizes become operative.
+</p>
+
+<div class="cards">
+  <div class="card">
+    <div class="label">Setups (live window)</div>
+    <div class="value">{{ trade_setups|length }}</div>
+    <div class="sub">valid_until > now</div>
+  </div>
+  <div class="card">
+    <div class="label">Calibrated</div>
+    <div class="value">{{ trade_setups | selectattr('target_source','equalto','calibrated') | list | length }}</div>
+    <div class="sub">stop/target from MFE/MAE</div>
+  </div>
+  <div class="card">
+    <div class="label">Self-skip</div>
+    <div class="value">{{ trade_setups | selectattr('reason_to_skip') | list | length }}</div>
+    <div class="sub">rows tagged with a skip reason</div>
+  </div>
+</div>
+
+<table>
+  <thead>
+    <tr>
+      <th>Created (UTC)</th>
+      <th>Ticker</th>
+      <th>Dir</th>
+      <th>Setup</th>
+      <th class="num">Conf</th>
+      <th class="num">Stop %</th>
+      <th class="num">Target %</th>
+      <th>Source</th>
+      <th>Valid until</th>
+      <th>Reason to skip</th>
+      <th>Rule</th>
+    </tr>
+  </thead>
+  <tbody>
+  {% for s in trade_setups %}
+    <tr>
+      <td>{{ s.created_at[:16] if s.created_at else '' }}</td>
+      <td><strong>{{ s.ticker }}</strong></td>
+      <td>{{ s.direction }}</td>
+      <td>{{ s.setup_type }}</td>
+      <td class="num">{{ "%.2f"|format(s.confidence or 0) }}</td>
+      <td class="num">{{ "%.2f%%"|format((s.stop_pct or 0) * 100) }}</td>
+      <td class="num">{{ "%.2f%%"|format((s.target_pct or 0) * 100) }}</td>
+      <td>{{ s.target_source or 'default' }}</td>
+      <td>{{ s.valid_until[:16] if s.valid_until else '' }}</td>
+      <td style="color:{% if s.reason_to_skip %}var(--bear){% else %}var(--muted){% endif %}">{{ s.reason_to_skip or '—' }}</td>
+      <td style="font-family:monospace;font-size:11px">{{ s.rule_key or '—' }}</td>
+    </tr>
+  {% endfor %}
+  {% if not trade_setups %}
+    <tr><td colspan="11" style="text-align:center;color:var(--muted)">No live trade setups in the current window.</td></tr>
+  {% endif %}
+  </tbody>
+</table>
+{% endblock %}
