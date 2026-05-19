@@ -186,22 +186,35 @@ def maturity_tier(rule_cal: dict | None) -> str:
     return "immature"
 
 
-def compute_equity_curve_drawdown(closed_trades: list[dict]) -> dict:
-    """Cumulative equity-curve max drawdown over the supplied closed trades.
+def compute_equity_curve_drawdown(closed_trades: list[dict],
+                                   risk_per_trade_pct: float = None) -> dict:
+    """Cumulative equity-curve max drawdown over the supplied closed trades,
+    scaled into NAV-equivalent units.
 
-    Trades must already be sorted by exit_at ascending. realized_return is
-    treated as additive per-trade contribution (equal-weighted equity curve).
-    Drawdown is peak-to-trough — when cumulative dips below its running max,
-    that gap is the drawdown; the most-negative such gap over the window is
-    returned.
+    realized_return is a per-TRADE percentage. To map it onto portfolio NAV
+    drawdown, each trade's contribution is scaled by RISK_PER_TRADE_PCT —
+    the Van Tharp risk-per-trade fraction the position would have used.
+    Equivalent to assuming each paper trade represents one R-multiple
+    sized at the survival-rule's per-trade risk budget. Without this
+    scaling, summing per-trade percentages over N trades produces a number
+    that grows unboundedly with N and shares no units with MAX_DRAWDOWN_PCT
+    (the NAV-fraction threshold).
 
-    Returns dict with drawdown_pct (≤ 0), sum_return, peak_cumulative, n.
+    Trades must be sorted by exit_at ascending. Drawdown is peak-to-trough
+    of the cumulative NAV-equivalent curve.
+
+    Returns dict with drawdown_pct (≤ 0, NAV fraction), sum_return_nav,
+    peak_cumulative, n.
     """
+    if risk_per_trade_pct is None:
+        risk_per_trade_pct = RISK_PER_TRADE_PCT
     cumulative = 0.0
     running_peak = 0.0
     max_dd = 0.0
     for t in closed_trades:
-        cumulative += float(t.get("realized_return") or 0)
+        r = float(t.get("realized_return") or 0)
+        # Scale per-trade return → NAV-equivalent return.
+        cumulative += r * risk_per_trade_pct
         if cumulative > running_peak:
             running_peak = cumulative
         dd = cumulative - running_peak
@@ -209,7 +222,7 @@ def compute_equity_curve_drawdown(closed_trades: list[dict]) -> dict:
             max_dd = dd
     return {
         "drawdown_pct":     round(max_dd, 6),
-        "sum_return":       round(cumulative, 6),
+        "sum_return_nav":   round(cumulative, 6),
         "peak_cumulative":  round(running_peak, 6),
         "n":                len(closed_trades),
     }
@@ -247,7 +260,7 @@ def compute_portfolio_state() -> dict:
     if closed:
         dd = compute_equity_curve_drawdown(closed)
         state["drawdown_pct"]   = dd["drawdown_pct"]
-        state["sum_return_30d"] = dd["sum_return"]
+        state["sum_return_30d"] = dd["sum_return_nav"]
         state["n_closed_30d"]   = dd["n"]
 
     # Daily risk in flight: sum max_loss_dollars from today's sized decisions.
