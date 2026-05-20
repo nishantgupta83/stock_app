@@ -1,0 +1,53 @@
+name: orchestrator_agent
+
+# Daily watchdog: checks stock_job_runs for every agent listed in
+# agents/orchestrator_agent.py:EXPECTED. Fires a single Telegram summary
+# (deduped per date) if any agent's gap exceeds its budget. Trading-only
+# agents get extended budgets on weekends/holidays via the market calendar
+# so non-trading days don't create false positives.
+#
+# Safety: only repo secrets via env: and job.status (sanitized) are
+# interpolated. No untrusted user inputs reach any run: command.
+
+on:
+  schedule:
+    - cron: "30 4 * * *"   # 04:30 UTC daily, after audit_agent at 04:00 UTC
+  workflow_dispatch:
+
+concurrency:
+  group: orchestrator_agent
+  cancel-in-progress: true
+
+jobs:
+  orchestrate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - name: Record workflow start
+        env:
+          SUPABASE_URL:         ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
+        run: python agents/ops_recorder.py --phase start --agent workflow_orchestrator_agent
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+      - name: Install deps
+        run: |
+          python -m pip install --upgrade pip
+          pip install requests
+      - name: Run orchestrator
+        env:
+          SUPABASE_URL:         ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
+          TELEGRAM_BOT_TOKEN:   ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID:     ${{ secrets.TELEGRAM_CHAT_ID }}
+        run: python agents/orchestrator_agent.py
+      - name: Record workflow finish
+        if: always()
+        env:
+          SUPABASE_URL:         ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
+          WORKFLOW_STATUS:      ${{ job.status }}
+        run: python agents/ops_recorder.py --phase finish --agent workflow_orchestrator_agent --status "$WORKFLOW_STATUS"
