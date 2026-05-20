@@ -217,32 +217,87 @@ def test_sent_signals_fail_parse_bad_fired_at(monkeypatch):
 
 # ---------- sized decisions have live signals --------------------------------
 
-def test_sized_decisions_against_live(monkeypatch):
-    """A sized decision must reference a setup whose signal valid_until was
-    in the future at decision time."""
+def test_sized_decisions_pass_signal_live(monkeypatch):
+    """Signal's valid_until in the future at decision time → ok."""
     now = datetime.now(timezone.utc)
     future = (now + timedelta(days=2)).isoformat()
+
     def fake_sb(path, params):
         if path == "stock_risk_decisions":
             return [{"setup_id": 1, "created_at": now.isoformat()}]
         if path == "stock_trade_setups":
-            return [{"id": 1, "signal_id": 10, "valid_until": future}]
+            return [{"id": 1, "signal_id": 10}]
+        if path == "stock_signals":
+            return [{"id": 10, "valid_until": future}]
         return []
     monkeypatch.setattr(audit_agent, "sb_get", fake_sb)
     ok, _ = audit_agent.check_sized_decisions_have_live_signals()
     assert ok is True
 
 
-def test_sized_decisions_on_expired_signal(monkeypatch):
+def test_sized_decisions_fail_signal_expired(monkeypatch):
+    """Signal's valid_until in the past → fail; detail names setup AND signal."""
     now = datetime.now(timezone.utc)
     past = (now - timedelta(days=1)).isoformat()
+
     def fake_sb(path, params):
         if path == "stock_risk_decisions":
             return [{"setup_id": 99, "created_at": now.isoformat()}]
         if path == "stock_trade_setups":
-            return [{"id": 99, "signal_id": 10, "valid_until": past}]
+            return [{"id": 99, "signal_id": 42}]
+        if path == "stock_signals":
+            return [{"id": 42, "valid_until": past}]
         return []
     monkeypatch.setattr(audit_agent, "sb_get", fake_sb)
     ok, detail = audit_agent.check_sized_decisions_have_live_signals()
     assert ok is False
-    assert "99" in detail
+    assert "expired" in detail
+    assert "setup_id=99" in detail
+    assert "signal_id=42" in detail
+
+
+def test_sized_decisions_fail_divergence_guard(monkeypatch):
+    """Regression test for the bug being fixed.
+
+    setup.valid_until is in the future, signal.valid_until is in the past.
+    Pre-fix code read from the setup and returned ok (wrong). Post-fix code
+    must read from the signal and return not-ok. Detail must reference
+    the signal (or valid_until) — locks the contract."""
+    now = datetime.now(timezone.utc)
+    future = (now + timedelta(days=2)).isoformat()
+    past = (now - timedelta(days=1)).isoformat()
+
+    def fake_sb(path, params):
+        if path == "stock_risk_decisions":
+            return [{"setup_id": 7, "created_at": now.isoformat()}]
+        if path == "stock_trade_setups":
+            # setup.valid_until=future would mislead the OLD code into "ok".
+            # New code ignores this column entirely.
+            return [{"id": 7, "signal_id": 77, "valid_until": future}]
+        if path == "stock_signals":
+            return [{"id": 77, "valid_until": past}]
+        return []
+    monkeypatch.setattr(audit_agent, "sb_get", fake_sb)
+    ok, detail = audit_agent.check_sized_decisions_have_live_signals()
+    assert ok is False
+    assert "signal" in detail.lower() or "valid_until" in detail
+    assert "signal_id=77" in detail
+
+
+def test_sized_decisions_fail_signal_missing(monkeypatch):
+    """Setup references a signal_id with no matching signal row → signal_missing
+    bucket (distinct from setup_signal_id_null)."""
+    now = datetime.now(timezone.utc)
+
+    def fake_sb(path, params):
+        if path == "stock_risk_decisions":
+            return [{"setup_id": 1, "created_at": now.isoformat()}]
+        if path == "stock_trade_setups":
+            return [{"id": 1, "signal_id": 999}]
+        if path == "stock_signals":
+            return []   # signal 999 has been deleted
+        return []
+    monkeypatch.setattr(audit_agent, "sb_get", fake_sb)
+    ok, detail = audit_agent.check_sized_decisions_have_live_signals()
+    assert ok is False
+    assert "signal_missing" in detail

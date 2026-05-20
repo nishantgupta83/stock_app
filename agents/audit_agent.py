@@ -168,8 +168,13 @@ def check_sent_signals_have_dispatch_logs() -> tuple[bool, str]:
 
 
 def check_sized_decisions_have_live_signals() -> tuple[bool, str]:
-    """Every decision='size' must reference a setup whose signal had
-    valid_until > created_at at the time of decision."""
+    """Every decision='size' must reference a setup whose signal's
+    valid_until was > decision.created_at at decision time.
+
+    Reads stock_signals.valid_until (NOT stock_trade_setups.valid_until —
+    they can diverge, and the signal is the source of truth). Failure
+    buckets: setup_missing, setup_signal_id_null, signal_missing,
+    signal_valid_until_null, parse_failed, expired."""
     today_iso = datetime.now(timezone.utc).date().isoformat()
     decisions = sb_get("stock_risk_decisions", {
         "decision":   "eq.size",
@@ -180,28 +185,80 @@ def check_sized_decisions_have_live_signals() -> tuple[bool, str]:
     if not decisions:
         return True, "no sized decisions today"
     setup_ids = list({d["setup_id"] for d in decisions})
-    in_list = ",".join(str(i) for i in setup_ids)
+    setups_in_list = ",".join(str(i) for i in setup_ids)
     setups = sb_get("stock_trade_setups", {
-        "id":     f"in.({in_list})",
-        "select": "id,signal_id,valid_until",
+        "id":     f"in.({setups_in_list})",
+        "select": "id,signal_id",
     })
     setup_by_id = {s["id"]: s for s in setups}
-    bad = []
+
+    signal_ids = sorted({s["signal_id"] for s in setups if s.get("signal_id") is not None})
+    signal_by_id: dict = {}
+    if signal_ids:
+        signals_in_list = ",".join(str(i) for i in signal_ids)
+        signals = sb_get("stock_signals", {
+            "id":     f"in.({signals_in_list})",
+            "select": "id,valid_until",
+        })
+        signal_by_id = {s["id"]: s for s in signals}
+
+    setup_missing: list = []
+    setup_signal_id_null: list = []
+    signal_missing: list = []
+    signal_valid_until_null: list = []
+    parse_failed: list = []
+    expired: list = []
+
     for d in decisions:
-        s = setup_by_id.get(d["setup_id"])
-        if not s or not s.get("valid_until"):
-            bad.append(d["setup_id"])
+        setup = setup_by_id.get(d["setup_id"])
+        if not setup:
+            setup_missing.append(d["setup_id"])
+            continue
+        sig_id = setup.get("signal_id")
+        if sig_id is None:
+            setup_signal_id_null.append(d["setup_id"])
+            continue
+        signal = signal_by_id.get(sig_id)
+        if not signal:
+            signal_missing.append((d["setup_id"], sig_id))
+            continue
+        vu_raw = signal.get("valid_until")
+        if not vu_raw:
+            signal_valid_until_null.append((d["setup_id"], sig_id))
             continue
         try:
             decided_at = datetime.fromisoformat(d["created_at"].replace("Z", "+00:00"))
-            vu = datetime.fromisoformat(s["valid_until"].replace("Z", "+00:00"))
-            if vu <= decided_at:
-                bad.append(d["setup_id"])
-        except (TypeError, ValueError):
-            bad.append(d["setup_id"])
-    if bad:
-        return False, f"{len(bad)} sized decisions on expired/invalid setups: {bad[:5]}"
-    return True, f"all {len(decisions)} sized decisions reference live signals"
+            vu = datetime.fromisoformat(vu_raw.replace("Z", "+00:00"))
+        except (TypeError, ValueError, AttributeError):
+            parse_failed.append((d["setup_id"], sig_id))
+            continue
+        if vu <= decided_at:
+            expired.append((d["setup_id"], sig_id, vu_raw, d["created_at"]))
+
+    total_bad = (len(setup_missing) + len(setup_signal_id_null)
+                 + len(signal_missing) + len(signal_valid_until_null)
+                 + len(parse_failed) + len(expired))
+    if total_bad == 0:
+        return True, f"all {len(decisions)} sized decisions reference live signals"
+
+    parts = []
+    if expired:
+        ex = "; ".join(
+            f"setup_id={sid} signal_id={gid} signal.valid_until={vu} decided_at={da}"
+            for sid, gid, vu, da in expired[:3]
+        )
+        parts.append(f"expired={len(expired)} ({ex})")
+    if signal_missing:
+        parts.append(f"signal_missing={len(signal_missing)} (e.g. {signal_missing[:3]})")
+    if setup_missing:
+        parts.append(f"setup_missing={len(setup_missing)} (e.g. {setup_missing[:3]})")
+    if setup_signal_id_null:
+        parts.append(f"setup_signal_id_null={len(setup_signal_id_null)} (e.g. {setup_signal_id_null[:3]})")
+    if signal_valid_until_null:
+        parts.append(f"signal_valid_until_null={len(signal_valid_until_null)} (e.g. {signal_valid_until_null[:3]})")
+    if parse_failed:
+        parts.append(f"parse_failed={len(parse_failed)} (e.g. {parse_failed[:3]})")
+    return False, f"{total_bad} sized decisions failed signal-validity invariant: " + "; ".join(parts)
 
 
 def check_calibration_count_consistency() -> tuple[bool, str]:
