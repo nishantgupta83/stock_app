@@ -26,26 +26,39 @@ def test_invariants_list_has_five_entries():
 
 # ---------- calibration count consistency ------------------------------------
 
-def test_calibration_count_pass(monkeypatch):
+def test_calibration_count_pass_valid_counts(monkeypatch):
+    """0 <= n_correct <= n_observations on every row is the contract."""
     rows = [
-        {"rule_key": "a:b:h1d", "n_observations": 10, "n_correct": 7, "n_incorrect": 3},
-        {"rule_key": "c::h7d",  "n_observations": 5,  "n_correct": 3, "n_incorrect": 2},
+        {"rule_key": "a:b:h1d", "n_observations": 10, "n_correct": 7},
+        {"rule_key": "c::h7d",  "n_observations": 5,  "n_correct": 5},
+        {"rule_key": "d::h1d",  "n_observations": 0,  "n_correct": 0},
     ]
     monkeypatch.setattr(audit_agent, "sb_get", lambda path, params: rows)
     ok, detail = audit_agent.check_calibration_count_consistency()
     assert ok is True
-    assert "2 rules" in detail
+    assert "3 rules" in detail
 
 
-def test_calibration_count_fail(monkeypatch):
+def test_calibration_count_fail_negative_correct(monkeypatch):
     rows = [
-        {"rule_key": "broken:rule:h1d", "n_observations": 10, "n_correct": 5, "n_incorrect": 3},
-        {"rule_key": "fine:rule:h1d",   "n_observations": 8,  "n_correct": 4, "n_incorrect": 4},
+        {"rule_key": "broken:rule:h1d", "n_observations": 5, "n_correct": -1},
     ]
     monkeypatch.setattr(audit_agent, "sb_get", lambda path, params: rows)
     ok, detail = audit_agent.check_calibration_count_consistency()
     assert ok is False
     assert "broken:rule:h1d" in detail
+
+
+def test_calibration_count_fail_correct_exceeds_observations(monkeypatch):
+    rows = [
+        {"rule_key": "broken:rule:h1d", "n_observations": 10, "n_correct": 12},
+        {"rule_key": "fine:rule:h1d",   "n_observations": 8,  "n_correct": 4},
+    ]
+    monkeypatch.setattr(audit_agent, "sb_get", lambda path, params: rows)
+    ok, detail = audit_agent.check_calibration_count_consistency()
+    assert ok is False
+    assert "broken:rule:h1d" in detail
+    assert "fine:rule:h1d" not in detail
 
 
 # ---------- stale open paper trades ------------------------------------------

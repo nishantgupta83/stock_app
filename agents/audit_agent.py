@@ -140,20 +140,23 @@ def check_sized_decisions_have_live_signals() -> tuple[bool, str]:
 
 
 def check_calibration_count_consistency() -> tuple[bool, str]:
-    """For every rule, n_observations should equal n_correct + n_incorrect."""
+    """For every rule, 0 <= n_correct <= n_observations.
+
+    Schema (sql/0014) has only n_observations, n_correct, accuracy — there
+    is no n_incorrect column. The contract this check enforces is the
+    sanity bound on n_correct."""
     rows = sb_get("stock_rule_calibration", {
-        "select": "rule_key,n_observations,n_correct,n_incorrect",
+        "select": "rule_key,n_observations,n_correct",
         "limit":  "2000",
     })
     bad = []
     for r in rows:
         n = int(r.get("n_observations") or 0)
         c = int(r.get("n_correct") or 0)
-        ic = int(r.get("n_incorrect") or 0)
-        if n != c + ic:
-            bad.append(f"{r['rule_key']} ({n}!={c}+{ic})")
+        if not (0 <= c <= n):
+            bad.append(f"{r['rule_key']} (n_correct={c}, n_observations={n})")
     if bad:
-        return False, f"{len(bad)} rules with inconsistent counts: {bad[:3]}"
+        return False, f"{len(bad)} rules with out-of-bound n_correct: {bad[:3]}"
     return True, f"all {len(rows)} rules have consistent observation counts"
 
 
