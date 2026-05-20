@@ -87,29 +87,132 @@ def test_stale_open_detected(monkeypatch):
 
 # ---------- sent signals have dispatch logs ---------------------------------
 
-def test_sent_signals_logged_pass(monkeypatch):
+def _iso(dt):
+    return dt.isoformat().replace("+00:00", "Z")
+
+
+def test_sent_signals_pass_within_window(monkeypatch):
+    """Log sent_at within DISPATCH_WINDOW_HOURS of fired_at → ok."""
+    fired = datetime.now(timezone.utc)
+    sent_at = fired + timedelta(minutes=5)
+
     def fake_sb(path, params):
         if path == "stock_signals":
-            return [{"id": 1, "fired_at": "x"}, {"id": 2, "fired_at": "y"}]
+            return [{"id": 1, "fired_at": _iso(fired)}]
         if path == "stock_telegram_dispatch_log":
-            return [{"signal_id": 1}, {"signal_id": 2}]
+            return [{"signal_id": 1, "sent_at": _iso(sent_at), "delivery_ok": True}]
         return []
     monkeypatch.setattr(audit_agent, "sb_get", fake_sb)
     ok, _ = audit_agent.check_sent_signals_have_dispatch_logs()
     assert ok is True
 
 
-def test_sent_signals_missing_log(monkeypatch):
+def test_sent_signals_fail_outside_window(monkeypatch):
+    """Log exists with delivery_ok=true but 3h after fired_at → fail."""
+    fired = datetime.now(timezone.utc)
+    sent_at = fired + timedelta(hours=3)
+
     def fake_sb(path, params):
         if path == "stock_signals":
-            return [{"id": 1}, {"id": 2}, {"id": 99}]
+            return [{"id": 7, "fired_at": _iso(fired)}]
         if path == "stock_telegram_dispatch_log":
-            return [{"signal_id": 1}, {"signal_id": 2}]
+            return [{"signal_id": 7, "sent_at": _iso(sent_at), "delivery_ok": True}]
         return []
     monkeypatch.setattr(audit_agent, "sb_get", fake_sb)
     ok, detail = audit_agent.check_sent_signals_have_dispatch_logs()
     assert ok is False
+    assert "outside_window" in detail
+    assert "sig=7" in detail
+
+
+def test_sent_signals_pass_with_resend_closest_wins(monkeypatch):
+    """Two delivery_ok=true logs: one 6h late, one 4 min late. The closer one
+    wins; signal is in-window → ok. Locks the min() selection rule."""
+    fired = datetime.now(timezone.utc)
+    late = fired + timedelta(hours=6)
+    close = fired + timedelta(minutes=4)
+
+    def fake_sb(path, params):
+        if path == "stock_signals":
+            return [{"id": 3, "fired_at": _iso(fired)}]
+        if path == "stock_telegram_dispatch_log":
+            return [
+                {"signal_id": 3, "sent_at": _iso(late),  "delivery_ok": True},
+                {"signal_id": 3, "sent_at": _iso(close), "delivery_ok": True},
+            ]
+        return []
+    monkeypatch.setattr(audit_agent, "sb_get", fake_sb)
+    ok, _ = audit_agent.check_sent_signals_have_dispatch_logs()
+    assert ok is True
+
+
+def test_sent_signals_fail_missing_log(monkeypatch):
+    """Sent signal with no dispatch_log row → missing_log bucket."""
+    fired = datetime.now(timezone.utc)
+
+    def fake_sb(path, params):
+        if path == "stock_signals":
+            return [{"id": 99, "fired_at": _iso(fired)}]
+        if path == "stock_telegram_dispatch_log":
+            return []
+        return []
+    monkeypatch.setattr(audit_agent, "sb_get", fake_sb)
+    ok, detail = audit_agent.check_sent_signals_have_dispatch_logs()
+    assert ok is False
+    assert "missing_log" in detail
     assert "99" in detail
+
+
+def test_sent_signals_fail_all_delivery_false(monkeypatch):
+    """Two logs for one signal, both delivery_ok=false → missing_log bucket
+    (operationally identical to having no log at all)."""
+    fired = datetime.now(timezone.utc)
+
+    def fake_sb(path, params):
+        if path == "stock_signals":
+            return [{"id": 5, "fired_at": _iso(fired)}]
+        if path == "stock_telegram_dispatch_log":
+            return [
+                {"signal_id": 5, "sent_at": _iso(fired + timedelta(minutes=1)), "delivery_ok": False},
+                {"signal_id": 5, "sent_at": _iso(fired + timedelta(minutes=2)), "delivery_ok": False},
+            ]
+        return []
+    monkeypatch.setattr(audit_agent, "sb_get", fake_sb)
+    ok, detail = audit_agent.check_sent_signals_have_dispatch_logs()
+    assert ok is False
+    assert "missing_log" in detail
+    assert "5" in detail
+
+
+def test_sent_signals_fail_parse_bad_sent_at(monkeypatch):
+    """Log row with malformed sent_at — distinct bucket, not 'missing'."""
+    fired = datetime.now(timezone.utc)
+
+    def fake_sb(path, params):
+        if path == "stock_signals":
+            return [{"id": 11, "fired_at": _iso(fired)}]
+        if path == "stock_telegram_dispatch_log":
+            return [{"signal_id": 11, "sent_at": "not-a-timestamp", "delivery_ok": True}]
+        return []
+    monkeypatch.setattr(audit_agent, "sb_get", fake_sb)
+    ok, detail = audit_agent.check_sent_signals_have_dispatch_logs()
+    assert ok is False
+    assert "parse_failed_sent" in detail
+
+
+def test_sent_signals_fail_parse_bad_fired_at(monkeypatch):
+    """Signal with malformed fired_at — distinct bucket from log-parse fails."""
+    def fake_sb(path, params):
+        if path == "stock_signals":
+            return [{"id": 22, "fired_at": "bogus"}]
+        if path == "stock_telegram_dispatch_log":
+            return []
+        return []
+    monkeypatch.setattr(audit_agent, "sb_get", fake_sb)
+    ok, detail = audit_agent.check_sent_signals_have_dispatch_logs()
+    assert ok is False
+    assert "parse_failed_fired" in detail
+    assert "22" in detail
 
 
 # ---------- sized decisions have live signals --------------------------------

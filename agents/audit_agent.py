@@ -28,6 +28,7 @@ from __future__ import annotations
 import os
 import sys
 import time
+from collections import defaultdict
 from datetime import datetime, timedelta, timezone
 
 import requests
@@ -47,6 +48,11 @@ HEADERS_SB = {
 # value from a week ago, flag it as a likely silent ingest failure.
 EVENT_DROP_THRESHOLD = 0.50
 STALE_OPEN_GRACE_DAYS = 5
+# Invariant #1: max gap between stock_signals.fired_at and the matching
+# stock_telegram_dispatch_log.sent_at (delivery_ok=true). 2h covers the
+# retry_dispatch_failed cadence in thesis_agent — tighten later once we have
+# real retry-timing data.
+DISPATCH_WINDOW_HOURS = 2
 
 
 def sb_get(path: str, params: dict) -> list[dict]:
@@ -77,8 +83,13 @@ def sb_count(path: str, params: dict) -> int:
 # ---------- invariants -------------------------------------------------------
 
 def check_sent_signals_have_dispatch_logs() -> tuple[bool, str]:
-    """Every status_v2='sent' signal must have delivery_ok=true in the
-    dispatch log within ±1h of fired_at."""
+    """Every status_v2='sent' signal today has a delivery_ok=true dispatch
+    log with sent_at within ±DISPATCH_WINDOW_HOURS of fired_at.
+
+    For signals with multiple delivery_ok=true logs (retry path), the log
+    closest to fired_at is the one tested against the window. Failure
+    buckets are reported separately so Telegram triage is actionable:
+    missing_log, outside_window, parse_failed_fired, parse_failed_sent."""
     today_iso = datetime.now(timezone.utc).date().isoformat()
     sent = sb_get("stock_signals", {
         "status_v2": "eq.sent",
@@ -91,15 +102,69 @@ def check_sent_signals_have_dispatch_logs() -> tuple[bool, str]:
     sent_ids = [s["id"] for s in sent]
     in_list = ",".join(str(i) for i in sent_ids)
     logs = sb_get("stock_telegram_dispatch_log", {
-        "signal_id":   f"in.({in_list})",
-        "delivery_ok": "eq.true",
-        "select":      "signal_id",
+        "signal_id": f"in.({in_list})",
+        "select":    "signal_id,sent_at,delivery_ok",
     })
-    logged_ids = {row["signal_id"] for row in logs}
-    missing = [i for i in sent_ids if i not in logged_ids]
-    if missing:
-        return False, f"{len(missing)} sent signals missing dispatch_log: {missing[:5]}"
-    return True, f"all {len(sent_ids)} sent signals have dispatch logs"
+    logs_by_sig: dict = defaultdict(list)
+    for row in logs:
+        logs_by_sig[row["signal_id"]].append(row)
+
+    window = timedelta(hours=DISPATCH_WINDOW_HOURS)
+    missing_log: list = []
+    outside_window: list = []
+    parse_failed_fired: list = []
+    parse_failed_sent: list = []
+
+    for s in sent:
+        sig_id = s["id"]
+        try:
+            fired = datetime.fromisoformat(s["fired_at"].replace("Z", "+00:00"))
+        except (TypeError, ValueError, AttributeError):
+            parse_failed_fired.append(sig_id)
+            continue
+        ok_logs = [lg for lg in logs_by_sig.get(sig_id, []) if lg.get("delivery_ok")]
+        if not ok_logs:
+            # No delivery_ok=true log — operationally identical whether the row
+            # was absent entirely or every row was delivery_ok=false.
+            missing_log.append(sig_id)
+            continue
+        parsed = []
+        sent_parse_err = False
+        for lg in ok_logs:
+            try:
+                parsed.append((lg, datetime.fromisoformat(lg["sent_at"].replace("Z", "+00:00"))))
+            except (TypeError, ValueError, AttributeError):
+                sent_parse_err = True
+        if not parsed:
+            parse_failed_sent.append(sig_id)
+            continue
+        _, closest_at = min(parsed, key=lambda p: abs(p[1] - fired))
+        delta = abs(closest_at - fired)
+        if delta > window:
+            outside_window.append((sig_id, int(delta.total_seconds() // 60)))
+            continue
+        if sent_parse_err:
+            # The chosen log parsed and is in-window, but at least one other
+            # log row for this signal had an unparseable sent_at — surface it
+            # as a parse-fail signal so the upstream bug isn't masked.
+            parse_failed_sent.append(sig_id)
+
+    total_bad = (len(missing_log) + len(outside_window)
+                 + len(parse_failed_fired) + len(parse_failed_sent))
+    if total_bad == 0:
+        return True, f"all {len(sent)} sent signals dispatched within ±{DISPATCH_WINDOW_HOURS}h"
+
+    parts = []
+    if missing_log:
+        parts.append(f"missing_log={len(missing_log)} (e.g. {missing_log[:3]})")
+    if outside_window:
+        ex = ", ".join(f"sig={sid}+{m}m" for sid, m in outside_window[:3])
+        parts.append(f"outside_window={len(outside_window)} ({ex})")
+    if parse_failed_fired:
+        parts.append(f"parse_failed_fired={len(parse_failed_fired)} (e.g. {parse_failed_fired[:3]})")
+    if parse_failed_sent:
+        parts.append(f"parse_failed_sent={len(parse_failed_sent)} (e.g. {parse_failed_sent[:3]})")
+    return False, f"{total_bad} sent signals failed dispatch invariant: " + "; ".join(parts)
 
 
 def check_sized_decisions_have_live_signals() -> tuple[bool, str]:
