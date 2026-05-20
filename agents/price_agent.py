@@ -427,7 +427,13 @@ MATURITY_MIN_N    = 30
 def fetch_open_paper_trades_to_close() -> list[dict]:
     """Open trades whose horizon has expired (entry + horizon_days session
     close has passed). Conservative: include trades older than 1 day so we
-    don't try to reconcile something opened 5 minutes ago."""
+    don't try to reconcile something opened 5 minutes ago.
+
+    Limit 2000: a bulk backfill can leave hundreds of legitimately-open
+    h=30 trades pinned to the queue head (their exit window hasn't arrived
+    yet), and a too-tight limit blocks newer closeable trades from being
+    seen at all. 2000 is comfortably above any expected backfill cohort
+    while staying within a single PostgREST response."""
     cutoff = (datetime.now(timezone.utc) - timedelta(days=1)).date().isoformat()
     return sb_get("stock_event_paper_trades", {
         "status":   "eq.open",
@@ -435,7 +441,7 @@ def fetch_open_paper_trades_to_close() -> list[dict]:
         "select":   "id,event_id,event_type,event_subtype,ticker,direction,"
                     "entry_at,entry_price,horizon_days,rule_key,vehicle_type",
         "order":    "entry_at.asc",
-        "limit":    "500",
+        "limit":    "2000",
     })
 
 
