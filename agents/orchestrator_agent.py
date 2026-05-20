@@ -61,7 +61,7 @@ EXPECTED: list[AgentExpectation] = [
     AgentExpectation("site_generator",        "every 15 min, 24/7",    1.5,  False),
     AgentExpectation("risk_agent",            "every 30 min, 24/7",    2.0,  False),
     AgentExpectation("trade_setup_agent",     "every 30 min, 24/7",    2.0,  False),
-    AgentExpectation("event_paper_agent",     "hourly, 24/7",          3.0,  False),
+    AgentExpectation("event_paper_agent",     "hourly, 24/7",          4.0,  False),
     AgentExpectation("activist_insider_agent","every 2h, 24/7",        5.0,  False),
 
     # ----- daily anytime -----
@@ -105,9 +105,18 @@ def effective_max_gap_hours(spec: AgentExpectation, now: datetime) -> float:
 
 
 def fetch_last_run(agent_name: str) -> datetime | None:
+    """Most recent started_at for an agent.
+
+    Some agents record their own job_run via job_run_start() inside the
+    Python script (e.g. thesis_agent, audit_agent), while others only get
+    recorded by the workflow wrapper as 'workflow_<name>' (e.g. archive_agent,
+    which has no in-script job_run call). The orchestrator must look at both
+    — the latest of either is the true "this agent ran" timestamp.
+    """
+    in_list = f"({agent_name},workflow_{agent_name})"
     r = requests.get(
         f"{SUPABASE_URL}/rest/v1/stock_job_runs"
-        f"?agent=eq.{agent_name}&order=started_at.desc&limit=1"
+        f"?agent=in.{in_list}&order=started_at.desc&limit=1"
         f"&select=started_at",
         headers=HEADERS_SB, timeout=10,
     )
