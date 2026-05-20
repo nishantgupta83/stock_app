@@ -253,25 +253,10 @@ def recent_events_context_batch(tickers: list[str], hours: int = 168) -> dict[st
 
 
 # ============================================================
-# Alert send — direct Telegram + signal log
+# Signal insert
+# (Telegram send now routes through telegram_dispatcher.send_and_log so
+#  every alert lands in stock_telegram_dispatch_log — audit invariant #1.)
 # ============================================================
-
-def send_telegram(text: str) -> tuple[bool, int | None, str | None]:
-    if not BOT_TOKEN or not CHAT_ID:
-        return False, None, "missing TELEGRAM env"
-    try:
-        r = requests.post(
-            f"https://api.telegram.org/bot{BOT_TOKEN}/sendMessage",
-            data={"chat_id": CHAT_ID, "text": text, "parse_mode": "HTML",
-                  "disable_web_page_preview": "true"},
-            timeout=15,
-        )
-        ok = r.status_code == 200 and r.json().get("ok", False)
-        msg_id = r.json().get("result", {}).get("message_id") if ok else None
-        err = None if ok else r.text[:300]
-        return ok, msg_id, err
-    except Exception as e:  # noqa: BLE001
-        return False, None, str(e)
 
 
 def insert_spike_signal(ticker: str, snap: dict, context: str) -> int | None:
@@ -362,6 +347,7 @@ def main() -> int:
         context_by_ticker = recent_events_context_batch(
             [t for t in spike_tickers if t not in already_alerted]
         )
+        from telegram_dispatcher import send_and_log
         for ticker, snap in spikes[:ALERT_CAP]:
             if ticker in already_alerted:
                 print(f"  {ticker}: dedupe — already alerted today, skip")
@@ -371,7 +357,7 @@ def main() -> int:
             if sig_id is None:
                 continue
             text = format_spike_alert(ticker, snap, context_str)
-            ok, msg_id, err = send_telegram(text)
+            ok = send_and_log(sig_id, text, parse_mode="HTML")
             status = "sent" if ok else "dispatch_failed"
             patch_r = requests.patch(
                 f"{SUPABASE_URL}/rest/v1/stock_signals?id=eq.{sig_id}",
@@ -384,7 +370,7 @@ def main() -> int:
                 n_alerts += 1
                 print(f"  {ticker}: ALERT SENT {snap['pct']*100:+.1f}% (sig_id={sig_id})")
             else:
-                print(f"  {ticker}: dispatch failed — {err}", file=sys.stderr)
+                print(f"  {ticker}: dispatch failed", file=sys.stderr)
 
         elapsed = time.time() - started
         print(f"DONE in {elapsed:.1f}s — checked {n_checked}, alerted {n_alerts}")

@@ -181,23 +181,16 @@ def send_alert(ticker: str, kind: str, title: str, link: str) -> bool:
         json=sig_row, timeout=15,
     )
     sig_id = sr.json()[0]["id"] if sr.status_code in (200,201) and sr.json() else None
-    try:
-        tr = requests.post(
-            f"https://api.telegram.org/bot{BOT_TOKEN}/sendMessage",
-            data={"chat_id": CHAT_ID, "text": text, "parse_mode": "HTML",
-                  "disable_web_page_preview": "true"},
-            timeout=15,
-        )
-        ok = tr.status_code == 200 and tr.json().get("ok", False)
-    except Exception:
-        ok = False
-    if sig_id is not None:
-        requests.patch(
-            f"{SUPABASE_URL}/rest/v1/stock_signals?id=eq.{sig_id}",
-            headers=HEADERS_SB,
-            json={"status_v2": "sent" if ok else "dispatch_failed"},
-            timeout=10,
-        )
+    if sig_id is None:
+        return False
+    from telegram_dispatcher import send_and_log
+    ok = send_and_log(sig_id, text, parse_mode="HTML")
+    requests.patch(
+        f"{SUPABASE_URL}/rest/v1/stock_signals?id=eq.{sig_id}",
+        headers=HEADERS_SB,
+        json={"status_v2": "sent" if ok else "dispatch_failed"},
+        timeout=10,
+    )
     return ok
 
 

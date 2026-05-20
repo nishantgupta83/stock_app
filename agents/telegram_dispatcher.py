@@ -80,9 +80,30 @@ def inline_keyboard(signal_id: int) -> dict:
 
 
 def log_dispatch(signal_id: int, payload_text: str, ok: bool, msg_id: int | None, err: str | None) -> None:
-    requests.post(
-        f"{SUPABASE_URL}/rest/v1/stock_telegram_dispatch_log?on_conflict=dedupe_key",
-        headers={**HEADERS_SB, "Prefer": "resolution=merge-duplicates,return=minimal"},
+    """Append a row to stock_telegram_dispatch_log.
+
+    Cannot use PostgREST `?on_conflict=dedupe_key` here — the unique index on
+    dedupe_key is partial (sql/0004:77-79 `WHERE dedupe_key IS NOT NULL`)
+    and PostgREST silently 42P10's on partial indexes (CLAUDE.md rule #2).
+    Pattern: pre-check for an existing dedupe_key row, plain INSERT if
+    absent. Re-dispatches of the same signal are a no-op (already logged).
+    """
+    dedupe = f"dispatch_signal_{signal_id}"
+    try:
+        existing = requests.get(
+            f"{SUPABASE_URL}/rest/v1/stock_telegram_dispatch_log"
+            f"?dedupe_key=eq.{dedupe}&select=id&limit=1",
+            headers=HEADERS_SB, timeout=5,
+        )
+        if existing.status_code == 200 and existing.json():
+            return
+    except Exception as e:  # noqa: BLE001
+        print(f"  log_dispatch precheck failed: {e}", file=sys.stderr)
+        # fall through — try the INSERT; a duplicate-key error there will
+        # just mean we lost the race, which is fine.
+    insert = requests.post(
+        f"{SUPABASE_URL}/rest/v1/stock_telegram_dispatch_log",
+        headers={**HEADERS_SB, "Prefer": "return=minimal"},
         json={
             "signal_id":       signal_id,
             "sent_at":         datetime.now(timezone.utc).isoformat(),
@@ -90,23 +111,68 @@ def log_dispatch(signal_id: int, payload_text: str, ok: bool, msg_id: int | None
             "delivery_ok":     ok,
             "telegram_msg_id": msg_id,
             "error":           err,
-            "dedupe_key":      f"dispatch_signal_{signal_id}",
+            "dedupe_key":      dedupe,
         }, timeout=10,
     )
+    if insert.status_code not in (200, 201, 204):
+        # 409 from the partial-index race is acceptable; anything else is a
+        # real failure operators need to see.
+        if insert.status_code != 409:
+            print(f"  log_dispatch INSERT failed: {insert.status_code} {insert.text[:200]}",
+                  file=sys.stderr)
+
+
+def send_and_log(signal_id: int, text: str, parse_mode: str | None = None,
+                 disable_web_page_preview: bool = True) -> bool:
+    """Send a Telegram message and append a dispatch_log row in one call.
+
+    This is the entry point every signal-emitting agent should use after
+    inserting its stock_signals row — it closes the audit-invariant contract
+    (status_v2='sent' ⇔ dispatch_log row with delivery_ok=true) that
+    audit_agent invariant #1 enforces. Returns the delivery_ok boolean.
+    """
+    if not BOT_TOKEN or not CHAT_ID:
+        print(f"  send_and_log({signal_id}): missing TELEGRAM_BOT_TOKEN/CHAT_ID",
+              file=sys.stderr)
+        return False
+    body: dict = {"chat_id": CHAT_ID, "text": text}
+    if parse_mode:
+        body["parse_mode"] = parse_mode
+    if disable_web_page_preview:
+        body["disable_web_page_preview"] = "true"
+    try:
+        r = requests.post(f"https://api.telegram.org/bot{BOT_TOKEN}/sendMessage",
+                          data=body, timeout=15)
+        ok = r.status_code == 200 and r.json().get("ok", False)
+        msg_id = r.json().get("result", {}).get("message_id") if ok else None
+        err = None if ok else r.text[:500]
+        log_dispatch(signal_id, text, ok, msg_id, err)
+        return ok
+    except Exception as e:  # noqa: BLE001
+        log_dispatch(signal_id, text, False, None, str(e))
+        return False
 
 
 def dispatch_signal(signal_id: int) -> bool:
+    """Used by thesis_agent: fetch the signal, format with the WATCH/RESEARCH
+    payload, send via send_and_log. The inline_keyboard branch is the only
+    reason this exists separately from send_and_log."""
     sig = fetch_signal(signal_id)
     if sig is None:
         print(f"  dispatch: signal {signal_id} not found", file=sys.stderr)
         return False
     text = format_payload(sig)
-    body: dict = {
-        "chat_id": CHAT_ID,
-        "text":    text,
+    if not TELEGRAM_CALLBACKS_ENABLED:
+        return send_and_log(signal_id, text, disable_web_page_preview=False)
+    # Callback-enabled path retains the inline keyboard — keep the inline
+    # send so we can attach reply_markup; still routes through log_dispatch.
+    if not BOT_TOKEN or not CHAT_ID:
+        return False
+    body = {
+        "chat_id":     CHAT_ID,
+        "text":        text,
+        "reply_markup": json.dumps(inline_keyboard(signal_id)),
     }
-    if TELEGRAM_CALLBACKS_ENABLED:
-        body["reply_markup"] = json.dumps(inline_keyboard(signal_id))
     try:
         r = requests.post(f"https://api.telegram.org/bot{BOT_TOKEN}/sendMessage",
                           data=body, timeout=15)
