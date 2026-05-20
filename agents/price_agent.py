@@ -604,6 +604,29 @@ def compute_paper_outcome(trade: dict, bars: dict[date, dict[str, float]]) -> di
     }
 
 
+def _max_end_by_ticker(trades: list[dict]) -> dict[str, date]:
+    """Per-ticker maximum end_date across all trades in this batch.
+
+    Previously the bars_cache window was set by the FIRST trade encountered
+    for a ticker; a later trade with a larger horizon would see bars too
+    narrow to reach its exit target, close_on_or_after returned None, and
+    the trade silently stayed open across every reconcile run. Computing
+    max-end per ticker fixes that without losing the round-trip
+    optimization."""
+    out: dict[str, date] = {}
+    for t in trades:
+        try:
+            entry = datetime.fromisoformat(t["entry_at"].replace("Z", "+00:00")).date()
+        except Exception:
+            continue
+        h = int(t.get("horizon_days") or 1)
+        end = entry + timedelta(days=h + 3)   # buffer for weekends/holidays
+        cur = out.get(t["ticker"])
+        if cur is None or end > cur:
+            out[t["ticker"]] = end
+    return out
+
+
 def reconcile_event_paper_trades() -> tuple[int, int, int]:
     """Close mature paper trades, update per-rule calibration, return
     (n_closed, n_rules_updated, n_newly_matured)."""
@@ -616,7 +639,11 @@ def reconcile_event_paper_trades() -> tuple[int, int, int]:
     enrich_cal_from_archive(cal, archive_index)
     n_closed = n_rules_updated = n_matured = 0
 
-    # Cache bars per ticker — avoid yfinance round-trips for the same ticker
+    # Cache bars per ticker — avoid yfinance round-trips for the same ticker.
+    # Cache window is the WIDEST horizon for that ticker in this batch so a
+    # mixed-horizon batch (h=1, 7, 15, 30) all sees bars deep enough to
+    # reach its exit target.
+    max_end_by_ticker = _max_end_by_ticker(trades)
     bars_cache: dict[str, dict] = {}
 
     for t in trades:
@@ -625,10 +652,8 @@ def reconcile_event_paper_trades() -> tuple[int, int, int]:
             entry_date = datetime.fromisoformat(t["entry_at"].replace("Z", "+00:00")).date()
         except Exception:
             continue
-        horizon = int(t.get("horizon_days") or 1)
-        end_date = entry_date + timedelta(days=horizon + 3)   # buffer for weekends/holidays
         if ticker not in bars_cache:
-            bars_cache[ticker] = fetch_bars(ticker, entry_date, end_date)
+            bars_cache[ticker] = fetch_bars(ticker, entry_date, max_end_by_ticker[ticker])
         bars = bars_cache[ticker]
         if not bars:
             continue
