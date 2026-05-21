@@ -215,13 +215,22 @@ def fetch_latest_closes(tickers: list[str]) -> dict[str, dict]:
                 except Exception as exc:
                     print(f"  yfinance fallback {ticker}: {exc}", file=sys.stderr)
         if backfill_rows:
-            requests.post(
-                f"{SUPABASE_URL}/rest/v1/stock_raw_prices?on_conflict=ticker,ts",
+            # CLAUDE.md rule #2: PostgREST on_conflict=ticker,ts fails 42P10
+            # against stock_raw_prices (the table's unique index is partial).
+            # Plain INSERT with resolution=ignore-duplicates is the working
+            # pattern used elsewhere in this repo. Also check status — the
+            # prior unconditional print masked the 400 for weeks.
+            wbr = requests.post(
+                f"{SUPABASE_URL}/rest/v1/stock_raw_prices",
                 headers={**HEADERS_SB, "Prefer": "resolution=ignore-duplicates,return=minimal"},
                 json=backfill_rows,
                 timeout=20,
             )
-            print(f"  wrote {len(backfill_rows)} yfinance fallback price(s) to stock_raw_prices")
+            if wbr.status_code in (200, 201, 204):
+                print(f"  wrote {len(backfill_rows)} yfinance fallback price(s) to stock_raw_prices")
+            else:
+                print(f"  yfinance writeback FAILED {wbr.status_code}: {wbr.text[:200]}",
+                      file=sys.stderr)
     return latest
 
 
