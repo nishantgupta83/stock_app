@@ -200,13 +200,17 @@ Probability caveats:
 
 ## Dashboard tabs
 
-`Dashboard · Signals · Events · Setups · Risk · Agents · Backtest · Paper Trades · Calibration · Learning` — plus
+`Dashboard · Signals · Events · Setups · Risk · Agents · Backtest · Paper Trades · Calibration · Weekly · Learning` — plus
 per-ticker chart pages under `/ticker/{TICKER}.html` (180-day price + filing/earnings overlay +
 "Big Moves" explanations) and per-alert detail pages under `/alert/{id}.html` for the link in
 every Telegram message. **Setups** (Layer 3) shows tradable proposals with their stop/target
 and reason-to-skip; **Risk** (Layer 4) shows the size/skip decisions with the full
 `rules_applied` audit trail. The **Calibration** tab surfaces per-rule paper-trade accuracy and
-flags any rule that's crossed the BUY/SELL maturity gate.
+flags any rule that's crossed the BUY/SELL maturity gate. The **Weekly** tab is a 7-day
+retrospective with three sections: performance (win rate, equity curve, best/worst rule),
+rule maturity (gap to the 90% / n≥30 graduation gate, flags direction-inverted rules), and a
+signal-to-outcome funnel (events landed → signals scored → trades opened → closed → winners).
+It self-detects backfill artifacts and shows a banner when synthetic exits dominate the window.
 
 ## Test suite
 

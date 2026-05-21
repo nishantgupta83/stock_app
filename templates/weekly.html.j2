@@ -1,0 +1,202 @@
+{% extends "_layout.html.j2" %}
+{% block content %}
+<h2>Weekly review</h2>
+<p style="color:var(--muted);font-size:12px">
+  {{ weekly.window_start }} → {{ weekly.window_end }} ·
+  performance, rule maturity, and signal-to-outcome funnel for the last {{ weekly.window_days }} days.
+  Paper-only until rule maturity unlocks BUY/SELL.
+</p>
+
+{# ─────────────────────────── § 1 · Performance retrospective ─────────────────────────── #}
+<h3 style="margin-top:24px">§ 1 · Performance retrospective</h3>
+
+<div class="cards">
+  <div class="card">
+    <div class="label">Trades opened</div>
+    <div class="value">{{ weekly.performance.n_opened }}</div>
+    <div class="sub">in window</div>
+  </div>
+  <div class="card">
+    <div class="label">Trades closed</div>
+    <div class="value">{{ weekly.performance.n_closed }}</div>
+    <div class="sub">{{ weekly.performance.n_wins }} win · {{ weekly.performance.n_losses }} loss</div>
+  </div>
+  <div class="card {% if weekly.performance.win_rate is not none and weekly.performance.win_rate >= 0.55 %}ok{% elif weekly.performance.win_rate is not none and weekly.performance.win_rate < 0.45 %}warn{% endif %}">
+    <div class="label">Win rate</div>
+    <div class="value">{% if weekly.performance.win_rate is none %}—{% else %}{{ "%.0f%%"|format(weekly.performance.win_rate * 100) }}{% endif %}</div>
+    <div class="sub">{{ weekly.performance.n_closed }} closed</div>
+  </div>
+  <div class="card {% if weekly.performance.avg_return_pct >= 0 %}ok{% else %}warn{% endif %}">
+    <div class="label">Avg return</div>
+    <div class="value">{{ "%+.2f%%"|format(weekly.performance.avg_return_pct) }}</div>
+    <div class="sub">win {{ "%+.2f%%"|format(weekly.performance.avg_win_pct) }} · loss {{ "%+.2f%%"|format(weekly.performance.avg_loss_pct) }}</div>
+  </div>
+  <div class="card">
+    <div class="label">Profit factor</div>
+    <div class="value">{% if weekly.performance.profit_factor is none %}—{% else %}{{ "%.2f"|format(weekly.performance.profit_factor) }}{% endif %}</div>
+    <div class="sub">{% if weekly.performance.profit_factor is none %}n&lt;10 closed{% else %}sum(wins) / |sum(losses)|{% endif %}</div>
+  </div>
+</div>
+
+{% if weekly.performance.equity_points %}
+<div class="note" style="margin-top:12px">
+  <strong>Equity curve (additive %):</strong>
+  start 0% → end {{ "%+.2f%%"|format(weekly.performance.equity_points[-1].v) }}
+  over {{ weekly.performance.equity_points|length }} closed trades.
+</div>
+<canvas id="equity-chart" height="80" style="margin:8px 0 16px"></canvas>
+{% else %}
+<div class="empty">No closed trades in this window.</div>
+{% endif %}
+
+{% if weekly.performance.n_closed >= 100 %}
+<div class="note" style="margin-top:12px;background:rgba(255,176,80,0.06);border-left:3px solid #ffb050">
+  <strong>Backfill artifact warning:</strong>
+  {{ weekly.performance.n_closed }} trades closed in {{ weekly.window_days }} days is unusually high.
+  If a historical backfill was run recently, many synthetic trades' horizon endpoints land inside this window,
+  inflating both throughput and the win-rate sample. The numbers are correct for the data; subsequent weeks
+  (once synthetic exits age out) will reflect organic pipeline output.
+</div>
+{% endif %}
+
+{% if weekly.performance.best_rule or weekly.performance.worst_rule %}
+<table style="margin-top:8px">
+  <thead><tr><th>Rule</th><th class="num">n</th><th class="num">avg return / trade</th></tr></thead>
+  <tbody>
+    {% if weekly.performance.best_rule %}
+    <tr>
+      <td><strong>{{ weekly.performance.best_rule.rule_key }}</strong> <span class="tag ok">best by net</span></td>
+      <td class="num">{{ weekly.performance.best_rule.n }}</td>
+      <td class="num pos">{{ "%+.2f%%"|format(weekly.performance.best_rule.avg_return * 100) }}</td>
+    </tr>
+    {% endif %}
+    {% if weekly.performance.worst_rule and weekly.performance.worst_rule != weekly.performance.best_rule %}
+    <tr>
+      <td><strong>{{ weekly.performance.worst_rule.rule_key }}</strong> <span class="tag warn">worst by net</span></td>
+      <td class="num">{{ weekly.performance.worst_rule.n }}</td>
+      <td class="num {% if weekly.performance.worst_rule.avg_return < 0 %}neg{% else %}pos{% endif %}">{{ "%+.2f%%"|format(weekly.performance.worst_rule.avg_return * 100) }}</td>
+    </tr>
+    {% endif %}
+  </tbody>
+</table>
+{% endif %}
+
+{# ─────────────────────────── § 2 · Rule maturity ─────────────────────────── #}
+<h3 style="margin-top:32px">§ 2 · Rule maturity (toward BUY/SELL graduation)</h3>
+<p style="color:var(--muted);font-size:12px">
+  Gate: accuracy ≥ 90% with n ≥ 30 closed paper trades. Until then the rule produces WATCH / RESEARCH / AVOID_CHASE vocabulary only.
+  Showing top {{ weekly.maturity|length }} of {{ weekly.maturity_total }} rules with n ≥ 5.
+</p>
+
+{% if weekly.maturity %}
+<table>
+  <thead>
+    <tr>
+      <th>rule_key</th>
+      <th class="num">n</th>
+      <th class="num">accuracy</th>
+      <th class="num">avg return</th>
+      <th>gap to 90% / 30</th>
+      <th>state</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for r in weekly.maturity %}
+    <tr>
+      <td><strong>{{ r.rule_key }}</strong></td>
+      <td class="num">{{ r.n }}</td>
+      <td class="num">{{ "%.0f%%"|format(r.accuracy * 100) }}</td>
+      <td class="num {% if r.mean_pct >= 0 %}pos{% else %}neg{% endif %}">{{ "%+.2f%%"|format(r.mean_pct * 100) }}</td>
+      <td>
+        {% if r.is_mature %}—
+        {% elif r.gap_n == 0 and r.gap_acc_pct == 0 %}—
+        {% else %}
+          {% if r.gap_acc_pct > 0 %}+{{ "%.0f"|format(r.gap_acc_pct) }}% acc{% endif %}
+          {% if r.gap_acc_pct > 0 and r.gap_n > 0 %} · {% endif %}
+          {% if r.gap_n > 0 %}{{ r.gap_n }} more trades{% endif %}
+        {% endif %}
+      </td>
+      <td>
+        {% if r.is_mature %}<span class="tag ok">mature</span>
+        {% elif r.inverted %}<span class="tag warn">inverted — review direction prior</span>
+        {% else %}<span class="tag">paper-only</span>{% endif %}
+      </td>
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
+{% else %}
+<div class="empty">No rules with n ≥ 5 trades yet.</div>
+{% endif %}
+
+{# ─────────────────────────── § 3 · Signal-to-outcome funnel ─────────────────────────── #}
+<h3 style="margin-top:32px">§ 3 · Signal-to-outcome funnel</h3>
+<p style="color:var(--muted);font-size:12px">
+  Throughput over the last {{ weekly.window_days }} days. Each stage shows count and conversion from the prior stage —
+  use this to spot where the pipeline is leaking.
+</p>
+
+{% set f = weekly.funnel %}
+{% set max_count = [f.events_landed, f.signals_fired, f.trades_opened, f.trades_closed, f.winners, 1]|max %}
+{% macro funnel_row(label, count, ratio, ratio_label) -%}
+  {% set pct = (count / max_count * 100) if max_count else 0 %}
+  <tr>
+    <td><strong>{{ label }}</strong></td>
+    <td class="num">{{ "{:,}".format(count) }}</td>
+    <td><div style="background:var(--card-bg,#1e2a3a);height:14px;width:{{ pct }}%;min-width:2px;border-radius:3px"></div></td>
+    <td>{% if ratio is not none %}{{ "%.1f%%"|format(ratio * 100) }} <span style="color:var(--muted);font-size:11px">{{ ratio_label }}</span>{% else %}—{% endif %}</td>
+  </tr>
+{%- endmacro %}
+
+<table style="margin-top:8px">
+  <thead><tr><th>stage</th><th class="num">count</th><th style="width:40%">flow</th><th>conversion</th></tr></thead>
+  <tbody>
+    {{ funnel_row("events landed",   f.events_landed,  none,             "") }}
+    {{ funnel_row("signals scored",  f.signals_fired,  f.event_to_signal, "of events") }}
+    {{ funnel_row("trades opened",   f.trades_opened,  f.signal_to_trade, "of signals × horizons") }}
+    {{ funnel_row("trades closed",   f.trades_closed,  f.trade_to_close,  "of opened (within window)") }}
+    {{ funnel_row("winners",         f.winners,        f.close_to_win,    "of closed") }}
+  </tbody>
+</table>
+
+<div class="note" style="margin-top:12px;font-size:12px">
+  <strong>Reading the funnel:</strong>
+  the event→signal ratio is the thesis_agent score filter — most events score below the alert threshold.
+  The signal→trade multiplier exceeds 1.0 because event_paper_agent opens a paper trade at <em>each</em> horizon (1d, 7d, 15d, 30d) for every qualifying signal.
+  The trade→close ratio is low for short windows because longer-horizon trades haven't matured yet.
+</div>
+
+{# ─────────────────────────── Equity-curve chart wiring ─────────────────────────── #}
+{% if weekly.performance.equity_points %}
+<script id="equity-data" type="application/json">{{ weekly.performance.equity_points|tojson }}</script>
+<script src="{{ root_path | default('') }}vendor/chart.umd.min.js"></script>
+<script>
+(function(){
+  const pts = JSON.parse(document.getElementById('equity-data').textContent);
+  const ctx = document.getElementById('equity-chart');
+  if (!ctx || !pts.length || typeof Chart === 'undefined') return;
+  new Chart(ctx, {
+    type: 'line',
+    data: {
+      labels: pts.map(p => p.t),
+      datasets: [{
+        label: 'cumulative % return',
+        data: pts.map(p => p.v),
+        borderColor: '#4fb3a9',
+        backgroundColor: 'rgba(79,179,169,0.10)',
+        fill: true, tension: 0.15, pointRadius: 0, borderWidth: 2,
+      }]
+    },
+    options: {
+      responsive: true, animation: false, maintainAspectRatio: false,
+      scales: {
+        x: { ticks: { color: '#7a8694', maxTicksLimit: 8 }, grid: { color: 'rgba(122,134,148,0.08)' } },
+        y: { ticks: { color: '#7a8694', callback: v => v + '%' }, grid: { color: 'rgba(122,134,148,0.08)' } },
+      },
+      plugins: { legend: { display: false } },
+    }
+  });
+})();
+</script>
+{% endif %}
+{% endblock %}

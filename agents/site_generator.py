@@ -86,6 +86,26 @@ def sb_get(path: str, params: dict | list[tuple[str, str]] | None = None) -> lis
     return r.json()
 
 
+def sb_count(path: str, params: dict | None = None) -> int:
+    """Server-side exact row count via Content-Range; avoids fetching IDs.
+
+    For multi-thousand-row weekly slices this is materially cheaper than
+    `len(sb_get(...))`. Returns 0 on error rather than raising, matching sb_get.
+    """
+    headers = {**HEADERS_SB, "Prefer": "count=exact", "Range-Unit": "items", "Range": "0-0"}
+    r = requests.get(f"{SUPABASE_URL}/rest/v1/{path}", headers=headers, params=params or {}, timeout=20)
+    if r.status_code not in (200, 206):
+        SB_ERRORS.append(f"SB count {path} {r.status_code}: {r.text[:200]}")
+        return 0
+    cr = r.headers.get("content-range") or r.headers.get("Content-Range") or ""
+    if "/" in cr:
+        try:
+            return int(cr.split("/")[-1])
+        except (TypeError, ValueError):
+            return 0
+    return 0
+
+
 _SENSITIVE_RE = re.compile(
     r"(eyJ[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+)"
     r"|((?:apikey|authorization|bearer|token|password|passwd|secret|service_key)"
@@ -418,6 +438,159 @@ def fetch_event_paper_trades(only_status: str | None = None, limit: int = 200) -
     if only_status:
         params["status"] = f"eq.{only_status}"
     return sb_get("stock_event_paper_trades", params)
+
+
+def fetch_weekly_data(days: int = 7) -> dict:
+    """Pull last-N-days slices for the weekly retrospective page.
+
+    Two time semantics are used intentionally:
+      - funnel counts (events / signals / trades opened) filter by created_at
+        — the operational throughput question is "what did the pipeline
+        produce this week," and per CLAUDE.md rule #1, only created_at
+        answers that honestly. event_at can be weeks old on backfilled rows.
+      - performance retrospective filters trades by entry_at and exit_at
+        — the *lifecycle* question is when a trade actually started/ended.
+    """
+    now = datetime.now(timezone.utc)
+    cutoff_iso = (now - timedelta(days=days)).isoformat()
+    week_start_iso = cutoff_iso
+
+    events_landed   = sb_count("stock_normalized_events", {"created_at": f"gte.{cutoff_iso}"})
+    signals_fired   = sb_count("stock_signals",           {"fired_at":   f"gte.{cutoff_iso}"})
+
+    # Full row pull for trades — small enough at 7d (typ. <500 rows) to handle in-process
+    week_trades = sb_get("stock_event_paper_trades", {
+        "or":      f"(entry_at.gte.{cutoff_iso},exit_at.gte.{cutoff_iso})",
+        "select":  "id,ticker,event_type,event_subtype,direction,entry_at,exit_at,"
+                   "status,correct,realized_return,rule_key,horizon_days,"
+                   "target_hit,stop_hit,mfe_pct,mae_pct",
+        "order":   "exit_at.desc.nullslast",
+        "limit":   "2000",
+    })
+    return {
+        "window_days":   days,
+        "window_start":  week_start_iso[:10],
+        "window_end":    now.date().isoformat(),
+        "events_landed": events_landed,
+        "signals_fired": signals_fired,
+        "trades":        week_trades,
+    }
+
+
+def derive_weekly_metrics(weekly: dict, cal_rows: list[dict]) -> dict:
+    """Three-section data shape: performance, rule maturity, signal-to-outcome funnel.
+
+    Profit factor needs a denominator floor — with only 1-2 losing trades it
+    becomes meaningless. We surface PF only when >=10 closed trades exist.
+    """
+    cutoff_iso = (datetime.now(timezone.utc) - timedelta(days=weekly["window_days"])).isoformat()
+    trades = weekly["trades"]
+    opened = [t for t in trades if (t.get("entry_at") or "") >= cutoff_iso]
+    closed = [t for t in trades if t.get("status") == "closed"
+                                   and (t.get("exit_at") or "") >= cutoff_iso]
+
+    # § 1 — Performance retrospective
+    wins   = [t for t in closed if t.get("correct")]
+    losses = [t for t in closed if t.get("correct") is False]
+    sum_win  = sum(float(t.get("realized_return") or 0) for t in wins)
+    sum_loss = sum(float(t.get("realized_return") or 0) for t in losses)
+    pf = (sum_win / abs(sum_loss)) if (len(closed) >= 10 and sum_loss < 0) else None
+    avg_ret = (sum(float(t.get("realized_return") or 0) for t in closed) / len(closed)) if closed else 0.0
+    avg_win_pct  = (sum_win  / len(wins))   if wins   else 0.0
+    avg_loss_pct = (sum_loss / len(losses)) if losses else 0.0
+
+    # Best/worst rule by net return in window (only rules with >=3 trades qualify)
+    rule_returns: dict[str, list[float]] = defaultdict(list)
+    for t in closed:
+        rk = t.get("rule_key")
+        if rk:
+            rule_returns[rk].append(float(t.get("realized_return") or 0))
+    rule_summary = sorted(
+        ({"rule_key": rk, "n": len(rs), "net_return": sum(rs), "avg_return": sum(rs)/len(rs)}
+         for rk, rs in rule_returns.items() if len(rs) >= 3),
+        key=lambda r: r["net_return"], reverse=True,
+    )
+    best_rule  = rule_summary[0]  if rule_summary else None
+    worst_rule = rule_summary[-1] if rule_summary else None
+
+    # Equity curve — running sum of realized_return ordered by exit time
+    closed_sorted = sorted(closed, key=lambda t: t.get("exit_at") or "")
+    equity_points = []
+    running = 0.0
+    for t in closed_sorted:
+        running += float(t.get("realized_return") or 0)
+        equity_points.append({"t": (t.get("exit_at") or "")[:10], "v": round(running * 100, 3)})
+
+    perf = {
+        "n_opened":         len(opened),
+        "n_closed":         len(closed),
+        "n_wins":           len(wins),
+        "n_losses":         len(losses),
+        "win_rate":         (len(wins) / len(closed)) if closed else None,
+        "avg_return_pct":   avg_ret * 100,
+        "avg_win_pct":      avg_win_pct * 100,
+        "avg_loss_pct":     avg_loss_pct * 100,
+        "profit_factor":    pf,
+        "best_rule":        best_rule,
+        "worst_rule":       worst_rule,
+        "equity_points":    equity_points,
+    }
+
+    # § 2 — Rule maturity (toward 90% / n>=30 BUY/SELL gate)
+    MATURE_ACC = 0.90
+    MATURE_N   = 30
+    maturity_rows = []
+    for r in cal_rows:
+        n = int(r.get("n_observations") or 0)
+        acc = float(r.get("accuracy") or 0)
+        if n < 5:  # ignore very small samples — they're noise, not progress
+            continue
+        gap_n   = max(0, MATURE_N - n)
+        gap_acc = max(0.0, MATURE_ACC - acc)
+        # "Inverted" flag: accuracy materially below 50% with non-trivial n
+        # suggests the rule's direction prior is backwards (e.g. truth_social_post:djt_self)
+        inverted = (n >= 15 and acc <= 0.40)
+        maturity_rows.append({
+            "rule_key":     r.get("rule_key"),
+            "n":            n,
+            "accuracy":     acc,
+            "mean_pct":     float(r.get("mean_realized_pct") or 0),
+            "gap_n":        gap_n,
+            "gap_acc_pct":  gap_acc * 100,
+            "is_mature":    bool(r.get("is_mature")),
+            "matured_at":   r.get("matured_at"),
+            "inverted":     inverted,
+        })
+    # Surface mature rules first, then closest-to-graduation, then inverted-flagged
+    def maturity_sort_key(r: dict) -> tuple:
+        tier = 0 if r["is_mature"] else (2 if r["inverted"] else 1)
+        gap_score = (r["gap_acc_pct"] / 10.0) + (r["gap_n"] / 30.0)
+        return (tier, gap_score, -r["n"])
+    maturity_rows.sort(key=maturity_sort_key)
+
+    # § 3 — Signal-to-outcome funnel
+    funnel = {
+        "events_landed":   weekly["events_landed"],
+        "signals_fired":   weekly["signals_fired"],
+        "trades_opened":   len(opened),
+        "trades_closed":   len(closed),
+        "winners":         len(wins),
+        # Conversion ratios (None when divisor is zero)
+        "event_to_signal": (weekly["signals_fired"] / weekly["events_landed"]) if weekly["events_landed"] else None,
+        "signal_to_trade": (len(opened) / weekly["signals_fired"]) if weekly["signals_fired"] else None,
+        "trade_to_close":  (len(closed) / len(opened)) if opened else None,
+        "close_to_win":    (len(wins) / len(closed)) if closed else None,
+    }
+
+    return {
+        "window_days":   weekly["window_days"],
+        "window_start":  weekly["window_start"],
+        "window_end":    weekly["window_end"],
+        "performance":   perf,
+        "maturity":      maturity_rows[:15],
+        "maturity_total": len(maturity_rows),
+        "funnel":        funnel,
+    }
 
 
 def derive_calibration_summary(cal_rows: list[dict],
@@ -1496,6 +1669,17 @@ def render_all() -> int:
         heatmap_rows=heatmap_rows,
         horizons=HORIZONS,
         **cal_summary,
+    ))
+
+    # Weekly review — 3-section retrospective (performance, rule maturity, funnel).
+    # Reuses cal_rows already fetched for the calibration page above; only adds
+    # one fetch_weekly_data() roundtrip (two count headers + one trades pull).
+    weekly_raw = fetch_weekly_data(days=7)
+    weekly = derive_weekly_metrics(weekly_raw, cal_rows)
+    (DIST_DIR / "weekly.html").write_text(env.get_template("weekly.html.j2").render(
+        **common,
+        title="Weekly", active="weekly",
+        weekly=weekly,
     ))
 
     # Learning — agent weight evolution over time + paper-trade audit
