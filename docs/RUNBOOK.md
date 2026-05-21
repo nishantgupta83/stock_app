@@ -123,7 +123,7 @@ If you stop touching this project for 30 days, here's what continues:
 - All 25 GitHub Actions agents on their cron schedules (with normal drift)
 - `event_paper_agent` opens 4 paper trades per fresh event
 - `price_agent` closes matured trades + updates calibration each weekday EOD
-- `site_generator` refreshes the dashboard every 15 min (or on workflow_run completion)
+- `site_generator` refreshes the dashboard every 15 min (or on workflow_run completion), regenerating all 11 tabs including the **Weekly** retrospective (perf · rule maturity · funnel)
 - Telegram alerts continue
 - `status.json` stays current
 
@@ -181,7 +181,9 @@ calibration starts at zero for them.
 # Re-run a stuck agent
 gh workflow run <agent>.yml --repo nishantgupta83/stock_app
 
-# Force a dashboard refresh
+# Force a dashboard refresh (regenerates all 11 tabs: Dashboard, Signals,
+# Events, Setups, Risk, Agents, Backtest, Paper Trades, Calibration,
+# Weekly, Learning + per-ticker + per-alert pages)
 gh workflow run site_generator.yml --repo nishantgupta83/stock_app
 
 # Run a backtest (manual only — produces stock_signals with status_v2='backtest')

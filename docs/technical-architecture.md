@@ -51,6 +51,9 @@ Layer 5 — LEARNING
 Layer 6 — PRESENTATION
   in:  everything (read-only)
   out: hub4apps.com/stock_app/{dashboard tabs, status.json}, Telegram
+       tabs: Dashboard · Signals · Events · Setups · Risk · Agents ·
+             Backtest · Paper Trades · Calibration · Weekly · Learning
+             (+ per-ticker chart pages, per-alert detail pages)
   agents: site_generator, telegram_dispatcher
 
 Operations:
@@ -299,6 +302,14 @@ fixes landed:
 - Post-deploy smoke confirms every tab carries the same git_sha meta
   → partial FTPS uploads now fail loudly instead of silently producing
   stale tabs
+- **Weekly** dashboard tab (added 2026-05-21): 7-day retrospective with
+  three sections — performance (win rate, equity curve, best/worst rule
+  by net), rule maturity (gap to 90%/n≥30 graduation gate, flags
+  direction-inverted rules), signal-to-outcome funnel (events landed →
+  signals scored → trades opened → closed → winners). Self-detects
+  backfill artifacts and renders a banner when synthetic exits dominate
+  the window. Uses `created_at` for funnel throughput, `entry_at` /
+  `exit_at` for lifecycle filters (per CLAUDE.md rule #1).
 
 ## Outcome Contract
 
