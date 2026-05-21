@@ -509,6 +509,14 @@ def upsert_calibration(rule_key: str, current: dict | None,
     is_mature  = (accuracy >= MATURITY_ACCURACY) and (n_obs >= MATURITY_MIN_N)
     just_matured = is_mature and not was_mature
 
+    # matured_at self-heal: if the row is mature but matured_at is NULL
+    # (historical rows that crossed the threshold before this column existed,
+    # or any future regression in this code path), stamp it on this update.
+    # Without this we'd silently keep `is_mature=true, matured_at=null` forever
+    # because the `cur.get("matured_at")` preserve-branch hides the gap.
+    prev_matured_at = cur.get("matured_at")
+    should_stamp = just_matured or (is_mature and not prev_matured_at)
+
     payload = {
         "rule_key":          rule_key,
         "n_observations":    n_obs,
@@ -516,7 +524,7 @@ def upsert_calibration(rule_key: str, current: dict | None,
         "accuracy":          round(accuracy, 6),
         "mean_realized_pct": round(mean_new, 6),
         "is_mature":         is_mature,
-        "matured_at":        datetime.now(timezone.utc).isoformat() if just_matured else cur.get("matured_at"),
+        "matured_at":        datetime.now(timezone.utc).isoformat() if should_stamp else prev_matured_at,
         "last_updated":      datetime.now(timezone.utc).isoformat(),
     }
     sb_upsert("stock_rule_calibration", [payload], on_conflict="rule_key")

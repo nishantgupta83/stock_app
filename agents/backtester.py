@@ -187,6 +187,47 @@ def sb_patch(path: str, payload: dict) -> None:
 
 
 # ============================================================
+# Operational logging (stock_job_runs) — separate from
+# stock_backtest_runs which carries the rich analytics payload.
+# rows_in  = historical events replayed
+# rows_out = backtest signals fired
+# ============================================================
+
+def job_run_start(agent: str = "backtester") -> int | None:
+    try:
+        headers = {**HEADERS_SB, "Prefer": "return=representation"}
+        r = requests.post(
+            f"{SUPABASE_URL}/rest/v1/stock_job_runs",
+            headers=headers, json={"agent": agent}, timeout=10,
+        )
+        if r.status_code in (200, 201) and r.json():
+            return r.json()[0]["id"]
+    except Exception as e:  # noqa: BLE001
+        print(f"  job_run_start failed: {e}", file=sys.stderr)
+    return None
+
+
+def job_run_finish(run_id: int | None, status: str, rows_in: int, rows_out: int,
+                   err: str | None = None) -> None:
+    if run_id is None:
+        return
+    try:
+        requests.patch(
+            f"{SUPABASE_URL}/rest/v1/stock_job_runs?id=eq.{run_id}",
+            headers=HEADERS_SB,
+            json={
+                "finished_at": datetime.now(timezone.utc).isoformat(),
+                "status":      status,
+                "rows_in":     rows_in,
+                "rows_out":    rows_out,
+                "error_text":  err,
+            }, timeout=10,
+        )
+    except Exception as e:  # noqa: BLE001
+        print(f"  job_run_finish failed: {e}", file=sys.stderr)
+
+
+# ============================================================
 # Build synthetic events from historical raw_filings
 # ============================================================
 
@@ -899,108 +940,115 @@ def compute_oos_split_metrics(signals: list[dict], train_frac: float = 0.70) -> 
 
 def main() -> int:
     started = time.time()
-    end   = datetime.now(timezone.utc).replace(hour=0, minute=0, second=0, microsecond=0)
-    start = end - timedelta(days=LOOKBACK_DAYS)
+    job_run_id = job_run_start("backtester")
+    try:
+        end   = datetime.now(timezone.utc).replace(hour=0, minute=0, second=0, microsecond=0)
+        start = end - timedelta(days=LOOKBACK_DAYS)
 
-    # Register backtest run
-    run = sb_post("stock_backtest_runs", {
-        "model_version": MODEL_VERSION,
-        "config": {"lookback_days": LOOKBACK_DAYS, "slippage_bps": SLIPPAGE_BPS,
-                   "ema_alpha": EMA_ALPHA, "universe_size_hint": "current_watchlist"},
-    }, return_repr=True)
-    run_id = run[0]["id"] if run else int(started)   # fallback: epoch as run id
-    # Suffix appended to dedupe_key so each backtest run produces fresh signals
-    # even with same MODEL_VERSION (otherwise re-runs collide silently).
-    global _RUN_SUFFIX
-    _RUN_SUFFIX = f"r{run_id}"
-    print(f"backtest run_id={run_id}, window {start.date()} → {end.date()}")
+        # Register backtest run
+        run = sb_post("stock_backtest_runs", {
+            "model_version": MODEL_VERSION,
+            "config": {"lookback_days": LOOKBACK_DAYS, "slippage_bps": SLIPPAGE_BPS,
+                       "ema_alpha": EMA_ALPHA, "universe_size_hint": "current_watchlist"},
+        }, return_repr=True)
+        run_id = run[0]["id"] if run else int(started)   # fallback: epoch as run id
+        # Suffix appended to dedupe_key so each backtest run produces fresh signals
+        # even with same MODEL_VERSION (otherwise re-runs collide silently).
+        global _RUN_SUFFIX
+        _RUN_SUFFIX = f"r{run_id}"
+        print(f"backtest run_id={run_id}, window {start.date()} → {end.date()}")
 
-    # Pull universe — include 'context' so SPY/QQQ are loaded for momentum baseline
-    syms = sb_get("stock_watchlists", {
-        "name":  "in.(\"core\",\"institutions\",\"mutual_funds\",\"context\")",
-        "select": "ticker,stock_symbols(kind)",
-    })
-    tradable = sorted({s["ticker"] for s in syms
-                       if s.get("stock_symbols") and s["stock_symbols"]["kind"] in ("stock", "etf")})
-    print(f"Universe: {len(tradable)} tradable tickers (incl. SPY for momentum baseline)")
-
-    load_prices(tradable, start, end)
-    if not _price_cache:
-        print("FATAL: no prices loaded, aborting", file=sys.stderr)
-        if run_id:
-            sb_patch(f"stock_backtest_runs?id=eq.{run_id}",
-                     {"finished_at": datetime.now(timezone.utc).isoformat(),
-                      "metrics": {"error": "no_prices"}})
-        return 1
-
-    # Layer 1: filings
-    filings = fetch_filings_in_window(start, end)
-    filing_events = [e for e in filings_to_events(filings) if e["ticker"] in _price_cache]
-    print(f"Filings: {len(filings)} pulled → {len(filing_events)} after universe filter")
-
-    # Layer 2: earnings (per-ticker — yfinance earnings_dates)
-    # Only on stocks (skip ETFs which don't report)
-    stock_tickers = sorted({s["ticker"] for s in syms
-                            if s.get("stock_symbols") and s["stock_symbols"]["kind"] == "stock"
-                            and s["ticker"] in _price_cache})
-    earnings_events = fetch_earnings_events(stock_tickers, start, end)
-    print(f"Earnings: {len(earnings_events)} events across {len(stock_tickers)} stocks")
-
-    # Layer 3: momentum (20d relative strength vs SPY)
-    momentum_events = fetch_momentum_events(stock_tickers, start, end, period_days=20, threshold_pct=5.0)
-    print(f"Momentum: {len(momentum_events)} events (20d vs SPY, ≥5% rel strength)")
-
-    events = filing_events + earnings_events + momentum_events
-    print(f"Total events: {len(events)}")
-
-    # Replay day by day
-    agent_state: dict[str, dict] = {}
-    agent_state_history: list[tuple[date, dict]] = []
-    all_signals = []
-
-    cur = start
-    while cur < end:
-        day_end = cur + timedelta(days=1)
-        fired = replay_day(cur, day_end, events, agent_state)
-        if fired:
-            all_signals.extend(fired)
-            print(f"  {cur.date()}: {len(fired)} signals")
-        # Snapshot per-day state for the agent_weights table (deep copy)
-        snapshot = {a: {"acc": st["acc"], "n": st["n"]} for a, st in agent_state.items()}
-        if snapshot:
-            agent_state_history.append((cur.date(), snapshot))
-        cur = day_end
-
-    print(f"Total signals fired: {len(all_signals)}")
-
-    # Persist
-    persist_signals(all_signals)
-    persist_agent_weights(agent_state_history)
-
-    metrics = compute_metrics(all_signals)
-    # OOS validation: chronological 70/30 split. Strategic-feedback principle:
-    # never accept a backtest "headline number" without inspecting the held-out
-    # half. Drift block flags overfit risk explicitly.
-    oos = compute_oos_split_metrics(all_signals, train_frac=0.70)
-    metrics["oos_split"] = oos
-
-    elapsed = time.time() - started
-    print(f"Backtest done in {elapsed:.1f}s")
-    print(f"Metrics: dir_acc={metrics.get('dir_accuracy')} p@5={metrics.get('precision_at_5')} "
-          f"sharpe={metrics.get('sharpe')} max_dd={metrics.get('max_dd')}")
-    if "verdict" in oos:
-        print(f"OOS split ({oos.get('split_date')}): train n={oos.get('train_n')} "
-              f"acc={oos.get('train_metrics',{}).get('dir_accuracy')} | "
-              f"test n={oos.get('test_n')} acc={oos.get('test_metrics',{}).get('dir_accuracy')} "
-              f"→ {oos['verdict']}")
-
-    if run_id:
-        sb_patch(f"stock_backtest_runs?id=eq.{run_id}", {
-            "finished_at": datetime.now(timezone.utc).isoformat(),
-            "metrics":     metrics,
+        # Pull universe — include 'context' so SPY/QQQ are loaded for momentum baseline
+        syms = sb_get("stock_watchlists", {
+            "name":  "in.(\"core\",\"institutions\",\"mutual_funds\",\"context\")",
+            "select": "ticker,stock_symbols(kind)",
         })
+        tradable = sorted({s["ticker"] for s in syms
+                           if s.get("stock_symbols") and s["stock_symbols"]["kind"] in ("stock", "etf")})
+        print(f"Universe: {len(tradable)} tradable tickers (incl. SPY for momentum baseline)")
 
-    return 0
+        load_prices(tradable, start, end)
+        if not _price_cache:
+            print("FATAL: no prices loaded, aborting", file=sys.stderr)
+            if run_id:
+                sb_patch(f"stock_backtest_runs?id=eq.{run_id}",
+                         {"finished_at": datetime.now(timezone.utc).isoformat(),
+                          "metrics": {"error": "no_prices"}})
+            job_run_finish(job_run_id, "failed", 0, 0, err="no_prices")
+            return 1
+
+        # Layer 1: filings
+        filings = fetch_filings_in_window(start, end)
+        filing_events = [e for e in filings_to_events(filings) if e["ticker"] in _price_cache]
+        print(f"Filings: {len(filings)} pulled → {len(filing_events)} after universe filter")
+
+        # Layer 2: earnings (per-ticker — yfinance earnings_dates)
+        # Only on stocks (skip ETFs which don't report)
+        stock_tickers = sorted({s["ticker"] for s in syms
+                                if s.get("stock_symbols") and s["stock_symbols"]["kind"] == "stock"
+                                and s["ticker"] in _price_cache})
+        earnings_events = fetch_earnings_events(stock_tickers, start, end)
+        print(f"Earnings: {len(earnings_events)} events across {len(stock_tickers)} stocks")
+
+        # Layer 3: momentum (20d relative strength vs SPY)
+        momentum_events = fetch_momentum_events(stock_tickers, start, end, period_days=20, threshold_pct=5.0)
+        print(f"Momentum: {len(momentum_events)} events (20d vs SPY, ≥5% rel strength)")
+
+        events = filing_events + earnings_events + momentum_events
+        print(f"Total events: {len(events)}")
+
+        # Replay day by day
+        agent_state: dict[str, dict] = {}
+        agent_state_history: list[tuple[date, dict]] = []
+        all_signals = []
+
+        cur = start
+        while cur < end:
+            day_end = cur + timedelta(days=1)
+            fired = replay_day(cur, day_end, events, agent_state)
+            if fired:
+                all_signals.extend(fired)
+                print(f"  {cur.date()}: {len(fired)} signals")
+            # Snapshot per-day state for the agent_weights table (deep copy)
+            snapshot = {a: {"acc": st["acc"], "n": st["n"]} for a, st in agent_state.items()}
+            if snapshot:
+                agent_state_history.append((cur.date(), snapshot))
+            cur = day_end
+
+        print(f"Total signals fired: {len(all_signals)}")
+
+        # Persist
+        persist_signals(all_signals)
+        persist_agent_weights(agent_state_history)
+
+        metrics = compute_metrics(all_signals)
+        # OOS validation: chronological 70/30 split. Strategic-feedback principle:
+        # never accept a backtest "headline number" without inspecting the held-out
+        # half. Drift block flags overfit risk explicitly.
+        oos = compute_oos_split_metrics(all_signals, train_frac=0.70)
+        metrics["oos_split"] = oos
+
+        elapsed = time.time() - started
+        print(f"Backtest done in {elapsed:.1f}s")
+        print(f"Metrics: dir_acc={metrics.get('dir_accuracy')} p@5={metrics.get('precision_at_5')} "
+              f"sharpe={metrics.get('sharpe')} max_dd={metrics.get('max_dd')}")
+        if "verdict" in oos:
+            print(f"OOS split ({oos.get('split_date')}): train n={oos.get('train_n')} "
+                  f"acc={oos.get('train_metrics',{}).get('dir_accuracy')} | "
+                  f"test n={oos.get('test_n')} acc={oos.get('test_metrics',{}).get('dir_accuracy')} "
+                  f"→ {oos['verdict']}")
+
+        if run_id:
+            sb_patch(f"stock_backtest_runs?id=eq.{run_id}", {
+                "finished_at": datetime.now(timezone.utc).isoformat(),
+                "metrics":     metrics,
+            })
+
+        job_run_finish(job_run_id, "ok", rows_in=len(events), rows_out=len(all_signals))
+        return 0
+    except Exception as e:  # noqa: BLE001
+        job_run_finish(job_run_id, "failed", 0, 0, err=str(e)[:500])
+        raise
 
 
 if __name__ == "__main__":

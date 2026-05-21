@@ -161,6 +161,37 @@ def format_summary(results: list[tuple[AgentExpectation, bool, str, float | None
     return "\n".join(lines)
 
 
+def sweep_stale_running(agent: str = "orchestrator_agent", max_age_hours: int = 2) -> int:
+    """Mark prior `status='running'` rows for this agent as failed if older
+    than max_age_hours. Covers SIGKILL-from-runner-timeout cases that bypass
+    the try/except in main() (GHA hard-kills a job at the runner timeout,
+    so job_run_finish never executes).
+
+    2h matches the orchestrator's hourly cadence + buffer — anything older
+    than that is definitively dead.
+    """
+    cutoff = (datetime.now(timezone.utc) - timedelta(hours=max_age_hours)).isoformat()
+    try:
+        r = requests.patch(
+            f"{SUPABASE_URL}/rest/v1/stock_job_runs"
+            f"?agent=eq.{agent}&status=eq.running&started_at=lt.{cutoff}",
+            headers={**HEADERS_SB, "Prefer": "return=representation"},
+            json={
+                "status":      "failed",
+                "finished_at": datetime.now(timezone.utc).isoformat(),
+                "error_text":  f"presumed_killed (running > {max_age_hours}h)",
+            }, timeout=10,
+        )
+        if r.status_code in (200, 204):
+            swept = len(r.json()) if r.text else 0
+            if swept:
+                print(f"  swept {swept} stale '{agent}' running row(s)")
+            return swept
+    except Exception as exc:  # noqa: BLE001
+        print(f"  sweep_stale_running failed: {exc}", file=sys.stderr)
+    return 0
+
+
 def job_run_start() -> int | None:
     try:
         r = requests.post(
@@ -246,6 +277,7 @@ def alert_telegram(text: str) -> None:
 
 def main() -> int:
     started = time.time()
+    sweep_stale_running()
     run_id = job_run_start()
     try:
         now = datetime.now(timezone.utc)

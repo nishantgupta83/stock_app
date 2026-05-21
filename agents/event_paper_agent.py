@@ -129,9 +129,12 @@ def fetch_recent_events(min_severity: int, since_iso: str) -> list[dict]:
 def fetch_latest_closes(tickers: list[str]) -> dict[str, dict]:
     """{ticker → most recent {ts, close} row} from stock_raw_prices.
 
-    Falls back to yfinance for any ticker missing from the DB (e.g. INTC, EBAY,
-    newly added sector ETFs) and writes the fetched bar back to stock_raw_prices
-    so subsequent runs are served from the DB.
+    Falls back to yfinance for any ticker missing from the DB **or whose
+    most-recent DB close is older than STALE_PRICE_MAX_AGE_DAYS**. Without
+    the stale-eviction the agent would treat a 10-day-old row as
+    authoritative, the downstream stale-price gate would then drop the
+    event, and we'd silently write zero paper trades — the bug observed
+    2026-05-19 → 2026-05-21 when daily-bar ingest had stopped.
     """
     if not tickers:
         return {}
@@ -155,6 +158,21 @@ def fetch_latest_closes(tickers: list[str]) -> dict[str, dict]:
             t = row.get("ticker")
             if t and t not in latest and row.get("close") is not None:
                 latest[t] = row
+
+    # Evict stale-but-present rows so the yfinance fallback below refreshes them.
+    # Same threshold as the main()-level stale-price gate so behaviour is
+    # consistent: anything the gate would reject we try to refresh first.
+    stale_cutoff = datetime.now(timezone.utc) - timedelta(days=STALE_PRICE_MAX_AGE_DAYS)
+    for t in list(latest.keys()):
+        ts_raw = latest[t].get("ts") or ""
+        try:
+            ts = datetime.fromisoformat(ts_raw.replace("Z", "+00:00"))
+            if ts.tzinfo is None:
+                ts = ts.replace(tzinfo=timezone.utc)
+            if ts < stale_cutoff:
+                del latest[t]
+        except (TypeError, ValueError):
+            del latest[t]
 
     # yfinance fallback for tickers with no DB price data — single batched download,
     # ~5-10× faster than per-ticker yf.Ticker.history() calls.
