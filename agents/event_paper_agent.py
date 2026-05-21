@@ -312,29 +312,29 @@ def fetch_already_traded_event_ids(event_ids: list[int]) -> set[int]:
 
 
 def write_paper_trades(rows: list[dict]) -> int:
-    """INSERT with ON CONFLICT (event_id, ticker, direction) → merge-duplicates.
+    """Plain INSERT with resolution=ignore-duplicates.
 
-    Migration sql/0015 made stock_event_paper_trades_uniq a non-partial index,
-    so PostgREST can now route inserts through it cleanly. Before that, the
-    plain INSERT here was the only option (partial indexes failed with 42P10).
-
-    Caller still pre-filters duplicates as a fast-path, but two concurrent
-    runs that both pass the pre-filter would previously race the unique
-    constraint and the second batch would be wholly rejected. With
-    on_conflict=merge-duplicates each chunk is now idempotent.
+    Despite sql/0015's intent, PostgREST still returns 42P10 on
+    ?on_conflict=event_id,ticker,direction (the unique index on
+    stock_event_paper_trades is still partial in practice — verified
+    via direct POST 2026-05-21). Caller pre-filters via
+    fetch_already_traded_event_ids so the dedupe path is upstream,
+    and the table's own unique constraint catches the residual race
+    between concurrent runs. Concurrent-collision rows hit the constraint
+    and the whole chunk would normally 409 — Prefer:resolution=ignore-
+    duplicates downgrades that to a 201 with skipped rows.
     """
     if not rows:
         return 0
     headers = {
         **HEADERS_SB,
-        "Prefer": "return=minimal,resolution=merge-duplicates",
+        "Prefer": "return=minimal,resolution=ignore-duplicates",
     }
     inserted = 0
     for i in range(0, len(rows), INSERT_CHUNK):
         batch = rows[i:i+INSERT_CHUNK]
         r = requests.post(
-            f"{SUPABASE_URL}/rest/v1/stock_event_paper_trades"
-            f"?on_conflict=event_id,ticker,direction",
+            f"{SUPABASE_URL}/rest/v1/stock_event_paper_trades",
             headers=headers, json=batch, timeout=30,
         )
         if r.status_code in (200, 201, 204):
