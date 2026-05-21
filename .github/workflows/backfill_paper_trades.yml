@@ -1,0 +1,62 @@
+name: backfill_paper_trades
+
+# Manual one-shot: replays past N days of high-signal events from
+# stock_normalized_events through the same direction/rule_key/target/stop
+# logic that event_paper_agent uses live, and writes them as closed paper
+# trades into stock_event_paper_trades. Then recomputes stock_rule_calibration
+# from scratch for every touched rule_key.
+#
+# Default is a dry-run (no DB writes). Set commit=true to actually insert.
+#
+# Safety: all workflow_dispatch inputs flow through env: and are double-quoted
+# in the shell. argparse on the Python side rejects non-int days. Ticker is
+# only ever passed as a single argv item, so even adversarial values can't
+# break out into a separate shell command.
+
+on:
+  workflow_dispatch:
+    inputs:
+      days:
+        description: "Lookback window (days)"
+        required: false
+        default: "180"
+      commit:
+        description: "Set 'true' to actually insert rows"
+        required: false
+        default: "false"
+      ticker:
+        description: "Optional: limit to one ticker (empty = all)"
+        required: false
+        default: ""
+
+concurrency:
+  group: backfill_paper_trades
+  cancel-in-progress: false
+
+jobs:
+  backfill:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+      - name: Install deps
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+      - name: Run backfill
+        env:
+          SUPABASE_URL:         ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
+          DAYS:                 ${{ inputs.days }}
+          COMMIT:               ${{ inputs.commit }}
+          TICKER:               ${{ inputs.ticker }}
+        run: |
+          set -euo pipefail
+          ARGS=(--days "$DAYS")
+          if [ "$COMMIT" = "true" ]; then ARGS+=(--commit); fi
+          if [ -n "$TICKER" ];      then ARGS+=(--ticker "$TICKER"); fi
+          python scripts/backfill_paper_trades.py "${ARGS[@]}"
