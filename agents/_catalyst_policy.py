@@ -89,6 +89,63 @@ def is_catalyst_eligible(event: dict, now: datetime | None = None) -> bool:
     return (now - ea) <= timedelta(hours=p["max_age_hours"])
 
 
+# Causal-keyword classifier — used to gate raw_news evidence promotion.
+#
+# A signal whose normalized-events `catalyst_score` is 0 may still have a real
+# catalyst that hasn't been normalized yet (race window) or that news_agent's
+# event classifier missed. PR1B fetches `stock_raw_news` directly for the
+# ticker and uses this classifier to decide whether any headline is plausibly
+# catalyst-grade — "AAPL announces $90B buyback" passes; "AAPL discussed in
+# weekly roundup" does not. Without this gate, raw_news would over-promote
+# every mention into a CATALYST_WATCH.
+#
+# Keywords cover the catalyst classes the bot already grades (rating change,
+# corporate event, regulatory, contract, operational, financing). Generic
+# stock-discussion or technical-analysis vocabulary deliberately omitted.
+CAUSAL_KEYWORDS: set[str] = {
+    # rating / target
+    "upgrade", "downgrade", "price target", "raises target", "cuts target",
+    "raises pt", "lowers pt", "buy rating", "sell rating",
+    "outperform", "underperform",
+    # corporate events
+    "beats estimates", "missed estimates", "beat estimates", "misses estimates",
+    "raises guidance", "cuts guidance", "lowers guidance", "raised guidance",
+    "preliminary results", "earnings beat", "earnings miss",
+    "acquisition", "merger", "takeover", "buyout", "spinoff", "spin-off",
+    "buyback", "share repurchase", "special dividend",
+    "offering", "secondary offering", "dilution", "stock split",
+    # regulatory / legal
+    "fda approval", "fda rejection", "pdufa", "complete response letter",
+    "lawsuit", "investigation", "subpoena", "doj probe", "sec probe",
+    "antitrust", "settlement", "consent decree",
+    # contracts / partnerships
+    "wins contract", "awarded contract", "contract win", "partnership",
+    "joint venture", "strategic collaboration", "supply agreement",
+    # operational
+    "production halt", "shutdown", "outage", "recall", "product launch",
+    "delay", "delays launch", "data breach",
+    # financing
+    "convertible notes", "pipe financing", "atm offering", "credit facility",
+    "debt refinancing",
+    # macro / activist
+    "activist stake", "activist investor", "13d filed",
+}
+
+
+def is_causal_headline(headline: str) -> bool:
+    """True if the headline contains at least one catalyst-grade keyword.
+
+    Conservative: missing a real catalyst is fine (signal still fires as
+    MOMENTUM_ONLY with headlines attached as context), but a false positive
+    would mislead the operator into thinking there's a verified cause.
+    Generic mentions ("AAPL discussed in roundup") deliberately don't match.
+    """
+    if not headline:
+        return False
+    h = headline.lower()
+    return any(kw in h for kw in CAUSAL_KEYWORDS)
+
+
 def split_events_by_role(events: list[dict], now: datetime | None = None) -> dict:
     """Partition events into {catalyst, context, background} lists.
 

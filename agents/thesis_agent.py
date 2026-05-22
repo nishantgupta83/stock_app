@@ -1041,6 +1041,44 @@ def signal_direction(events: list[dict]) -> str:
     return "neutral"
 
 
+def fetch_recent_news(ticker: str, hours: int = 48, limit: int = 5) -> list[dict]:
+    """Pull last-N-hours `stock_raw_news` rows for a ticker.
+
+    Catches the race window where news_agent has ingested an article into
+    `stock_raw_news` but hasn't yet emitted a normalized event for it
+    (news_agent runs every 5 min; if thesis_agent fires in the 0-5 min
+    gap after publication, the article exists in raw_news but not yet in
+    normalized_events). Also catches articles news_agent's classifier
+    missed entirely.
+
+    Filters by `ticker IS NOT NULL` — only rows where the classifier
+    populated the ticker are useful. The PR1A precursor expanded the
+    classifier from 22→265 aliases + 30→144 symbols, so most active
+    watchlist names should now have ticker populated.
+    """
+    if not ticker:
+        return []
+    cutoff = (datetime.now(timezone.utc) - timedelta(hours=hours)).isoformat()
+    try:
+        r = requests.get(
+            f"{SUPABASE_URL}/rest/v1/stock_raw_news",
+            headers=HEADERS_SB,
+            params={
+                "ticker":       f"eq.{ticker}",
+                "published_at": f"gte.{cutoff}",
+                "select":       "headline,url,source,published_at",
+                "order":        "published_at.desc",
+                "limit":        str(limit),
+            },
+            timeout=10,
+        )
+        if r.status_code != 200:
+            return []
+        return r.json() or []
+    except Exception:  # noqa: BLE001
+        return []
+
+
 def decompose_score(breakdown: list[dict]) -> dict:
     """Sum breakdown points by evidence role.
 
@@ -1482,6 +1520,40 @@ def main() -> int:
 
             mature = cluster_has_mature_rule(ev_list, rule_calibration)
             sub_scores = decompose_score(breakdown)
+
+            # PR1B: race-window / classifier-gap safety net. If the normalized
+            # events for this cluster don't yield catalyst_score>0, fetch
+            # last-48h raw_news for the ticker and apply the causal-keyword
+            # classifier. A matched causal headline promotes the signal back
+            # to CATALYST_* tier (operator sees the real cause); generic
+            # headlines without catalyst keywords get attached as context but
+            # do NOT promote — signal stays MOMENTUM_ONLY honestly.
+            news_causal_promoted = False
+            news_top_causal_headline: str | None = None
+            recent_news: list[dict] = []
+            if sub_scores["catalyst"] == 0:
+                from _catalyst_policy import is_causal_headline
+                recent_news = fetch_recent_news(ticker, hours=48, limit=5)
+                for n in recent_news:
+                    if is_causal_headline(n.get("headline") or ""):
+                        news_causal_promoted = True
+                        news_top_causal_headline = n.get("headline")
+                        # Inject a synthetic catalyst entry into breakdown so
+                        # decompose_score reflects it on the next call AND the
+                        # operator can see the source attribution.
+                        breakdown.append({
+                            "rule":         "news_causal_promoted",
+                            "points":       8,
+                            "raw_points":   8,
+                            "event_id":     None,
+                            "detail":       f"raw_news 48h: {(news_top_causal_headline or '')[:120]}",
+                            "role":         "catalyst",
+                            "catalyst_ok":  True,
+                        })
+                        score += 8
+                        sub_scores = decompose_score(breakdown)
+                        break
+
             action = action_for(score, direction, has_mature_rule=mature,
                                 risk_off=risk_off,
                                 catalyst_score=sub_scores["catalyst"])
@@ -1501,6 +1573,9 @@ def main() -> int:
                 "dedupe_key": f"thesis_{ticker}_{bucket}",
                 "has_mature_rule": mature,
                 "risk_off": risk_off,
+                "recent_news":          recent_news,
+                "news_causal_promoted": news_causal_promoted,
+                "news_top_headline":    news_top_causal_headline,
             })
 
         # Filter: must pass cluster + have non-empty action
