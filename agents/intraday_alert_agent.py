@@ -148,9 +148,31 @@ def recent_events_context(ticker: str, hours: int = 168) -> list[dict]:
 
 def format_context(events: list[dict]) -> str:
     """Compact human-readable summary of recent events for the alert body.
-    Each event tagged with its real date so users see WHEN the catalyst hit."""
+
+    Splits events by evidence role (catalyst / context / background) per the
+    causal-attribution audit. Catalyst events shown first as actual reasons.
+    Background events (e.g., 13F filings) are clearly tagged so the operator
+    doesn't read them as same-day causes.
+    """
+    from _catalyst_policy import split_events_by_role
     if not events:
-        return "no catalyst in last 7d — check news/sector rotation"
+        return "no verified catalyst found in last 48h"
+    roles = split_events_by_role(events)
+    if not roles["catalyst"] and not roles["context"]:
+        # Only background events → honest about it
+        if roles["background"]:
+            bg_summary = _format_event_list(roles["background"][:2])
+            return f"no recent catalyst · background only: {bg_summary}"
+        return "no verified catalyst found in last 48h"
+    # Prefer catalyst events in the displayed list; backfill with context up to 3 total
+    preferred = roles["catalyst"][:3]
+    if len(preferred) < 3:
+        preferred += roles["context"][: 3 - len(preferred)]
+    return _format_event_list(preferred)
+
+
+def _format_event_list(events: list[dict]) -> str:
+    """Original event-list formatter — extracted so format_context can compose it."""
     parts = []
     for e in events[:3]:
         et = e.get("event_type") or "?"
@@ -259,10 +281,25 @@ def recent_events_context_batch(tickers: list[str], hours: int = 168) -> dict[st
 # ============================================================
 
 
-def insert_spike_signal(ticker: str, snap: dict, context: str) -> int | None:
-    """Create a stock_signals row so the alert is auditable and dedupe works."""
+def insert_spike_signal(ticker: str, snap: dict, context: str,
+                        recent_events: list[dict] | None = None) -> int | None:
+    """Create a stock_signals row so the alert is auditable and dedupe works.
+
+    Per the causal-attribution audit (2026-05-22): when recent_events lacks
+    any catalyst-role event within its type-specific max_age_hours, the
+    bullish action degrades from CATALYST_WATCH to MOMENTUM_ONLY. The bot
+    explicitly admits "no verified catalyst found" instead of citing a
+    week-old 13F filing as cause. Bearish stays AVOID_CHASE since that's
+    a risk warning, not a catalyst claim.
+    """
+    from _catalyst_policy import split_events_by_role
     direction = "bullish" if snap["pct"] > 0 else "bearish"
-    action    = "WATCH" if snap["pct"] > 0 else "AVOID_CHASE"
+    if direction == "bullish":
+        roles = split_events_by_role(recent_events or [])
+        has_catalyst = len(roles["catalyst"]) > 0
+        action = "CATALYST_WATCH" if has_catalyst else "MOMENTUM_ONLY"
+    else:
+        action = "AVOID_CHASE"
     payload = {
         "ticker":           ticker,
         "fired_at":         datetime.now(timezone.utc).isoformat(),
@@ -352,8 +389,10 @@ def main() -> int:
             if ticker in already_alerted:
                 print(f"  {ticker}: dedupe — already alerted today, skip")
                 continue
-            context_str = format_context(context_by_ticker.get(ticker, []))
-            sig_id = insert_spike_signal(ticker, snap, context_str)
+            ticker_events = context_by_ticker.get(ticker, [])
+            context_str = format_context(ticker_events)
+            sig_id = insert_spike_signal(ticker, snap, context_str,
+                                         recent_events=ticker_events)
             if sig_id is None:
                 continue
             text = format_spike_alert(ticker, snap, context_str)

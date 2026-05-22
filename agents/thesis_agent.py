@@ -183,11 +183,27 @@ def job_run_finish(run_id: int | None, status: str, rows_in: int, rows_out: int,
 # Fetch fresh evidence
 # ============================================================
 
-# Per-event-type real-world TTL. After fetching by created_at (which gives
-# us events that LANDED in the freshness window), we drop rows whose
-# event_at is older than the TTL — a 13F that landed today but is for a
-# quarter-old position shouldn't pollute a cluster. Defaults err generous
-# so we only filter out the obvious staleness.
+# Single source of truth for evidence role + catalyst age policy lives in
+# agents/_catalyst_policy.py — imported here as `_evidence_policy_for`
+# so the existing call sites remain unchanged. See that module for the
+# full rationale and per-type policy entries.
+from _catalyst_policy import (
+    CATALYST_POLICY as _CATALYST_POLICY,
+    policy_for as _evidence_policy_for,
+)
+
+
+def evidence_policy_for(event_type: str) -> dict:
+    """Compat alias to _catalyst_policy.policy_for."""
+    return _evidence_policy_for(event_type)
+
+
+# Module-level re-export so existing test imports keep working.
+CATALYST_POLICY = _CATALYST_POLICY
+
+
+# Pre-existing real-world TTL filter for event-fetch (separate from the
+# catalyst-role policy). Kept for backward compat with fetch_fresh_events.
 EVENT_REAL_TTL_HOURS: dict[str, int] = {
     "earnings_release":           72,
     "8k_material_event":         168,    # 7 days
@@ -474,15 +490,66 @@ def score_evidence(events: list[dict],
     raw_by_agent: dict[str, float] = defaultdict(float)
     # event_id → source agent map for cheap lookup inside add()
     ev_agent: dict[int, str] = {e["id"]: source_agent_for(e) for e in events if e.get("id") is not None}
+    # event_id → role for this scoring batch (so add() can tag each breakdown entry)
+    ev_role: dict[int, str] = {}
+    ev_catalyst_eligible: dict[int, bool] = {}
+    now = datetime.now(timezone.utc)
+    for e in events:
+        ev_id = e.get("id")
+        if ev_id is None:
+            continue
+        policy = evidence_policy_for(e.get("event_type") or "")
+        role = policy["role"]
+        ev_role[ev_id] = role
+        # An event contributes to catalyst_score only if its role is catalyst
+        # AND event_at is within max_age_hours of now.
+        catalyst_ok = False
+        if role == "catalyst":
+            ea_str = e.get("event_at")
+            if ea_str:
+                try:
+                    ea = datetime.fromisoformat(ea_str.replace("Z", "+00:00"))
+                    if (now - ea) <= timedelta(hours=policy["max_age_hours"]):
+                        catalyst_ok = True
+                except (TypeError, ValueError):
+                    pass
+        ev_catalyst_eligible[ev_id] = catalyst_ok
 
     def add(rule: str, points: float, ev_id: int | None = None, detail: str = "") -> None:
-        nonlocal score
-        score += points
-        if ev_id is not None and ev_id in ev_agent:
-            raw_by_agent[ev_agent[ev_id]] += points
-        breakdown.append({"rule": rule, "points": points, "event_id": ev_id, "detail": detail})
+        """Append a breakdown entry, tag with evidence role, accumulate score.
 
-    now = datetime.now(timezone.utc)
+        Critical: background-role events are recorded in breakdown but EXCLUDED
+        from `score` — they're display-only context. This prevents a 13F filing
+        from inflating an alert score it shouldn't drive.
+        """
+        nonlocal score
+        # Determine role for this breakdown entry
+        if ev_id is not None and ev_id in ev_role:
+            role = ev_role[ev_id]
+            catalyst_ok = ev_catalyst_eligible.get(ev_id, False)
+        else:
+            # Cluster-level bonuses (no event_id) — treat as catalyst-tier
+            # bonus since they reward cross-source confirmation, not background data.
+            role = "bonus"
+            catalyst_ok = True
+
+        # Background-role events: record in breakdown but contribute 0 to score
+        effective_points = points
+        if role == "background":
+            effective_points = 0.0
+
+        score += effective_points
+        if effective_points and ev_id is not None and ev_id in ev_agent:
+            raw_by_agent[ev_agent[ev_id]] += effective_points
+        breakdown.append({
+            "rule":           rule,
+            "points":         effective_points,
+            "raw_points":     points,           # what would have been added if role allowed
+            "event_id":       ev_id,
+            "detail":         detail,
+            "role":           role,             # catalyst | context | background | bonus
+            "catalyst_ok":    catalyst_ok,      # True if this entry contributes to catalyst_score
+        })
 
     for e in events:
         et = e["event_type"]
@@ -974,38 +1041,77 @@ def signal_direction(events: list[dict]) -> str:
     return "neutral"
 
 
+def decompose_score(breakdown: list[dict]) -> dict:
+    """Sum breakdown points by evidence role.
+
+    Returns {catalyst, context, background, bonus, total_alert} where
+    total_alert = catalyst + context + bonus (background EXCLUDED). The
+    background sum is reported for display only — a 13F filing can never
+    push a signal over the alert threshold by itself.
+    """
+    sums = {"catalyst": 0.0, "context": 0.0, "background": 0.0, "bonus": 0.0}
+    for b in breakdown:
+        role = b.get("role") or "context"
+        if role == "catalyst":
+            # Only count points if the event was within its catalyst_age_hours window
+            if b.get("catalyst_ok"):
+                sums["catalyst"] += b.get("points", 0)
+            else:
+                # Catalyst-eligible event TYPE but stale → demote to context
+                sums["context"] += b.get("points", 0)
+        elif role == "background":
+            sums["background"] += b.get("raw_points") or b.get("points", 0)
+        else:  # context, bonus, or unknown
+            sums[role if role in sums else "context"] += b.get("points", 0)
+    sums["total_alert"] = sums["catalyst"] + sums["context"] + sums["bonus"]
+    return sums
+
+
 def action_for(score: float, direction: str, has_mature_rule: bool = False,
-                risk_off: bool = False) -> str:
-    """Map (score, direction, maturity, macro) to the action vocabulary.
+                risk_off: bool = False, catalyst_score: float = 0.0) -> str:
+    """Map (score, direction, maturity, macro, catalyst_score) to action vocabulary.
 
     Maturity gate: when the cluster includes ≥1 rule whose paper-trade accuracy
     has crossed 0.90 with n≥30 (per stock_rule_calibration.is_mature), the
     bot is allowed to use BUY / SELL — the system has earned the directional
-    vocabulary on that rule. Without a mature rule, the bot stays paper-only:
-    WATCH / RESEARCH / AVOID_CHASE / CHASE_RISK.
+    vocabulary on that rule.
 
-    Risk-off (VIX > 25): bullish thresholds shift up by 10 points — fewer
-    LONG signals fire during volatile macro. Bearish thresholds unchanged
-    (AVOID_CHASE/SELL stays just as sensitive, since downside risk INCREASES
-    in risk-off regimes).
+    Catalyst gate (added 2026-05-22 per causal-attribution audit): when
+    catalyst_score == 0, the bullish tiers degrade from CATALYST_WATCH /
+    CATALYST_RESEARCH to MOMENTUM_ONLY — the bot will admit "price/volume
+    moved but no verified catalyst found in last 48h" instead of citing
+    stale 13F filings as causal. AVOID_CHASE / CHASE_RISK / BUY / SELL
+    keep their original semantics since they describe risk warnings or
+    matured-rule actions, not catalyst-attribution claims.
+
+    Risk-off (VIX > 25): bullish thresholds shift up by 10 points.
     """
     bull_buy   = 70 + (10 if risk_off else 0)
     bull_watch = 70 + (10 if risk_off else 0)
     bull_res   = 50 + (10 if risk_off else 0)
+
+    # Maturity gate unchanged
     if has_mature_rule:
         if direction == "bearish" and score >= 50:
             return "SELL"
         if direction == "bullish" and score >= bull_buy:
             return "BUY"
+
+    # Bearish AVOID_CHASE unchanged — it's a risk warning, not a catalyst claim
     if direction == "bearish" and score >= 50:
         return "AVOID_CHASE"
+
+    has_catalyst = catalyst_score > 0
     if direction == "bullish" and score >= bull_watch:
-        return "WATCH"
+        return "CATALYST_WATCH" if has_catalyst else "MOMENTUM_ONLY"
     if direction == "bullish" and score >= bull_res:
-        return "RESEARCH"
+        return "CATALYST_RESEARCH" if has_catalyst else "MOMENTUM_ONLY"
+
     # Non-bullish neutral high-score case (e.g., earnings_release uncertain direction)
-    if score >= 70: return "WATCH"
-    if score >= 50: return "RESEARCH"
+    if score >= 70:
+        return "CATALYST_WATCH" if has_catalyst else "MOMENTUM_ONLY"
+    if score >= 50:
+        return "CATALYST_RESEARCH" if has_catalyst else "MOMENTUM_ONLY"
     return ""  # suppress
 
 
@@ -1375,12 +1481,18 @@ def main() -> int:
                                   "event_id": None, "detail": pb_detail})
 
             mature = cluster_has_mature_rule(ev_list, rule_calibration)
-            action = action_for(score, direction, has_mature_rule=mature, risk_off=risk_off)
+            sub_scores = decompose_score(breakdown)
+            action = action_for(score, direction, has_mature_rule=mature,
+                                risk_off=risk_off,
+                                catalyst_score=sub_scores["catalyst"])
             scored.append({
                 "ticker":   ticker,
                 "bucket":   bucket,
                 "events":   ev_list,
                 "score":    score,
+                "catalyst_score":   sub_scores["catalyst"],
+                "context_score":    sub_scores["context"],
+                "background_score": sub_scores["background"],
                 "action":   action,
                 "direction": direction,
                 "cluster_ok": ok,
@@ -1410,7 +1522,11 @@ def main() -> int:
             tickers_to_check = list({c["ticker"] for c in candidates if c["direction"] == "bullish"})
             closes_map = fetch_recent_closes(tickers_to_check, days_back=7)
             for c in candidates:
-                if c["direction"] != "bullish" or c["action"] not in ("WATCH", "RESEARCH"):
+                # Chase-risk downgrade applies to any bullish "actionable" alert tier
+                # (catalyst-backed or momentum-only — both can chase the same bar).
+                bullish_actionable = ("WATCH", "RESEARCH", "CATALYST_WATCH",
+                                      "CATALYST_RESEARCH", "MOMENTUM_ONLY")
+                if c["direction"] != "bullish" or c["action"] not in bullish_actionable:
                     continue
                 earliest = min((e["event_at"] for e in c["events"] if e.get("event_at")),
                                default=None)
@@ -1451,12 +1567,15 @@ def main() -> int:
             if sig_id is None:
                 continue
             # Severity-4 events bypass the daily cap (LITE-style critical alerts).
-            # RESEARCH gets promoted to dispatch when a sev4 event is present.
+            # RESEARCH-tier gets promoted to dispatch when a sev4 event is present.
             max_sev = max((e.get("severity") or 0) for e in cand["events"])
             priority = max_sev >= 4 and SEV4_PRIORITY_BYPASS_CAP
-            dispatchable_actions = ("WATCH", "AVOID_CHASE", "BUY", "SELL")
-            if priority and cand["action"] == "RESEARCH":
-                dispatchable_actions = dispatchable_actions + ("RESEARCH",)
+            # WATCH/RESEARCH retained for backward compat with any in-flight signals
+            # still using the legacy vocabulary. New signals use CATALYST_* / MOMENTUM_ONLY.
+            dispatchable_actions = ("WATCH", "AVOID_CHASE", "BUY", "SELL",
+                                    "CATALYST_WATCH", "MOMENTUM_ONLY")
+            if priority and cand["action"] in ("RESEARCH", "CATALYST_RESEARCH"):
+                dispatchable_actions = dispatchable_actions + ("RESEARCH", "CATALYST_RESEARCH")
 
             if cand["action"] in dispatchable_actions and (cap_remaining > 0 or priority):
                 from telegram_dispatcher import dispatch_signal

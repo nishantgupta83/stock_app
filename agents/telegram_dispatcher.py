@@ -26,7 +26,19 @@ HEADERS_SB = {
     "Prefer":        "resolution=ignore-duplicates,return=minimal",
 }
 
-EMOJI = {"WATCH": "🟢", "RESEARCH": "🟡", "AVOID_CHASE": "🔴"}
+EMOJI = {
+    # Legacy single-tier names — kept for backward compat with old signals in DB
+    "WATCH":             "🟢",
+    "RESEARCH":          "🟡",
+    "AVOID_CHASE":       "🔴",
+    # New catalyst-vs-momentum tier (PR1A — causal attribution fix)
+    "CATALYST_WATCH":    "🟢",
+    "CATALYST_RESEARCH": "🟡",
+    "MOMENTUM_ONLY":     "⚪",   # explicit "no verified catalyst" tier
+    # Maturity-gated actions
+    "BUY":               "🟢",
+    "SELL":              "🔴",
+}
 SITE_BASE = "https://hub4apps.com/stock_app"
 
 # Feature flag — when False, the inline keyboard is suppressed. Pre-fix the
@@ -55,8 +67,17 @@ def format_payload(sig: dict) -> str:
     fired = sig["fired_at"][:19].replace("T", " ")
     direction = sig.get("direction") or "neutral"
     dir_line = f"Direction: {direction}" if direction not in ("neutral", "WATCH") else ""
+
+    # Action tag — be honest about MOMENTUM_ONLY so the operator doesn't read
+    # it as a catalyst-backed recommendation. The string change matters:
+    # "MOMENTUM_ONLY · no verified catalyst" reads very differently from "WATCH".
+    if sig["action"] == "MOMENTUM_ONLY":
+        action_line = f"{emoji} {sig['ticker']} · MOMENTUM_ONLY · no verified catalyst (last 48h)"
+    else:
+        action_line = f"{emoji} {sig['ticker']} · {sig['action']} · score {int(sig['score'])}/100"
+
     body = (
-        f"{emoji} {sig['ticker']} · {sig['action']} · score {int(sig['score'])}/100\n"
+        f"{action_line}\n"
         f"{sig['evidence_summary']}\n"
         f"Confidence: {float(sig['confidence']):.2f} · Horizon: {horizon}\n"
     )

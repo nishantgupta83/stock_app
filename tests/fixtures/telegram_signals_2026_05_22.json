@@ -1,0 +1,3377 @@
+{
+  "_metadata": {
+    "snapshot_at": "2026-05-22",
+    "purpose": "Replay-test fixture for PR1A catalyst-policy work. Captures the 29 sent signals on the worst-attribution day audited so far, plus the underlying normalized_events and raw_news rows the bot would have seen at signal time.",
+    "expected_after_pr1a": {
+      "stale_13F_signals_demoted_to_MOMENTUM_ONLY": "13 expected",
+      "no_catalyst_signals_to_MOMENTUM_ONLY": "9 expected",
+      "valid_catalyst_signals_retained_as_CATALYST_WATCH_or_RESEARCH_or_AVOID_CHASE": "5 expected"
+    }
+  },
+  "signals": [
+    {
+      "id": 760,
+      "ticker": "AVAV",
+      "fired_at": "2026-05-22T16:22:41.866499+00:00",
+      "direction": "bullish",
+      "confidence": 0.413512,
+      "horizon_days": 1,
+      "stop_price": null,
+      "target_price": null,
+      "thesis_summary": "intraday spike +5.2% \u00b7 no catalyst in last 7d \u2014 check news/sector rotation",
+      "model_version": "intraday-spike-v1",
+      "weight_at_time": {
+        "snap": {
+          "pct": 0.051689,
+          "vol": 438090,
+          "prev": 163.09,
+          "avg_vol": 753525,
+          "current": 171.52,
+          "vol_mult": 0.58
+        },
+        "agents": [
+          "intraday"
+        ]
+      },
+      "status": "open",
+      "action": "WATCH",
+      "score": 51.0,
+      "score_breakdown": {
+        "items": [
+          {
+            "rule": "intraday_pct_move",
+            "detail": "+5.17% close-to-close",
+            "points": 5.17
+          },
+          {
+            "rule": "vol_multiplier",
+            "detail": "0.58\u00d7 20d avg",
+            "points": 0.58
+          }
+        ]
+      },
+      "evidence_summary": "+5.2% intraday \u2014 no catalyst in last 7d \u2014 check news/sector rotation",
+      "dedupe_key": "intraday_spike_AVAV_2026-05-22",
+      "status_v2": "sent",
+      "archived_at": null,
+      "valid_until": null
+    },
+    {
+      "id": 759,
+      "ticker": "VST",
+      "fired_at": "2026-05-22T14:52:48.306259+00:00",
+      "direction": "bullish",
+      "confidence": 0.40032,
+      "horizon_days": 1,
+      "stop_price": null,
+      "target_price": null,
+      "thesis_summary": "intraday spike +5.0% \u00b7 inst-new_position BRDGW (2026-05-15)",
+      "model_version": "intraday-spike-v1",
+      "weight_at_time": {
+        "snap": {
+          "pct": 0.05004,
+          "vol": 2286558,
+          "prev": 149.08,
+          "avg_vol": 6172000,
+          "current": 156.54,
+          "vol_mult": 0.37
+        },
+        "agents": [
+          "intraday"
+        ]
+      },
+      "status": "open",
+      "action": "WATCH",
+      "score": 50.0,
+      "score_breakdown": {
+        "items": [
+          {
+            "rule": "intraday_pct_move",
+            "detail": "+5.00% close-to-close",
+            "points": 5.0
+          },
+          {
+            "rule": "vol_multiplier",
+            "detail": "0.37\u00d7 20d avg",
+            "points": 0.37
+          }
+        ]
+      },
+      "evidence_summary": "+5.0% intraday \u2014 inst-new_position BRDGW (2026-05-15)",
+      "dedupe_key": "intraday_spike_VST_2026-05-22",
+      "status_v2": "sent",
+      "archived_at": null,
+      "valid_until": null
+    },
+    {
+      "id": 758,
+      "ticker": "SMCI",
+      "fired_at": "2026-05-22T14:37:44.477029+00:00",
+      "direction": "bullish",
+      "confidence": 0.433952,
+      "horizon_days": 1,
+      "stop_price": null,
+      "target_price": null,
+      "thesis_summary": "intraday spike +5.4% \u00b7 inst-new_position BRDGW (2026-05-15)",
+      "model_version": "intraday-spike-v1",
+      "weight_at_time": {
+        "snap": {
+          "pct": 0.054244,
+          "vol": 12402803,
+          "prev": 33.46,
+          "avg_vol": 28986625,
+          "current": 35.275,
+          "vol_mult": 0.43
+        },
+        "agents": [
+          "intraday"
+        ]
+      },
+      "status": "open",
+      "action": "WATCH",
+      "score": 54.0,
+      "score_breakdown": {
+        "items": [
+          {
+            "rule": "intraday_pct_move",
+            "detail": "+5.42% close-to-close",
+            "points": 5.42
+          },
+          {
+            "rule": "vol_multiplier",
+            "detail": "0.43\u00d7 20d avg",
+            "points": 0.43
+          }
+        ]
+      },
+      "evidence_summary": "+5.4% intraday \u2014 inst-new_position BRDGW (2026-05-15)",
+      "dedupe_key": "intraday_spike_SMCI_2026-05-22",
+      "status_v2": "sent",
+      "archived_at": null,
+      "valid_until": null
+    },
+    {
+      "id": 757,
+      "ticker": "MOD",
+      "fired_at": "2026-05-22T14:22:40.729414+00:00",
+      "direction": "bullish",
+      "confidence": 0.410536,
+      "horizon_days": 1,
+      "stop_price": null,
+      "target_price": null,
+      "thesis_summary": "intraday spike +5.1% \u00b7 earnings scheduled (2026-05-26) \u00b7 earnings scheduled (2026-05-19)",
+      "model_version": "intraday-spike-v1",
+      "weight_at_time": {
+        "snap": {
+          "pct": 0.051317,
+          "vol": 331646,
+          "prev": 250.11,
+          "avg_vol": 1294950,
+          "current": 262.945,
+          "vol_mult": 0.26
+        },
+        "agents": [
+          "intraday"
+        ]
+      },
+      "status": "open",
+      "action": "WATCH",
+      "score": 51.0,
+      "score_breakdown": {
+        "items": [
+          {
+            "rule": "intraday_pct_move",
+            "detail": "+5.13% close-to-close",
+            "points": 5.13
+          },
+          {
+            "rule": "vol_multiplier",
+            "detail": "0.26\u00d7 20d avg",
+            "points": 0.26
+          }
+        ]
+      },
+      "evidence_summary": "+5.1% intraday \u2014 earnings scheduled (2026-05-26) \u00b7 earnings scheduled (2026-05-19)",
+      "dedupe_key": "intraday_spike_MOD_2026-05-22",
+      "status_v2": "sent",
+      "archived_at": null,
+      "valid_until": null
+    },
+    {
+      "id": 756,
+      "ticker": "MRK",
+      "fired_at": "2026-05-22T14:22:39.937258+00:00",
+      "direction": "bullish",
+      "confidence": 0.413584,
+      "horizon_days": 1,
+      "stop_price": null,
+      "target_price": null,
+      "thesis_summary": "intraday spike +5.2% \u00b7 clinical_readout (2026-05-20) \u00b7 clinical_readout (2026-05-20) \u00b7 clinical_readout (2026-05-20)",
+      "model_version": "intraday-spike-v1",
+      "weight_at_time": {
+        "snap": {
+          "pct": 0.051698,
+          "vol": 3375957,
+          "prev": 115.88,
+          "avg_vol": 8031525,
+          "current": 121.8708,
+          "vol_mult": 0.42
+        },
+        "agents": [
+          "intraday"
+        ]
+      },
+      "status": "open",
+      "action": "WATCH",
+      "score": 51.0,
+      "score_breakdown": {
+        "items": [
+          {
+            "rule": "intraday_pct_move",
+            "detail": "+5.17% close-to-close",
+            "points": 5.17
+          },
+          {
+            "rule": "vol_multiplier",
+            "detail": "0.42\u00d7 20d avg",
+            "points": 0.42
+          }
+        ]
+      },
+      "evidence_summary": "+5.2% intraday \u2014 clinical_readout (2026-05-20) \u00b7 clinical_readout (2026-05-20) \u00b7 clinical_readout (2026-05-20)",
+      "dedupe_key": "intraday_spike_MRK_2026-05-22",
+      "status_v2": "sent",
+      "archived_at": null,
+      "valid_until": null
+    },
+    {
+      "id": 755,
+      "ticker": "NNE",
+      "fired_at": "2026-05-22T14:07:36.663338+00:00",
+      "direction": "bullish",
+      "confidence": 0.417864,
+      "horizon_days": 1,
+      "stop_price": null,
+      "target_price": null,
+      "thesis_summary": "intraday spike +5.2% \u00b7 no catalyst in last 7d \u2014 check news/sector rotation",
+      "model_version": "intraday-spike-v1",
+      "weight_at_time": {
+        "snap": {
+          "pct": 0.052233,
+          "vol": 543190,
+          "prev": 25.08,
+          "avg_vol": 2125625,
+          "current": 26.39,
+          "vol_mult": 0.26
+        },
+        "agents": [
+          "intraday"
+        ]
+      },
+      "status": "open",
+      "action": "WATCH",
+      "score": 52.0,
+      "score_breakdown": {
+        "items": [
+          {
+            "rule": "intraday_pct_move",
+            "detail": "+5.22% close-to-close",
+            "points": 5.22
+          },
+          {
+            "rule": "vol_multiplier",
+            "detail": "0.26\u00d7 20d avg",
+            "points": 0.26
+          }
+        ]
+      },
+      "evidence_summary": "+5.2% intraday \u2014 no catalyst in last 7d \u2014 check news/sector rotation",
+      "dedupe_key": "intraday_spike_NNE_2026-05-22",
+      "status_v2": "sent",
+      "archived_at": null,
+      "valid_until": null
+    },
+    {
+      "id": 754,
+      "ticker": "HPE",
+      "fired_at": "2026-05-22T13:37:40.990415+00:00",
+      "direction": "bullish",
+      "confidence": 0.420368,
+      "horizon_days": 1,
+      "stop_price": null,
+      "target_price": null,
+      "thesis_summary": "intraday spike +5.3% \u00b7 no catalyst in last 7d \u2014 check news/sector rotation",
+      "model_version": "intraday-spike-v1",
+      "weight_at_time": {
+        "snap": {
+          "pct": 0.052546,
+          "vol": 1123641,
+          "prev": 33.97,
+          "avg_vol": 12502250,
+          "current": 35.755,
+          "vol_mult": 0.09
+        },
+        "agents": [
+          "intraday"
+        ]
+      },
+      "status": "open",
+      "action": "WATCH",
+      "score": 52.0,
+      "score_breakdown": {
+        "items": [
+          {
+            "rule": "intraday_pct_move",
+            "detail": "+5.25% close-to-close",
+            "points": 5.25
+          },
+          {
+            "rule": "vol_multiplier",
+            "detail": "0.09\u00d7 20d avg",
+            "points": 0.09
+          }
+        ]
+      },
+      "evidence_summary": "+5.3% intraday \u2014 no catalyst in last 7d \u2014 check news/sector rotation",
+      "dedupe_key": "intraday_spike_HPE_2026-05-22",
+      "status_v2": "sent",
+      "archived_at": null,
+      "valid_until": null
+    },
+    {
+      "id": 753,
+      "ticker": "ALAB",
+      "fired_at": "2026-05-22T13:37:40.379278+00:00",
+      "direction": "bullish",
+      "confidence": 0.446952,
+      "horizon_days": 1,
+      "stop_price": null,
+      "target_price": null,
+      "thesis_summary": "intraday spike +5.6% \u00b7 inst-new_position BRDGW (2026-05-15)",
+      "model_version": "intraday-spike-v1",
+      "weight_at_time": {
+        "snap": {
+          "pct": 0.055869,
+          "vol": 651358,
+          "prev": 297.84,
+          "avg_vol": 8219700,
+          "current": 314.4799,
+          "vol_mult": 0.08
+        },
+        "agents": [
+          "intraday"
+        ]
+      },
+      "status": "open",
+      "action": "WATCH",
+      "score": 55.0,
+      "score_breakdown": {
+        "items": [
+          {
+            "rule": "intraday_pct_move",
+            "detail": "+5.59% close-to-close",
+            "points": 5.59
+          },
+          {
+            "rule": "vol_multiplier",
+            "detail": "0.08\u00d7 20d avg",
+            "points": 0.08
+          }
+        ]
+      },
+      "evidence_summary": "+5.6% intraday \u2014 inst-new_position BRDGW (2026-05-15)",
+      "dedupe_key": "intraday_spike_ALAB_2026-05-22",
+      "status_v2": "sent",
+      "archived_at": null,
+      "valid_until": null
+    },
+    {
+      "id": 752,
+      "ticker": "AMD",
+      "fired_at": "2026-05-22T13:37:39.772637+00:00",
+      "direction": "bullish",
+      "confidence": 0.468336,
+      "horizon_days": 1,
+      "stop_price": null,
+      "target_price": null,
+      "thesis_summary": "intraday spike +5.9% \u00b7 8-K sev4 (2026-05-15) \u00b7 news (positive) (2026-05-22) \u00b7 news (neutral) (2026-05-22)",
+      "model_version": "intraday-spike-v1",
+      "weight_at_time": {
+        "snap": {
+          "pct": 0.058542,
+          "vol": 5470193,
+          "prev": 449.59,
+          "avg_vol": 32613150,
+          "current": 475.91,
+          "vol_mult": 0.17
+        },
+        "agents": [
+          "intraday"
+        ]
+      },
+      "status": "open",
+      "action": "WATCH",
+      "score": 58.0,
+      "score_breakdown": {
+        "items": [
+          {
+            "rule": "intraday_pct_move",
+            "detail": "+5.85% close-to-close",
+            "points": 5.85
+          },
+          {
+            "rule": "vol_multiplier",
+            "detail": "0.17\u00d7 20d avg",
+            "points": 0.17
+          }
+        ]
+      },
+      "evidence_summary": "+5.9% intraday \u2014 8-K sev4 (2026-05-15) \u00b7 news (positive) (2026-05-22) \u00b7 news (neutral) (2026-05-22)",
+      "dedupe_key": "intraday_spike_AMD_2026-05-22",
+      "status_v2": "sent",
+      "archived_at": null,
+      "valid_until": null
+    },
+    {
+      "id": 751,
+      "ticker": "NIO",
+      "fired_at": "2026-05-22T13:37:39.169772+00:00",
+      "direction": "bearish",
+      "confidence": 0.492856,
+      "horizon_days": 1,
+      "stop_price": null,
+      "target_price": null,
+      "thesis_summary": "intraday spike -6.2% \u00b7 earnings scheduled (2026-05-21)",
+      "model_version": "intraday-spike-v1",
+      "weight_at_time": {
+        "snap": {
+          "pct": -0.061607,
+          "vol": 20062650,
+          "prev": 5.6,
+          "avg_vol": 50077450,
+          "current": 5.255,
+          "vol_mult": 0.4
+        },
+        "agents": [
+          "intraday"
+        ]
+      },
+      "status": "open",
+      "action": "AVOID_CHASE",
+      "score": 61.0,
+      "score_breakdown": {
+        "items": [
+          {
+            "rule": "intraday_pct_move",
+            "detail": "-6.16% close-to-close",
+            "points": 6.16
+          },
+          {
+            "rule": "vol_multiplier",
+            "detail": "0.4\u00d7 20d avg",
+            "points": 0.4
+          }
+        ]
+      },
+      "evidence_summary": "-6.2% intraday \u2014 earnings scheduled (2026-05-21)",
+      "dedupe_key": "intraday_spike_NIO_2026-05-22",
+      "status_v2": "sent",
+      "archived_at": null,
+      "valid_until": null
+    },
+    {
+      "id": 750,
+      "ticker": "OKLO",
+      "fired_at": "2026-05-22T13:37:38.5429+00:00",
+      "direction": "bullish",
+      "confidence": 0.517488,
+      "horizon_days": 1,
+      "stop_price": null,
+      "target_price": null,
+      "thesis_summary": "intraday spike +6.5% \u00b7 inst-new_position BRDGW (2026-05-15)",
+      "model_version": "intraday-spike-v1",
+      "weight_at_time": {
+        "snap": {
+          "pct": 0.064686,
+          "vol": 1888196,
+          "prev": 65.09,
+          "avg_vol": 12626675,
+          "current": 69.3004,
+          "vol_mult": 0.15
+        },
+        "agents": [
+          "intraday"
+        ]
+      },
+      "status": "open",
+      "action": "WATCH",
+      "score": 64.0,
+      "score_breakdown": {
+        "items": [
+          {
+            "rule": "intraday_pct_move",
+            "detail": "+6.47% close-to-close",
+            "points": 6.47
+          },
+          {
+            "rule": "vol_multiplier",
+            "detail": "0.15\u00d7 20d avg",
+            "points": 0.15
+          }
+        ]
+      },
+      "evidence_summary": "+6.5% intraday \u2014 inst-new_position BRDGW (2026-05-15)",
+      "dedupe_key": "intraday_spike_OKLO_2026-05-22",
+      "status_v2": "sent",
+      "archived_at": null,
+      "valid_until": null
+    },
+    {
+      "id": 749,
+      "ticker": "DELL",
+      "fired_at": "2026-05-22T13:37:37.751021+00:00",
+      "direction": "bullish",
+      "confidence": 0.825472,
+      "horizon_days": 1,
+      "stop_price": null,
+      "target_price": null,
+      "thesis_summary": "intraday spike +10.3% \u00b7 inst-new_position BRDGW (2026-05-15) \u00b7 earnings scheduled (2026-05-28)",
+      "model_version": "intraday-spike-v1",
+      "weight_at_time": {
+        "snap": {
+          "pct": 0.103184,
+          "vol": 1589881,
+          "prev": 252.8,
+          "avg_vol": 4653525,
+          "current": 278.885,
+          "vol_mult": 0.34
+        },
+        "agents": [
+          "intraday"
+        ]
+      },
+      "status": "open",
+      "action": "WATCH",
+      "score": 100.0,
+      "score_breakdown": {
+        "items": [
+          {
+            "rule": "intraday_pct_move",
+            "detail": "+10.32% close-to-close",
+            "points": 10.32
+          },
+          {
+            "rule": "vol_multiplier",
+            "detail": "0.34\u00d7 20d avg",
+            "points": 0.34
+          }
+        ]
+      },
+      "evidence_summary": "+10.3% intraday \u2014 inst-new_position BRDGW (2026-05-15) \u00b7 earnings scheduled (2026-05-28)",
+      "dedupe_key": "intraday_spike_DELL_2026-05-22",
+      "status_v2": "sent",
+      "archived_at": null,
+      "valid_until": null
+    },
+    {
+      "id": 748,
+      "ticker": "FSLR",
+      "fired_at": "2026-05-22T13:08:08.905254+00:00",
+      "direction": "bullish",
+      "confidence": 0.37064,
+      "horizon_days": 1,
+      "stop_price": null,
+      "target_price": null,
+      "thesis_summary": "intraday spike +4.6% \u00b7 inst-new_position BRDGW (2026-05-15)",
+      "model_version": "intraday-spike-v1",
+      "weight_at_time": {
+        "snap": {
+          "pct": 0.04633,
+          "vol": 4293500,
+          "prev": 237.86,
+          "avg_vol": 2131825,
+          "current": 248.88,
+          "vol_mult": 2.01
+        },
+        "agents": [
+          "intraday"
+        ]
+      },
+      "status": "open",
+      "action": "WATCH",
+      "score": 46.0,
+      "score_breakdown": {
+        "items": [
+          {
+            "rule": "intraday_pct_move",
+            "detail": "+4.63% close-to-close",
+            "points": 4.63
+          },
+          {
+            "rule": "vol_multiplier",
+            "detail": "2.01\u00d7 20d avg",
+            "points": 2.01
+          }
+        ]
+      },
+      "evidence_summary": "+4.6% intraday \u2014 inst-new_position BRDGW (2026-05-15)",
+      "dedupe_key": "intraday_spike_FSLR_2026-05-22",
+      "status_v2": "sent",
+      "archived_at": null,
+      "valid_until": null
+    },
+    {
+      "id": 747,
+      "ticker": "COHR",
+      "fired_at": "2026-05-22T13:08:07.902182+00:00",
+      "direction": "bullish",
+      "confidence": 0.435144,
+      "horizon_days": 1,
+      "stop_price": null,
+      "target_price": null,
+      "thesis_summary": "intraday spike +5.4% \u00b7 inst-new_position BRDGW (2026-05-15)",
+      "model_version": "intraday-spike-v1",
+      "weight_at_time": {
+        "snap": {
+          "pct": 0.054393,
+          "vol": 4357700,
+          "prev": 358.5,
+          "avg_vol": 5953500,
+          "current": 378.0,
+          "vol_mult": 0.73
+        },
+        "agents": [
+          "intraday"
+        ]
+      },
+      "status": "open",
+      "action": "WATCH",
+      "score": 54.0,
+      "score_breakdown": {
+        "items": [
+          {
+            "rule": "intraday_pct_move",
+            "detail": "+5.44% close-to-close",
+            "points": 5.44
+          },
+          {
+            "rule": "vol_multiplier",
+            "detail": "0.73\u00d7 20d avg",
+            "points": 0.73
+          }
+        ]
+      },
+      "evidence_summary": "+5.4% intraday \u2014 inst-new_position BRDGW (2026-05-15)",
+      "dedupe_key": "intraday_spike_COHR_2026-05-22",
+      "status_v2": "sent",
+      "archived_at": null,
+      "valid_until": null
+    },
+    {
+      "id": 746,
+      "ticker": "CRDO",
+      "fired_at": "2026-05-22T13:08:06.921298+00:00",
+      "direction": "bullish",
+      "confidence": 0.455128,
+      "horizon_days": 1,
+      "stop_price": null,
+      "target_price": null,
+      "thesis_summary": "intraday spike +5.7% \u00b7 no catalyst in last 7d \u2014 check news/sector rotation",
+      "model_version": "intraday-spike-v1",
+      "weight_at_time": {
+        "snap": {
+          "pct": 0.056891,
+          "vol": 6760300,
+          "prev": 182.98,
+          "avg_vol": 7478200,
+          "current": 193.39,
+          "vol_mult": 0.9
+        },
+        "agents": [
+          "intraday"
+        ]
+      },
+      "status": "open",
+      "action": "WATCH",
+      "score": 56.0,
+      "score_breakdown": {
+        "items": [
+          {
+            "rule": "intraday_pct_move",
+            "detail": "+5.69% close-to-close",
+            "points": 5.69
+          },
+          {
+            "rule": "vol_multiplier",
+            "detail": "0.9\u00d7 20d avg",
+            "points": 0.9
+          }
+        ]
+      },
+      "evidence_summary": "+5.7% intraday \u2014 no catalyst in last 7d \u2014 check news/sector rotation",
+      "dedupe_key": "intraday_spike_CRDO_2026-05-22",
+      "status_v2": "sent",
+      "archived_at": null,
+      "valid_until": null
+    },
+    {
+      "id": 745,
+      "ticker": "ANET",
+      "fired_at": "2026-05-22T13:08:05.926725+00:00",
+      "direction": "bullish",
+      "confidence": 0.46124,
+      "horizon_days": 1,
+      "stop_price": null,
+      "target_price": null,
+      "thesis_summary": "intraday spike +5.8% \u00b7 inst-new_position BRDGW (2026-05-15)",
+      "model_version": "intraday-spike-v1",
+      "weight_at_time": {
+        "snap": {
+          "pct": 0.057655,
+          "vol": 11602300,
+          "prev": 140.49,
+          "avg_vol": 9471325,
+          "current": 148.59,
+          "vol_mult": 1.22
+        },
+        "agents": [
+          "intraday"
+        ]
+      },
+      "status": "open",
+      "action": "WATCH",
+      "score": 57.0,
+      "score_breakdown": {
+        "items": [
+          {
+            "rule": "intraday_pct_move",
+            "detail": "+5.77% close-to-close",
+            "points": 5.77
+          },
+          {
+            "rule": "vol_multiplier",
+            "detail": "1.22\u00d7 20d avg",
+            "points": 1.22
+          }
+        ]
+      },
+      "evidence_summary": "+5.8% intraday \u2014 inst-new_position BRDGW (2026-05-15)",
+      "dedupe_key": "intraday_spike_ANET_2026-05-22",
+      "status_v2": "sent",
+      "archived_at": null,
+      "valid_until": null
+    },
+    {
+      "id": 744,
+      "ticker": "CIEN",
+      "fired_at": "2026-05-22T13:08:04.921971+00:00",
+      "direction": "bullish",
+      "confidence": 0.46824,
+      "horizon_days": 1,
+      "stop_price": null,
+      "target_price": null,
+      "thesis_summary": "intraday spike +5.9% \u00b7 inst-new_position BRDGW (2026-05-15)",
+      "model_version": "intraday-spike-v1",
+      "weight_at_time": {
+        "snap": {
+          "pct": 0.05853,
+          "vol": 1546200,
+          "prev": 554.76,
+          "avg_vol": 2310900,
+          "current": 587.23,
+          "vol_mult": 0.67
+        },
+        "agents": [
+          "intraday"
+        ]
+      },
+      "status": "open",
+      "action": "WATCH",
+      "score": 58.0,
+      "score_breakdown": {
+        "items": [
+          {
+            "rule": "intraday_pct_move",
+            "detail": "+5.85% close-to-close",
+            "points": 5.85
+          },
+          {
+            "rule": "vol_multiplier",
+            "detail": "0.67\u00d7 20d avg",
+            "points": 0.67
+          }
+        ]
+      },
+      "evidence_summary": "+5.9% intraday \u2014 inst-new_position BRDGW (2026-05-15)",
+      "dedupe_key": "intraday_spike_CIEN_2026-05-22",
+      "status_v2": "sent",
+      "archived_at": null,
+      "valid_until": null
+    },
+    {
+      "id": 743,
+      "ticker": "GLW",
+      "fired_at": "2026-05-22T13:08:03.951905+00:00",
+      "direction": "bullish",
+      "confidence": 0.49588,
+      "horizon_days": 1,
+      "stop_price": null,
+      "target_price": null,
+      "thesis_summary": "intraday spike +6.2% \u00b7 no catalyst in last 7d \u2014 check news/sector rotation",
+      "model_version": "intraday-spike-v1",
+      "weight_at_time": {
+        "snap": {
+          "pct": 0.061985,
+          "vol": 14372600,
+          "prev": 180.69,
+          "avg_vol": 14874175,
+          "current": 191.89,
+          "vol_mult": 0.97
+        },
+        "agents": [
+          "intraday"
+        ]
+      },
+      "status": "open",
+      "action": "WATCH",
+      "score": 61.0,
+      "score_breakdown": {
+        "items": [
+          {
+            "rule": "intraday_pct_move",
+            "detail": "+6.20% close-to-close",
+            "points": 6.2
+          },
+          {
+            "rule": "vol_multiplier",
+            "detail": "0.97\u00d7 20d avg",
+            "points": 0.97
+          }
+        ]
+      },
+      "evidence_summary": "+6.2% intraday \u2014 no catalyst in last 7d \u2014 check news/sector rotation",
+      "dedupe_key": "intraday_spike_GLW_2026-05-22",
+      "status_v2": "sent",
+      "archived_at": null,
+      "valid_until": null
+    },
+    {
+      "id": 742,
+      "ticker": "FN",
+      "fired_at": "2026-05-22T13:08:02.930454+00:00",
+      "direction": "bullish",
+      "confidence": 0.496032,
+      "horizon_days": 1,
+      "stop_price": null,
+      "target_price": null,
+      "thesis_summary": "intraday spike +6.2% \u00b7 no catalyst in last 7d \u2014 check news/sector rotation",
+      "model_version": "intraday-spike-v1",
+      "weight_at_time": {
+        "snap": {
+          "pct": 0.062004,
+          "vol": 618300,
+          "prev": 662.21,
+          "avg_vol": 948575,
+          "current": 703.27,
+          "vol_mult": 0.65
+        },
+        "agents": [
+          "intraday"
+        ]
+      },
+      "status": "open",
+      "action": "WATCH",
+      "score": 62.0,
+      "score_breakdown": {
+        "items": [
+          {
+            "rule": "intraday_pct_move",
+            "detail": "+6.20% close-to-close",
+            "points": 6.2
+          },
+          {
+            "rule": "vol_multiplier",
+            "detail": "0.65\u00d7 20d avg",
+            "points": 0.65
+          }
+        ]
+      },
+      "evidence_summary": "+6.2% intraday \u2014 no catalyst in last 7d \u2014 check news/sector rotation",
+      "dedupe_key": "intraday_spike_FN_2026-05-22",
+      "status_v2": "sent",
+      "archived_at": null,
+      "valid_until": null
+    },
+    {
+      "id": 741,
+      "ticker": "CRWV",
+      "fired_at": "2026-05-22T13:08:01.897157+00:00",
+      "direction": "bullish",
+      "confidence": 0.497632,
+      "horizon_days": 1,
+      "stop_price": null,
+      "target_price": null,
+      "thesis_summary": "intraday spike +6.2% \u00b7 inst-new_position BRDGW (2026-05-15)",
+      "model_version": "intraday-spike-v1",
+      "weight_at_time": {
+        "snap": {
+          "pct": 0.062204,
+          "vol": 31764200,
+          "prev": 101.28,
+          "avg_vol": 28051075,
+          "current": 107.58,
+          "vol_mult": 1.13
+        },
+        "agents": [
+          "intraday"
+        ]
+      },
+      "status": "open",
+      "action": "WATCH",
+      "score": 62.0,
+      "score_breakdown": {
+        "items": [
+          {
+            "rule": "intraday_pct_move",
+            "detail": "+6.22% close-to-close",
+            "points": 6.22
+          },
+          {
+            "rule": "vol_multiplier",
+            "detail": "1.13\u00d7 20d avg",
+            "points": 1.13
+          }
+        ]
+      },
+      "evidence_summary": "+6.2% intraday \u2014 inst-new_position BRDGW (2026-05-15)",
+      "dedupe_key": "intraday_spike_CRWV_2026-05-22",
+      "status_v2": "sent",
+      "archived_at": null,
+      "valid_until": null
+    },
+    {
+      "id": 740,
+      "ticker": "RKLB",
+      "fired_at": "2026-05-22T13:08:00.896131+00:00",
+      "direction": "bearish",
+      "confidence": 0.526064,
+      "horizon_days": 1,
+      "stop_price": null,
+      "target_price": null,
+      "thesis_summary": "intraday spike -6.6% \u00b7 inst-new_position BRDGW (2026-05-15)",
+      "model_version": "intraday-spike-v1",
+      "weight_at_time": {
+        "snap": {
+          "pct": -0.065758,
+          "vol": 30659600,
+          "prev": 134.28,
+          "avg_vol": 27303300,
+          "current": 125.45,
+          "vol_mult": 1.12
+        },
+        "agents": [
+          "intraday"
+        ]
+      },
+      "status": "open",
+      "action": "AVOID_CHASE",
+      "score": 65.0,
+      "score_breakdown": {
+        "items": [
+          {
+            "rule": "intraday_pct_move",
+            "detail": "-6.58% close-to-close",
+            "points": 6.58
+          },
+          {
+            "rule": "vol_multiplier",
+            "detail": "1.12\u00d7 20d avg",
+            "points": 1.12
+          }
+        ]
+      },
+      "evidence_summary": "-6.6% intraday \u2014 inst-new_position BRDGW (2026-05-15)",
+      "dedupe_key": "intraday_spike_RKLB_2026-05-22",
+      "status_v2": "sent",
+      "archived_at": null,
+      "valid_until": null
+    },
+    {
+      "id": 739,
+      "ticker": "FLNC",
+      "fired_at": "2026-05-22T13:07:59.74975+00:00",
+      "direction": "bullish",
+      "confidence": 0.527984,
+      "horizon_days": 1,
+      "stop_price": null,
+      "target_price": null,
+      "thesis_summary": "intraday spike +6.6% \u00b7 no catalyst in last 7d \u2014 check news/sector rotation",
+      "model_version": "intraday-spike-v1",
+      "weight_at_time": {
+        "snap": {
+          "pct": 0.065998,
+          "vol": 6990900,
+          "prev": 18.94,
+          "avg_vol": 11653825,
+          "current": 20.19,
+          "vol_mult": 0.6
+        },
+        "agents": [
+          "intraday"
+        ]
+      },
+      "status": "open",
+      "action": "WATCH",
+      "score": 65.0,
+      "score_breakdown": {
+        "items": [
+          {
+            "rule": "intraday_pct_move",
+            "detail": "+6.60% close-to-close",
+            "points": 6.6
+          },
+          {
+            "rule": "vol_multiplier",
+            "detail": "0.6\u00d7 20d avg",
+            "points": 0.6
+          }
+        ]
+      },
+      "evidence_summary": "+6.6% intraday \u2014 no catalyst in last 7d \u2014 check news/sector rotation",
+      "dedupe_key": "intraday_spike_FLNC_2026-05-22",
+      "status_v2": "sent",
+      "archived_at": null,
+      "valid_until": null
+    },
+    {
+      "id": 738,
+      "ticker": "WMT",
+      "fired_at": "2026-05-22T13:07:58.716285+00:00",
+      "direction": "bearish",
+      "confidence": 0.581432,
+      "horizon_days": 1,
+      "stop_price": null,
+      "target_price": null,
+      "thesis_summary": "intraday spike -7.3% \u00b7 news (negative) (2026-05-21) \u00b7 news (positive) (2026-05-21) \u00b7 8-K sev3 (2026-05-21)",
+      "model_version": "intraday-spike-v1",
+      "weight_at_time": {
+        "snap": {
+          "pct": -0.072679,
+          "vol": 52912900,
+          "prev": 130.85,
+          "avg_vol": 21983725,
+          "current": 121.34,
+          "vol_mult": 2.41
+        },
+        "agents": [
+          "intraday"
+        ]
+      },
+      "status": "open",
+      "action": "AVOID_CHASE",
+      "score": 72.0,
+      "score_breakdown": {
+        "items": [
+          {
+            "rule": "intraday_pct_move",
+            "detail": "-7.27% close-to-close",
+            "points": 7.27
+          },
+          {
+            "rule": "vol_multiplier",
+            "detail": "2.41\u00d7 20d avg",
+            "points": 2.41
+          }
+        ]
+      },
+      "evidence_summary": "-7.3% intraday \u2014 news (negative) (2026-05-21) \u00b7 news (positive) (2026-05-21) \u00b7 8-K sev3 (2026-05-21)",
+      "dedupe_key": "intraday_spike_WMT_2026-05-22",
+      "status_v2": "sent",
+      "archived_at": null,
+      "valid_until": null
+    },
+    {
+      "id": 737,
+      "ticker": "BOOT",
+      "fired_at": "2026-05-22T13:07:57.702709+00:00",
+      "direction": "bullish",
+      "confidence": 0.687144,
+      "horizon_days": 1,
+      "stop_price": null,
+      "target_price": null,
+      "thesis_summary": "intraday spike +8.6% \u00b7 no catalyst in last 7d \u2014 check news/sector rotation",
+      "model_version": "intraday-spike-v1",
+      "weight_at_time": {
+        "snap": {
+          "pct": 0.085893,
+          "vol": 1008900,
+          "prev": 142.27,
+          "avg_vol": 1152075,
+          "current": 154.49,
+          "vol_mult": 0.88
+        },
+        "agents": [
+          "intraday"
+        ]
+      },
+      "status": "open",
+      "action": "WATCH",
+      "score": 85.0,
+      "score_breakdown": {
+        "items": [
+          {
+            "rule": "intraday_pct_move",
+            "detail": "+8.59% close-to-close",
+            "points": 8.59
+          },
+          {
+            "rule": "vol_multiplier",
+            "detail": "0.88\u00d7 20d avg",
+            "points": 0.88
+          }
+        ]
+      },
+      "evidence_summary": "+8.6% intraday \u2014 no catalyst in last 7d \u2014 check news/sector rotation",
+      "dedupe_key": "intraday_spike_BOOT_2026-05-22",
+      "status_v2": "sent",
+      "archived_at": null,
+      "valid_until": null
+    },
+    {
+      "id": 736,
+      "ticker": "SMR",
+      "fired_at": "2026-05-22T13:07:56.734927+00:00",
+      "direction": "bullish",
+      "confidence": 0.723776,
+      "horizon_days": 1,
+      "stop_price": null,
+      "target_price": null,
+      "thesis_summary": "intraday spike +9.0% \u00b7 no catalyst in last 7d \u2014 check news/sector rotation",
+      "model_version": "intraday-spike-v1",
+      "weight_at_time": {
+        "snap": {
+          "pct": 0.090472,
+          "vol": 30678200,
+          "prev": 10.39,
+          "avg_vol": 26880825,
+          "current": 11.33,
+          "vol_mult": 1.14
+        },
+        "agents": [
+          "intraday"
+        ]
+      },
+      "status": "open",
+      "action": "WATCH",
+      "score": 90.0,
+      "score_breakdown": {
+        "items": [
+          {
+            "rule": "intraday_pct_move",
+            "detail": "+9.05% close-to-close",
+            "points": 9.05
+          },
+          {
+            "rule": "vol_multiplier",
+            "detail": "1.14\u00d7 20d avg",
+            "points": 1.14
+          }
+        ]
+      },
+      "evidence_summary": "+9.0% intraday \u2014 no catalyst in last 7d \u2014 check news/sector rotation",
+      "dedupe_key": "intraday_spike_SMR_2026-05-22",
+      "status_v2": "sent",
+      "archived_at": null,
+      "valid_until": null
+    },
+    {
+      "id": 735,
+      "ticker": "CHPT",
+      "fired_at": "2026-05-22T13:07:55.718731+00:00",
+      "direction": "bullish",
+      "confidence": 0.770464,
+      "horizon_days": 1,
+      "stop_price": null,
+      "target_price": null,
+      "thesis_summary": "intraday spike +9.6% \u00b7 no catalyst in last 7d \u2014 check news/sector rotation",
+      "model_version": "intraday-spike-v1",
+      "weight_at_time": {
+        "snap": {
+          "pct": 0.096308,
+          "vol": 608900,
+          "prev": 6.23,
+          "avg_vol": 494250,
+          "current": 6.83,
+          "vol_mult": 1.23
+        },
+        "agents": [
+          "intraday"
+        ]
+      },
+      "status": "open",
+      "action": "WATCH",
+      "score": 96.0,
+      "score_breakdown": {
+        "items": [
+          {
+            "rule": "intraday_pct_move",
+            "detail": "+9.63% close-to-close",
+            "points": 9.63
+          },
+          {
+            "rule": "vol_multiplier",
+            "detail": "1.23\u00d7 20d avg",
+            "points": 1.23
+          }
+        ]
+      },
+      "evidence_summary": "+9.6% intraday \u2014 no catalyst in last 7d \u2014 check news/sector rotation",
+      "dedupe_key": "intraday_spike_CHPT_2026-05-22",
+      "status_v2": "sent",
+      "archived_at": null,
+      "valid_until": null
+    },
+    {
+      "id": 734,
+      "ticker": "IREN",
+      "fired_at": "2026-05-22T13:07:54.735209+00:00",
+      "direction": "bullish",
+      "confidence": 0.811992,
+      "horizon_days": 1,
+      "stop_price": null,
+      "target_price": null,
+      "thesis_summary": "intraday spike +10.1% \u00b7 inst-new_position BRDGW (2026-05-15)",
+      "model_version": "intraday-spike-v1",
+      "weight_at_time": {
+        "snap": {
+          "pct": 0.101499,
+          "vol": 50116600,
+          "prev": 52.71,
+          "avg_vol": 43432475,
+          "current": 58.06,
+          "vol_mult": 1.15
+        },
+        "agents": [
+          "intraday"
+        ]
+      },
+      "status": "open",
+      "action": "WATCH",
+      "score": 100.0,
+      "score_breakdown": {
+        "items": [
+          {
+            "rule": "intraday_pct_move",
+            "detail": "+10.15% close-to-close",
+            "points": 10.15
+          },
+          {
+            "rule": "vol_multiplier",
+            "detail": "1.15\u00d7 20d avg",
+            "points": 1.15
+          }
+        ]
+      },
+      "evidence_summary": "+10.1% intraday \u2014 inst-new_position BRDGW (2026-05-15)",
+      "dedupe_key": "intraday_spike_IREN_2026-05-22",
+      "status_v2": "sent",
+      "archived_at": null,
+      "valid_until": null
+    },
+    {
+      "id": 733,
+      "ticker": "LITE",
+      "fired_at": "2026-05-22T13:07:53.74379+00:00",
+      "direction": "bullish",
+      "confidence": 0.888688,
+      "horizon_days": 1,
+      "stop_price": null,
+      "target_price": null,
+      "thesis_summary": "intraday spike +11.1% \u00b7 inst-new_position BRDGW (2026-05-15)",
+      "model_version": "intraday-spike-v1",
+      "weight_at_time": {
+        "snap": {
+          "pct": 0.111086,
+          "vol": 5767800,
+          "prev": 868.07,
+          "avg_vol": 6890025,
+          "current": 964.5,
+          "vol_mult": 0.84
+        },
+        "agents": [
+          "intraday"
+        ]
+      },
+      "status": "open",
+      "action": "WATCH",
+      "score": 100.0,
+      "score_breakdown": {
+        "items": [
+          {
+            "rule": "intraday_pct_move",
+            "detail": "+11.11% close-to-close",
+            "points": 11.11
+          },
+          {
+            "rule": "vol_multiplier",
+            "detail": "0.84\u00d7 20d avg",
+            "points": 0.84
+          }
+        ]
+      },
+      "evidence_summary": "+11.1% intraday \u2014 inst-new_position BRDGW (2026-05-15)",
+      "dedupe_key": "intraday_spike_LITE_2026-05-22",
+      "status_v2": "sent",
+      "archived_at": null,
+      "valid_until": null
+    },
+    {
+      "id": 732,
+      "ticker": "SEDG",
+      "fired_at": "2026-05-22T13:07:52.765577+00:00",
+      "direction": "bullish",
+      "confidence": 0.964784,
+      "horizon_days": 1,
+      "stop_price": null,
+      "target_price": null,
+      "thesis_summary": "intraday spike +12.1% \u00b7 inst-new_position BRDGW (2026-05-15)",
+      "model_version": "intraday-spike-v1",
+      "weight_at_time": {
+        "snap": {
+          "pct": 0.120598,
+          "vol": 6789200,
+          "prev": 56.22,
+          "avg_vol": 7564725,
+          "current": 63.0,
+          "vol_mult": 0.9
+        },
+        "agents": [
+          "intraday"
+        ]
+      },
+      "status": "open",
+      "action": "WATCH",
+      "score": 100.0,
+      "score_breakdown": {
+        "items": [
+          {
+            "rule": "intraday_pct_move",
+            "detail": "+12.06% close-to-close",
+            "points": 12.06
+          },
+          {
+            "rule": "vol_multiplier",
+            "detail": "0.9\u00d7 20d avg",
+            "points": 0.9
+          }
+        ]
+      },
+      "evidence_summary": "+12.1% intraday \u2014 inst-new_position BRDGW (2026-05-15)",
+      "dedupe_key": "intraday_spike_SEDG_2026-05-22",
+      "status_v2": "sent",
+      "archived_at": null,
+      "valid_until": null
+    },
+    {
+      "id": 731,
+      "ticker": "ENPH",
+      "fired_at": "2026-05-22T13:07:51.659991+00:00",
+      "direction": "bullish",
+      "confidence": 0.99,
+      "horizon_days": 1,
+      "stop_price": null,
+      "target_price": null,
+      "thesis_summary": "intraday spike +17.3% \u00b7 inst-new_position BRDGW (2026-05-15)",
+      "model_version": "intraday-spike-v1",
+      "weight_at_time": {
+        "snap": {
+          "pct": 0.172907,
+          "vol": 18276500,
+          "prev": 53.15,
+          "avg_vol": 13024250,
+          "current": 62.34,
+          "vol_mult": 1.4
+        },
+        "agents": [
+          "intraday"
+        ]
+      },
+      "status": "open",
+      "action": "WATCH",
+      "score": 100.0,
+      "score_breakdown": {
+        "items": [
+          {
+            "rule": "intraday_pct_move",
+            "detail": "+17.29% close-to-close",
+            "points": 17.29
+          },
+          {
+            "rule": "vol_multiplier",
+            "detail": "1.4\u00d7 20d avg",
+            "points": 1.4
+          }
+        ]
+      },
+      "evidence_summary": "+17.3% intraday \u2014 inst-new_position BRDGW (2026-05-15)",
+      "dedupe_key": "intraday_spike_ENPH_2026-05-22",
+      "status_v2": "sent",
+      "archived_at": null,
+      "valid_until": null
+    }
+  ],
+  "events_by_ticker": {
+    "ALAB": [
+      {
+        "id": 4129131,
+        "ticker": "ALAB",
+        "event_at": "2026-05-15T20:06:56+00:00",
+        "created_at": "2026-05-17T14:48:03.125597+00:00",
+        "event_type": "institutional_new_position",
+        "event_subtype": "BRDGW",
+        "severity": 3,
+        "payload": {
+          "accession": "0001350694-26-000002",
+          "change_type": "new_position",
+          "institution": "BRDGW",
+          "prior_shares": 0,
+          "current_shares": 750940,
+          "direction_prior": "long"
+        },
+        "source_table": "stock_institutional_holdings_snapshot"
+      }
+    ],
+    "AMD": [
+      {
+        "id": 24604124,
+        "ticker": "AMD",
+        "event_at": "2026-05-22T12:44:46+00:00",
+        "created_at": "2026-05-22T12:52:36.661485+00:00",
+        "event_type": "news_article",
+        "event_subtype": "neutral",
+        "severity": 2,
+        "payload": {
+          "url": "https://seekingalpha.com/news/4596249-4-stocks-to-watch-on-friday-amd-mrk-nvo-sbux?utm_source=feed_news_all&utm_medium=referral&feed_item_type=news",
+          "source": "seeking_alpha",
+          "headline": "4 stocks to watch on Friday: AMD, MRK, NVO, SBUX",
+          "article_id": "cd7bacc5d8b0459ff3336418",
+          "classified_by": "keyword_db",
+          "direction_prior": "neutral"
+        },
+        "source_table": "stock_raw_news"
+      },
+      {
+        "id": 24011648,
+        "ticker": "AMD",
+        "event_at": "2026-05-22T10:25:00+00:00",
+        "created_at": "2026-05-22T10:32:35.249094+00:00",
+        "event_type": "news_article",
+        "event_subtype": "positive",
+        "severity": 3,
+        "payload": {
+          "url": "https://seekingalpha.com/news/4596160-amd-ramps-up-taiwan-production-capacity-amid-cpu-demand-surge?utm_source=feed_news_all&utm_medium=referral&feed_item_type=news",
+          "source": "seeking_alpha",
+          "headline": "AMD ramps up Taiwan production capacity amid CPU demand surge",
+          "article_id": "6f901472d14f360c649cae4c",
+          "classified_by": "keyword_db",
+          "direction_prior": "long"
+        },
+        "source_table": "stock_raw_news"
+      },
+      {
+        "id": 16776645,
+        "ticker": "AMD",
+        "event_at": "2026-05-21T05:52:41+00:00",
+        "created_at": "2026-05-21T05:57:35.028423+00:00",
+        "event_type": "news_article",
+        "event_subtype": "neutral",
+        "severity": 2,
+        "payload": {
+          "url": "https://seekingalpha.com/news/4595559-amd-to-invest-10b-in-taiwan-to-boost-ai-chip-partnerships?utm_source=feed_news_all&utm_medium=referral&feed_item_type=news",
+          "source": "seeking_alpha",
+          "headline": "AMD to invest $10B in Taiwan to boost AI chip partnerships",
+          "article_id": "1306c7a62b951b94e5a02cc4",
+          "classified_by": "keyword_db",
+          "direction_prior": "neutral"
+        },
+        "source_table": "stock_raw_news"
+      },
+      {
+        "id": 13913455,
+        "ticker": "AMD",
+        "event_at": "2026-05-20T18:37:05+00:00",
+        "created_at": "2026-05-20T18:42:37.094256+00:00",
+        "event_type": "news_article",
+        "event_subtype": "neutral",
+        "severity": 2,
+        "payload": {
+          "url": "https://seekingalpha.com/news/4595458-sa-analyst-upgrades-downgrades-tsla-amd-hr-crwv?utm_source=feed_news_all&utm_medium=referral&feed_item_type=news",
+          "source": "seeking_alpha",
+          "headline": "SA analyst upgrades/downgrades: TSLA, AMD, HR, CRWV",
+          "article_id": "763e6c729f4c3905d80e3777",
+          "classified_by": "keyword_db",
+          "direction_prior": "neutral"
+        },
+        "source_table": "stock_raw_news"
+      },
+      {
+        "id": 11989162,
+        "ticker": "AMD",
+        "event_at": "2026-05-20T11:01:36+00:00",
+        "created_at": "2026-05-20T11:07:31.452448+00:00",
+        "event_type": "news_article",
+        "event_subtype": "neutral",
+        "severity": 2,
+        "payload": {
+          "url": "https://seekingalpha.com/news/4595215-micron-nvidia-amd-climb-as-samsung-strike-risk-threatens-chip-supply?utm_source=feed_news_all&utm_medium=referral&feed_item_type=news",
+          "source": "seeking_alpha",
+          "headline": "Micron, Nvidia, AMD climb as Samsung strike risk threatens chip supply",
+          "article_id": "58bd7804b5d62f1cb1c09e0a",
+          "classified_by": "keyword_db",
+          "direction_prior": "neutral"
+        },
+        "source_table": "stock_raw_news"
+      },
+      {
+        "id": 8233191,
+        "ticker": "AMD",
+        "event_at": "2026-05-19T20:13:08+00:00",
+        "created_at": "2026-05-19T20:17:45.908204+00:00",
+        "event_type": "filing_4",
+        "event_subtype": null,
+        "severity": 1,
+        "payload": {
+          "8k_items": "",
+          "form_type": "4",
+          "primary_doc_url": "https://www.sec.gov/Archives/edgar/data/2488/000000248826000098/xslF345X06/wk-form4_1779221586.xml",
+          "accession_number": "0000002488-26-000098",
+          "primary_doc_desc": "FORM 4"
+        },
+        "source_table": "stock_raw_filings"
+      },
+      {
+        "id": 6831805,
+        "ticker": "AMD",
+        "event_at": "2026-05-19T14:50:36+00:00",
+        "created_at": "2026-05-19T14:52:40.673317+00:00",
+        "event_type": "news_article",
+        "event_subtype": "neutral",
+        "severity": 2,
+        "payload": {
+          "url": "https://seekingalpha.com/news/4594930-amd-ceo-meets-with-chinese-vice-premier?utm_source=feed_news_all&utm_medium=referral&feed_item_type=news",
+          "source": "seeking_alpha",
+          "headline": "AMD CEO meets with Chinese Vice Premier",
+          "article_id": "c31439dfa970d6127d2c650d",
+          "classified_by": "keyword_db",
+          "direction_prior": "neutral"
+        },
+        "source_table": "stock_raw_news"
+      },
+      {
+        "id": 4374701,
+        "ticker": "AMD",
+        "event_at": "2026-05-18T11:47:37+00:00",
+        "created_at": "2026-05-18T12:02:44.25603+00:00",
+        "event_type": "news_article",
+        "event_subtype": "neutral",
+        "severity": 2,
+        "payload": {
+          "url": "https://seekingalpha.com/news/4594308-intel-amd-see-price-target-hikes-at-citi-as-firm-raises-cpu-estimates?utm_source=feed_news_all&utm_medium=referral&feed_item_type=news",
+          "source": "seeking_alpha",
+          "headline": "Intel, AMD see price target hikes at Citi as firm raises CPU estimates",
+          "article_id": "921c32b12cf691836895cfe1",
+          "classified_by": "keyword_db",
+          "direction_prior": "neutral"
+        },
+        "source_table": "stock_raw_news"
+      },
+      {
+        "id": 3780966,
+        "ticker": "AMD",
+        "event_at": "2026-05-16T14:05:58+00:00",
+        "created_at": "2026-05-16T14:51:17.438941+00:00",
+        "event_type": "news_article",
+        "event_subtype": "neutral",
+        "severity": 2,
+        "payload": {
+          "url": "https://seekingalpha.com/news/4594043-notable-analyst-calls-this-week-dell-jj-and-amd-stocks-among-top-picks?utm_source=feed_news_all&utm_medium=referral&feed_item_type=news",
+          "source": "seeking_alpha",
+          "headline": "Notable analyst calls this week: Dell, J&J and AMD stocks among top picks",
+          "article_id": "a50606c13766f99b00abd758",
+          "classified_by": "keyword_db",
+          "direction_prior": "neutral"
+        },
+        "source_table": "stock_raw_news"
+      },
+      {
+        "id": 3568193,
+        "ticker": "AMD",
+        "event_at": "2026-05-15T21:05:45+00:00",
+        "created_at": "2026-05-15T21:44:13.390679+00:00",
+        "event_type": "filing_4",
+        "event_subtype": null,
+        "severity": 1,
+        "payload": {
+          "8k_items": "",
+          "form_type": "4",
+          "primary_doc_url": "https://www.sec.gov/Archives/edgar/data/2488/000000248826000096/xslF345X06/wk-form4_1778879141.xml",
+          "accession_number": "0000002488-26-000096",
+          "primary_doc_desc": "FORM 4"
+        },
+        "source_table": "stock_raw_filings"
+      },
+      {
+        "id": 3568194,
+        "ticker": "AMD",
+        "event_at": "2026-05-15T20:57:43+00:00",
+        "created_at": "2026-05-15T21:44:13.390679+00:00",
+        "event_type": "filing_4",
+        "event_subtype": null,
+        "severity": 1,
+        "payload": {
+          "8k_items": "",
+          "form_type": "4",
+          "primary_doc_url": "https://www.sec.gov/Archives/edgar/data/2488/000000248826000094/xslF345X06/wk-form4_1778878661.xml",
+          "accession_number": "0000002488-26-000094",
+          "primary_doc_desc": "FORM 4"
+        },
+        "source_table": "stock_raw_filings"
+      },
+      {
+        "id": 3568195,
+        "ticker": "AMD",
+        "event_at": "2026-05-15T20:55:26+00:00",
+        "created_at": "2026-05-15T21:44:13.390679+00:00",
+        "event_type": "filing_4",
+        "event_subtype": null,
+        "severity": 1,
+        "payload": {
+          "8k_items": "",
+          "form_type": "4",
+          "primary_doc_url": "https://www.sec.gov/Archives/edgar/data/2488/000000248826000092/xslF345X06/wk-form4_1778878523.xml",
+          "accession_number": "0000002488-26-000092",
+          "primary_doc_desc": "FORM 4"
+        },
+        "source_table": "stock_raw_filings"
+      },
+      {
+        "id": 3568196,
+        "ticker": "AMD",
+        "event_at": "2026-05-15T20:54:01+00:00",
+        "created_at": "2026-05-15T21:44:13.390679+00:00",
+        "event_type": "filing_4",
+        "event_subtype": null,
+        "severity": 1,
+        "payload": {
+          "8k_items": "",
+          "form_type": "4",
+          "primary_doc_url": "https://www.sec.gov/Archives/edgar/data/2488/000000248826000090/xslF345X06/wk-form4_1778878435.xml",
+          "accession_number": "0000002488-26-000090",
+          "primary_doc_desc": "FORM 4"
+        },
+        "source_table": "stock_raw_filings"
+      },
+      {
+        "id": 3568197,
+        "ticker": "AMD",
+        "event_at": "2026-05-15T20:52:39+00:00",
+        "created_at": "2026-05-15T21:44:13.390679+00:00",
+        "event_type": "filing_4",
+        "event_subtype": null,
+        "severity": 1,
+        "payload": {
+          "8k_items": "",
+          "form_type": "4",
+          "primary_doc_url": "https://www.sec.gov/Archives/edgar/data/2488/000000248826000088/xslF345X06/wk-form4_1778878356.xml",
+          "accession_number": "0000002488-26-000088",
+          "primary_doc_desc": "FORM 4"
+        },
+        "source_table": "stock_raw_filings"
+      },
+      {
+        "id": 3568198,
+        "ticker": "AMD",
+        "event_at": "2026-05-15T20:51:37+00:00",
+        "created_at": "2026-05-15T21:44:13.390679+00:00",
+        "event_type": "filing_4",
+        "event_subtype": null,
+        "severity": 1,
+        "payload": {
+          "8k_items": "",
+          "form_type": "4",
+          "primary_doc_url": "https://www.sec.gov/Archives/edgar/data/2488/000000248826000086/xslF345X06/wk-form4_1778878294.xml",
+          "accession_number": "0000002488-26-000086",
+          "primary_doc_desc": "FORM 4"
+        },
+        "source_table": "stock_raw_filings"
+      },
+      {
+        "id": 3568199,
+        "ticker": "AMD",
+        "event_at": "2026-05-15T20:50:17+00:00",
+        "created_at": "2026-05-15T21:44:13.390679+00:00",
+        "event_type": "filing_4",
+        "event_subtype": null,
+        "severity": 1,
+        "payload": {
+          "8k_items": "",
+          "form_type": "4",
+          "primary_doc_url": "https://www.sec.gov/Archives/edgar/data/2488/000000248826000084/xslF345X06/wk-form4_1778878215.xml",
+          "accession_number": "0000002488-26-000084",
+          "primary_doc_desc": "FORM 4"
+        },
+        "source_table": "stock_raw_filings"
+      },
+      {
+        "id": 3568200,
+        "ticker": "AMD",
+        "event_at": "2026-05-15T20:49:14+00:00",
+        "created_at": "2026-05-15T21:44:13.390679+00:00",
+        "event_type": "filing_4",
+        "event_subtype": null,
+        "severity": 1,
+        "payload": {
+          "8k_items": "",
+          "form_type": "4",
+          "primary_doc_url": "https://www.sec.gov/Archives/edgar/data/2488/000000248826000082/xslF345X06/wk-form4_1778878151.xml",
+          "accession_number": "0000002488-26-000082",
+          "primary_doc_desc": "FORM 4"
+        },
+        "source_table": "stock_raw_filings"
+      },
+      {
+        "id": 3547692,
+        "ticker": "AMD",
+        "event_at": "2026-05-15T20:12:53+00:00",
+        "created_at": "2026-05-15T20:46:58.059342+00:00",
+        "event_type": "8k_material_event",
+        "event_subtype": null,
+        "severity": 4,
+        "payload": {
+          "8k_items": "1.01,1.02,2.03,5.02,5.07,9.01",
+          "form_type": "8-K",
+          "primary_doc_url": "https://www.sec.gov/Archives/edgar/data/2488/000119312526226746/d118163d8k.htm",
+          "accession_number": "0001193125-26-226746",
+          "primary_doc_desc": "8-K"
+        },
+        "source_table": "stock_raw_filings"
+      },
+      {
+        "id": 3076694,
+        "ticker": "AMD",
+        "event_at": "2026-05-13T20:24:34+00:00",
+        "created_at": "2026-05-13T21:44:37.952367+00:00",
+        "event_type": "filing_4",
+        "event_subtype": null,
+        "severity": 1,
+        "payload": {
+          "8k_items": "",
+          "form_type": "4",
+          "primary_doc_url": "https://www.sec.gov/Archives/edgar/data/2488/000000248826000080/xslF345X06/wk-form4_1778703871.xml",
+          "accession_number": "0000002488-26-000080",
+          "primary_doc_desc": "FORM 4"
+        },
+        "source_table": "stock_raw_filings"
+      },
+      {
+        "id": 2831045,
+        "ticker": "AMD",
+        "event_at": "2026-05-12T20:03:56+00:00",
+        "created_at": "2026-05-12T20:09:24.616813+00:00",
+        "event_type": "filing_4",
+        "event_subtype": null,
+        "severity": 1,
+        "payload": {
+          "8k_items": "",
+          "form_type": "4",
+          "primary_doc_url": "https://www.sec.gov/Archives/edgar/data/2488/000000248826000078/xslF345X06/wk-form4_1778616232.xml",
+          "accession_number": "0000002488-26-000078",
+          "primary_doc_desc": "FORM 4"
+        },
+        "source_table": "stock_raw_filings"
+      },
+      {
+        "id": 2756968,
+        "ticker": "AMD",
+        "event_at": "2026-05-12T15:33:57+00:00",
+        "created_at": "2026-05-12T12:11:08.719674+00:00",
+        "event_type": "news_article",
+        "event_subtype": "positive",
+        "severity": 3,
+        "payload": {
+          "url": "https://www.cnbc.com/2026/05/12/ai-super-rally-has-retail-investors-acting-the-most-aggressive-since-trading-frenzy-during-covid.html",
+          "source": "cnbc_markets",
+          "headline": "AI super rally has retail investors acting the most aggressive since trading frenzy during Covid",
+          "article_id": "eefe1fe01502275fc298b807",
+          "classified_by": "keyword_db",
+          "direction_prior": "long"
+        },
+        "source_table": "stock_raw_news"
+      },
+      {
+        "id": 1645728,
+        "ticker": "AMD",
+        "event_at": "2026-05-08T21:07:00+00:00",
+        "created_at": "2026-05-08T21:39:24.87663+00:00",
+        "event_type": "news_article",
+        "event_subtype": "positive",
+        "severity": 3,
+        "payload": {
+          "url": "https://www.marketwatch.com/story/amd-micron-shares-surge-on-a-big-day-for-chip-sector-outperformance-fe2d5306?mod=mw_rss_topstories",
+          "source": "marketwatch",
+          "headline": "AMD, Micron shares surge on a big day for chip-sector outperformance",
+          "article_id": "8b3964b6a3df7941cc8f61d3",
+          "classified_by": "keyword_db",
+          "direction_prior": "long"
+        },
+        "source_table": "stock_raw_news"
+      }
+    ],
+    "ANET": [
+      {
+        "id": 4129123,
+        "ticker": "ANET",
+        "event_at": "2026-05-15T20:06:56+00:00",
+        "created_at": "2026-05-17T14:48:03.125597+00:00",
+        "event_type": "institutional_new_position",
+        "event_subtype": "BRDGW",
+        "severity": 3,
+        "payload": {
+          "accession": "0001350694-26-000002",
+          "change_type": "new_position",
+          "institution": "BRDGW",
+          "prior_shares": 0,
+          "current_shares": 1330091,
+          "direction_prior": "long"
+        },
+        "source_table": "stock_institutional_holdings_snapshot"
+      }
+    ],
+    "AVAV": [],
+    "BOOT": [],
+    "CHPT": [],
+    "CIEN": [
+      {
+        "id": 4129120,
+        "ticker": "CIEN",
+        "event_at": "2026-05-15T20:06:56+00:00",
+        "created_at": "2026-05-17T14:48:03.125597+00:00",
+        "event_type": "institutional_new_position",
+        "event_subtype": "BRDGW",
+        "severity": 3,
+        "payload": {
+          "accession": "0001350694-26-000002",
+          "change_type": "new_position",
+          "institution": "BRDGW",
+          "prior_shares": 0,
+          "current_shares": 143846,
+          "direction_prior": "long"
+        },
+        "source_table": "stock_institutional_holdings_snapshot"
+      }
+    ],
+    "COHR": [
+      {
+        "id": 4129148,
+        "ticker": "COHR",
+        "event_at": "2026-05-15T20:06:56+00:00",
+        "created_at": "2026-05-17T14:48:03.125597+00:00",
+        "event_type": "institutional_new_position",
+        "event_subtype": "BRDGW",
+        "severity": 3,
+        "payload": {
+          "accession": "0001350694-26-000002",
+          "change_type": "new_position",
+          "institution": "BRDGW",
+          "prior_shares": 0,
+          "current_shares": 163368,
+          "direction_prior": "long"
+        },
+        "source_table": "stock_institutional_holdings_snapshot"
+      }
+    ],
+    "CRDO": [],
+    "CRWV": [
+      {
+        "id": 4129128,
+        "ticker": "CRWV",
+        "event_at": "2026-05-15T20:06:56+00:00",
+        "created_at": "2026-05-17T14:48:03.125597+00:00",
+        "event_type": "institutional_new_position",
+        "event_subtype": "BRDGW",
+        "severity": 3,
+        "payload": {
+          "accession": "0001350694-26-000002",
+          "change_type": "new_position",
+          "institution": "BRDGW",
+          "prior_shares": 0,
+          "current_shares": 364025,
+          "direction_prior": "long"
+        },
+        "source_table": "stock_institutional_holdings_snapshot"
+      }
+    ],
+    "DELL": [
+      {
+        "id": 4108502,
+        "ticker": "DELL",
+        "event_at": "2026-05-28T20:00:00+00:00",
+        "created_at": "2026-05-17T13:21:45.997235+00:00",
+        "event_type": "earnings_release",
+        "event_subtype": "scheduled",
+        "severity": 2,
+        "payload": {
+          "actual_eps": null,
+          "surprise_pct": null,
+          "estimated_eps": 2.94
+        },
+        "source_table": "yfinance_earnings"
+      },
+      {
+        "id": 4129135,
+        "ticker": "DELL",
+        "event_at": "2026-05-15T20:06:56+00:00",
+        "created_at": "2026-05-17T14:48:03.125597+00:00",
+        "event_type": "institutional_new_position",
+        "event_subtype": "BRDGW",
+        "severity": 3,
+        "payload": {
+          "accession": "0001350694-26-000002",
+          "change_type": "new_position",
+          "institution": "BRDGW",
+          "prior_shares": 0,
+          "current_shares": 223392,
+          "direction_prior": "long"
+        },
+        "source_table": "stock_institutional_holdings_snapshot"
+      }
+    ],
+    "ENPH": [
+      {
+        "id": 4129117,
+        "ticker": "ENPH",
+        "event_at": "2026-05-15T20:06:56+00:00",
+        "created_at": "2026-05-17T14:48:03.125597+00:00",
+        "event_type": "institutional_new_position",
+        "event_subtype": "BRDGW",
+        "severity": 3,
+        "payload": {
+          "accession": "0001350694-26-000002",
+          "change_type": "new_position",
+          "institution": "BRDGW",
+          "prior_shares": 0,
+          "current_shares": 56058,
+          "direction_prior": "long"
+        },
+        "source_table": "stock_institutional_holdings_snapshot"
+      }
+    ],
+    "FLNC": [],
+    "FN": [],
+    "FSLR": [
+      {
+        "id": 4129151,
+        "ticker": "FSLR",
+        "event_at": "2026-05-15T20:06:56+00:00",
+        "created_at": "2026-05-17T14:48:03.125597+00:00",
+        "event_type": "institutional_new_position",
+        "event_subtype": "BRDGW",
+        "severity": 3,
+        "payload": {
+          "accession": "0001350694-26-000002",
+          "change_type": "new_position",
+          "institution": "BRDGW",
+          "prior_shares": 0,
+          "current_shares": 20321,
+          "direction_prior": "long"
+        },
+        "source_table": "stock_institutional_holdings_snapshot"
+      }
+    ],
+    "GLW": [],
+    "HPE": [],
+    "IREN": [
+      {
+        "id": 4129126,
+        "ticker": "IREN",
+        "event_at": "2026-05-15T20:06:56+00:00",
+        "created_at": "2026-05-17T14:48:03.125597+00:00",
+        "event_type": "institutional_new_position",
+        "event_subtype": "BRDGW",
+        "severity": 3,
+        "payload": {
+          "accession": "0001350694-26-000002",
+          "change_type": "new_position",
+          "institution": "BRDGW",
+          "prior_shares": 0,
+          "current_shares": 720925,
+          "direction_prior": "long"
+        },
+        "source_table": "stock_institutional_holdings_snapshot"
+      },
+      {
+        "id": 2572515,
+        "ticker": "IREN",
+        "event_at": "2026-05-08T10:00:00+00:00",
+        "created_at": "2026-05-11T18:33:18.910454+00:00",
+        "event_type": "earnings_release",
+        "event_subtype": "beat",
+        "severity": 4,
+        "payload": {
+          "actual_eps": -0.16,
+          "surprise_pct": 52.91,
+          "estimated_eps": -0.34
+        },
+        "source_table": "yfinance_earnings"
+      }
+    ],
+    "LITE": [
+      {
+        "id": 4129144,
+        "ticker": "LITE",
+        "event_at": "2026-05-15T20:06:56+00:00",
+        "created_at": "2026-05-17T14:48:03.125597+00:00",
+        "event_type": "institutional_new_position",
+        "event_subtype": "BRDGW",
+        "severity": 3,
+        "payload": {
+          "accession": "0001350694-26-000002",
+          "change_type": "new_position",
+          "institution": "BRDGW",
+          "prior_shares": 0,
+          "current_shares": 5818,
+          "direction_prior": "long"
+        },
+        "source_table": "stock_institutional_holdings_snapshot"
+      }
+    ],
+    "MOD": [
+      {
+        "id": 4108534,
+        "ticker": "MOD",
+        "event_at": "2026-05-26T20:00:00+00:00",
+        "created_at": "2026-05-17T13:21:45.997235+00:00",
+        "event_type": "earnings_release",
+        "event_subtype": "scheduled",
+        "severity": 2,
+        "payload": {
+          "actual_eps": null,
+          "surprise_pct": null,
+          "estimated_eps": 1.55
+        },
+        "source_table": "yfinance_earnings"
+      },
+      {
+        "id": 2572522,
+        "ticker": "MOD",
+        "event_at": "2026-05-19T20:00:00+00:00",
+        "created_at": "2026-05-11T18:33:18.910454+00:00",
+        "event_type": "earnings_release",
+        "event_subtype": "scheduled",
+        "severity": 2,
+        "payload": {
+          "actual_eps": null,
+          "surprise_pct": null,
+          "estimated_eps": 1.55
+        },
+        "source_table": "yfinance_earnings"
+      }
+    ],
+    "MRK": [
+      {
+        "id": 25503211,
+        "ticker": "MRK",
+        "event_at": "2026-05-22T16:28:20.689047+00:00",
+        "created_at": "2026-05-22T16:28:20.722981+00:00",
+        "event_type": "clinical_readout",
+        "event_subtype": "active_not_recruiting",
+        "severity": 3,
+        "payload": {
+          "title": "Neoadjuvant Pembrolizumab + Decitabine Followed by Std Neoadj Chemo for Locally Advanced HER2- Breast Ca",
+          "nct_id": "NCT02957968",
+          "status": "ACTIVE_NOT_RECRUITING",
+          "sponsor": "Merck",
+          "last_update": "",
+          "direction_prior": "neutral"
+        },
+        "source_table": "clinicaltrials_gov"
+      },
+      {
+        "id": 25503210,
+        "ticker": "MRK",
+        "event_at": "2026-05-22T16:28:20.643389+00:00",
+        "created_at": "2026-05-22T16:28:20.676359+00:00",
+        "event_type": "clinical_readout",
+        "event_subtype": "completed",
+        "severity": 3,
+        "payload": {
+          "title": "Brentuximab Vedotin With Pembrolizumab in Metastatic Solid Tumors",
+          "nct_id": "NCT04609566",
+          "status": "COMPLETED",
+          "sponsor": "Merck",
+          "last_update": "",
+          "direction_prior": "neutral"
+        },
+        "source_table": "clinicaltrials_gov"
+      },
+      {
+        "id": 25503209,
+        "ticker": "MRK",
+        "event_at": "2026-05-22T16:28:20.590606+00:00",
+        "created_at": "2026-05-22T16:28:20.626254+00:00",
+        "event_type": "clinical_readout",
+        "event_subtype": "active_not_recruiting",
+        "severity": 3,
+        "payload": {
+          "title": "Stereotactic Radiosurgery and Immunotherapy (Pembrolizumab) for the Treatment of Recurrent Meningioma",
+          "nct_id": "NCT04659811",
+          "status": "ACTIVE_NOT_RECRUITING",
+          "sponsor": "Merck",
+          "last_update": "",
+          "direction_prior": "neutral"
+        },
+        "source_table": "clinicaltrials_gov"
+      },
+      {
+        "id": 25503207,
+        "ticker": "MRK",
+        "event_at": "2026-05-22T16:28:20.482307+00:00",
+        "created_at": "2026-05-22T16:28:20.516269+00:00",
+        "event_type": "clinical_readout",
+        "event_subtype": "active_not_recruiting",
+        "severity": 3,
+        "payload": {
+          "title": "Efficacy and Safety Study of Tisotumab Vedotin for Patients With Solid Tumors",
+          "nct_id": "NCT03485209",
+          "status": "ACTIVE_NOT_RECRUITING",
+          "sponsor": "Merck",
+          "last_update": "",
+          "direction_prior": "neutral"
+        },
+        "source_table": "clinicaltrials_gov"
+      },
+      {
+        "id": 25503206,
+        "ticker": "MRK",
+        "event_at": "2026-05-22T16:28:20.374895+00:00",
+        "created_at": "2026-05-22T16:28:20.466019+00:00",
+        "event_type": "clinical_readout",
+        "event_subtype": "active_not_recruiting",
+        "severity": 3,
+        "payload": {
+          "title": "Anti-CEACAM5 ADC Precemtabart Tocentecan (M9140) in Chinese Participants With Solid Tumors",
+          "nct_id": "NCT06806046",
+          "status": "ACTIVE_NOT_RECRUITING",
+          "sponsor": "Merck",
+          "last_update": "",
+          "direction_prior": "neutral"
+        },
+        "source_table": "clinicaltrials_gov"
+      },
+      {
+        "id": 13463611,
+        "ticker": "MRK",
+        "event_at": "2026-05-20T16:55:34.666064+00:00",
+        "created_at": "2026-05-20T16:55:34.700402+00:00",
+        "event_type": "clinical_readout",
+        "event_subtype": "completed",
+        "severity": 3,
+        "payload": {
+          "title": "Safety and Efficacy of Pembrolizumab (MK-3475) Versus Placebo as Adjuvant Therapy in Participants With Hepatocellular Ca",
+          "nct_id": "NCT03867084",
+          "status": "COMPLETED",
+          "sponsor": "Merck",
+          "last_update": "",
+          "direction_prior": "neutral"
+        },
+        "source_table": "clinicaltrials_gov"
+      },
+      {
+        "id": 13463610,
+        "ticker": "MRK",
+        "event_at": "2026-05-20T16:55:34.597299+00:00",
+        "created_at": "2026-05-20T16:55:34.641027+00:00",
+        "event_type": "clinical_readout",
+        "event_subtype": "terminated",
+        "severity": 3,
+        "payload": {
+          "title": "Ibrutinib and PD-1 Blockade in High Risk Lymphocytic Leukemia",
+          "nct_id": "NCT03514017",
+          "status": "TERMINATED",
+          "sponsor": "Merck",
+          "last_update": "",
+          "direction_prior": "neutral"
+        },
+        "source_table": "clinicaltrials_gov"
+      },
+      {
+        "id": 13463609,
+        "ticker": "MRK",
+        "event_at": "2026-05-20T16:55:34.512222+00:00",
+        "created_at": "2026-05-20T16:55:34.558362+00:00",
+        "event_type": "clinical_readout",
+        "event_subtype": "active_not_recruiting",
+        "severity": 3,
+        "payload": {
+          "title": "Pembrolizumab in Combination With R-ICE Chemotherapy in Relapsed/Refractory Diffuse Large B-cell Lymphoma",
+          "nct_id": "NCT05221645",
+          "status": "ACTIVE_NOT_RECRUITING",
+          "sponsor": "Merck",
+          "last_update": "",
+          "direction_prior": "neutral"
+        },
+        "source_table": "clinicaltrials_gov"
+      },
+      {
+        "id": 13463608,
+        "ticker": "MRK",
+        "event_at": "2026-05-20T16:55:34.432201+00:00",
+        "created_at": "2026-05-20T16:55:34.477946+00:00",
+        "event_type": "clinical_readout",
+        "event_subtype": "completed",
+        "severity": 3,
+        "payload": {
+          "title": "Study of Pembrolizumab (MK-3475) Plus Chemotherapy Versus Placebo Plus Chemotherapy in Participants With Gastric or Gast",
+          "nct_id": "NCT04882241",
+          "status": "COMPLETED",
+          "sponsor": "Merck",
+          "last_update": "",
+          "direction_prior": "neutral"
+        },
+        "source_table": "clinicaltrials_gov"
+      },
+      {
+        "id": 7320471,
+        "ticker": "MRK",
+        "event_at": "2026-05-19T16:51:15.106637+00:00",
+        "created_at": "2026-05-19T16:51:15.143716+00:00",
+        "event_type": "clinical_readout",
+        "event_subtype": "active_not_recruiting",
+        "severity": 3,
+        "payload": {
+          "title": "Testing the Addition of M3814 (Peposertib) to Radiation Therapy for Patients With Advanced Head and Neck Cancer Who Cann",
+          "nct_id": "NCT04533750",
+          "status": "ACTIVE_NOT_RECRUITING",
+          "sponsor": "Merck",
+          "last_update": "",
+          "direction_prior": "neutral"
+        },
+        "source_table": "clinicaltrials_gov"
+      },
+      {
+        "id": 7320470,
+        "ticker": "MRK",
+        "event_at": "2026-05-19T16:51:15.029879+00:00",
+        "created_at": "2026-05-19T16:51:15.091437+00:00",
+        "event_type": "clinical_readout",
+        "event_subtype": "active_not_recruiting",
+        "severity": 3,
+        "payload": {
+          "title": "Avelumab Program Rollover Study",
+          "nct_id": "NCT03815643",
+          "status": "ACTIVE_NOT_RECRUITING",
+          "sponsor": "Merck",
+          "last_update": "",
+          "direction_prior": "neutral"
+        },
+        "source_table": "clinicaltrials_gov"
+      },
+      {
+        "id": 7320469,
+        "ticker": "MRK",
+        "event_at": "2026-05-19T16:51:14.95143+00:00",
+        "created_at": "2026-05-19T16:51:15.015185+00:00",
+        "event_type": "clinical_readout",
+        "event_subtype": "active_not_recruiting",
+        "severity": 3,
+        "payload": {
+          "title": "Riociguat in Children With Pulmonary Arterial Hypertension (PAH)",
+          "nct_id": "NCT02562235",
+          "status": "ACTIVE_NOT_RECRUITING",
+          "sponsor": "Merck",
+          "last_update": "",
+          "direction_prior": "neutral"
+        },
+        "source_table": "clinicaltrials_gov"
+      },
+      {
+        "id": 7320468,
+        "ticker": "MRK",
+        "event_at": "2026-05-19T16:51:14.903286+00:00",
+        "created_at": "2026-05-19T16:51:14.936693+00:00",
+        "event_type": "clinical_readout",
+        "event_subtype": "completed",
+        "severity": 3,
+        "payload": {
+          "title": "Progesterone Primed Protocol Versus GnRH Antagonist in With PCO Undergoing ICSI",
+          "nct_id": "NCT05951400",
+          "status": "COMPLETED",
+          "sponsor": "Merck",
+          "last_update": "",
+          "direction_prior": "neutral"
+        },
+        "source_table": "clinicaltrials_gov"
+      },
+      {
+        "id": 7320467,
+        "ticker": "MRK",
+        "event_at": "2026-05-19T16:51:14.847191+00:00",
+        "created_at": "2026-05-19T16:51:14.888072+00:00",
+        "event_type": "clinical_readout",
+        "event_subtype": "terminated",
+        "severity": 3,
+        "payload": {
+          "title": "Study of Sotatercept in Newly Diagnosed Intermediate- and High-Risk PAH Participants (MK-7962-005/A011-13)",
+          "nct_id": "NCT04811092",
+          "status": "TERMINATED",
+          "sponsor": "Merck",
+          "last_update": "",
+          "direction_prior": "neutral"
+        },
+        "source_table": "clinicaltrials_gov"
+      },
+      {
+        "id": 4395168,
+        "ticker": "MRK",
+        "event_at": "2026-05-18T16:16:17.096299+00:00",
+        "created_at": "2026-05-18T16:16:17.28696+00:00",
+        "event_type": "clinical_readout",
+        "event_subtype": "active_not_recruiting",
+        "severity": 3,
+        "payload": {
+          "title": "Ifinatamab Deruxtecan (I-DXd) in Subjects With Pretreated Extensive-Stage Small Cell Lung Cancer (ES-SCLC)",
+          "nct_id": "NCT05280470",
+          "status": "ACTIVE_NOT_RECRUITING",
+          "sponsor": "Merck",
+          "last_update": "",
+          "direction_prior": "neutral"
+        },
+        "source_table": "clinicaltrials_gov"
+      },
+      {
+        "id": 4395167,
+        "ticker": "MRK",
+        "event_at": "2026-05-18T16:16:16.972071+00:00",
+        "created_at": "2026-05-18T16:16:17.051405+00:00",
+        "event_type": "clinical_readout",
+        "event_subtype": "completed",
+        "severity": 3,
+        "payload": {
+          "title": "Efficacy and Safety of Lenvatinib (E7080/MK-7902) Plus Pembrolizumab (MK-3475) Plus Chemotherapy in Participants With Ad",
+          "nct_id": "NCT04662710",
+          "status": "COMPLETED",
+          "sponsor": "Merck",
+          "last_update": "",
+          "direction_prior": "neutral"
+        },
+        "source_table": "clinicaltrials_gov"
+      },
+      {
+        "id": 4395164,
+        "ticker": "MRK",
+        "event_at": "2026-05-18T16:16:16.674075+00:00",
+        "created_at": "2026-05-18T16:16:16.731535+00:00",
+        "event_type": "clinical_readout",
+        "event_subtype": "active_not_recruiting",
+        "severity": 3,
+        "payload": {
+          "title": "Phase I Study to Assess the Effect of Food on the PK and Gastrointestinal Tolerability of Selumetinib in Adolescent Chil",
+          "nct_id": "NCT05101148",
+          "status": "ACTIVE_NOT_RECRUITING",
+          "sponsor": "Merck",
+          "last_update": "",
+          "direction_prior": "neutral"
+        },
+        "source_table": "clinicaltrials_gov"
+      },
+      {
+        "id": 4395163,
+        "ticker": "MRK",
+        "event_at": "2026-05-18T16:16:16.584042+00:00",
+        "created_at": "2026-05-18T16:16:16.651213+00:00",
+        "event_type": "clinical_readout",
+        "event_subtype": "active_not_recruiting",
+        "severity": 3,
+        "payload": {
+          "title": "Study of Olaparib (MK-7339) in Combination With Pembrolizumab (MK-3475) in the Treatment of Homologous Recombination Rep",
+          "nct_id": "NCT04123366",
+          "status": "ACTIVE_NOT_RECRUITING",
+          "sponsor": "Merck",
+          "last_update": "",
+          "direction_prior": "neutral"
+        },
+        "source_table": "clinicaltrials_gov"
+      },
+      {
+        "id": 4395162,
+        "ticker": "MRK",
+        "event_at": "2026-05-18T16:16:16.474388+00:00",
+        "created_at": "2026-05-18T16:16:16.563508+00:00",
+        "event_type": "clinical_readout",
+        "event_subtype": "active_not_recruiting",
+        "severity": 3,
+        "payload": {
+          "title": "Efficacy and Safety of Pembrolizumab (MK-3475) in Combination With Bacillus Calmette-Guerin (BCG) in High-Risk Non-Muscl",
+          "nct_id": "NCT03711032",
+          "status": "ACTIVE_NOT_RECRUITING",
+          "sponsor": "Merck",
+          "last_update": "",
+          "direction_prior": "neutral"
+        },
+        "source_table": "clinicaltrials_gov"
+      },
+      {
+        "id": 4395161,
+        "ticker": "MRK",
+        "event_at": "2026-05-18T16:16:16.376961+00:00",
+        "created_at": "2026-05-18T16:16:16.451417+00:00",
+        "event_type": "clinical_readout",
+        "event_subtype": "active_not_recruiting",
+        "severity": 3,
+        "payload": {
+          "title": "A Study to Evaluate the Safety and the Activity of S095029 as Part of Combination Therapy in Advanced Gastroesophageal J",
+          "nct_id": "NCT06116136",
+          "status": "ACTIVE_NOT_RECRUITING",
+          "sponsor": "Merck",
+          "last_update": "",
+          "direction_prior": "neutral"
+        },
+        "source_table": "clinicaltrials_gov"
+      },
+      {
+        "id": 3473594,
+        "ticker": "MRK",
+        "event_at": "2026-05-15T16:05:03.148025+00:00",
+        "created_at": "2026-05-15T16:05:03.185754+00:00",
+        "event_type": "clinical_readout",
+        "event_subtype": "completed",
+        "severity": 3,
+        "payload": {
+          "title": "Safety and Efficacy Study of Pembrolizumab (MK-3475) as Monotherapy in the Adjuvant Treatment of Renal Cell Carcinoma Po",
+          "nct_id": "NCT03142334",
+          "status": "COMPLETED",
+          "sponsor": "Merck",
+          "last_update": "",
+          "direction_prior": "neutral"
+        },
+        "source_table": "clinicaltrials_gov"
+      },
+      {
+        "id": 3473593,
+        "ticker": "MRK",
+        "event_at": "2026-05-15T16:05:03.029145+00:00",
+        "created_at": "2026-05-15T16:05:03.119676+00:00",
+        "event_type": "clinical_readout",
+        "event_subtype": "terminated",
+        "severity": 3,
+        "payload": {
+          "title": "Study of MK-6552 in Participants With Narcolepsy Type 1 (MK-6552-004)",
+          "nct_id": "NCT06179407",
+          "status": "TERMINATED",
+          "sponsor": "Merck",
+          "last_update": "",
+          "direction_prior": "neutral"
+        },
+        "source_table": "clinicaltrials_gov"
+      },
+      {
+        "id": 3473591,
+        "ticker": "MRK",
+        "event_at": "2026-05-15T16:05:02.817085+00:00",
+        "created_at": "2026-05-15T16:05:02.924786+00:00",
+        "event_type": "clinical_readout",
+        "event_subtype": "active_not_recruiting",
+        "severity": 3,
+        "payload": {
+          "title": "Study of Tuvusertib (M1774) in Combination With DNA Damage Response Inhibitor or Immune Checkpoint Inhibitor (DDRiver So",
+          "nct_id": "NCT05396833",
+          "status": "ACTIVE_NOT_RECRUITING",
+          "sponsor": "Merck",
+          "last_update": "",
+          "direction_prior": "neutral"
+        },
+        "source_table": "clinicaltrials_gov"
+      },
+      {
+        "id": 3248305,
+        "ticker": "MRK",
+        "event_at": "2026-05-14T16:11:34.325466+00:00",
+        "created_at": "2026-05-14T16:11:34.434542+00:00",
+        "event_type": "clinical_readout",
+        "event_subtype": "completed",
+        "severity": 3,
+        "payload": {
+          "title": "Switch to Doravirine/Islatravir (DOR/ISL) in Human Immunodeficiency Virus 1 (HIV-1) Participants Treated With Bictegravi",
+          "nct_id": "NCT04223791",
+          "status": "COMPLETED",
+          "sponsor": "Merck",
+          "last_update": "",
+          "direction_prior": "neutral"
+        },
+        "source_table": "clinicaltrials_gov"
+      },
+      {
+        "id": 3248304,
+        "ticker": "MRK",
+        "event_at": "2026-05-14T16:11:34.171094+00:00",
+        "created_at": "2026-05-14T16:11:34.278144+00:00",
+        "event_type": "clinical_readout",
+        "event_subtype": "completed",
+        "severity": 3,
+        "payload": {
+          "title": "Pembrolizumab for HPV-associated Recurrent Respiratory Papilloma Patients",
+          "nct_id": "NCT02632344",
+          "status": "COMPLETED",
+          "sponsor": "Merck",
+          "last_update": "",
+          "direction_prior": "neutral"
+        },
+        "source_table": "clinicaltrials_gov"
+      },
+      {
+        "id": 3248303,
+        "ticker": "MRK",
+        "event_at": "2026-05-14T16:11:34.080017+00:00",
+        "created_at": "2026-05-14T16:11:34.127349+00:00",
+        "event_type": "clinical_readout",
+        "event_subtype": "completed",
+        "severity": 3,
+        "payload": {
+          "title": "Phase 2 Study of Pembrolizumab in Combination With Gemcitabine and Cisplatin as Neoadjuvant Therapy",
+          "nct_id": "NCT02690558",
+          "status": "COMPLETED",
+          "sponsor": "Merck",
+          "last_update": "",
+          "direction_prior": "neutral"
+        },
+        "source_table": "clinicaltrials_gov"
+      },
+      {
+        "id": 3248302,
+        "ticker": "MRK",
+        "event_at": "2026-05-14T16:11:33.942271+00:00",
+        "created_at": "2026-05-14T16:11:34.038489+00:00",
+        "event_type": "clinical_readout",
+        "event_subtype": "active_not_recruiting",
+        "severity": 3,
+        "payload": {
+          "title": "Study on Olaparib Plus Abiraterone as First-line Therapy in Men With Metastatic Castration-resistant Prostate Cancer (Ch",
+          "nct_id": "NCT05171816",
+          "status": "ACTIVE_NOT_RECRUITING",
+          "sponsor": "Merck",
+          "last_update": "",
+          "direction_prior": "neutral"
+        },
+        "source_table": "clinicaltrials_gov"
+      },
+      {
+        "id": 3248300,
+        "ticker": "MRK",
+        "event_at": "2026-05-14T16:11:33.642841+00:00",
+        "created_at": "2026-05-14T16:11:33.743643+00:00",
+        "event_type": "clinical_readout",
+        "event_subtype": "active_not_recruiting",
+        "severity": 3,
+        "payload": {
+          "title": "Study of Pembrolizumab (MK-3475) Versus Placebo in Participants With Esophageal Carcinoma Who Are Receiving Chemotherapy",
+          "nct_id": "NCT04210115",
+          "status": "ACTIVE_NOT_RECRUITING",
+          "sponsor": "Merck",
+          "last_update": "",
+          "direction_prior": "neutral"
+        },
+        "source_table": "clinicaltrials_gov"
+      },
+      {
+        "id": 3023060,
+        "ticker": "MRK",
+        "event_at": "2026-05-13T16:22:15.553743+00:00",
+        "created_at": "2026-05-13T16:22:15.663423+00:00",
+        "event_type": "clinical_readout",
+        "event_subtype": "completed",
+        "severity": 3,
+        "payload": {
+          "title": "Lenvatinib in Combination With Pembrolizumab Versus Treatment of Physician's Choice in Participants With Advanced Endome",
+          "nct_id": "NCT03517449",
+          "status": "COMPLETED",
+          "sponsor": "Merck",
+          "last_update": "",
+          "direction_prior": "neutral"
+        },
+        "source_table": "clinicaltrials_gov"
+      },
+      {
+        "id": 3023059,
+        "ticker": "MRK",
+        "event_at": "2026-05-13T16:22:15.407394+00:00",
+        "created_at": "2026-05-13T16:22:15.520783+00:00",
+        "event_type": "clinical_readout",
+        "event_subtype": "active_not_recruiting",
+        "severity": 3,
+        "payload": {
+          "title": "Study to Compare an Oral Weekly Islatravir/Lenacapavir Regimen With Bictegravir/Emtricitabine/Tenofovir Alafenamide in V",
+          "nct_id": "NCT06630286",
+          "status": "ACTIVE_NOT_RECRUITING",
+          "sponsor": "Merck",
+          "last_update": "",
+          "direction_prior": "neutral"
+        },
+        "source_table": "clinicaltrials_gov"
+      },
+      {
+        "id": 3023058,
+        "ticker": "MRK",
+        "event_at": "2026-05-13T16:22:15.278492+00:00",
+        "created_at": "2026-05-13T16:22:15.371066+00:00",
+        "event_type": "clinical_readout",
+        "event_subtype": "completed",
+        "severity": 3,
+        "payload": {
+          "title": "Study of Pembrolizumab (MK-3475) Plus Chemotherapy Versus Placebo Plus Chemotherapy in Participants With Gastric or Gast",
+          "nct_id": "NCT03221426",
+          "status": "COMPLETED",
+          "sponsor": "Merck",
+          "last_update": "",
+          "direction_prior": "neutral"
+        },
+        "source_table": "clinicaltrials_gov"
+      },
+      {
+        "id": 3023057,
+        "ticker": "MRK",
+        "event_at": "2026-05-13T16:22:15.13499+00:00",
+        "created_at": "2026-05-13T16:22:15.245019+00:00",
+        "event_type": "clinical_readout",
+        "event_subtype": "completed",
+        "severity": 3,
+        "payload": {
+          "title": "A Study to Evaluate the Efficacy and Safety of Enlicitide (MK-0616, Oral PCSK9 Inhibitor) Compared With Ezetimibe or Bem",
+          "nct_id": "NCT06450366",
+          "status": "COMPLETED",
+          "sponsor": "Merck",
+          "last_update": "",
+          "direction_prior": "neutral"
+        },
+        "source_table": "clinicaltrials_gov"
+      },
+      {
+        "id": 2838878,
+        "ticker": "MRK",
+        "event_at": "2026-05-12T21:14:52.06546+00:00",
+        "created_at": "2026-05-12T21:14:52.132029+00:00",
+        "event_type": "clinical_readout",
+        "event_subtype": "completed",
+        "severity": 3,
+        "payload": {
+          "title": "Pembrolizumab and Stereotactic Radiosurgery for Melanoma or Non-Small Cell Lung Cancer Brain Metastases",
+          "nct_id": "NCT02858869",
+          "status": "COMPLETED",
+          "sponsor": "Merck",
+          "last_update": "",
+          "direction_prior": "neutral"
+        },
+        "source_table": "clinicaltrials_gov"
+      },
+      {
+        "id": 2838877,
+        "ticker": "MRK",
+        "event_at": "2026-05-12T21:14:51.819939+00:00",
+        "created_at": "2026-05-12T21:14:52.003064+00:00",
+        "event_type": "clinical_readout",
+        "event_subtype": "completed",
+        "severity": 3,
+        "payload": {
+          "title": "Clesrovimab (MK-1654) in Infants and Children at Increased Risk for Severe Respiratory Syncytial Virus (RSV) Disease (MK",
+          "nct_id": "NCT04938830",
+          "status": "COMPLETED",
+          "sponsor": "Merck",
+          "last_update": "",
+          "direction_prior": "neutral"
+        },
+        "source_table": "clinicaltrials_gov"
+      },
+      {
+        "id": 2838876,
+        "ticker": "MRK",
+        "event_at": "2026-05-12T21:14:51.708232+00:00",
+        "created_at": "2026-05-12T21:14:51.770702+00:00",
+        "event_type": "clinical_readout",
+        "event_subtype": "completed",
+        "severity": 3,
+        "payload": {
+          "title": "A Study of the Effect of Itraconazole and Phenytoin on Calderasib (MK-1084) in Healthy Adults (MK-1084-008)",
+          "nct_id": "NCT06719557",
+          "status": "COMPLETED",
+          "sponsor": "Merck",
+          "last_update": "",
+          "direction_prior": "neutral"
+        },
+        "source_table": "clinicaltrials_gov"
+      },
+      {
+        "id": 2838875,
+        "ticker": "MRK",
+        "event_at": "2026-05-12T21:14:51.445951+00:00",
+        "created_at": "2026-05-12T21:14:51.649798+00:00",
+        "event_type": "clinical_readout",
+        "event_subtype": "active_not_recruiting",
+        "severity": 3,
+        "payload": {
+          "title": "A Study of Zilovertamab Vedotin (MK-2140) as Monotherapy and in Combination in Participants With Aggressive and Indolent",
+          "nct_id": "NCT05458297",
+          "status": "ACTIVE_NOT_RECRUITING",
+          "sponsor": "Merck",
+          "last_update": "",
+          "direction_prior": "neutral"
+        },
+        "source_table": "clinicaltrials_gov"
+      },
+      {
+        "id": 2695573,
+        "ticker": "MRK",
+        "event_at": "2026-05-12T04:13:47.011844+00:00",
+        "created_at": "2026-05-12T04:13:47.055632+00:00",
+        "event_type": "clinical_readout",
+        "event_subtype": "completed",
+        "severity": 3,
+        "payload": {
+          "title": "Renal Transplantation and Raltegravir in HIV-Infected Patients",
+          "nct_id": "NCT01453192",
+          "status": "COMPLETED",
+          "sponsor": "Merck",
+          "last_update": "",
+          "direction_prior": "neutral"
+        },
+        "source_table": "clinicaltrials_gov"
+      },
+      {
+        "id": 2695572,
+        "ticker": "MRK",
+        "event_at": "2026-05-12T04:13:46.963917+00:00",
+        "created_at": "2026-05-12T04:13:47.000593+00:00",
+        "event_type": "clinical_readout",
+        "event_subtype": "active_not_recruiting",
+        "severity": 3,
+        "payload": {
+          "title": "A Study of Participant Reported Preference for Subcutaneous Pembrolizumab Coformulated With Berahyaluronidase Alfa (MK-3",
+          "nct_id": "NCT06099782",
+          "status": "ACTIVE_NOT_RECRUITING",
+          "sponsor": "Merck",
+          "last_update": "",
+          "direction_prior": "neutral"
+        },
+        "source_table": "clinicaltrials_gov"
+      },
+      {
+        "id": 2695571,
+        "ticker": "MRK",
+        "event_at": "2026-05-12T04:13:46.898683+00:00",
+        "created_at": "2026-05-12T04:13:46.941232+00:00",
+        "event_type": "clinical_readout",
+        "event_subtype": "active_not_recruiting",
+        "severity": 3,
+        "payload": {
+          "title": "A Clinical Trial of Three Study Medicines (Encorafenib, Binimetinib, and Pembrolizumab) in Patients With Advanced or Met",
+          "nct_id": "NCT04657991",
+          "status": "ACTIVE_NOT_RECRUITING",
+          "sponsor": "Merck",
+          "last_update": "",
+          "direction_prior": "neutral"
+        },
+        "source_table": "clinicaltrials_gov"
+      },
+      {
+        "id": 2695570,
+        "ticker": "MRK",
+        "event_at": "2026-05-12T04:13:46.825125+00:00",
+        "created_at": "2026-05-12T04:13:46.880609+00:00",
+        "event_type": "clinical_readout",
+        "event_subtype": "active_not_recruiting",
+        "severity": 3,
+        "payload": {
+          "title": "MEK Inhibitor Mirdametinib (PD-0325901) in Patients With Neurofibromatosis Type 1 Associated Plexiform Neurofibromas",
+          "nct_id": "NCT03962543",
+          "status": "ACTIVE_NOT_RECRUITING",
+          "sponsor": "Merck",
+          "last_update": "",
+          "direction_prior": "neutral"
+        },
+        "source_table": "clinicaltrials_gov"
+      },
+      {
+        "id": 2695569,
+        "ticker": "MRK",
+        "event_at": "2026-05-12T04:13:46.776313+00:00",
+        "created_at": "2026-05-12T04:13:46.811939+00:00",
+        "event_type": "clinical_readout",
+        "event_subtype": "completed",
+        "severity": 3,
+        "payload": {
+          "title": "Efficacy and Tolerance of the Switch From Enfuvirtine to Raltegravir in Antiretroviral Therapy Regimen in HIV Patients W",
+          "nct_id": "NCT00454337",
+          "status": "COMPLETED",
+          "sponsor": "Merck",
+          "last_update": "",
+          "direction_prior": "neutral"
+        },
+        "source_table": "clinicaltrials_gov"
+      },
+      {
+        "id": 2695568,
+        "ticker": "MRK",
+        "event_at": "2026-05-12T04:13:46.693368+00:00",
+        "created_at": "2026-05-12T04:13:46.748591+00:00",
+        "event_type": "clinical_readout",
+        "event_subtype": "completed",
+        "severity": 3,
+        "payload": {
+          "title": "Evaluate the Effects of Famotidine or Rabeprazole on the PK of Nirogacestat",
+          "nct_id": "NCT07171619",
+          "status": "COMPLETED",
+          "sponsor": "Merck",
+          "last_update": "",
+          "direction_prior": "neutral"
+        },
+        "source_table": "clinicaltrials_gov"
+      }
+    ],
+    "NIO": [
+      {
+        "id": 4108543,
+        "ticker": "NIO",
+        "event_at": "2026-05-21T12:00:00+00:00",
+        "created_at": "2026-05-17T13:21:45.997235+00:00",
+        "event_type": "earnings_release",
+        "event_subtype": "scheduled",
+        "severity": 2,
+        "payload": {
+          "actual_eps": null,
+          "surprise_pct": null,
+          "estimated_eps": -0.36
+        },
+        "source_table": "yfinance_earnings"
+      }
+    ],
+    "NNE": [
+      {
+        "id": 4108545,
+        "ticker": "NNE",
+        "event_at": "2026-05-14T20:00:00+00:00",
+        "created_at": "2026-05-17T13:21:45.997235+00:00",
+        "event_type": "earnings_release",
+        "event_subtype": "beat",
+        "severity": 4,
+        "payload": {
+          "actual_eps": -0.18,
+          "surprise_pct": 31.43,
+          "estimated_eps": -0.26
+        },
+        "source_table": "yfinance_earnings"
+      }
+    ],
+    "OKLO": [
+      {
+        "id": 4129149,
+        "ticker": "OKLO",
+        "event_at": "2026-05-15T20:06:56+00:00",
+        "created_at": "2026-05-17T14:48:03.125597+00:00",
+        "event_type": "institutional_new_position",
+        "event_subtype": "BRDGW",
+        "severity": 3,
+        "payload": {
+          "accession": "0001350694-26-000002",
+          "change_type": "new_position",
+          "institution": "BRDGW",
+          "prior_shares": 0,
+          "current_shares": 54956,
+          "direction_prior": "long"
+        },
+        "source_table": "stock_institutional_holdings_snapshot"
+      }
+    ],
+    "RKLB": [
+      {
+        "id": 4129112,
+        "ticker": "RKLB",
+        "event_at": "2026-05-15T20:06:56+00:00",
+        "created_at": "2026-05-17T14:48:03.125597+00:00",
+        "event_type": "institutional_new_position",
+        "event_subtype": "BRDGW",
+        "severity": 3,
+        "payload": {
+          "accession": "0001350694-26-000002",
+          "change_type": "new_position",
+          "institution": "BRDGW",
+          "prior_shares": 0,
+          "current_shares": 16727,
+          "direction_prior": "long"
+        },
+        "source_table": "stock_institutional_holdings_snapshot"
+      }
+    ],
+    "SEDG": [
+      {
+        "id": 4129129,
+        "ticker": "SEDG",
+        "event_at": "2026-05-15T20:06:56+00:00",
+        "created_at": "2026-05-17T14:48:03.125597+00:00",
+        "event_type": "institutional_new_position",
+        "event_subtype": "BRDGW",
+        "severity": 3,
+        "payload": {
+          "accession": "0001350694-26-000002",
+          "change_type": "new_position",
+          "institution": "BRDGW",
+          "prior_shares": 0,
+          "current_shares": 18820,
+          "direction_prior": "long"
+        },
+        "source_table": "stock_institutional_holdings_snapshot"
+      }
+    ],
+    "SMCI": [
+      {
+        "id": 4129122,
+        "ticker": "SMCI",
+        "event_at": "2026-05-15T20:06:56+00:00",
+        "created_at": "2026-05-17T14:48:03.125597+00:00",
+        "event_type": "institutional_new_position",
+        "event_subtype": "BRDGW",
+        "severity": 3,
+        "payload": {
+          "accession": "0001350694-26-000002",
+          "change_type": "new_position",
+          "institution": "BRDGW",
+          "prior_shares": 0,
+          "current_shares": 73888,
+          "direction_prior": "long"
+        },
+        "source_table": "stock_institutional_holdings_snapshot"
+      }
+    ],
+    "SMR": [],
+    "VST": [
+      {
+        "id": 4129134,
+        "ticker": "VST",
+        "event_at": "2026-05-15T20:06:56+00:00",
+        "created_at": "2026-05-17T14:48:03.125597+00:00",
+        "event_type": "institutional_new_position",
+        "event_subtype": "BRDGW",
+        "severity": 3,
+        "payload": {
+          "accession": "0001350694-26-000002",
+          "change_type": "new_position",
+          "institution": "BRDGW",
+          "prior_shares": 0,
+          "current_shares": 348514,
+          "direction_prior": "long"
+        },
+        "source_table": "stock_institutional_holdings_snapshot"
+      },
+      {
+        "id": 2572538,
+        "ticker": "VST",
+        "event_at": "2026-05-08T10:00:00+00:00",
+        "created_at": "2026-05-11T18:33:18.910454+00:00",
+        "event_type": "earnings_release",
+        "event_subtype": "beat",
+        "severity": 4,
+        "payload": {
+          "actual_eps": 2.87,
+          "surprise_pct": 53.35,
+          "estimated_eps": 1.87
+        },
+        "source_table": "yfinance_earnings"
+      }
+    ],
+    "WMT": [
+      {
+        "id": 11805473,
+        "ticker": "WMT",
+        "event_at": "2026-05-22T10:52:00+00:00",
+        "created_at": "2026-05-20T10:22:39.531109+00:00",
+        "event_type": "news_article",
+        "event_subtype": "neutral",
+        "severity": 2,
+        "payload": {
+          "url": "https://www.marketwatch.com/story/it-will-not-bring-you-happiness-i-have-advice-for-your-single-childless-62-year-old-multimillionaire-reader-1cb6a09f?mod=mw_rss_topstories",
+          "source": "marketwatch",
+          "headline": "\u2018It will not bring you happiness\u2019: I have advice for your single, childless 62-year-old multimillionaire reader",
+          "article_id": "ab5b0b2c2e58ddfad70929c3",
+          "classified_by": "keyword_db",
+          "direction_prior": "neutral"
+        },
+        "source_table": "stock_raw_news"
+      },
+      {
+        "id": 18432576,
+        "ticker": "WMT",
+        "event_at": "2026-05-21T21:24:00+00:00",
+        "created_at": "2026-05-21T12:32:34.687329+00:00",
+        "event_type": "news_article",
+        "event_subtype": "neutral",
+        "severity": 2,
+        "payload": {
+          "url": "https://www.marketwatch.com/story/walmart-sees-slowing-sales-growth-and-warns-of-a-profit-miss-in-contrast-to-rival-target-1f114fa0?mod=mw_rss_topstories",
+          "source": "marketwatch",
+          "headline": "People are putting less gas in their tanks as high prices crimp budgets, Walmart says",
+          "article_id": "3c3076aea8773be4d9e4fc97",
+          "classified_by": "keyword_db",
+          "direction_prior": "neutral"
+        },
+        "source_table": "stock_raw_news"
+      },
+      {
+        "id": 20484678,
+        "ticker": "WMT",
+        "event_at": "2026-05-21T20:33:18+00:00",
+        "created_at": "2026-05-21T20:37:42.265698+00:00",
+        "event_type": "filing_4",
+        "event_subtype": null,
+        "severity": 1,
+        "payload": {
+          "8k_items": "",
+          "form_type": "4",
+          "primary_doc_url": "https://www.sec.gov/Archives/edgar/data/104169/000199280826000016/xslF345X06/wk-form4_1779395594.xml",
+          "accession_number": "0001992808-26-000016",
+          "primary_doc_desc": "FORM 4"
+        },
+        "source_table": "stock_raw_filings"
+      },
+      {
+        "id": 19617369,
+        "ticker": "WMT",
+        "event_at": "2026-05-21T17:11:34+00:00",
+        "created_at": "2026-05-21T17:17:31.512487+00:00",
+        "event_type": "news_article",
+        "event_subtype": "neutral",
+        "severity": 2,
+        "payload": {
+          "url": "https://seekingalpha.com/news/4596012-walmart-forecasts-q2-eps-of-0_72-0_74-amid-higher-fuel-costs-while-reiterating-fy-sales?utm_source=feed_news_all&utm_medium=referral&feed_item_type=news",
+          "source": "seeking_alpha",
+          "headline": "Walmart forecasts Q2 EPS of $0.72-$0.74 amid higher fuel costs while reiterating FY sales growth of 3.5%-4.5%",
+          "article_id": "24a4c70bfdb1d3829c7bf6af",
+          "classified_by": "keyword_db",
+          "direction_prior": "neutral"
+        },
+        "source_table": "stock_raw_news"
+      },
+      {
+        "id": 19272727,
+        "ticker": "WMT",
+        "event_at": "2026-05-21T15:48:01+00:00",
+        "created_at": "2026-05-21T15:52:40.784886+00:00",
+        "event_type": "news_article",
+        "event_subtype": "neutral",
+        "severity": 2,
+        "payload": {
+          "url": "https://seekingalpha.com/news/4595922-walmart-suffers-worst-day-in-13-months?utm_source=feed_news_all&utm_medium=referral&feed_item_type=news",
+          "source": "seeking_alpha",
+          "headline": "Walmart suffers worst day in 13 months",
+          "article_id": "0109b5fdc7607491be7d6dad",
+          "classified_by": "keyword_db",
+          "direction_prior": "neutral"
+        },
+        "source_table": "stock_raw_news"
+      },
+      {
+        "id": 19066848,
+        "ticker": "WMT",
+        "event_at": "2026-05-21T14:59:16+00:00",
+        "created_at": "2026-05-21T15:02:39.723881+00:00",
+        "event_type": "news_article",
+        "event_subtype": "neutral",
+        "severity": 2,
+        "payload": {
+          "url": "https://seekingalpha.com/news/4595611-biggest-stock-movers-thursday-intu-apld-and-more?utm_source=feed_news_all&utm_medium=referral&feed_item_type=news",
+          "source": "seeking_alpha",
+          "headline": "Biggest stock movers Thursday: Quantum computing stocks, DE, WMT, and more",
+          "article_id": "2d7c4d5478b35fdf96d2f763",
+          "classified_by": "keyword_db",
+          "direction_prior": "neutral"
+        },
+        "source_table": "stock_raw_news"
+      },
+      {
+        "id": 18803931,
+        "ticker": "WMT",
+        "event_at": "2026-05-21T13:56:46+00:00",
+        "created_at": "2026-05-21T14:02:41.555263+00:00",
+        "event_type": "news_article",
+        "event_subtype": "neutral",
+        "severity": 2,
+        "payload": {
+          "url": "https://seekingalpha.com/news/4595799-walmart-slides-and-weighs-on-the-retail-sector-as-it-warns-on-consumer-pressures?utm_source=feed_news_all&utm_medium=referral&feed_item_type=news",
+          "source": "seeking_alpha",
+          "headline": "Walmart slides and weighs on the retail sector as it warns of consumer pressures",
+          "article_id": "dda07c803e8585f96dbda4fc",
+          "classified_by": "keyword_db",
+          "direction_prior": "neutral"
+        },
+        "source_table": "stock_raw_news"
+      },
+      {
+        "id": 18452343,
+        "ticker": "WMT",
+        "event_at": "2026-05-21T12:32:38+00:00",
+        "created_at": "2026-05-21T12:37:32.204655+00:00",
+        "event_type": "news_article",
+        "event_subtype": "neutral",
+        "severity": 2,
+        "payload": {
+          "url": "https://seekingalpha.com/news/4595759-4-stocks-to-watch-on-thursday-zs-rl-wmt-crwv?utm_source=feed_news_all&utm_medium=referral&feed_item_type=news",
+          "source": "seeking_alpha",
+          "headline": "4 stocks to watch on Thursday: ZS, RL, WMT, CRWV",
+          "article_id": "9c6b37277ea89b3ee6ce59fa",
+          "classified_by": "keyword_db",
+          "direction_prior": "neutral"
+        },
+        "source_table": "stock_raw_news"
+      },
+      {
+        "id": 2199670,
+        "ticker": "WMT",
+        "event_at": "2026-05-21T12:00:00+00:00",
+        "created_at": "2026-05-10T13:18:40.995461+00:00",
+        "event_type": "earnings_release",
+        "event_subtype": "scheduled",
+        "severity": 2,
+        "payload": {
+          "actual_eps": null,
+          "surprise_pct": null,
+          "estimated_eps": 0.66
+        },
+        "source_table": "yfinance_earnings"
+      },
+      {
+        "id": 18207123,
+        "ticker": "WMT",
+        "event_at": "2026-05-21T11:36:11+00:00",
+        "created_at": "2026-05-21T11:42:36.315794+00:00",
+        "event_type": "news_article",
+        "event_subtype": "neutral",
+        "severity": 2,
+        "payload": {
+          "url": "https://seekingalpha.com/news/4595716-walmart-in-charts-q1-comparable-sales-remain-resilient-as-customer-traffic-stays-strong?utm_source=feed_news_all&utm_medium=referral&feed_item_type=news",
+          "source": "seeking_alpha",
+          "headline": "Walmart in Charts: Q1 comparable sales remain resilient as customer traffic stays strong",
+          "article_id": "01a531d61d9b191a0bd1e521",
+          "classified_by": "keyword_db",
+          "direction_prior": "neutral"
+        },
+        "source_table": "stock_raw_news"
+      },
+      {
+        "id": 18186685,
+        "ticker": "WMT",
+        "event_at": "2026-05-21T11:32:12+00:00",
+        "created_at": "2026-05-21T11:37:33.852631+00:00",
+        "event_type": "news_article",
+        "event_subtype": "neutral",
+        "severity": 2,
+        "payload": {
+          "url": "https://seekingalpha.com/news/4595544-earnings-snapshot-walmart-tops-q1-sales-estimates-q2-and-fy27-guidance-sinks-below-consensus?utm_source=feed_news_all&utm_medium=referral&feed_item_type=news",
+          "source": "seeking_alpha",
+          "headline": "Earnings Snapshot: Walmart tops Q1 sales estimates; Q2 and FY27 guidance sinks below consensus",
+          "article_id": "c29b6eca1f9afe3c8d738072",
+          "classified_by": "keyword_db",
+          "direction_prior": "neutral"
+        },
+        "source_table": "stock_raw_news"
+      },
+      {
+        "id": 18125366,
+        "ticker": "WMT",
+        "event_at": "2026-05-21T11:17:49+00:00",
+        "created_at": "2026-05-21T11:22:35.420919+00:00",
+        "event_type": "news_article",
+        "event_subtype": "negative",
+        "severity": 3,
+        "payload": {
+          "url": "https://seekingalpha.com/news/4595685-walmart-falls-after-issuing-cautious-guidance-amid-the-high-gas-price-environment?utm_source=feed_news_all&utm_medium=referral&feed_item_type=news",
+          "source": "seeking_alpha",
+          "headline": "Walmart falls after issuing cautious guidance amid the high gas price environment",
+          "article_id": "9ae6a9275085de65a73ed7b1",
+          "classified_by": "keyword_db",
+          "direction_prior": "short"
+        },
+        "source_table": "stock_raw_news"
+      },
+      {
+        "id": 18064062,
+        "ticker": "WMT",
+        "event_at": "2026-05-21T11:04:11+00:00",
+        "created_at": "2026-05-21T11:07:32.001694+00:00",
+        "event_type": "news_article",
+        "event_subtype": "positive",
+        "severity": 3,
+        "payload": {
+          "url": "https://seekingalpha.com/news/4595697-walmart-non-gaap-eps-of-0_66-in-line-revenue-of-177_75b-beats-by-2_91b?utm_source=feed_news_all&utm_medium=referral&feed_item_type=news",
+          "source": "seeking_alpha",
+          "headline": "Walmart Non-GAAP EPS of $0.66 in-line, revenue of $177.75B beats by $2.91B",
+          "article_id": "445c20eab0ffaa0e8c88f1d2",
+          "classified_by": "keyword_db",
+          "direction_prior": "long"
+        },
+        "source_table": "stock_raw_news"
+      },
+      {
+        "id": 18052484,
+        "ticker": "WMT",
+        "event_at": "2026-05-21T10:59:53+00:00",
+        "created_at": "2026-05-21T11:02:48.050587+00:00",
+        "event_type": "8k_material_event",
+        "event_subtype": null,
+        "severity": 3,
+        "payload": {
+          "8k_items": "2.02,9.01",
+          "form_type": "8-K",
+          "primary_doc_url": "https://www.sec.gov/Archives/edgar/data/104169/000010416926000095/wmt-20260521.htm",
+          "accession_number": "0000104169-26-000095",
+          "primary_doc_desc": "8-K"
+        },
+        "source_table": "stock_raw_filings"
+      },
+      {
+        "id": 12750878,
+        "ticker": "WMT",
+        "event_at": "2026-05-20T14:00:36+00:00",
+        "created_at": "2026-05-20T14:07:39.804529+00:00",
+        "event_type": "news_article",
+        "event_subtype": "neutral",
+        "severity": 2,
+        "payload": {
+          "url": "https://seekingalpha.com/news/4595339-walmarts-guidance-in-focus-during-q1-earnings?utm_source=feed_news_all&utm_medium=referral&feed_item_type=news",
+          "source": "seeking_alpha",
+          "headline": "Walmart's guidance in focus during Q1 earnings",
+          "article_id": "b21d4976254d45f7b9266581",
+          "classified_by": "keyword_db",
+          "direction_prior": "neutral"
+        },
+        "source_table": "stock_raw_news"
+      },
+      {
+        "id": 6792767,
+        "ticker": "WMT",
+        "event_at": "2026-05-19T14:40:02+00:00",
+        "created_at": "2026-05-19T14:42:43.062008+00:00",
+        "event_type": "news_article",
+        "event_subtype": "neutral",
+        "severity": 2,
+        "payload": {
+          "url": "https://seekingalpha.com/news/4594929-rex-wmt-growth-income-etf-announces-weekly-distribution-of-01361?utm_source=feed_news_all&utm_medium=referral&feed_item_type=news",
+          "source": "seeking_alpha",
+          "headline": "REX WMT Growth & Income ETF announces weekly distribution of $0.1361",
+          "article_id": "e96058829facb6cf16f1db12",
+          "classified_by": "keyword_db",
+          "direction_prior": "neutral"
+        },
+        "source_table": "stock_raw_news"
+      },
+      {
+        "id": 4465461,
+        "ticker": "WMT",
+        "event_at": "2026-05-18T21:03:54+00:00",
+        "created_at": "2026-05-18T21:53:43.232099+00:00",
+        "event_type": "filing_4",
+        "event_subtype": null,
+        "severity": 1,
+        "payload": {
+          "8k_items": "",
+          "form_type": "4",
+          "primary_doc_url": "https://www.sec.gov/Archives/edgar/data/104169/000157929926000016/xslF345X06/wk-form4_1779138232.xml",
+          "accession_number": "0001579299-26-000016",
+          "primary_doc_desc": "FORM 4"
+        },
+        "source_table": "stock_raw_filings"
+      },
+      {
+        "id": 4129181,
+        "ticker": "WMT",
+        "event_at": "2026-05-17T19:34:00+00:00",
+        "created_at": "2026-05-17T15:14:33.310958+00:00",
+        "event_type": "news_article",
+        "event_subtype": "neutral",
+        "severity": 2,
+        "payload": {
+          "url": "https://www.marketwatch.com/story/walmart-and-target-are-about-to-show-just-how-much-shopping-habits-have-changed-due-to-the-iran-war-105b34d9?mod=mw_rss_topstories",
+          "source": "marketwatch",
+          "headline": "Walmart and Target are about to show just how much shopping habits have changed due to the Iran war",
+          "article_id": "1af1febf08059b937c651351",
+          "classified_by": "keyword_db",
+          "direction_prior": "neutral"
+        },
+        "source_table": "stock_raw_news"
+      },
+      {
+        "id": 4088021,
+        "ticker": "WMT",
+        "event_at": "2026-05-17T12:07:19+00:00",
+        "created_at": "2026-05-17T12:37:32.668966+00:00",
+        "event_type": "news_article",
+        "event_subtype": "neutral",
+        "severity": 2,
+        "payload": {
+          "url": "https://seekingalpha.com/news/4593614-earnings-week-ahead-nvda-hd-tgt-wmt-nio-bidu-zim-and-more?utm_source=feed_news_all&utm_medium=referral&feed_item_type=news",
+          "source": "seeking_alpha",
+          "headline": "Earnings week ahead: NVDA, HD, TGT, WMT, NIO, BIDU, ZIM, and more",
+          "article_id": "9740a186f9e7b7f2a3de8f4b",
+          "classified_by": "keyword_db",
+          "direction_prior": "neutral"
+        },
+        "source_table": "stock_raw_news"
+      },
+      {
+        "id": 3412148,
+        "ticker": "WMT",
+        "event_at": "2026-05-15T07:00:07+00:00",
+        "created_at": "2026-05-15T08:09:55.062769+00:00",
+        "event_type": "news_article",
+        "event_subtype": "neutral",
+        "severity": 2,
+        "payload": {
+          "url": "https://seekingalpha.com/news/4593560-walmart-asks-flipkart-to-defer-ipo-focus-on-ebitda-breakeven-by-fy27-report?utm_source=feed_news_all&utm_medium=referral&feed_item_type=news",
+          "source": "seeking_alpha",
+          "headline": "Walmart asks Flipkart to defer IPO, focus on EBITDA breakeven by FY27: report",
+          "article_id": "ba020c6ce0e89cb8f3893808",
+          "classified_by": "keyword_db",
+          "direction_prior": "neutral"
+        },
+        "source_table": "stock_raw_news"
+      }
+    ]
+  },
+  "raw_news_by_ticker": {
+    "ALAB": [],
+    "AMD": [],
+    "ANET": [],
+    "AVAV": [],
+    "BOOT": [],
+    "CHPT": [],
+    "CIEN": [],
+    "COHR": [],
+    "CRDO": [],
+    "CRWV": [],
+    "DELL": [],
+    "ENPH": [],
+    "FLNC": [],
+    "FN": [],
+    "FSLR": [],
+    "GLW": [],
+    "HPE": [],
+    "IREN": [],
+    "LITE": [],
+    "MOD": [],
+    "MRK": [],
+    "NIO": [],
+    "NNE": [],
+    "OKLO": [],
+    "RKLB": [],
+    "SEDG": [],
+    "SMCI": [],
+    "SMR": [],
+    "VST": [],
+    "WMT": []
+  }
+}
