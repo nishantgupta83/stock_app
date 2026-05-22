@@ -353,6 +353,55 @@ def detect_stuck_running_global() -> str | None:
     return None
 
 
+def detect_news_classifier_coverage_drift() -> str | None:
+    """Ratio of normalized news_article events to raw_news rows ingested in
+    last 48h is below 8% — the classifier is missing most tickers.
+
+    Background (2026-05-22 audit): the classifier only matched headlines
+    via 22 hardcoded company-name aliases + ~30 hardcoded watchlist symbols,
+    so news mentioning tickers like ENPH, SEDG, OKLO landed in raw_news but
+    produced zero normalized events. PR1A precursor expanded both sets to
+    pull from stock_symbols dynamically. This detector watches for future
+    regression — if the ratio drops below 8%, the alias loading likely
+    broke or the source mix shifted toward off-watchlist names.
+
+    Alert-only — no auto-remediation. Operator should:
+      1. Check news_agent's most recent run log for "+N name aliases" /
+         "+M symbol-scan tickers" — should be non-zero
+      2. Verify stock_symbols.is_active=true has the expected ~150 rows
+      3. Spot-check a known-active ticker's last 24h raw_news for
+         orphaned (ticker=NULL) rows
+    """
+    try:
+        cutoff = (datetime.now(timezone.utc) - timedelta(hours=48)).isoformat()
+        h = {**HEADERS_SB, "Prefer": "count=exact", "Range": "0-0"}
+        # raw_news total
+        r1 = requests.get(
+            f"{SUPABASE_URL}/rest/v1/stock_raw_news",
+            headers=h, params={"published_at": f"gte.{cutoff}"}, timeout=10,
+        )
+        # normalized_events news_article subset
+        r2 = requests.get(
+            f"{SUPABASE_URL}/rest/v1/stock_normalized_events",
+            headers=h,
+            params={"event_type": "eq.news_article",
+                    "created_at": f"gte.{cutoff}"},
+            timeout=10,
+        )
+        raw_n = int((r1.headers.get("content-range", "*/0").split("/")[-1]) or 0)
+        ev_n  = int((r2.headers.get("content-range", "*/0").split("/")[-1]) or 0)
+        if raw_n < 50:
+            return None  # too little volume to draw any conclusion
+        ratio = ev_n / raw_n if raw_n else 0
+        if ratio < 0.08:
+            return (f"news classifier coverage {ratio*100:.1f}% over 48h "
+                    f"({ev_n} events / {raw_n} raw) — likely classifier "
+                    f"alias/symbol-load regression; see news_agent.load_symbol_names")
+    except Exception:
+        pass
+    return None
+
+
 def detect_mature_no_matured_at() -> str | None:
     """is_mature=true but matured_at IS NULL — the bookkeeping gap from 2026-05-21."""
     try:
@@ -387,6 +436,18 @@ def act_dispatch_backtester() -> bool:
 def act_sweep_global() -> bool:
     swept = sweep_stale_running(agent=None, max_age_hours=2)
     return swept >= 0  # treat call success as action success even if 0 rows
+
+
+def act_alert_only_no_op() -> bool:
+    """Marker action for detectors that should ALERT but not auto-remediate.
+
+    Returns True so the playbook records the attempt + escalates after the
+    threshold; the side effect is purely the Telegram alert + dashboard
+    visibility. Use this for issues that require operator judgement (e.g.,
+    "classifier coverage is drifting — review which feeds changed") rather
+    than mechanical fixes ("re-dispatch the workflow").
+    """
+    return True
 
 
 def act_backfill_matured_at() -> bool:
@@ -440,6 +501,17 @@ REMEDIATIONS: list[Remediation] = [
         cooldown_hours=0,
         max_per_day=99,
         escalate_after_attempts=99,  # silent maintenance
+    ),
+    Remediation(
+        key="news_classifier_coverage_drift",
+        description=("news_agent classifier coverage of raw_news < 8% over 48h — "
+                     "likely regression in load_symbol_names() alias/symbol loading. "
+                     "ALERT-ONLY: operator should review which feeds or symbols changed."),
+        detect=detect_news_classifier_coverage_drift,
+        act=act_alert_only_no_op,
+        cooldown_hours=6,        # don't spam — once per quarter-day if persistent
+        max_per_day=4,
+        escalate_after_attempts=1,  # escalate immediately so operator sees it
     ),
 ]
 

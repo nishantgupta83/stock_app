@@ -143,6 +143,118 @@ def load_rules() -> str:
     return "keyword_fallback"
 
 
+# Generic-word stoplist: prevents single-word company aliases from matching
+# common English vocabulary. e.g., "Apple" → AAPL is fine, but "Industries"
+# → some random ticker would fire on every headline. Aliases shorter than 4
+# chars are also dropped (too ambiguous).
+_NAME_STOPWORDS: set[str] = {
+    "industries", "industrial", "corporation", "company", "incorporated",
+    "international", "energy", "holdings", "technologies", "technology",
+    "systems", "services", "global", "group", "limited", "inc", "co",
+    "ltd", "plc", "n.v.", "n.a.", "&", "and", "the",
+}
+
+
+def _derive_name_aliases(company_name: str) -> list[str]:
+    """Return a list of distinct lowercase aliases for a company name suitable
+    for icontains matching against headline text.
+
+    The full name itself is the primary alias; we also derive a "short alias"
+    by taking the first capitalized word IF it's distinctive (>=4 chars and
+    not in the stopword list). This catches headlines that drop the corporate
+    suffix — e.g., "Enphase powers to 52-week high" should match ENPH even
+    though "Enphase Energy" is the registered name.
+    """
+    if not company_name:
+        return []
+    aliases: list[str] = []
+    full = company_name.strip()
+    if full:
+        aliases.append(full.lower())
+    # First word as a short alias
+    first = full.split()[0] if full.split() else ""
+    first_clean = first.strip(",.&").lower()
+    if (first_clean and len(first_clean) >= 4 and first_clean not in _NAME_STOPWORDS
+            and first_clean != full.lower()):
+        aliases.append(first_clean)
+    return aliases
+
+
+def load_symbol_names() -> tuple[int, int]:
+    """Pull `(ticker, name)` from stock_symbols and (1) extend the
+    classifier's name-alias rules, (2) extend the symbol-scan ticker set.
+
+    Two separate gaps were discovered 2026-05-22 during the PR1A audit:
+      (a) Company-name miss: classifier had only 22 hardcoded `_COMPANY_MAP`
+          entries, so "Enphase powers to 52-week high" never matched ENPH.
+      (b) Symbol-scan miss: `_WATCHLIST_TICKERS` had only ~30 mega-caps
+          hardcoded (NVDA, AAPL, ...), so "SEDG surges" never matched SEDG
+          even with a clear standalone ticker symbol in the headline.
+
+    Returns (n_name_aliases_added, n_symbol_tickers_added).
+    Called from main() after load_rules() so DB-defined rules and the
+    hardcoded fallbacks both stay; this function only ADDS.
+    """
+    try:
+        r = requests.get(
+            f"{SUPABASE_URL}/rest/v1/stock_symbols",
+            headers=HEADERS_SB,
+            params={"is_active": "eq.true", "select": "ticker,name", "limit": "5000"},
+            timeout=15,
+        )
+        if r.status_code != 200:
+            print(f"  load_symbol_names: {r.status_code} {r.text[:200]}", file=sys.stderr)
+            return (0, 0)
+        rows = r.json() or []
+    except Exception as e:  # noqa: BLE001
+        print(f"  load_symbol_names: fetch failed ({e})", file=sys.stderr)
+        return (0, 0)
+
+    # --- (a) Company-name aliases for icontains matching ---
+    alias_to_tickers: dict[str, set[str]] = {}
+    for row in rows:
+        ticker = (row.get("ticker") or "").strip()
+        name = row.get("name") or ""
+        if not ticker or not name:
+            continue
+        for alias in _derive_name_aliases(name):
+            alias_to_tickers.setdefault(alias, set()).add(ticker)
+
+    existing_keywords = {(r.get("keyword") or "").lower() for r in _RULES_NAME_HITS}
+    n_aliases = 0
+    for alias, tickers in alias_to_tickers.items():
+        if alias in existing_keywords:
+            continue
+        _RULES_NAME_HITS.append({
+            "keyword":          alias,
+            "match_type":       "icontains",
+            "tickers":          sorted(tickers),
+            "direction_prior":  "neutral",
+            "rule_label":       f"sym_name_{'_'.join(sorted(tickers))}",
+        })
+        n_aliases += 1
+
+    # --- (b) Symbol-scan: extend _WATCHLIST_TICKERS with every active equity ---
+    # Skip ETFs since they typically don't appear standalone in news as catalyst
+    # subjects (a story about an XLK move is rare; stories about constituent
+    # tickers are common). Keep the hardcoded list intact as fallback.
+    global _WATCHLIST_TICKERS
+    existing_set = set(_WATCHLIST_TICKERS)
+    n_symbols = 0
+    for row in rows:
+        ticker = (row.get("ticker") or "").strip().upper()
+        if not ticker or ticker in existing_set:
+            continue
+        # Filter out very short or sentinel-style tickers ("V" is 1-char; keep)
+        # and INST_* / MACRO pseudo-tickers used elsewhere in the pipeline.
+        if ticker.startswith("INST_") or ticker == "MACRO":
+            continue
+        _WATCHLIST_TICKERS.append(ticker)
+        existing_set.add(ticker)
+        n_symbols += 1
+    return (n_aliases, n_symbols)
+
+
 def _matches(text: str, rule: dict) -> bool:
     kw = rule["keyword"]
     if rule.get("match_type") == "regex":
@@ -402,9 +514,17 @@ def main() -> int:
 
     # Load DB-backed keyword rules once per run; sets module-level caches.
     _RULES_SOURCE = load_rules()
+    # Augment with company-name aliases AND symbol-scan tickers from
+    # stock_symbols, so tickers outside the ~30 hardcoded mega-caps actually
+    # classify when either their symbol or name appears in a headline. The
+    # 2026-05-22 audit found "Enphase powers to 52-week high..." (ENPH) was
+    # ingested into raw_news but produced zero normalized events because
+    # neither the ENPH symbol nor "Enphase" alias was loaded.
+    n_aliases, n_symbols = load_symbol_names()
     print(f"Loaded {len(_RULES_NAME_HITS)} ticker rules + "
           f"{len(_RULES_BULLISH)} bullish + {len(_RULES_BEARISH)} bearish "
-          f"sentiment rules from {_RULES_SOURCE}")
+          f"sentiment rules from {_RULES_SOURCE} "
+          f"(+{n_aliases} name aliases, +{n_symbols} symbol-scan tickers)")
 
     try:
         all_articles: list[dict] = []
