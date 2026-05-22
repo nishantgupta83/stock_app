@@ -534,17 +534,15 @@ def upsert_calibration(rule_key: str, current: dict | None,
 def compute_paper_outcome(trade: dict, bars: dict[date, dict[str, float]]) -> dict | None:
     """Direction-aware close-to-close return + MFE/MAE + stop/target hit audit.
 
-    realized_return remains close-to-close (the canonical truth for
-    calibration). The new fields are informational:
-      mfe_pct   — best excursion in our favor between entry and exit
-      mae_pct   — worst excursion against us between entry and exit
-      target_hit — True if daily High (long) / Low (short) ever breached
-                   target_pct between entry+1 and exit
-      stop_hit   — True if daily Low (long) / High (short) ever breached
-                   stop_pct between entry+1 and exit
+    realized_return is close-to-close net of SLIPPAGE_BPS per side
+    (matches backtester convention — paper-trade calibration was
+    previously frictionless while the audit path applied 5 bps each
+    side, so the two grading paths disagreed on the same move). 10 bps
+    round-trip applied uniformly to long and short.
 
-    This is the "daily-HL audit" approximation. A full intraday audit would
-    require 1-min or 5-min bars which we don't ingest yet.
+    MFE/MAE remain GROSS (informational about the underlying path, not
+    your fills). target_hit / stop_hit also use raw daily H/L because
+    they describe what the bar did, not what you realized.
     """
     entry_date = datetime.fromisoformat(trade["entry_at"].replace("Z", "+00:00")).date()
     horizon = int(trade.get("horizon_days") or 1)
@@ -562,7 +560,9 @@ def compute_paper_outcome(trade: dict, bars: dict[date, dict[str, float]]) -> di
     raw_return = (exit_price - entry_price) / entry_price
     direction = trade.get("direction") or "long"
     direction_mult = 1.0 if direction == "long" else -1.0
-    realized = raw_return * direction_mult
+    realized_gross = raw_return * direction_mult
+    # Match backtester convention: 5 bps per side, no commissions
+    realized = realized_gross - 2 * (SLIPPAGE_BPS / 10000)
 
     # MFE/MAE + stop/target audit over the holding period.
     target_pct = float(trade.get("target_pct") or 0)

@@ -45,30 +45,51 @@ def _trade(direction: str, *, entry_d: date, entry_price: float = 100.0,
 
 # ---------- close-to-close return: long / short symmetry --------------------
 
+# Net realized_return = gross_return - 2 * (SLIPPAGE_BPS / 10000) = gross - 0.001
+# So a raw +5% move on a long becomes +4.9% net of round-trip slippage.
+SLIP_ROUND_TRIP = 0.001  # 2 sides × 5 bps
+
+
 def test_long_realized_return_positive_on_up_close():
     d0 = date(2026, 5, 1)
     bars = _bars(d0, path=[(105.0, 99.0, 105.0)])
     out = compute_paper_outcome(_trade("long", entry_d=d0, horizon_days=1), bars)
     assert out is not None
-    assert out["realized_return"] == pytest.approx(0.05)
+    # +5% raw move - 10 bps round-trip slippage = +4.9% net
+    assert out["realized_return"] == pytest.approx(0.05 - SLIP_ROUND_TRIP)
     assert out["correct"] is True
 
 
 def test_short_realized_return_positive_on_down_close():
-    """Same underlying move (+5%) for a short trade is a LOSS."""
+    """Same underlying move (+5%) for a short trade is a LOSS (-5% gross),
+    made slightly worse by the round-trip slippage."""
     d0 = date(2026, 5, 1)
     bars = _bars(d0, path=[(105.0, 99.0, 105.0)])
     out = compute_paper_outcome(_trade("short", entry_d=d0, horizon_days=1), bars)
-    assert out["realized_return"] == pytest.approx(-0.05)
+    assert out["realized_return"] == pytest.approx(-0.05 - SLIP_ROUND_TRIP)
     assert out["correct"] is False
 
 
 def test_long_short_symmetric_signs():
+    """Long and short on the same path are gross-symmetric. After slippage,
+    both pay round-trip friction, so long_net + short_net = -2 * round-trip."""
     d0 = date(2026, 5, 1)
     bars = _bars(d0, path=[(102.0, 99.0, 97.0)])
     long_out = compute_paper_outcome(_trade("long", entry_d=d0), bars)
     short_out = compute_paper_outcome(_trade("short", entry_d=d0), bars)
-    assert long_out["realized_return"] == pytest.approx(-short_out["realized_return"])
+    # Gross long_ret + gross short_ret = 0; each pays SLIP_ROUND_TRIP.
+    assert long_out["realized_return"] + short_out["realized_return"] == pytest.approx(-2 * SLIP_ROUND_TRIP)
+
+
+def test_slippage_is_actually_applied_not_zero():
+    """Lock in that slippage is in effect — if someone reverts the
+    `realized_gross - 2 * (SLIPPAGE_BPS / 10000)` line, this fails."""
+    d0 = date(2026, 5, 1)
+    # A flat 0% move close-to-close should yield exactly -SLIP_ROUND_TRIP after friction
+    bars = _bars(d0, path=[(100.5, 99.5, 100.0)])
+    out = compute_paper_outcome(_trade("long", entry_d=d0, horizon_days=1), bars)
+    assert out["realized_return"] == pytest.approx(-SLIP_ROUND_TRIP)
+    assert out["correct"] is False  # round-trip friction makes a no-move into a tiny loss
 
 
 # ---------- target_hit / stop_hit are direction-aware ------------------------
