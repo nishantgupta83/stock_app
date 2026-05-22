@@ -470,13 +470,27 @@ def fetch_weekly_data(days: int = 7) -> dict:
         "order":   "exit_at.desc.nullslast",
         "limit":   "2000",
     })
+
+    # Matured cohort for survivorship-adjusted win rate: trades opened
+    # between 30 and 60 days ago. All their horizons (max=30d) have had
+    # time to mature — so unclosed rows in this cohort are stuck, not
+    # pending, and "% won of opened" treats them as not-a-win.
+    matured_start = (now - timedelta(days=60)).isoformat()
+    matured_end   = (now - timedelta(days=30)).isoformat()
+    matured_trades = sb_get("stock_event_paper_trades", {
+        "entry_at": f"gte.{matured_start}",
+        "and":      f"(entry_at.lt.{matured_end})",
+        "select":   "status,correct,horizon_days",
+        "limit":    "5000",
+    })
     return {
-        "window_days":   days,
-        "window_start":  week_start_iso[:10],
-        "window_end":    now.date().isoformat(),
-        "events_landed": events_landed,
-        "signals_fired": signals_fired,
-        "trades":        week_trades,
+        "window_days":    days,
+        "window_start":   week_start_iso[:10],
+        "window_end":     now.date().isoformat(),
+        "events_landed":  events_landed,
+        "signals_fired":  signals_fired,
+        "trades":         week_trades,
+        "matured_trades": matured_trades,
     }
 
 
@@ -530,19 +544,36 @@ def derive_weekly_metrics(weekly: dict, cal_rows: list[dict]) -> dict:
             cum_wins += 1
         equity_points.append({"t": (t.get("exit_at") or "")[:10], "v": round(cum_wins / i * 100, 1)})
 
+    # Survivorship-adjusted win rate from the matured 30-60d cohort.
+    # `closed-only` win rate has selection bias: short-horizon trades close
+    # first, so a 7d window is dominated by h=1d / h=7d outcomes while h=30d
+    # trades stay open. The matured cohort treats every opened trade as part
+    # of the denominator — a stuck-open row counts as not-a-win. Gap between
+    # the two win-rate numbers is itself the survivorship signal.
+    matured = weekly.get("matured_trades") or []
+    n_matured        = len(matured)
+    n_matured_closed = sum(1 for t in matured if t.get("status") == "closed")
+    n_matured_wins   = sum(1 for t in matured if t.get("correct") is True)
+    matured_win_rate = (n_matured_wins / n_matured) if n_matured else None
+
     perf = {
-        "n_opened":         len(opened),
-        "n_closed":         len(closed),
-        "n_wins":           len(wins),
-        "n_losses":         len(losses),
-        "win_rate":         (len(wins) / len(closed)) if closed else None,
-        "avg_return_pct":   avg_ret * 100,
-        "avg_win_pct":      avg_win_pct * 100,
-        "avg_loss_pct":     avg_loss_pct * 100,
-        "profit_factor":    pf,
-        "best_rule":        best_rule,
-        "worst_rule":       worst_rule,
-        "equity_points":    equity_points,
+        "n_opened":             len(opened),
+        "n_closed":             len(closed),
+        "n_wins":               len(wins),
+        "n_losses":             len(losses),
+        "win_rate":             (len(wins) / len(closed)) if closed else None,
+        "avg_return_pct":       avg_ret * 100,
+        "avg_win_pct":          avg_win_pct * 100,
+        "avg_loss_pct":         avg_loss_pct * 100,
+        "profit_factor":        pf,
+        "best_rule":            best_rule,
+        "worst_rule":           worst_rule,
+        "equity_points":        equity_points,
+        # Survivorship cohort (30-60 days ago entry_at — fully matured)
+        "matured_n":            n_matured,
+        "matured_n_closed":     n_matured_closed,
+        "matured_n_wins":       n_matured_wins,
+        "matured_win_rate":     matured_win_rate,
     }
 
     # § 2 — Rule maturity (toward 90% / n>=30 BUY/SELL gate)

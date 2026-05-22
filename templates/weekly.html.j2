@@ -22,9 +22,14 @@
     <div class="sub">{{ weekly.performance.n_wins }} win · {{ weekly.performance.n_losses }} loss</div>
   </div>
   <div class="card {% if weekly.performance.win_rate is not none and weekly.performance.win_rate >= 0.55 %}ok{% elif weekly.performance.win_rate is not none and weekly.performance.win_rate < 0.45 %}warn{% endif %}">
-    <div class="label">Win rate</div>
+    <div class="label">Win rate (closed)</div>
     <div class="value">{% if weekly.performance.win_rate is none %}—{% else %}{{ "%.0f%%"|format(weekly.performance.win_rate * 100) }}{% endif %}</div>
-    <div class="sub">{{ weekly.performance.n_closed }} closed</div>
+    <div class="sub">{{ weekly.performance.n_closed }} closed this window</div>
+  </div>
+  <div class="card {% if weekly.performance.matured_win_rate is not none and weekly.performance.matured_win_rate >= 0.55 %}ok{% elif weekly.performance.matured_win_rate is not none and weekly.performance.matured_win_rate < 0.45 %}warn{% endif %}">
+    <div class="label">Win rate (matured)</div>
+    <div class="value">{% if weekly.performance.matured_win_rate is none %}—{% else %}{{ "%.0f%%"|format(weekly.performance.matured_win_rate * 100) }}{% endif %}</div>
+    <div class="sub">{{ weekly.performance.matured_n_wins }} of {{ weekly.performance.matured_n }} opened 30–60d ago</div>
   </div>
   <div class="card {% if weekly.performance.avg_return_pct >= 0 %}ok{% else %}warn{% endif %}">
     <div class="label">Avg return</div>
@@ -37,6 +42,17 @@
     <div class="sub">{% if weekly.performance.profit_factor is none %}n&lt;10 closed{% else %}sum(wins) / |sum(losses)|{% endif %}</div>
   </div>
 </div>
+
+{% if weekly.performance.matured_n and weekly.performance.win_rate is not none and weekly.performance.matured_win_rate is not none %}
+{% set bias_gap = (weekly.performance.win_rate - weekly.performance.matured_win_rate) * 100 %}
+{% if bias_gap|abs >= 5 %}
+<div class="note" style="margin-top:12px;font-size:12px;{% if bias_gap >= 5 %}background:rgba(255,176,80,0.06);border-left:3px solid #ffb050{% else %}background:rgba(79,179,169,0.06);border-left:3px solid #4fb3a9{% endif %}">
+  <strong>Survivorship gap: {{ "%+.0f"|format(bias_gap) }} pts.</strong>
+  Closed-only win rate is {{ "%.0f%%"|format(weekly.performance.win_rate * 100) }} but the matured 30–60d cohort is {{ "%.0f%%"|format(weekly.performance.matured_win_rate * 100) }}.
+  {% if bias_gap >= 5 %}The short-horizon trades closing inside this window are outperforming the longer-horizon trades that have actually had time to mature — a sign the weekly headline number is being flattered by selection.{% else %}Matured cohort is outperforming this week's slice — likely just normal noise.{% endif %}
+</div>
+{% endif %}
+{% endif %}
 
 {% if weekly.performance.equity_points %}
 <div class="note" style="margin-top:12px">
