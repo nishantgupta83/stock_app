@@ -83,6 +83,7 @@ those three constraints in code:
 - [`docs/multi-domain-roadmap.md`](docs/multi-domain-roadmap.md) — six domain-agent expansion
 - [`docs/next-phases-roadmap.md`](docs/next-phases-roadmap.md) — phase ledger + open backlog
 - [`docs/RUNBOOK.md`](docs/RUNBOOK.md) — autonomous operation, failure modes, recovery
+- [`docs/ml-roadmap.md`](docs/ml-roadmap.md) — what "learning" actually means here (empirical calibration, not trained ML), four gate criteria for adding a real classifier, and the two specific decisions that would justify one
 
 ## Stack
 

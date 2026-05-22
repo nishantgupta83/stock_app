@@ -41,12 +41,16 @@ Layer 4 — RISK / CAPITAL ALLOCATION (Phase 11.6)
   agent: risk_agent (HARDCODED: Van Tharp sizing, equity-curve drawdown
          breaker, daily risk budget, rule concentration cap, stop sanity)
 
-Layer 5 — LEARNING
+Layer 5 — LEARNING (empirical calibration, NOT trained ML — see ml-roadmap.md)
   in:  stock_signals + stock_event_paper_trades + stock_raw_prices
   out: stock_rule_calibration, stock_agent_weights
   agents: event_paper_agent (4 horizons per event: 1d/7d/15d/30d),
           price_agent (EOD reconcile + MFE/MAE/target_hit/stop_hit audit),
           paper_trade_agent, backtester
+  note: "Learning" here means outcome-based statistical bookkeeping (EMA on
+        agent accuracy + per-rule calibration counters + Bayesian shrinkage
+        on prob_win), NOT a trained classifier. See `docs/ml-roadmap.md`
+        for the four gate criteria that would justify adding real ML.
 
 Layer 6 — PRESENTATION
   in:  everything (read-only)
