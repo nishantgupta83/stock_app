@@ -294,21 +294,33 @@ def build_paper_trades(event: dict, ticker_kind: str, latest_close: dict) -> lis
     return rows
 
 
-def fetch_already_traded_event_ids(event_ids: list[int]) -> set[int]:
-    """Return event_ids that already have at least one row in stock_event_paper_trades.
-    Used to skip re-inserting when the same event falls in the lookback window twice."""
+def fetch_already_traded_keys(event_ids: list[int]) -> set[tuple[int, int]]:
+    """Return composite (event_id, horizon_days) pairs already in stock_event_paper_trades.
+
+    Composite — not event_id alone — so that a partial prior write (e.g.,
+    only h=1d landed before a crash) doesn't lock out the missing horizons
+    on rerun. With the previous event-id-only filter, the entire event was
+    marked "done" once any single horizon row existed; h=7/15/30 then never
+    healed. Switching to composite keys lets each missing horizon insert
+    independently while concurrent runs still hit the unique constraint
+    (which Prefer:resolution=ignore-duplicates absorbs into 201).
+    """
     if not event_ids:
         return set()
     in_list = ",".join(str(i) for i in event_ids)
     r = requests.get(
         f"{SUPABASE_URL}/rest/v1/stock_event_paper_trades",
         headers=HEADERS_SB,
-        params={"event_id": f"in.({in_list})", "select": "event_id", "limit": "1000"},
+        params={"event_id": f"in.({in_list})", "select": "event_id,horizon_days", "limit": "5000"},
         timeout=15,
     )
     if r.status_code != 200:
         return set()
-    return {row["event_id"] for row in r.json() if row.get("event_id") is not None}
+    return {
+        (row["event_id"], row["horizon_days"])
+        for row in r.json()
+        if row.get("event_id") is not None and row.get("horizon_days") is not None
+    }
 
 
 def write_paper_trades(rows: list[dict]) -> int:
@@ -318,7 +330,7 @@ def write_paper_trades(rows: list[dict]) -> int:
     ?on_conflict=event_id,ticker,direction (the unique index on
     stock_event_paper_trades is still partial in practice — verified
     via direct POST 2026-05-21). Caller pre-filters via
-    fetch_already_traded_event_ids so the dedupe path is upstream,
+    fetch_already_traded_keys so the dedupe path is upstream,
     and the table's own unique constraint catches the residual race
     between concurrent runs. Concurrent-collision rows hit the constraint
     and the whole chunk would normally 409 — Prefer:resolution=ignore-
@@ -368,11 +380,13 @@ def main() -> int:
         tradeable_events = [e for e in events if (e.get("ticker") or "") in kinds]
         n_skipped = n_events - len(tradeable_events)
 
-        # Skip events already processed in a prior run (idempotency without ON CONFLICT)
-        already_traded = fetch_already_traded_event_ids([e["id"] for e in tradeable_events])
+        # Composite-key dedupe: fetched once up front, filtered per-row after
+        # build_paper_trades so partial prior writes (only some horizons
+        # landed) can heal on rerun. Per-event filtering was the old behavior
+        # and caused horizons 7/15/30 to never insert if h=1d alone landed.
+        already_traded = fetch_already_traded_keys([e["id"] for e in tradeable_events])
         if already_traded:
-            print(f"  skipping {len(already_traded)} event(s) already in paper trades")
-        tradeable_events = [e for e in tradeable_events if e["id"] not in already_traded]
+            print(f"  found {len(already_traded)} existing (event,horizon) pairs — will skip those")
         if n_skipped:
             print(f"  skipped {n_skipped} events on non-tradeable tickers (mutual funds, indices, INST_*)")
 
@@ -416,7 +430,15 @@ def main() -> int:
                 continue
             # 4 trades per event — one per horizon in HORIZONS
             rows.extend(build_paper_trades(e, kinds[t], close_row))
+
+        # Composite-key filter: drop only the (event,horizon) pairs already
+        # written, not the whole event. Missing horizons from a partial prior
+        # run will still flow through to write_paper_trades.
         n_built = len(rows)
+        rows = [r for r in rows if (r["event_id"], r["horizon_days"]) not in already_traded]
+        n_filtered_existing = n_built - len(rows)
+        if n_filtered_existing:
+            print(f"  filtered {n_filtered_existing} rows whose (event,horizon) already existed")
         n_written = write_paper_trades(rows)
 
         if stale_tickers:
