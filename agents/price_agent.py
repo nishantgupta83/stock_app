@@ -715,6 +715,7 @@ def reconcile_event_paper_trades() -> tuple[int, int, int]:
     rules_touched = {(t.get("rule_key") or t["event_type"]) for t in trades}
     for rk in rules_touched:
         recompute_rule_payoff(rk)
+        recompute_rule_brier_30d(rk)
 
     return n_closed, n_rules_updated, n_matured
 
@@ -768,6 +769,68 @@ def recompute_rule_payoff(rule_key: str) -> None:
         "mean_mfe_pct":               round(mean_mfe, 6) if mean_mfe is not None else None,
         "mean_mae_pct":               round(mean_mae, 6) if mean_mae is not None else None,
         "last_payoff_recomputed_at":  datetime.now(timezone.utc).isoformat(),
+    }
+    sb_upsert("stock_rule_calibration", [payload], on_conflict="rule_key")
+
+
+def compute_brier_30d(rule_accuracy: float, outcomes: list[bool]) -> float | None:
+    """Mean Brier score over the supplied outcome stream against a single
+    predicted_prob = rule_accuracy. Returns None when fewer than 5 outcomes.
+
+    Brier = mean((p - o)^2) for o ∈ {0,1}. Floor for any rule given its own
+    accuracy as the prediction is accuracy*(1 - accuracy); values materially
+    above the floor mean the rule's confidence claim is poorly calibrated
+    against its recent outcomes (e.g. rule claims 90% but recent realized
+    is 50%).
+    """
+    n = len(outcomes)
+    if n < 5:
+        return None
+    return sum((rule_accuracy - (1.0 if o else 0.0)) ** 2 for o in outcomes) / n
+
+
+def recompute_rule_brier_30d(rule_key: str) -> None:
+    """Compute Brier + rolling 30d accuracy from the rule's recent closed
+    trades. Persisted to stock_rule_calibration so the calibration UI can
+    surface calibration honesty (Brier) and drift (accuracy_30d vs lifetime
+    accuracy).
+
+    Cheap — one filtered query per rule. Predicted probability is the
+    rule's CURRENT lifetime accuracy (the same number the dashboard already
+    surfaces), so the Brier answers: "does the rule's headline accuracy
+    actually match its recent outcomes, or is it overclaiming?"
+    """
+    cutoff = (datetime.now(timezone.utc) - timedelta(days=30)).isoformat()
+    rows = sb_get("stock_event_paper_trades", {
+        "rule_key": f"eq.{rule_key}",
+        "status":   "eq.closed",
+        "exit_at":  f"gte.{cutoff}",
+        "select":   "correct",
+        "limit":    "1000",
+    })
+    n = len(rows)
+    if n == 0:
+        return
+
+    outcomes = [bool(r.get("correct")) for r in rows]
+    wins = sum(1 for o in outcomes if o)
+    accuracy_30d = wins / n if n else None
+
+    # Predicted prob = rule's lifetime accuracy at recompute time.
+    cur = sb_get("stock_rule_calibration", {
+        "rule_key": f"eq.{rule_key}",
+        "select":   "accuracy",
+        "limit":    "1",
+    })
+    rule_accuracy = float((cur[0] if cur else {}).get("accuracy") or 0.5)
+    brier = compute_brier_30d(rule_accuracy, outcomes)
+
+    payload = {
+        "rule_key":                 rule_key,
+        "brier_30d":                round(brier, 6) if brier is not None else None,
+        "accuracy_30d":             round(accuracy_30d, 6) if accuracy_30d is not None else None,
+        "n_closed_30d":             n,
+        "last_brier_recomputed_at": datetime.now(timezone.utc).isoformat(),
     }
     sb_upsert("stock_rule_calibration", [payload], on_conflict="rule_key")
 

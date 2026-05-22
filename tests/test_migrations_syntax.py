@@ -17,6 +17,7 @@ SQL_DIR = Path(__file__).resolve().parents[1] / "sql"
 NEW_MIGRATIONS = [
     "0028_trade_setups_target_source.sql",
     "0029_signals_direction_check.sql",
+    "0030_brier_calibration.sql",
 ]
 
 
@@ -64,6 +65,14 @@ def test_0029_uses_idempotent_do_block():
     text = (SQL_DIR / "0029_signals_direction_check.sql").read_text()
     assert "do $$" in text or "DO $$" in text
     assert "information_schema.table_constraints" in text
+
+
+def test_0030_adds_brier_columns():
+    text = (SQL_DIR / "0030_brier_calibration.sql").read_text()
+    assert "stock_rule_calibration" in text
+    for col in ("brier_30d", "accuracy_30d", "n_closed_30d", "last_brier_recomputed_at"):
+        assert re.search(rf"add column if not exists {col}", text, re.IGNORECASE), \
+            f"0030 missing column add for {col}"
 
 
 def test_all_migrations_have_unique_numeric_prefix():

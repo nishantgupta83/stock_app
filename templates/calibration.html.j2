@@ -59,7 +59,16 @@
 {% endif %}
 
 <h3>Per-rule accuracy</h3>
-<p style="color:var(--muted);font-size:12px">A rule is one event_type[:event_subtype] combination. Sorted by absolute mean return × log(n+1), so a strong rule with many samples ranks above a marginal rule with few. Sample size column shaded green when n ≥ {{ maturity_min_n }}.</p>
+<p style="color:var(--muted);font-size:12px">A rule is one event_type[:event_subtype] combination. Sorted by absolute mean return × log(n+1), so a strong rule with many samples ranks above a marginal rule with few. Sample size column shaded green when n ≥ {{ maturity_min_n }}. <strong>Brier</strong> measures whether the rule's accuracy claim is well-calibrated against the last 30 days of outcomes (lower is better; floor is acc×(1−acc)). <strong>Drift</strong> is rolling-30d accuracy minus lifetime accuracy in pts — large negative drift means the rule is decaying.</p>
+
+{% set drifting = rule_rows | selectattr("drift_pts", "ne", none) | rejectattr("drift_pts", "ge", -15) | list %}
+{% if drifting | length > 0 %}
+<div class="note" style="background:rgba(255,176,80,0.06);border-left:3px solid #ffb050;margin-bottom:12px">
+  <strong>{{ drifting | length }} rule{{ "" if drifting|length == 1 else "s" }} showing drift ≥ 15 pts:</strong>
+  rolling 30d accuracy materially below lifetime — possible regime break or sample-size artifact. See per-rule table below.
+</div>
+{% endif %}
+
 <table>
   <thead>
     <tr>
@@ -67,12 +76,16 @@
       <th class="num">N</th>
       <th class="num">Accuracy</th>
       <th class="num">Mean realized</th>
+      <th class="num" title="Brier score over last 30d closed trades against rule's claimed accuracy. Lower is better; floor is acc×(1−acc).">Brier 30d</th>
+      <th class="num" title="Rolling 30-day accuracy minus lifetime accuracy. Large gap = drift / regime break.">Drift</th>
       <th>Status</th>
       <th>Last updated</th>
     </tr>
   </thead>
   <tbody>
     {% for r in rule_rows %}
+    {% set brier_floor = (r.accuracy or 0) * (1 - (r.accuracy or 0)) %}
+    {% set brier_bad = r.brier_30d is not none and (r.brier_30d - brier_floor) > 0.08 %}
     <tr>
       <td><code>{{ r.rule_key }}</code></td>
       <td class="num" style="background:{% if r.n_observations >= maturity_min_n %}#163b2c{% else %}transparent{% endif %};color:{% if r.n_observations >= maturity_min_n %}#7adfb0{% else %}var(--muted){% endif %}">
@@ -85,6 +98,12 @@
       <td class="num" style="color:{% if r.mean_realized_pct and r.mean_realized_pct > 0 %}var(--ok){% elif r.mean_realized_pct and r.mean_realized_pct < 0 %}var(--bad){% else %}var(--muted){% endif %}">
         {% if r.mean_realized_pct is not none %}{{ "%+.2f%%"|format(r.mean_realized_pct * 100) }}{% else %}—{% endif %}
       </td>
+      <td class="num" style="color:{% if r.brier_30d is none %}var(--muted){% elif brier_bad %}var(--bad){% else %}var(--ok){% endif %}" title="floor: {{ '%.3f' | format(brier_floor) }} · n_closed_30d: {{ r.n_closed_30d or 0 }}">
+        {% if r.brier_30d is none %}—{% else %}{{ "%.3f"|format(r.brier_30d) }}{% endif %}
+      </td>
+      <td class="num" style="color:{% if r.drift_pts is none %}var(--muted){% elif r.drift_pts <= -15 %}var(--bad){% elif r.drift_pts >= 15 %}var(--ok){% else %}var(--muted){% endif %}">
+        {% if r.drift_pts is none %}—{% else %}{{ "%+.0f"|format(r.drift_pts) }} pts{% endif %}
+      </td>
       <td>
         {% if r.is_mature %}<span class="tag ok">MATURE · BUY/SELL allowed</span>
         {% elif r.n_observations < 10 %}<span class="tag" style="color:var(--muted)">needs data (n&lt;10)</span>
@@ -93,7 +112,7 @@
       <td style="font-size:12px;color:var(--muted)">{{ (r.last_updated or "")[:10] }}</td>
     </tr>
     {% else %}
-    <tr><td colspan="6" class="empty">No calibration data yet. event_paper_agent runs hourly; price_agent reconciles weekday EOD. First closed trade should appear within 1 trading day.</td></tr>
+    <tr><td colspan="8" class="empty">No calibration data yet. event_paper_agent runs hourly; price_agent reconciles weekday EOD. First closed trade should appear within 1 trading day.</td></tr>
     {% endfor %}
   </tbody>
 </table>

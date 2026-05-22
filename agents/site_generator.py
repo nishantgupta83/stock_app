@@ -373,17 +373,39 @@ def _fetch_archive_index() -> dict:
 
 
 def fetch_rule_calibration() -> list[dict]:
-    """Per-event-type calibration rows; used by the Calibration dashboard tab."""
+    """Per-event-type calibration rows; used by the Calibration dashboard tab.
+
+    Selects brier_30d / accuracy_30d / n_closed_30d (added in migration 0030)
+    so the template can surface calibration honesty (Brier) and drift
+    (rolling-30d vs lifetime accuracy gap). Falls back gracefully if the
+    columns aren't present yet — sb_get logs an error and returns []."""
     rows = sb_get("stock_rule_calibration", {
-        "select": "rule_key,n_observations,n_correct,accuracy,mean_realized_pct,is_mature,matured_at,last_updated",
+        "select": "rule_key,n_observations,n_correct,accuracy,mean_realized_pct,"
+                  "is_mature,matured_at,last_updated,"
+                  "brier_30d,accuracy_30d,n_closed_30d,last_brier_recomputed_at",
         "order":  "n_observations.desc",
         "limit":  "200",
     })
+    if not rows:
+        # Columns may not exist yet (pre-migration). Retry with the legacy select.
+        rows = sb_get("stock_rule_calibration", {
+            "select": "rule_key,n_observations,n_correct,accuracy,mean_realized_pct,is_mature,matured_at,last_updated",
+            "order":  "n_observations.desc",
+            "limit":  "200",
+        })
     # Attach n_archived from Hostinger archive index so the template can show tier split.
     arc_cal = _fetch_archive_index().get("rule_calibration", {})
     for r in rows:
         arc = arc_cal.get(r.get("rule_key") or "", {})
         r["n_archived"] = int(arc.get("n_observations") or 0)
+        # Drift signal: rolling-30d minus lifetime accuracy, in percentage points.
+        # None when the rolling window has insufficient data (n<5).
+        a30 = r.get("accuracy_30d")
+        a_life = r.get("accuracy")
+        if a30 is not None and a_life is not None:
+            r["drift_pts"] = round((float(a30) - float(a_life)) * 100, 1)
+        else:
+            r["drift_pts"] = None
     # Sort by signal-strength × log(sample): strong-effect rules with N rank first
     import math
     def rank(r: dict) -> float:
