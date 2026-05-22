@@ -40,11 +40,14 @@
 
 {% if weekly.performance.equity_points %}
 <div class="note" style="margin-top:12px">
-  <strong>Equity curve (additive %):</strong>
-  start 0% → end {{ "%+.2f%%"|format(weekly.performance.equity_points[-1].v) }}
-  over {{ weekly.performance.equity_points|length }} closed trades.
+  <strong>Running win-rate:</strong>
+  ending at {{ "%.1f%%"|format(weekly.performance.equity_points[-1].v) }}
+  after {{ weekly.performance.equity_points|length }} closed trades — each point is
+  cumulative wins ÷ cumulative closed up to that exit.
 </div>
-<canvas id="equity-chart" height="80" style="margin:8px 0 16px"></canvas>
+<div style="position:relative;height:180px;margin:8px 0 16px">
+  <canvas id="equity-chart"></canvas>
+</div>
 {% else %}
 <div class="empty">No closed trades in this window.</div>
 {% endif %}
@@ -180,7 +183,7 @@
     data: {
       labels: pts.map(p => p.t),
       datasets: [{
-        label: 'cumulative % return',
+        label: 'running win-rate %',
         data: pts.map(p => p.v),
         borderColor: '#4fb3a9',
         backgroundColor: 'rgba(79,179,169,0.10)',
@@ -191,7 +194,7 @@
       responsive: true, animation: false, maintainAspectRatio: false,
       scales: {
         x: { ticks: { color: '#7a8694', maxTicksLimit: 8 }, grid: { color: 'rgba(122,134,148,0.08)' } },
-        y: { ticks: { color: '#7a8694', callback: v => v + '%' }, grid: { color: 'rgba(122,134,148,0.08)' } },
+        y: { min: 0, max: 100, ticks: { color: '#7a8694', callback: v => v + '%' }, grid: { color: 'rgba(122,134,148,0.08)' } },
       },
       plugins: { legend: { display: false } },
     }

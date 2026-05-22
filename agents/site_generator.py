@@ -513,13 +513,19 @@ def derive_weekly_metrics(weekly: dict, cal_rows: list[dict]) -> dict:
     best_rule  = rule_summary[0]  if rule_summary else None
     worst_rule = rule_summary[-1] if rule_summary else None
 
-    # Equity curve — running sum of realized_return ordered by exit time
+    # Running win-rate curve — % wins of all closed trades up to each exit time.
+    # Bounded [0,100] so the chart Y axis stays sane regardless of trade count.
+    # Cumulative sum of realized_return was the obvious first choice but
+    # unbounded on uniform-sized trades (794 trades * ~2% avg = +1700% display,
+    # misread as "the bot made 1700% this week"). Running win-rate answers
+    # the actually-useful question: is the bot trending better or worse?
     closed_sorted = sorted(closed, key=lambda t: t.get("exit_at") or "")
     equity_points = []
-    running = 0.0
-    for t in closed_sorted:
-        running += float(t.get("realized_return") or 0)
-        equity_points.append({"t": (t.get("exit_at") or "")[:10], "v": round(running * 100, 3)})
+    cum_wins = 0
+    for i, t in enumerate(closed_sorted, start=1):
+        if t.get("correct"):
+            cum_wins += 1
+        equity_points.append({"t": (t.get("exit_at") or "")[:10], "v": round(cum_wins / i * 100, 1)})
 
     perf = {
         "n_opened":         len(opened),
