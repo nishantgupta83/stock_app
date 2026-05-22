@@ -45,29 +45,32 @@ SB_ERRORS: list[str] = []
 # expected_minutes = wall clock between consecutive successful runs;
 # anything past 2x that is considered stale. Set to None for manual-only.
 AGENT_INVENTORY: dict[str, dict] = {
-    "filing":              {"job": "filing_agent",              "expected_minutes": 360},   # every 6h
-    "news":                {"job": "news_agent",                "expected_minutes": 60},
-    "truth_social":        {"job": "truth_social_agent",        "expected_minutes": 60},
-    "thesis":              {"job": "thesis_agent",              "expected_minutes": 60},
-    "earnings":            {"job": "earnings_agent",            "expected_minutes": 10080},  # weekly
-    "price":               {"job": "price_agent",               "expected_minutes": 1440},   # daily EOD
-    "paper_trade":         {"job": "paper_trade_agent",         "expected_minutes": 60},
+    "filing":              {"job": "filing_agent",              "expected_minutes": 5},      # */5 * * * *
+    "news":                {"job": "news_agent",                "expected_minutes": 5},      # */5
+    "truth_social":        {"job": "truth_social_agent",        "expected_minutes": 5},      # */5
+    "thesis":              {"job": "thesis_agent",              "expected_minutes": 5},      # */5
+    "earnings":            {"job": "earnings_agent",            "expected_minutes": 10080},  # weekly Sun
+    "price":               {"job": "price_agent",               "expected_minutes": 1440},   # weekday EOD
+    "paper_trade":         {"job": "paper_trade_agent",         "expected_minutes": 15},     # */15
     "backtester":          {"job": "backtester",                "expected_minutes": None},   # manual
     "source_review":       {"job": "source_review_agent",       "expected_minutes": 43200},  # monthly
-    "telegram_dispatcher": {"job": "telegram_dispatcher",       "expected_minutes": 60},
+    "telegram_dispatcher": {"job": "telegram_dispatcher",       "expected_minutes": 60},     # workflow_run-driven
     "flows":               {"job": "flows_agent",               "expected_minutes": 10080},  # weekly Sun
-    "site_generator":      {"job": "site_generator",            "expected_minutes": 60},
-    "event_paper":         {"job": "event_paper_agent",         "expected_minutes": 90},
-    "market_scanner":      {"job": "market_scanner_agent",      "expected_minutes": 1440},   # daily EOD
-    "crypto_macro":        {"job": "crypto_macro_agent",        "expected_minutes": 1440},   # daily EOD
+    "site_generator":      {"job": "site_generator",            "expected_minutes": 15},     # */15
+    "event_paper":         {"job": "event_paper_agent",         "expected_minutes": 60},     # `5 * * * *` (top of every hour)
+    "market_scanner":      {"job": "market_scanner_agent",      "expected_minutes": 1440},   # weekday EOD
+    "crypto_macro":        {"job": "crypto_macro_agent",        "expected_minutes": 1440},   # weekday EOD
     "archive":             {"job": "archive_agent",             "expected_minutes": 10080},  # weekly Sun
-    "intraday_alert":      {"job": "intraday_alert_agent",      "expected_minutes": 15},     # market hours
-    "macro_rates":         {"job": "macro_rates_agent",         "expected_minutes": 1440},   # daily
-    "activist_insider":    {"job": "activist_insider_agent",    "expected_minutes": 120},
-    "defense":             {"job": "defense_agent",             "expected_minutes": 1440},   # daily
-    "biotech":             {"job": "biotech_agent",             "expected_minutes": 1440},   # daily
-    "energy_transition":   {"job": "energy_transition_agent",   "expected_minutes": 1440},   # daily
-    "consumer_health":     {"job": "consumer_health_agent",     "expected_minutes": 1440},   # daily
+    "intraday_alert":      {"job": "intraday_alert_agent",      "expected_minutes": 15},     # */15 during market hours
+    "macro_rates":         {"job": "macro_rates_agent",         "expected_minutes": 1440},   # daily weekday
+    "activist_insider":    {"job": "activist_insider_agent",    "expected_minutes": 120},    # every 2h
+    "defense":             {"job": "defense_agent",             "expected_minutes": 1440},   # daily weekday
+    "biotech":             {"job": "biotech_agent",             "expected_minutes": 1440},   # daily weekday
+    "energy_transition":   {"job": "energy_transition_agent",   "expected_minutes": 1440},   # daily weekday
+    "consumer_health":     {"job": "consumer_health_agent",     "expected_minutes": 1440},   # daily weekday
+    "audit":               {"job": "audit_agent",               "expected_minutes": 1440},   # daily 04:00 UTC
+    "trade_setup":         {"job": "trade_setup_agent",         "expected_minutes": 30},     # */30
+    "risk":                {"job": "risk_agent",                "expected_minutes": 30},     # */30
 }
 KNOWN_AGENTS = list(AGENT_INVENTORY.keys()) + [
     f"workflow_{v['job']}" for v in AGENT_INVENTORY.values()
