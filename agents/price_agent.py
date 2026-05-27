@@ -417,11 +417,21 @@ def job_run_finish(run_id: int | None, status: str, rows_in: int, rows_out: int,
 # Runs at the end of each EOD pass after the signal-level reconcile.
 # ============================================================
 
-# Maturity gate: a rule (event_type[:subtype]) is "mature" when paper trades
-# tied to it have ≥ 90% accuracy across at least 30 closed observations.
-# Mature rules unlock BUY/SELL action vocabulary in thesis_agent.
-MATURITY_ACCURACY = 0.90
-MATURITY_MIN_N    = 30
+# Maturity gates — v1 (2026-05-26 stage-gate plan).
+# A rule promotes through three tiers (teen → young_adult → adult) based on
+# accuracy + payoff sanity. Only the adult tier (canonical is_mature flag)
+# unlocks BUY/SELL vocabulary in thesis_agent; the lower tiers control
+# sizing multipliers in risk_agent and eligibility in the realistic-paper
+# loop (sql/0032). These constants MUST mirror
+# scripts/learning_snapshot.py:TIER_GATES.
+MATURITY_ACCURACY     = 0.90    # adult acc threshold (legacy const name retained)
+MATURITY_MIN_N        = 30      # all tiers require ≥ this many closed observations
+TIER_GATE_TEEN_ACC    = 0.70
+TIER_GATE_YOUNG_ACC   = 0.80
+TIER_GATE_ADULT_ACC   = MATURITY_ACCURACY   # alias for clarity inside flag math
+TIER_GATE_TEEN_MR     = 0.0     # teen also requires mean_realized_pct > 0
+TIER_GATE_YOUNG_PF    = 1.2     # young_adult also requires profit_factor > 1.2
+TIER_GATE_ADULT_PF    = 1.5     # adult also requires profit_factor > 1.5
 
 
 def fetch_open_paper_trades_to_close() -> list[dict]:
@@ -495,9 +505,22 @@ def fetch_calibration_map() -> dict[str, dict]:
 
 
 def upsert_calibration(rule_key: str, current: dict | None,
-                       new_correct: bool, new_return: float) -> bool:
-    """Increment counters for one rule_key. Returns True if the rule just
-    crossed the maturity threshold on this update."""
+                       new_correct: bool, new_return: float) -> dict:
+    """Increment counters for one rule_key and re-evaluate tier flags.
+
+    v1 promotion gates (2026-05-26): accuracy + payoff sanity. Returns a dict
+    of just_matured signals — `just_matured` is the legacy 90%-tier alias
+    callers depended on, and `just_matured_70/80/90` are the per-tier flags.
+
+    Profit_factor lag: profit_factor is recomputed by recompute_rule_payoff()
+    AFTER this function returns (the caller iterates trades → upsert per
+    trade → recompute_rule_payoff per rule). Inside this function we read
+    profit_factor from `current` (the previous batch's value). For solo-dev
+    paper learning this 1-batch lag is acceptable — tier promotions catch
+    up in the next EOD batch once PF is fresh. mean_realized_pct, accuracy,
+    and n_observations are all freshly computed here so the TEEN gate has
+    no lag.
+    """
     cur = current or {}
     n_obs   = int(cur.get("n_observations") or 0) + 1
     n_corr  = int(cur.get("n_correct") or 0) + (1 if new_correct else 0)
@@ -505,17 +528,57 @@ def upsert_calibration(rule_key: str, current: dict | None,
     prev_mean = float(cur.get("mean_realized_pct") or 0)
     mean_new  = prev_mean + (new_return - prev_mean) / n_obs
     accuracy  = n_corr / n_obs if n_obs > 0 else 0.5
-    was_mature = bool(cur.get("is_mature"))
-    is_mature  = (accuracy >= MATURITY_ACCURACY) and (n_obs >= MATURITY_MIN_N)
-    just_matured = is_mature and not was_mature
 
-    # matured_at self-heal: if the row is mature but matured_at is NULL
-    # (historical rows that crossed the threshold before this column existed,
-    # or any future regression in this code path), stamp it on this update.
-    # Without this we'd silently keep `is_mature=true, matured_at=null` forever
-    # because the `cur.get("matured_at")` preserve-branch hides the gap.
-    prev_matured_at = cur.get("matured_at")
-    should_stamp = just_matured or (is_mature and not prev_matured_at)
+    # Payoff metrics — see "profit_factor lag" in docstring.
+    prev_pf = cur.get("profit_factor")
+    pf_for_gate = float(prev_pf) if prev_pf is not None else None
+
+    # v1 tier flag computations
+    n_ok = n_obs >= MATURITY_MIN_N
+    is_mature_70 = bool(
+        n_ok and accuracy >= TIER_GATE_TEEN_ACC and mean_new > TIER_GATE_TEEN_MR
+    )
+    is_mature_80 = bool(
+        n_ok and accuracy >= TIER_GATE_YOUNG_ACC
+            and pf_for_gate is not None and pf_for_gate > TIER_GATE_YOUNG_PF
+    )
+    is_mature = bool(
+        n_ok and accuracy >= TIER_GATE_ADULT_ACC
+            and pf_for_gate is not None and pf_for_gate > TIER_GATE_ADULT_PF
+    )
+
+    was_70 = bool(cur.get("is_mature_70"))
+    was_80 = bool(cur.get("is_mature_80"))
+    was_90 = bool(cur.get("is_mature"))
+    just_matured_70 = is_mature_70 and not was_70
+    just_matured_80 = is_mature_80 and not was_80
+    just_matured_90 = is_mature    and not was_90
+
+    # Self-heal matured_*_at timestamps. If a row is flagged true but the
+    # timestamp is NULL (historical rows from before sql/0031, or a future
+    # regression in this code path), stamp it on this update.
+    now_iso = datetime.now(timezone.utc).isoformat()
+
+    def _heal(flag_new: bool, just_crossed: bool, prev_stamp) -> str | None:
+        if just_crossed:
+            return now_iso
+        if flag_new and not prev_stamp:
+            return now_iso
+        return prev_stamp
+
+    matured_at_new    = _heal(is_mature,    just_matured_90, cur.get("matured_at"))
+    matured_70_at_new = _heal(is_mature_70, just_matured_70, cur.get("matured_70_at"))
+    matured_80_at_new = _heal(is_mature_80, just_matured_80, cur.get("matured_80_at"))
+
+    # Derive tier from flags — highest passed gate wins.
+    if is_mature:
+        tier = "adult"
+    elif is_mature_80:
+        tier = "young_adult"
+    elif is_mature_70:
+        tier = "teen"
+    else:
+        tier = "child"
 
     payload = {
         "rule_key":          rule_key,
@@ -524,11 +587,21 @@ def upsert_calibration(rule_key: str, current: dict | None,
         "accuracy":          round(accuracy, 6),
         "mean_realized_pct": round(mean_new, 6),
         "is_mature":         is_mature,
-        "matured_at":        datetime.now(timezone.utc).isoformat() if should_stamp else prev_matured_at,
-        "last_updated":      datetime.now(timezone.utc).isoformat(),
+        "is_mature_70":      is_mature_70,
+        "is_mature_80":      is_mature_80,
+        "matured_at":        matured_at_new,
+        "matured_70_at":     matured_70_at_new,
+        "matured_80_at":     matured_80_at_new,
+        "tier":              tier,
+        "last_updated":      now_iso,
     }
     sb_upsert("stock_rule_calibration", [payload], on_conflict="rule_key")
-    return just_matured
+    return {
+        "just_matured":     just_matured_90,   # LEGACY alias (90% tier)
+        "just_matured_70":  just_matured_70,
+        "just_matured_80":  just_matured_80,
+        "just_matured_90":  just_matured_90,
+    }
 
 
 def compute_paper_outcome(trade: dict, bars: dict[date, dict[str, float]]) -> dict | None:
@@ -692,23 +765,35 @@ def reconcile_event_paper_trades() -> tuple[int, int, int]:
 
         # 2. Update per-rule calibration
         rk = t.get("rule_key") or t["event_type"]
-        just_mature = upsert_calibration(
+        result = upsert_calibration(
             rk, cal.get(rk),
             new_correct=outcome["correct"],
             new_return=outcome["realized_return"],
         )
+        just_matured_90 = result["just_matured_90"]
+        just_matured_80 = result["just_matured_80"]
+        just_matured_70 = result["just_matured_70"]
         # Refresh in-memory cache so subsequent trades for the same rule see updated counts
         cal[rk] = {
             **(cal.get(rk) or {}),
             "n_observations": int((cal.get(rk) or {}).get("n_observations") or 0) + 1,
             "n_correct":      int((cal.get(rk) or {}).get("n_correct") or 0) + (1 if outcome["correct"] else 0),
-            "is_mature":      just_mature or (cal.get(rk) or {}).get("is_mature"),
+            "is_mature":      just_matured_90 or (cal.get(rk) or {}).get("is_mature"),
+            "is_mature_70":   just_matured_70 or (cal.get(rk) or {}).get("is_mature_70"),
+            "is_mature_80":   just_matured_80 or (cal.get(rk) or {}).get("is_mature_80"),
         }
         n_rules_updated += 1
-        if just_mature:
+        if just_matured_90:
             n_matured += 1
-            print(f"  🎓 rule '{rk}' matured: ≥{MATURITY_ACCURACY*100:.0f}% accuracy "
-                  f"with n≥{MATURITY_MIN_N} — BUY/SELL unlocked")
+            print(f"  🎓 rule '{rk}' matured to ADULT: acc≥{TIER_GATE_ADULT_ACC*100:.0f}% "
+                  f"with n≥{MATURITY_MIN_N} AND profit_factor>{TIER_GATE_ADULT_PF} — "
+                  f"BUY/SELL unlocked")
+        if just_matured_80:
+            print(f"  📈 rule '{rk}' promoted to YOUNG_ADULT: acc≥{TIER_GATE_YOUNG_ACC*100:.0f}% "
+                  f"with n≥{MATURITY_MIN_N} AND profit_factor>{TIER_GATE_YOUNG_PF}")
+        if just_matured_70:
+            print(f"  📊 rule '{rk}' promoted to TEEN: acc≥{TIER_GATE_TEEN_ACC*100:.0f}% "
+                  f"with n≥{MATURITY_MIN_N} AND mean_realized_pct>{TIER_GATE_TEEN_MR}")
 
     # 3. Recompute per-rule payoff aggregates for every rule that saw an
     # update this run. Cheap: pulls closed trades for the rule and reduces.

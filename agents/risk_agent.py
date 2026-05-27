@@ -64,9 +64,17 @@ STOP_PCT_MIN           = 0.005          # 0.5% — tighter is execution noise
 STOP_PCT_MAX           = 0.20           # 20% — wider isn't a stop, it's a wish
 
 MATURITY_MULTIPLIER = {
-    "production": 1.00,    # production-mature rule (acc ≥ 0.90, n ≥ 30)
-    "training":   0.50,    # training-mature rule (acc ≥ 0.70, n ≥ 30)
-    "immature":   0.25,    # everything else
+    # v1 canonical tier names (2026-05-26 stage-gate plan).
+    # Stricter gates than the legacy ones — see scripts/learning_snapshot.py:TIER_GATES.
+    "adult":        1.00,    # acc ≥ 0.90, n ≥ 30, PF > 1.5
+    "young_adult":  0.75,    # acc ≥ 0.80, n ≥ 30, PF > 1.2
+    "teen":         0.50,    # acc ≥ 0.70, n ≥ 30, mean_realized > 0
+    "child":        0.25,    # everything else
+    # Legacy aliases — preserved for one release in case price_agent
+    # and risk_agent ever deploy out-of-sync. Remove after a green week.
+    "production":   1.00,
+    "training":     0.50,
+    "immature":     0.25,
 }
 
 SETUP_AGE_FLOOR_DAYS = 14   # sanity belt on fetch_recent_setups (B2)
@@ -157,13 +165,19 @@ def fetch_existing_decision_setup_ids(setup_ids: list[int]) -> set[int]:
 
 
 def fetch_calibration_for_rule_keys(rule_keys: list[str]) -> dict[str, dict]:
-    """Lookup is_mature + payoff fields needed for maturity-multiplier."""
+    """Lookup tier + payoff fields needed for maturity-multiplier.
+
+    Selects the stored tier column from sql/0031 plus the legacy is_mature
+    flag (which still gates BUY/SELL vocabulary in thesis_agent) and the
+    fields needed for live-fallback tier computation if tier is NULL.
+    """
     if not rule_keys:
         return {}
     in_list = ",".join(f'"{k}"' for k in rule_keys)
     rows = sb_get("stock_rule_calibration", {
         "rule_key": f"in.({in_list})",
-        "select":   "rule_key,is_mature,accuracy,n_observations,profit_factor",
+        "select":   "rule_key,is_mature,is_mature_70,is_mature_80,tier,"
+                    "accuracy,n_observations,profit_factor,mean_realized_pct",
     })
     return {r["rule_key"]: r for r in rows}
 
@@ -171,19 +185,37 @@ def fetch_calibration_for_rule_keys(rule_keys: list[str]) -> dict[str, dict]:
 def maturity_tier(rule_cal: dict | None) -> str:
     """Map rule calibration → tier label.
 
-    Production: is_mature=True (acc ≥ 0.90 AND n ≥ 30)
-    Training:   accuracy ≥ 0.70 AND n_observations ≥ 30
-    Immature:   everything else (including missing calibration)
+    Prefers the stored `tier` column (populated by price_agent.upsert_calibration
+    post-Phase 3, plus the backfill from sql/0031). Falls back to live
+    computation using v1 gates for any row where tier is NULL — that's the
+    safety net for the brief window after the migration applies but before
+    the first EOD reconcile writes a tier value, and for any future schema
+    that pushes a row without the tier column.
+
+    v1 gate definitions (must match scripts/learning_snapshot.py:TIER_GATES):
+      adult       : n ≥ 30  AND  acc ≥ 0.90  AND  profit_factor > 1.5
+      young_adult : n ≥ 30  AND  acc ≥ 0.80  AND  profit_factor > 1.2
+      teen        : n ≥ 30  AND  acc ≥ 0.70  AND  mean_realized_pct > 0
+      child       : everything else
     """
     if not rule_cal:
-        return "immature"
-    if rule_cal.get("is_mature"):
-        return "production"
+        return "child"
+    stored = rule_cal.get("tier")
+    if stored in ("adult", "young_adult", "teen", "child"):
+        return stored
     acc = float(rule_cal.get("accuracy") or 0)
     n = int(rule_cal.get("n_observations") or 0)
-    if acc >= 0.70 and n >= 30:
-        return "training"
-    return "immature"
+    pf_raw = rule_cal.get("profit_factor")
+    mr_raw = rule_cal.get("mean_realized_pct")
+    pf = float(pf_raw) if pf_raw is not None else None
+    mr = float(mr_raw) if mr_raw is not None else None
+    if n >= 30 and acc >= 0.90 and pf is not None and pf > 1.5:
+        return "adult"
+    if n >= 30 and acc >= 0.80 and pf is not None and pf > 1.2:
+        return "young_adult"
+    if n >= 30 and acc >= 0.70 and mr is not None and mr > 0:
+        return "teen"
+    return "child"
 
 
 def compute_equity_curve_drawdown(closed_trades: list[dict],

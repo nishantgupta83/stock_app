@@ -98,6 +98,13 @@ ELIGIBLE_TYPES = {
 
 MATURITY_ACCURACY = 0.90
 MATURITY_MIN_N    = 30
+# v1 gate constants — must match agents/price_agent.py.
+# Promotions also require payoff sanity, not accuracy alone.
+TIER_GATE_TEEN_ACC    = 0.70
+TIER_GATE_YOUNG_ACC   = 0.80
+TIER_GATE_TEEN_MR     = 0.0     # mean_realized_pct > this for teen
+TIER_GATE_YOUNG_PF    = 1.2     # profit_factor > this for young_adult
+TIER_GATE_ADULT_PF    = 1.5     # profit_factor > this for adult
 
 SUPABASE_URL = os.environ["SUPABASE_URL"].rstrip("/")
 SUPABASE_KEY = os.environ["SUPABASE_SERVICE_KEY"]
@@ -301,7 +308,6 @@ def recompute_calibration(rule_keys: set[str]) -> int:
         mean = sum(returns) / n if n else 0
         median = sorted(returns)[n // 2] if n else 0
         accuracy = n_correct / n if n else 0
-        is_mature = accuracy >= MATURITY_ACCURACY and n >= MATURITY_MIN_N
 
         mfe_vals = [float(x["mfe_pct"]) for x in rows if x.get("mfe_pct") is not None]
         mae_vals = [float(x["mae_pct"]) for x in rows if x.get("mae_pct") is not None]
@@ -309,17 +315,43 @@ def recompute_calibration(rule_keys: set[str]) -> int:
         stop_hit_rate   = sum(1 for x in rows if x.get("stop_hit")) / n
         profit_factor = (sum(wins) / abs(sum(losses))) if sum(losses) < 0 else None
 
-        # Preserve existing matured_at if already set (self-heal otherwise)
+        # v1 tier gates — must match agents/price_agent.py.upsert_calibration().
+        # Backfill computes profit_factor on this same pass so there's no
+        # PF-lag issue here; all metrics are fresh for the gate evaluation.
+        n_ok = n >= MATURITY_MIN_N
+        is_mature_70 = bool(n_ok and accuracy >= TIER_GATE_TEEN_ACC and mean > TIER_GATE_TEEN_MR)
+        is_mature_80 = bool(n_ok and accuracy >= TIER_GATE_YOUNG_ACC
+                              and profit_factor is not None and profit_factor > TIER_GATE_YOUNG_PF)
+        is_mature    = bool(n_ok and accuracy >= MATURITY_ACCURACY
+                              and profit_factor is not None and profit_factor > TIER_GATE_ADULT_PF)
+        if is_mature:
+            tier = "adult"
+        elif is_mature_80:
+            tier = "young_adult"
+        elif is_mature_70:
+            tier = "teen"
+        else:
+            tier = "child"
+
+        # Preserve existing matured_*_at timestamps (self-heal otherwise)
         existing = requests.get(
             f"{SUPABASE_URL}/rest/v1/stock_rule_calibration"
-            f"?rule_key=eq.{rk}&select=matured_at",
+            f"?rule_key=eq.{rk}&select=matured_at,matured_70_at,matured_80_at",
             headers=HEADERS_SB, timeout=10,
         )
-        prev_matured = None
+        prev_matured = prev_matured_70 = prev_matured_80 = None
         if existing.status_code == 200 and existing.json():
-            prev_matured = existing.json()[0].get("matured_at")
+            row = existing.json()[0]
+            prev_matured    = row.get("matured_at")
+            prev_matured_70 = row.get("matured_70_at")
+            prev_matured_80 = row.get("matured_80_at")
+        now_iso = datetime.now(timezone.utc).isoformat()
         if is_mature and not prev_matured:
-            prev_matured = datetime.now(timezone.utc).isoformat()
+            prev_matured = now_iso
+        if is_mature_70 and not prev_matured_70:
+            prev_matured_70 = now_iso
+        if is_mature_80 and not prev_matured_80:
+            prev_matured_80 = now_iso
 
         payload = {
             "rule_key":           rk,
@@ -329,7 +361,12 @@ def recompute_calibration(rule_keys: set[str]) -> int:
             "mean_realized_pct":  round(mean, 6),
             "median_return_pct":  round(median, 6),
             "is_mature":          is_mature,
+            "is_mature_70":       is_mature_70,
+            "is_mature_80":       is_mature_80,
             "matured_at":         prev_matured,
+            "matured_70_at":      prev_matured_70,
+            "matured_80_at":      prev_matured_80,
+            "tier":               tier,
             "avg_win_pct":        round(sum(wins)/len(wins), 6) if wins else None,
             "avg_loss_pct":       round(sum(losses)/len(losses), 6) if losses else None,
             "profit_factor":      round(profit_factor, 4) if profit_factor is not None else None,
@@ -337,8 +374,8 @@ def recompute_calibration(rule_keys: set[str]) -> int:
             "stop_hit_rate":      round(stop_hit_rate, 4),
             "mean_mfe_pct":       round(sum(mfe_vals)/len(mfe_vals), 6) if mfe_vals else None,
             "mean_mae_pct":       round(sum(mae_vals)/len(mae_vals), 6) if mae_vals else None,
-            "last_updated":             datetime.now(timezone.utc).isoformat(),
-            "last_payoff_recomputed_at": datetime.now(timezone.utc).isoformat(),
+            "last_updated":             now_iso,
+            "last_payoff_recomputed_at": now_iso,
         }
         u = requests.post(
             f"{SUPABASE_URL}/rest/v1/stock_rule_calibration?on_conflict=rule_key",
@@ -347,8 +384,8 @@ def recompute_calibration(rule_keys: set[str]) -> int:
         )
         if u.status_code in (200, 201, 204):
             updated += 1
-            mark = "🎓" if is_mature else "  "
-            print(f"  {mark} {rk:<55} n={n:>4} acc={accuracy:.3f}  pf={payload['profit_factor']}")
+            mark = {"adult": "🎓", "young_adult": "📈", "teen": "📊", "child": "  "}.get(tier, "  ")
+            print(f"  {mark} {rk:<55} tier={tier:<11s} n={n:>4} acc={accuracy:.3f}  pf={payload['profit_factor']}")
         else:
             print(f"  calibration upsert {rk} {u.status_code}: {u.text[:200]}", file=sys.stderr)
     return updated
