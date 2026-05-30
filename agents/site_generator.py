@@ -1553,22 +1553,50 @@ def render_all() -> int:
 
     # PIN gate: when DASHBOARD_PIN env var is set, every rendered page injects
     # a client-side overlay that prompts for the PIN before showing content.
-    # We pass the SHA-256 hash, not the plaintext PIN — the hex digest in the
-    # HTML doesn't reveal the PIN via view-source (though a 6-digit PIN is
-    # brute-forceable, so this is casual-deterrent only, not real auth).
-    # If DASHBOARD_PIN is unset, pin_hash is empty and the template skips the
-    # entire gate block (graceful degradation — the site renders normally).
+    # We pass the PBKDF2-HMAC-SHA256 derivation, not the plaintext PIN — the
+    # hex digest in the HTML doesn't reveal the PIN via view-source.
+    #
+    # Algorithm: PBKDF2-HMAC-SHA256 with 200,000 iterations + an application-
+    # specific salt. The browser computes the same derivation via
+    # crypto.subtle.deriveBits to verify entered PIN. Why PBKDF2 over plain
+    # SHA-256:
+    #   1. Salt prevents precomputed rainbow tables — attacker must compute
+    #      hashes for THIS salt, can't reuse generic tables.
+    #   2. 200k iterations slows each attempt from microseconds (plain SHA-256)
+    #      to ~50ms on a desktop. Brute-forcing a 6-digit PIN goes from
+    #      <1 second to ~14 hours of sustained computation.
+    # The salt is public (embedded in the HTML so the browser can verify);
+    # its job is rainbow-table prevention, not secrecy.
+    #
+    # Still casual-deterrent, not real auth: a 6-digit PIN has only 10^6
+    # possibilities, and brute force is parallelizable. For production-grade
+    # protection, switch to .htaccess Basic Auth (see commit history for the
+    # design tradeoff discussion).
+    #
+    # If DASHBOARD_PIN is unset, pin_hash stays empty and the template skips
+    # the entire gate block — graceful degradation, site renders normally.
     import hashlib as _hashlib
+    PIN_SALT       = b"h4a-stock_app-pin-v1"   # public; rainbow-table defense only
+    PIN_ITERATIONS = 200_000                    # ~50ms per attempt on a desktop
     _pin = os.environ.get("DASHBOARD_PIN", "").strip()
-    _pin_hash = _hashlib.sha256(_pin.encode()).hexdigest() if _pin else ""
+    if _pin:
+        _pin_hash = _hashlib.pbkdf2_hmac(
+            "sha256", _pin.encode(), PIN_SALT, PIN_ITERATIONS
+        ).hex()
+    else:
+        _pin_hash = ""
 
     common = {
         "generated_at":  datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M"),
         # Embedded as <meta name="git_sha"> in every page so the post-deploy
         # smoke test can confirm all tabs landed from the same build (D5).
         "git_sha":       (os.environ.get("GITHUB_SHA") or "")[:12],
-        # SHA-256 of the dashboard PIN (or empty → no gate rendered).
-        "pin_hash":      _pin_hash,
+        # PBKDF2-derived dashboard PIN hash (or empty → no gate rendered).
+        # Salt + iteration count are passed alongside so browser-side
+        # crypto.subtle.deriveBits produces the same derivation.
+        "pin_hash":       _pin_hash,
+        "pin_salt":       PIN_SALT.decode(),
+        "pin_iterations": PIN_ITERATIONS,
     }
 
     DIST_DIR.mkdir(exist_ok=True)

@@ -59,34 +59,65 @@
     </form>
   </div>
   <script>
+    /* PBKDF2-HMAC-SHA256 PIN verification. Same algorithm + salt + iterations
+       as the server-side hash computed in site_generator.py — the browser
+       just needs to reproduce the derivation to verify the user's input. */
     (function(){
-      var HASH = "{{ pin_hash }}";
-      async function sha256hex(s){
-        var buf = await crypto.subtle.digest('SHA-256',
-          new TextEncoder().encode(s));
-        return Array.from(new Uint8Array(buf)).map(function(b){
+      var HASH       = "{{ pin_hash }}";
+      var SALT       = "{{ pin_salt }}";
+      var ITERATIONS = {{ pin_iterations }};
+      async function pbkdf2Hex(password){
+        var enc = new TextEncoder();
+        var baseKey = await crypto.subtle.importKey(
+          'raw', enc.encode(password), 'PBKDF2', false, ['deriveBits']);
+        var bits = await crypto.subtle.deriveBits({
+          name: 'PBKDF2',
+          salt: enc.encode(SALT),
+          iterations: ITERATIONS,
+          hash: 'SHA-256'
+        }, baseKey, 256);
+        return Array.from(new Uint8Array(bits)).map(function(b){
           return b.toString(16).padStart(2,'0');
         }).join('');
       }
+      /* Constant-time string equality — defends against timing-leak attacks
+         that could otherwise reveal how many leading hex chars match. Each
+         iteration runs regardless of mismatches found. */
+      function constantTimeEq(a, b){
+        if (a.length !== b.length) return false;
+        var d = 0;
+        for (var i = 0; i < a.length; i++) {
+          d |= a.charCodeAt(i) ^ b.charCodeAt(i);
+        }
+        return d === 0;
+      }
       document.addEventListener('DOMContentLoaded', function(){
-        var form = document.getElementById('h4a-pin-form');
+        var form  = document.getElementById('h4a-pin-form');
         var input = document.getElementById('h4a-pin-input');
-        var gate = document.getElementById('h4a-pin-gate');
-        var err = document.getElementById('h4a-pin-err');
+        var btn   = form ? form.querySelector('button') : null;
+        var gate  = document.getElementById('h4a-pin-gate');
+        var err   = document.getElementById('h4a-pin-err');
         if (!form) return;
         form.addEventListener('submit', async function(e){
           e.preventDefault();
           err.textContent = '';
-          var hashed = await sha256hex(input.value);
-          if (hashed === HASH) {
-            sessionStorage.setItem('h4a_pin_ok','1');
-            document.body.classList.add('h4a-unlocked');
-          } else {
+          /* PBKDF2-200k takes ~50-500ms depending on device — show a thinking
+             state so the user doesn't think the page froze. */
+          if (btn) { btn.disabled = true; btn.textContent = '…'; }
+          try {
+            var derived = await pbkdf2Hex(input.value);
+            if (constantTimeEq(derived, HASH)) {
+              sessionStorage.setItem('h4a_pin_ok','1');
+              document.body.classList.add('h4a-unlocked');
+              return;
+            }
             gate.classList.add('shake');
             setTimeout(function(){ gate.classList.remove('shake'); }, 200);
             err.textContent = 'incorrect';
             input.value = '';
             input.focus();
+          } finally {
+            if (btn) { btn.disabled = false; btn.textContent = 'Enter'; }
           }
         });
       });
