@@ -11,6 +11,88 @@
   <link rel="stylesheet" href="{{ rp }}styles.css">
 </head>
 <body>
+{% if pin_hash %}
+  <style>
+    #h4a-pin-gate{position:fixed;inset:0;z-index:99999;background:#0d1117;
+      display:flex;align-items:center;justify-content:center;
+      font-family:-apple-system,BlinkMacSystemFont,'SF Mono',Menlo,monospace}
+    #h4a-pin-gate .card{background:#161b22;border:1px solid #30363d;
+      padding:30px 26px;border-radius:6px;min-width:260px;max-width:300px}
+    #h4a-pin-gate h2{margin:0 0 16px;color:#e6edf3;font-size:13px;font-weight:500;
+      letter-spacing:.05em;text-transform:uppercase}
+    #h4a-pin-gate input{width:100%;padding:10px 12px;background:#0d1117;
+      border:1px solid #30363d;border-radius:4px;color:#e6edf3;font-size:16px;
+      font-family:inherit;box-sizing:border-box;outline:none;letter-spacing:.2em;
+      text-align:center}
+    #h4a-pin-gate input:focus{border-color:#2dd4bf}
+    #h4a-pin-gate button{width:100%;margin-top:10px;padding:10px 12px;
+      background:#2dd4bf;color:#0d1117;border:none;border-radius:4px;
+      font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;
+      letter-spacing:.06em;text-transform:uppercase}
+    #h4a-pin-gate button:hover{background:#5eead4}
+    #h4a-pin-gate .err{margin-top:10px;color:#f47174;font-size:11px;
+      min-height:14px;text-align:center}
+    body.h4a-unlocked #h4a-pin-gate{display:none}
+    @keyframes h4a-shake{0%,100%{transform:translateX(0)}
+      25%{transform:translateX(-5px)}75%{transform:translateX(5px)}}
+    #h4a-pin-gate.shake .card{animation:h4a-shake .18s}
+  </style>
+  <script>
+    /* Synchronous session check — runs before page content paints so a previously
+       unlocked tab never shows the gate at all. */
+    if (sessionStorage.getItem('h4a_pin_ok') === '1') {
+      document.documentElement.addEventListener('DOMContentLoaded', function(){
+        document.body.classList.add('h4a-unlocked');
+      });
+      /* If DOM is already past head (unlikely for inline at body start),
+         apply immediately. */
+      if (document.body) document.body.classList.add('h4a-unlocked');
+    }
+  </script>
+  <div id="h4a-pin-gate" role="dialog" aria-modal="true">
+    <form class="card" id="h4a-pin-form" autocomplete="off">
+      <h2>Access</h2>
+      <input type="password" id="h4a-pin-input" inputmode="numeric"
+             pattern="[0-9]*" autofocus aria-label="PIN">
+      <button type="submit">Enter</button>
+      <div class="err" id="h4a-pin-err"></div>
+    </form>
+  </div>
+  <script>
+    (function(){
+      var HASH = "{{ pin_hash }}";
+      async function sha256hex(s){
+        var buf = await crypto.subtle.digest('SHA-256',
+          new TextEncoder().encode(s));
+        return Array.from(new Uint8Array(buf)).map(function(b){
+          return b.toString(16).padStart(2,'0');
+        }).join('');
+      }
+      document.addEventListener('DOMContentLoaded', function(){
+        var form = document.getElementById('h4a-pin-form');
+        var input = document.getElementById('h4a-pin-input');
+        var gate = document.getElementById('h4a-pin-gate');
+        var err = document.getElementById('h4a-pin-err');
+        if (!form) return;
+        form.addEventListener('submit', async function(e){
+          e.preventDefault();
+          err.textContent = '';
+          var hashed = await sha256hex(input.value);
+          if (hashed === HASH) {
+            sessionStorage.setItem('h4a_pin_ok','1');
+            document.body.classList.add('h4a-unlocked');
+          } else {
+            gate.classList.add('shake');
+            setTimeout(function(){ gate.classList.remove('shake'); }, 200);
+            err.textContent = 'incorrect';
+            input.value = '';
+            input.focus();
+          }
+        });
+      });
+    })();
+  </script>
+{% endif %}
   <header>
     <div class="brand">
       <span class="logo">⌬</span>

@@ -57,6 +57,7 @@ jobs:
         env:
           SUPABASE_URL:         ${{ secrets.SUPABASE_URL }}
           SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
+          DASHBOARD_PIN:        ${{ secrets.DASHBOARD_PIN }}
         run: python agents/site_generator.py
 
       # FTPS deploy with up to 3 attempts. Hostinger's FTPS control socket

@@ -1551,11 +1551,24 @@ def render_all() -> int:
     distinct_agents = sorted({a for s in signals for a in s.get("agents", [])} | set(KNOWN_AGENTS))
     distinct_types  = sorted({e["event_type"] for e in events})
 
+    # PIN gate: when DASHBOARD_PIN env var is set, every rendered page injects
+    # a client-side overlay that prompts for the PIN before showing content.
+    # We pass the SHA-256 hash, not the plaintext PIN — the hex digest in the
+    # HTML doesn't reveal the PIN via view-source (though a 6-digit PIN is
+    # brute-forceable, so this is casual-deterrent only, not real auth).
+    # If DASHBOARD_PIN is unset, pin_hash is empty and the template skips the
+    # entire gate block (graceful degradation — the site renders normally).
+    import hashlib as _hashlib
+    _pin = os.environ.get("DASHBOARD_PIN", "").strip()
+    _pin_hash = _hashlib.sha256(_pin.encode()).hexdigest() if _pin else ""
+
     common = {
         "generated_at":  datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M"),
         # Embedded as <meta name="git_sha"> in every page so the post-deploy
         # smoke test can confirm all tabs landed from the same build (D5).
         "git_sha":       (os.environ.get("GITHUB_SHA") or "")[:12],
+        # SHA-256 of the dashboard PIN (or empty → no gate rendered).
+        "pin_hash":      _pin_hash,
     }
 
     DIST_DIR.mkdir(exist_ok=True)
