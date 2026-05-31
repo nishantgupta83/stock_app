@@ -40,7 +40,7 @@ from filing_agent import (   # type: ignore
     SUPABASE_URL, HEADERS_SB,
 )
 
-LOOKBACK_DAYS = 180
+LOOKBACK_DAYS = int(os.environ.get("HISTORICAL_LOOKBACK_DAYS", "180"))
 EDGAR_SLEEP   = 0.12      # 10 req/sec ceiling
 YF_SLEEP      = 0.20
 

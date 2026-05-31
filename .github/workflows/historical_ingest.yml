@@ -34,14 +34,14 @@ jobs:
     permissions:
       contents: read
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
       - name: Record workflow start
         env:
           SUPABASE_URL:         ${{ secrets.SUPABASE_URL }}
           SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
         run: python agents/ops_recorder.py --phase start --agent workflow_historical_ingest
 
-      - uses: actions/setup-python@v5
+      - uses: actions/setup-python@v6
         with:
           python-version: "3.12"
           cache: pip
@@ -51,15 +51,20 @@ jobs:
 
       - name: Run historical backfill
         env:
-          SUPABASE_URL:         ${{ secrets.SUPABASE_URL }}
-          SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
-          EDGAR_USER_AGENT:     ${{ secrets.EDGAR_USER_AGENT }}
-          SECTIONS:             ${{ inputs.sections }}
+          SUPABASE_URL:              ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_KEY:      ${{ secrets.SUPABASE_SERVICE_KEY }}
+          EDGAR_USER_AGENT:          ${{ secrets.EDGAR_USER_AGENT }}
+          SECTIONS:                  ${{ inputs.sections }}
+          HISTORICAL_LOOKBACK_DAYS:  ${{ inputs.lookback_days }}
         run: |
           # SECTIONS is constrained by choice list to one of: all|filings|earnings|prices
           case "$SECTIONS" in
             all|filings|earnings|prices) ;;
             *) echo "invalid sections: $SECTIONS"; exit 1 ;;
+          esac
+          # Validate lookback is a positive integer (defensive — input is a string field)
+          case "$HISTORICAL_LOOKBACK_DAYS" in
+            ''|*[!0-9]*) echo "invalid lookback_days: $HISTORICAL_LOOKBACK_DAYS"; exit 1 ;;
           esac
           python agents/historical_ingest.py "--$SECTIONS"
       - name: Record workflow finish
