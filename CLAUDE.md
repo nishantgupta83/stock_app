@@ -162,6 +162,19 @@ Layer 6 — PRESENTATION (read-only)
 - `stock_job_runs` — operational log; has run_type ('agent' vs 'wrapper') + parent_run_id lineage
 - `stock_watchlists` — categorized ticker baskets
 
+**Views:**
+- `stock_rule_sector_multiplier` — per-(rule_key, sector) calibration multiplier,
+  floored at n>=30 per cell and bounded [0.5, 1.3]. Auto-refreshes from
+  `stock_event_paper_trades` + `stock_symbols`. Consumed by `thesis_agent` only
+  when `SECTOR_CALIB_MULT_ENABLED=true` (default off). Added 2026-05-31; see
+  `sql/0032_rule_sector_multiplier_view.sql` and `docs/findings/` for the rationale.
+
+**Feature flags (env vars):**
+- `SECTOR_CALIB_MULT_ENABLED` — toggles sector-aware scoring in `thesis_agent`.
+  Default off. When on, score_evidence multiplies event-tied rule points by the
+  cell's multiplier from `stock_rule_sector_multiplier`. Effect appears in
+  `stock_signals.score_breakdown[].sector_mult`.
+
 **Watchlists** (Phase 10 AI cluster, May 2026):
 `core`, `context`, `ai_compute`, `ai_optical`, `ai_servers`, `ai_power`, `ai_software`, `ai_neocloud`,
 `institutions`, `mutual_funds`. Multi-domain expansion (defense/biotech/energy/macro/activist/consumer)
@@ -178,6 +191,13 @@ planned in `docs/multi-domain-roadmap.md`.
   Trigger `historical_ingest.yml` and `filing_agent.yml` to backfill.
 - **Telegram-level change**: `agents/telegram_dispatcher.py` formats payload; `thesis_agent`
   governs cap + dedupe; `intraday_alert_agent` is the fast-twitch path with its own dedupe key.
+
+## Deferred-action findings
+
+`docs/findings/` — observations whose action is deferred (refactor cost,
+insufficient data, etc.). Each doc states "what would change our mind" so a
+future reviewer can decide whether to act without re-deriving the observation.
+Index in `docs/findings/README.md`.
 
 ## Hooks active in this repo
 

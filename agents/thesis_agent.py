@@ -474,7 +474,10 @@ def source_agent_for(event: dict) -> str:
 
 
 def score_evidence(events: list[dict],
-                   agent_weights: dict[str, float] | None = None) -> tuple[float, list[dict]]:
+                   agent_weights: dict[str, float] | None = None,
+                   sector_multipliers: dict[tuple[str, str], float] | None = None,
+                   ticker_sectors: dict[str, str] | None = None,
+                   ) -> tuple[float, list[dict]]:
     """Apply Phase-1 rubric. Returns (total_score, breakdown).
 
     Per-agent learned weights from stock_agent_weights are applied at the end —
@@ -483,8 +486,16 @@ def score_evidence(events: list[dict],
     Cluster-level bonuses (multi_source_confirm, tri_source_confirm) carry no
     event_id and stay raw, since they reward independent agreement, not any
     single agent's accuracy.
+
+    sector_multipliers / ticker_sectors are populated only when the
+    SECTOR_CALIB_MULT_ENABLED env var is true. When non-empty, each event-tied
+    rule's points are scaled by the (rule_key_at_live_horizon, ticker_sector)
+    multiplier from the stock_rule_sector_multiplier view. View enforces n>=30
+    floor and bounds multiplier to [0.5, 1.3], so impact is contained.
     """
     weights = agent_weights or {}
+    sector_mults = sector_multipliers or {}
+    sectors = ticker_sectors or {}
     score = 0.0
     breakdown: list[dict] = []
     raw_by_agent: dict[str, float] = defaultdict(float)
@@ -493,6 +504,8 @@ def score_evidence(events: list[dict],
     # event_id → role for this scoring batch (so add() can tag each breakdown entry)
     ev_role: dict[int, str] = {}
     ev_catalyst_eligible: dict[int, bool] = {}
+    # event_id → event dict (for sector-multiplier lookup keyed by event_type+ticker)
+    ev_lookup: dict[int, dict] = {e["id"]: e for e in events if e.get("id") is not None}
     now = datetime.now(timezone.utc)
     for e in events:
         ev_id = e.get("id")
@@ -538,6 +551,26 @@ def score_evidence(events: list[dict],
         if role == "background":
             effective_points = 0.0
 
+        # Sector-aware calibration multiplier. Only applies to event-tied entries
+        # (cluster-level bonuses keep their raw weight). View-derived; floored at
+        # n>=30 per cell and bounded [0.5, 1.3], so any single cell's impact is
+        # capped. Gated entirely by SECTOR_CALIB_MULT_ENABLED on the consumer
+        # side — when disabled, sector_mults is empty and lookup falls through.
+        sector_mult = 1.0
+        if effective_points and ev_id is not None and sector_mults:
+            ev = ev_lookup.get(ev_id) or {}
+            et = ev.get("event_type")
+            ticker = ev.get("ticker")
+            if et and ticker:
+                # Live signals are audited at h1d (see horizon_for); use the
+                # h1d rule_key so the multiplier reflects the horizon that
+                # actually gets feedback in the live calibration loop.
+                rk = _rule_key.derive(et, ev.get("event_subtype"), 1)
+                sector = sectors.get(ticker, "Unknown")
+                sector_mult = sector_mults.get((rk, sector), 1.0)
+                if sector_mult != 1.0:
+                    effective_points = effective_points * sector_mult
+
         score += effective_points
         if effective_points and ev_id is not None and ev_id in ev_agent:
             raw_by_agent[ev_agent[ev_id]] += effective_points
@@ -549,6 +582,7 @@ def score_evidence(events: list[dict],
             "detail":         detail,
             "role":           role,             # catalyst | context | background | bonus
             "catalyst_ok":    catalyst_ok,      # True if this entry contributes to catalyst_score
+            "sector_mult":    sector_mult if sector_mult != 1.0 else None,
         })
 
     for e in events:
@@ -1171,6 +1205,66 @@ def fetch_rule_calibration() -> dict[str, dict]:
         return {}
 
 
+def _sector_mult_enabled() -> bool:
+    """Feature flag for sector-aware calibration multiplier (default OFF)."""
+    return os.environ.get("SECTOR_CALIB_MULT_ENABLED", "").lower() in ("1", "true", "yes")
+
+
+def fetch_sector_multipliers() -> dict[tuple[str, str], float]:
+    """{(rule_key, sector) → multiplier} from stock_rule_sector_multiplier view.
+
+    The view enforces n>=30 per cell and bounds multiplier to [0.5, 1.3]. Returns
+    empty dict when the feature flag is off or the fetch fails — score_evidence
+    treats missing cells as multiplier=1.0, so disabling the flag fully bypasses
+    this without code changes.
+    """
+    if not _sector_mult_enabled():
+        return {}
+    try:
+        r = requests.get(
+            f"{SUPABASE_URL}/rest/v1/stock_rule_sector_multiplier",
+            headers=HEADERS_SB,
+            # Skip rows where multiplier=1.0 — they're no-ops and we want a small payload.
+            params={"select": "rule_key,sector,multiplier", "multiplier": "neq.1.0", "limit": "2000"},
+            timeout=10,
+        )
+        if r.status_code != 200:
+            print(f"  fetch_sector_multipliers HTTP {r.status_code} — disabling for this run",
+                  file=sys.stderr)
+            return {}
+        out: dict[tuple[str, str], float] = {}
+        for row in r.json():
+            rk = row.get("rule_key")
+            sec = row.get("sector")
+            m = row.get("multiplier")
+            if rk and sec and m is not None:
+                out[(rk, sec)] = float(m)
+        return out
+    except Exception as e:  # noqa: BLE001
+        print(f"  fetch_sector_multipliers failed (using empty): {e}", file=sys.stderr)
+        return {}
+
+
+def fetch_ticker_sectors() -> dict[str, str]:
+    """{ticker → sector} from stock_symbols. Empty dict when feature flag is off."""
+    if not _sector_mult_enabled():
+        return {}
+    try:
+        r = requests.get(
+            f"{SUPABASE_URL}/rest/v1/stock_symbols",
+            headers=HEADERS_SB,
+            params={"select": "ticker,sector", "limit": "2000"},
+            timeout=10,
+        )
+        if r.status_code != 200:
+            return {}
+        return {row["ticker"]: (row.get("sector") or "Unknown")
+                for row in r.json() if row.get("ticker")}
+    except Exception as e:  # noqa: BLE001
+        print(f"  fetch_ticker_sectors failed (using empty): {e}", file=sys.stderr)
+        return {}
+
+
 def cluster_has_mature_rule(events: list[dict], calibration: dict[str, dict]) -> bool:
     """True if any event in the cluster maps to an is_mature rule_key.
 
@@ -1472,6 +1566,21 @@ def main() -> int:
         else:
             print("No mature rules yet — BUY/SELL gated; staying paper-only")
 
+        # Sector-aware calibration multiplier (feature-flagged via
+        # SECTOR_CALIB_MULT_ENABLED). When OFF, both fetches return {} and
+        # score_evidence treats every (rule_key, sector) cell as 1.0 — zero
+        # behavior delta. When ON, the stock_rule_sector_multiplier view
+        # supplies per-cell scaling derived from closed paper trades.
+        sector_multipliers = fetch_sector_multipliers()
+        ticker_sectors = fetch_ticker_sectors()
+        if sector_multipliers:
+            amp_count = sum(1 for m in sector_multipliers.values() if m > 1.0)
+            damp_count = sum(1 for m in sector_multipliers.values() if m < 1.0)
+            print(f"Sector calib multipliers: {len(sector_multipliers)} cells active "
+                  f"({amp_count} amplify, {damp_count} dampen)")
+        elif _sector_mult_enabled():
+            print("Sector calib multipliers: enabled but view returned 0 rows")
+
         # Group by (ticker, 5-min bucket)
         clusters: dict[tuple[str, str], list[dict]] = defaultdict(list)
         for e in events:
@@ -1498,7 +1607,12 @@ def main() -> int:
         scored = []
         for (ticker, bucket), ev_list in clusters.items():
             ok, cluster_label = cluster_passes(ev_list)
-            score, breakdown = score_evidence(ev_list, agent_weights=agent_weights)
+            score, breakdown = score_evidence(
+                ev_list,
+                agent_weights=agent_weights,
+                sector_multipliers=sector_multipliers,
+                ticker_sectors=ticker_sectors,
+            )
             direction = signal_direction(ev_list)
 
             # Apply intelligence bonuses
