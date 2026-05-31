@@ -196,11 +196,20 @@ def ingest_prices() -> tuple[int, int]:
         print("[prices] empty watchlist, nothing to do")
         return 0, 0
 
-    print(f"[prices] downloading 6mo of daily bars for {len(tickers)} tickers (single yf.download call)")
+    # yfinance accepts either `period=...` or `start=...&end=...`.
+    # For windows that don't match yfinance's fixed period vocabulary
+    # ("1mo","3mo","6mo","1y","2y","5y","10y","ytd","max"), use start/end.
+    start_dt = datetime.now(timezone.utc) - timedelta(days=LOOKBACK_DAYS)
+    end_dt   = datetime.now(timezone.utc)
+    print(f"[prices] downloading {LOOKBACK_DAYS}d of daily bars for {len(tickers)} tickers "
+          f"({start_dt.date()} → {end_dt.date()}, single yf.download call)")
 
     try:
         df = yf.download(
-            tickers, period="6mo", interval="1d",
+            tickers,
+            start=start_dt.strftime("%Y-%m-%d"),
+            end=end_dt.strftime("%Y-%m-%d"),
+            interval="1d",
             auto_adjust=False, group_by="ticker", progress=False, threads=True,
         )
     except Exception as e:  # noqa: BLE001
