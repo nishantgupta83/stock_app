@@ -22,6 +22,11 @@ on:
           - filings
           - earnings
           - prices
+      lookback_days:
+        description: "Lookback window in days (default 180)"
+        type: string
+        required: false
+        default: "180"
 
 concurrency:
   group: historical_ingest
