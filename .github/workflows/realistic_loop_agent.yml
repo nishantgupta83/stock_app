@@ -1,0 +1,89 @@
+name: realistic_loop_agent
+
+# Shadow $5K portfolio that mirrors the live pipeline's tradeable setups.
+# See docs/realistic-loop.md for design + sql/0033_realistic_loop.sql for
+# the table layout. Isolated from stock_rule_calibration by design.
+#
+# Cadence:
+#   * "open" (hourly at :15) — scan new tradeable setups, open positions
+#     up to the bankroll cap.
+#   * "mark" (daily at 21:30 UTC, post-market) — walk bars, close on
+#     target/stop/horizon/valid_until.
+#   * workflow_dispatch — run either mode manually.
+#
+# Safety:
+#   * All workflow context references (inputs.mode, github.event.schedule)
+#     flow through env: blocks, then into bash via quoted variables. Mode is
+#     additionally validated against a hardcoded allowlist before use.
+
+on:
+  schedule:
+    - cron: "15 * * * *"
+    - cron: "30 21 * * *"
+  workflow_dispatch:
+    inputs:
+      mode:
+        description: "Mode: open, mark, or both"
+        type: choice
+        required: true
+        default: "both"
+        options:
+          - open
+          - mark
+          - both
+
+concurrency:
+  group: realistic_loop_agent
+  cancel-in-progress: false
+
+jobs:
+  run:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - name: Record workflow start
+        env:
+          SUPABASE_URL:         ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
+        run: python agents/ops_recorder.py --phase start --agent workflow_realistic_loop_agent
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+      - name: Install deps
+        run: pip install -r requirements.txt
+      - name: Pick mode
+        id: pick
+        env:
+          MANUAL_MODE: ${{ inputs.mode }}
+          CRON_EXPR:   ${{ github.event.schedule }}
+        run: |
+          set -euo pipefail
+          if [ -n "$MANUAL_MODE" ]; then
+            MODE="$MANUAL_MODE"
+          elif [ "$CRON_EXPR" = "30 21 * * *" ]; then
+            MODE="mark"
+          else
+            MODE="open"
+          fi
+          case "$MODE" in
+            open|mark|both) ;;
+            *) echo "invalid mode: $MODE"; exit 1 ;;
+          esac
+          echo "mode=$MODE" >> "$GITHUB_OUTPUT"
+          echo "Running mode: $MODE"
+      - name: Run loop agent
+        env:
+          SUPABASE_URL:         ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
+          PYTHONPATH:           agents
+          MODE:                 ${{ steps.pick.outputs.mode }}
+        run: python agents/realistic_loop_agent.py --mode "$MODE"
+      - name: Record workflow finish
+        if: always()
+        env:
+          SUPABASE_URL:         ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
+          WORKFLOW_STATUS:      ${{ job.status }}
+        run: python agents/ops_recorder.py --phase finish --agent workflow_realistic_loop_agent --status "$WORKFLOW_STATUS"

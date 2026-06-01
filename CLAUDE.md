@@ -168,6 +168,15 @@ Layer 6 — PRESENTATION (read-only)
   `stock_event_paper_trades` + `stock_symbols`. Consumed by `thesis_agent` only
   when `SECTOR_CALIB_MULT_ENABLED=true` (default off). Added 2026-05-31; see
   `sql/0032_rule_sector_multiplier_view.sql` and `docs/findings/` for the rationale.
+- `stock_realistic_loop_summary` — read-only aggregate of the $5K shadow
+  portfolio (state + open/closed position counts). Added 2026-05-31; full
+  design in `docs/realistic-loop.md`.
+
+**Isolated loops (do NOT write to stock_rule_calibration):**
+- `stock_realistic_loop_positions` / `stock_realistic_loop_state` — capital-deployed
+  shadow ledger keyed by `loop_name`. Default loop `shadow_5k`: $5K bankroll,
+  5 concurrent $1K positions, cash recycles on close. Owned by
+  `realistic_loop_agent`. See `docs/realistic-loop.md`.
 
 **Feature flags (env vars):**
 - `SECTOR_CALIB_MULT_ENABLED` — toggles sector-aware scoring in `thesis_agent`.
