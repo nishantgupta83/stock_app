@@ -392,17 +392,29 @@ def existing_signals_by_dedupe(keys: list[str]) -> dict[str, int]:
     }
 
 
-def alerts_sent_today() -> int:
-    """Count signals already sent today (UTC) — for the daily cap."""
+def alerts_sent_today(model_version: str | None = None) -> int:
+    """Count signals already sent today (UTC) — for the daily cap.
+
+    With model_version, counts only signals written by that scoring lane.
+    This is the per-lane budget pattern: thesis_agent's MAX_ALERTS_PER_DAY
+    is a guardrail on rubric-based dispatch volume, not on every signal in
+    the system. intraday_alert_agent (model_version='intraday-spike-v1')
+    has its own per-run safety cap (ALERT_CAP=25) and was never intended
+    to share thesis's daily budget — but the unscoped query meant intraday
+    bursts were burning thesis's cap, silently silencing the rubric path.
+    """
     today = datetime.now(timezone.utc).date().isoformat()
+    params = {
+        "fired_at":  f"gte.{today}T00:00:00Z",
+        "status_v2": "eq.sent",
+        "select":    "id",
+    }
+    if model_version:
+        params["model_version"] = f"eq.{model_version}"
     r = requests.get(
         f"{SUPABASE_URL}/rest/v1/stock_signals",
         headers=HEADERS_SB,
-        params={
-            "fired_at":  f"gte.{today}T00:00:00Z",
-            "status_v2": "eq.sent",
-            "select":    "id",
-        },
+        params=params,
         timeout=15,
     )
     if r.status_code != 200:
@@ -1532,7 +1544,10 @@ def main() -> int:
     suppressed = 0
 
     try:
-        already_today = alerts_sent_today()
+        # Per-lane cap: count only signals this agent emits (model_version=MODEL_VERSION).
+        # Intraday-spike alerts have their own per-run safety cap and were silently
+        # eating thesis's daily budget under the old unscoped query.
+        already_today = alerts_sent_today(model_version=MODEL_VERSION)
         cap_remaining = max(0, MAX_ALERTS_PER_DAY - already_today)
         retried = retry_dispatch_failed(cap_remaining)
         sent += retried

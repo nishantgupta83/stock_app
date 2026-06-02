@@ -184,6 +184,18 @@ Layer 6 — PRESENTATION (read-only)
   cell's multiplier from `stock_rule_sector_multiplier`. Effect appears in
   `stock_signals.score_breakdown[].sector_mult`.
 
+**7. `MAX_ALERTS_PER_DAY` in `thesis_agent` is now per-lane, not global.**
+- Prior bug: `alerts_sent_today()` queried `stock_signals` without filtering
+  by `model_version`, so `intraday_alert_agent`'s daily volume (10-20+ spike
+  alerts) silently consumed thesis_agent's 5/day cap. Thesis was emit-silent
+  for the entire 5/22–6/2 window without anyone noticing.
+- Fix (2026-06-02): `alerts_sent_today(model_version=MODEL_VERSION)` scopes
+  the count to rubric-v1.1 only. Intraday continues to use its own per-run
+  `ALERT_CAP=25` and does not consume thesis's daily budget.
+- Effect: two independent budgets — thesis 5/day rubric + intraday 25/run
+  spike. Watch for any future agent that calls `alerts_sent_today()` — must
+  pass its own model_version or it will count cross-lane traffic again.
+
 **Watchlists** (Phase 10 AI cluster, May 2026):
 `core`, `context`, `ai_compute`, `ai_optical`, `ai_servers`, `ai_power`, `ai_software`, `ai_neocloud`,
 `institutions`, `mutual_funds`. Multi-domain expansion (defense/biotech/energy/macro/activist/consumer)
