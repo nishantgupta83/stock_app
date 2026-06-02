@@ -12,6 +12,9 @@ the relevant agent, or `next-phases-roadmap.md`.
 |------|------|--------|-----------|
 | [`2026-05-31_horizon-audit-asymmetry.md`](2026-05-31_horizon-audit-asymmetry.md) | 2026-05-31 | Deferred | All live signals are audited at h1d, but 8K and similar events pay off at h15d. Closing this gap needs an audit-window refactor, not a config flip. |
 | [`2026-05-31_narrow-window-fade-risks.md`](2026-05-31_narrow-window-fade-risks.md) | 2026-05-31 | Deferred | The `(djt_self, DJT, h15d)` n=20 acc=0% finding is concentrated in a 3-week window, not 540 days. Hardcoding a blacklist on it would violate the project's own maturity-gate discipline. |
+| [`2026-06-02_keyword-db-audit.md`](2026-06-02_keyword-db-audit.md) | 2026-06-02 | Exploration | News classifier has only 24 rules (22 neutral name-matchers + 1 bullish regex + 1 bearish). ~80 catalysts proposed across conferences/AI/geopolitical/regulatory. Computex case study. |
+| [`2026-06-02_sev2-news-bar-design.md`](2026-06-02_sev2-news-bar-design.md) | 2026-06-02 | Exploration | Design: let sev≥2 *neutral* news on watchlisted focus tickers count for half-points. Complements keyword DB expansion. Half-points, not full, to avoid over-weighting mega-cap coverage. |
+| [`2026-06-02_slm-classifier-feasibility.md`](2026-06-02_slm-classifier-feasibility.md) | 2026-06-02 | Exploration | Free SLM classifier (HF finbert) inside news_agent GHA job. Viable as Path A. Recommended only if keyword DB expansion plateaus above 70% neutral share. |
 
 ## Format
 

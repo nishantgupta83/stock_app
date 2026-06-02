@@ -178,6 +178,16 @@ Layer 6 — PRESENTATION (read-only)
   5 concurrent $1K positions, cash recycles on close. Owned by
   `realistic_loop_agent`. See `docs/realistic-loop.md`.
 
+**Health monitoring (added 2026-06-02):**
+- `stock_health_pulse` — append-only ledger of (agent, check_name, status,
+  observed, threshold, pulsed_at). Written hourly by per-workflow
+  pulsecheck agents in `agents/pulsecheck/`. Read via
+  `stock_health_pulse_current` (latest pulse per check) or
+  `stock_health_pulse_recent_alerts` (24h warning/critical feed).
+  Design + extension pattern: `docs/pulsecheck.md`. Each pulsecheck owns
+  a defined scope; shared facts have a single owner with `depends_on`
+  declarations to prevent cascading false alarms.
+
 **Feature flags (env vars):**
 - `SECTOR_CALIB_MULT_ENABLED` — toggles sector-aware scoring in `thesis_agent`.
   Default off. When on, score_evidence multiplies event-tied rule points by the
