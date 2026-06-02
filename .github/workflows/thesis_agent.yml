@@ -32,12 +32,13 @@ jobs:
         run: pip install -r requirements.txt
       - name: Run thesis agent
         env:
-          SUPABASE_URL:                 ${{ secrets.SUPABASE_URL }}
-          SUPABASE_SERVICE_KEY:         ${{ secrets.SUPABASE_SERVICE_KEY }}
-          TELEGRAM_BOT_TOKEN:           ${{ secrets.TELEGRAM_BOT_TOKEN }}
-          TELEGRAM_CHAT_ID:             ${{ secrets.TELEGRAM_CHAT_ID }}
-          SECTOR_CALIB_MULT_ENABLED:    ${{ secrets.SECTOR_CALIB_MULT_ENABLED }}
-          PYTHONPATH:                   agents
+          SUPABASE_URL:                    ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_KEY:            ${{ secrets.SUPABASE_SERVICE_KEY }}
+          TELEGRAM_BOT_TOKEN:              ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID:                ${{ secrets.TELEGRAM_CHAT_ID }}
+          SECTOR_CALIB_MULT_ENABLED:       ${{ secrets.SECTOR_CALIB_MULT_ENABLED }}
+          CLUSTER_SCORE_OVERRIDE_ENABLED:  ${{ secrets.CLUSTER_SCORE_OVERRIDE_ENABLED }}
+          PYTHONPATH:                      agents
         run: python agents/thesis_agent.py
       - name: Record workflow finish
         if: always()

@@ -218,6 +218,16 @@ Layer 6 — PRESENTATION (read-only)
   Default off. When on, score_evidence multiplies event-tied rule points by the
   cell's multiplier from `stock_rule_sector_multiplier`. Effect appears in
   `stock_signals.score_breakdown[].sector_mult`.
+- `CLUSTER_SCORE_OVERRIDE_ENABLED` — toggles the score-based cluster_passes
+  override in `thesis_agent` (added 2026-06-02). When on, a single-source
+  cluster whose computed score crosses `CLUSTER_SCORE_OVERRIDE_THRESHOLD=50`
+  gets cluster_ok=True even if it would otherwise be dropped by the
+  source-count heuristic. Rationale: the rubric already encodes "alert-worthy"
+  via its scoring rules; cluster_passes is a coarser pre-rubric heuristic.
+  Maturity gating (BUY/SELL) is unaffected. Effect appears in
+  `stock_signals.score_breakdown[]` as a `cluster_passes_override` entry.
+  Required after rejection-audit data (`stock_thesis_rejections`) showed
+  100% of thesis silence traced to single_source_no_exception.
 
 **7. `MAX_ALERTS_PER_DAY` in `thesis_agent` is now per-lane, not global.**
 - Prior bug: `alerts_sent_today()` queried `stock_signals` without filtering

@@ -16,6 +16,7 @@ the relevant agent, or `next-phases-roadmap.md`.
 | [`2026-06-02_sev2-news-bar-design.md`](2026-06-02_sev2-news-bar-design.md) | 2026-06-02 | Exploration | Design: let sev≥2 *neutral* news on watchlisted focus tickers count for half-points. Complements keyword DB expansion. Half-points, not full, to avoid over-weighting mega-cap coverage. |
 | [`2026-06-02_slm-classifier-feasibility.md`](2026-06-02_slm-classifier-feasibility.md) | 2026-06-02 | Exploration | Free SLM classifier (HF finbert) inside news_agent GHA job. Viable as Path A. Recommended only if keyword DB expansion plateaus above 70% neutral share. |
 | [`2026-06-02_independent-research-firms.md`](2026-06-02_independent-research-firms.md) | 2026-06-02 | Exploration | Of 7 named firms (Trading Central, Jefferson, Zacks, etc.) only Zacks has a free tier. Best path: add firm-name keywords to capture coverage that already leaks via news. Free-tier alternatives surveyed (Zacks RSS, Quiver, StockTwits). |
+| [`2026-06-02_cluster-score-override.md`](2026-06-02_cluster-score-override.md) | 2026-06-02 | Shipped (flag) | Rejection audit confirmed 100% of thesis silence traced to single_source_no_exception. 9/444 had score>=50. Override added: high-score single-source clusters bypass cluster_passes. Feature-flagged via `CLUSTER_SCORE_OVERRIDE_ENABLED`. |
 
 ## Format
 

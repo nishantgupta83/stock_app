@@ -98,6 +98,17 @@ FRESHNESS_WINDOW_MIN = 180
 # on ≥2 distinct AGENTS, so wider window doesn't relax the multi-source rule.
 CLUSTER_WINDOW_MIN   = 30
 MAX_ALERTS_PER_DAY   = 5
+# Cluster-passes score override: if a single-source cluster's COMPUTED score
+# crosses CLUSTER_SCORE_OVERRIDE_THRESHOLD, defer to the rubric over the
+# source-count heuristic. The rubric already encodes "is this alert-worthy"
+# via its scoring rules; cluster_passes is a coarser pre-rubric heuristic.
+# When both gates apply, the more conservative wins — but when score>=50 the
+# rubric has explicit conviction, so cluster_passes should not double-gate.
+# Confirmed by 2026-06-02 rejection audit: 100% of thesis silence traced to
+# single_source_no_exception; 9 of those clusters had score>=50 and would
+# have legitimately emitted MOMENTUM_ONLY signals (paper-tier, BUY/SELL
+# still maturity-gated). Feature flag (default off — flip via secret).
+CLUSTER_SCORE_OVERRIDE_THRESHOLD = 50.0
 # Chase-risk threshold: if the price has already moved >5% in the cluster's
 # direction since the earliest event, downgrade WATCH→RESEARCH (the move is
 # already in the price; we'd be chasing). Bearish AVOID_CHASE doesn't get
@@ -1293,6 +1304,16 @@ def _sector_mult_enabled() -> bool:
     return os.environ.get("SECTOR_CALIB_MULT_ENABLED", "").lower() in ("1", "true", "yes")
 
 
+def _cluster_score_override_enabled() -> bool:
+    """Feature flag for the score-based cluster_passes override (default OFF).
+
+    When ON, single-source clusters whose computed score crosses
+    CLUSTER_SCORE_OVERRIDE_THRESHOLD get cluster_ok=True, bypassing the
+    source-count heuristic for proven-conviction clusters. See the rejection
+    audit (stock_thesis_rejections) for the data-driven rationale."""
+    return os.environ.get("CLUSTER_SCORE_OVERRIDE_ENABLED", "").lower() in ("1", "true", "yes")
+
+
 def fetch_sector_multipliers() -> dict[tuple[str, str], float]:
     """{(rule_key, sector) → multiplier} from stock_rule_sector_multiplier view.
 
@@ -1757,6 +1778,34 @@ def main() -> int:
             action = action_for(score, direction, has_mature_rule=mature,
                                 risk_off=risk_off,
                                 catalyst_score=sub_scores["catalyst"])
+
+            # Score-based cluster_passes override.
+            # When CLUSTER_SCORE_OVERRIDE_ENABLED, a cluster that failed the
+            # source-count heuristic but whose computed score crosses the
+            # rubric's own alert threshold gets promoted to ok=True. The rubric
+            # is the authoritative judgment of "alert-worthy"; cluster_passes
+            # is a pre-rubric coarse filter. When the rubric says yes (>=50)
+            # and cluster_passes says no, defer to the rubric.
+            # Note: this DOES NOT bypass maturity gating (BUY/SELL still
+            # require an is_mature rule) or the daily cap. It only lifts the
+            # cluster-source double-gate for high-conviction single-source
+            # clusters that would otherwise be silently dropped.
+            if (not ok
+                and _cluster_score_override_enabled()
+                and score >= CLUSTER_SCORE_OVERRIDE_THRESHOLD
+                and action):
+                breakdown.append({
+                    "rule":       "cluster_passes_override",
+                    "points":     0,           # informational; score already computed
+                    "event_id":   None,
+                    "detail":     f"score={round(score, 1)}>={CLUSTER_SCORE_OVERRIDE_THRESHOLD}; "
+                                  f"original cluster_label={cluster_label}",
+                    "role":       "bonus",
+                    "catalyst_ok": True,
+                })
+                ok = True
+                cluster_label = f"override:high_score_{int(score)}"
+
             scored.append({
                 "ticker":   ticker,
                 "bucket":   bucket,
