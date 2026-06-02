@@ -819,8 +819,20 @@ def reconcile_event_paper_trades() -> dict:
 
         outcome = compute_paper_outcome(t, bars)
         if outcome is None:
-            n_skipped_no_outcome += 1
-            skipped_tickers.add(ticker)
+            # Distinguish "shouldn't be closeable yet" (fresh h7/h15/h30 trade,
+            # exit_target still in the future) from "should be closeable but
+            # something's wrong" (exit_target passed, bars exist, but no
+            # session-close bar to use). Only the latter is operationally
+            # interesting — flag those as no_outcome; ignore the legitimate
+            # not-yet-matured case to avoid alert fatigue.
+            try:
+                horizon = int(t.get("horizon_days") or 1)
+            except (TypeError, ValueError):
+                horizon = 1
+            exit_target = entry_date + timedelta(days=horizon)
+            if exit_target < datetime.now(timezone.utc).date():
+                n_skipped_no_outcome += 1
+                skipped_tickers.add(ticker)
             continue
 
         # 1. Close the trade row (includes the daily-HL audit fields)
