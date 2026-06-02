@@ -146,11 +146,64 @@ def _yf_ticker(sym: str) -> yf.Ticker:
     return yf.Ticker(sym, session=_CF_SESSION) if _CF_SESSION else yf.Ticker(sym)
 
 
+def _bars_from_raw_prices(ticker: str, start: date, end: date) -> dict[date, dict[str, float]]:
+    """Read OHLC bars from stock_raw_prices between start..end. Empty on miss.
+
+    Used as a fallback when yfinance returns nothing for a ticker — typically
+    because of transient network errors, rate limits, or specific ticker
+    quirks. The bar coverage in stock_raw_prices is itself populated by
+    historical_ingest (which also reads yfinance), so a true yfinance outage
+    affecting historical_ingest would leave this fallback empty too — but
+    transient per-request hiccups during reconcile are common and exactly
+    what this catches.
+    """
+    try:
+        r = requests.get(
+            f"{SUPABASE_URL}/rest/v1/stock_raw_prices",
+            headers=HEADERS_SB,
+            params={
+                "ticker": f"eq.{ticker}",
+                "ts":     f"gte.{start.isoformat()}",
+                "and":    f"(ts.lte.{(end + timedelta(days=7)).isoformat()})",
+                "select": "ts,open,high,low,close",
+                "order":  "ts.asc",
+                "limit":  "1000",
+            },
+            timeout=15,
+        )
+        if r.status_code != 200:
+            return {}
+        result: dict[date, dict[str, float]] = {}
+        for row in r.json() or []:
+            try:
+                d = datetime.fromisoformat(row["ts"].replace("Z", "+00:00")).date()
+                result[d] = {
+                    "open":  float(row["open"]),
+                    "high":  float(row["high"]),
+                    "low":   float(row["low"]),
+                    "close": float(row["close"]),
+                }
+            except (TypeError, ValueError, KeyError):
+                continue
+        return result
+    except Exception as e:  # noqa: BLE001
+        print(f"  {ticker}: stock_raw_prices fallback failed — {e}", file=sys.stderr)
+        return {}
+
+
 def fetch_bars(ticker: str, start: date, end: date) -> dict[date, dict[str, float]]:
     """Return adjusted daily OHLC bars between start and end+7 days.
 
     H/L are included so reconciliation can compute MFE/MAE and approximate
     stop/target hit detection without fetching intraday data.
+
+    Two-step lookup (2026-06-02): yfinance first (still the freshest source
+    when working), then stock_raw_prices fallback. Previously yfinance was
+    the only source and a transient failure silently left paper trades open
+    forever — the 513-stuck-h1d incident traced to exactly this. The
+    fallback won't help when bars genuinely don't exist anywhere (e.g.,
+    delisted ticker), but those are surfaced by the reconcile_skipped
+    counter so the operator can see how many were truly unreconcilable.
     """
     try:
         t = _yf_ticker(ticker)
@@ -159,21 +212,21 @@ def fetch_bars(ticker: str, start: date, end: date) -> dict[date, dict[str, floa
             end=(end + timedelta(days=7)).isoformat(),
             auto_adjust=True,
         )
-        if df.empty:
-            return {}
-        result: dict[date, dict[str, float]] = {}
-        for ts, row in df.iterrows():
-            d = ts.date() if hasattr(ts, "date") else ts.to_pydatetime().date()
-            result[d] = {
-                "open":  float(row["Open"]),
-                "high":  float(row["High"]),
-                "low":   float(row["Low"]),
-                "close": float(row["Close"]),
-            }
-        return result
+        if not df.empty:
+            result: dict[date, dict[str, float]] = {}
+            for ts, row in df.iterrows():
+                d = ts.date() if hasattr(ts, "date") else ts.to_pydatetime().date()
+                result[d] = {
+                    "open":  float(row["Open"]),
+                    "high":  float(row["High"]),
+                    "low":   float(row["Low"]),
+                    "close": float(row["Close"]),
+                }
+            return result
     except Exception as e:
-        print(f"  {ticker}: price fetch error — {e}", file=sys.stderr)
-        return {}
+        print(f"  {ticker}: yfinance fetch error — {e}; trying DB fallback", file=sys.stderr)
+    # yfinance returned nothing or errored — try the DB fallback.
+    return _bars_from_raw_prices(ticker, start, end)
 
 
 def next_session_open(bars: dict[date, dict[str, float]], after: date) -> tuple[date, float] | None:
@@ -389,20 +442,24 @@ def job_run_start() -> int | None:
     return None
 
 
-def job_run_finish(run_id: int | None, status: str, rows_in: int, rows_out: int, err: str | None = None) -> None:
+def job_run_finish(run_id: int | None, status: str, rows_in: int, rows_out: int,
+                   err: str | None = None, meta: dict | None = None) -> None:
     if run_id is None:
         return
     try:
+        payload = {
+            "finished_at": datetime.now(timezone.utc).isoformat(),
+            "status":      status,
+            "rows_in":     rows_in,
+            "rows_out":    rows_out,
+            "error_text":  err,
+        }
+        if meta:
+            payload["meta"] = meta
         requests.patch(
             f"{SUPABASE_URL}/rest/v1/stock_job_runs?id=eq.{run_id}",
             headers=HEADERS_SB,
-            json={
-                "finished_at": datetime.now(timezone.utc).isoformat(),
-                "status":      status,
-                "rows_in":     rows_in,
-                "rows_out":    rows_out,
-                "error_text":  err,
-            }, timeout=10,
+            json=payload, timeout=10,
         )
     except Exception as e:
         print(f"  job_run_finish failed: {e}", file=sys.stderr)
@@ -714,17 +771,30 @@ def _max_end_by_ticker(trades: list[dict]) -> dict[str, date]:
     return out
 
 
-def reconcile_event_paper_trades() -> tuple[int, int, int]:
-    """Close mature paper trades, update per-rule calibration, return
-    (n_closed, n_rules_updated, n_newly_matured)."""
+def reconcile_event_paper_trades() -> dict:
+    """Close mature paper trades, update per-rule calibration.
+
+    Returns a dict so the caller can surface skip metrics to job_runs.meta:
+      n_closed, n_rules_updated, n_matured       — happy-path counts
+      n_skipped_no_bars, n_skipped_no_outcome    — silent-drop instrumentation
+      skipped_tickers                            — set of affected tickers
+      trades_seen                                — total fetched for context
+    The 513-stuck-h1d incident traced to `if not bars: continue` having no
+    counter — operators saw "Paper trades closed: 0" and assumed nothing
+    needed closing, instead of "skipped 513 due to no bars".
+    """
     trades = fetch_open_paper_trades_to_close()
     if not trades:
-        return 0, 0, 0
+        return {"n_closed": 0, "n_rules_updated": 0, "n_matured": 0,
+                "n_skipped_no_bars": 0, "n_skipped_no_outcome": 0,
+                "skipped_tickers": [], "trades_seen": 0}
 
     cal = fetch_calibration_map()
     archive_index = fetch_archive_index()
     enrich_cal_from_archive(cal, archive_index)
     n_closed = n_rules_updated = n_matured = 0
+    n_skipped_no_bars = n_skipped_no_outcome = 0
+    skipped_tickers: set[str] = set()
 
     # Cache bars per ticker — avoid yfinance round-trips for the same ticker.
     # Cache window is the WIDEST horizon for that ticker in this batch so a
@@ -743,10 +813,14 @@ def reconcile_event_paper_trades() -> tuple[int, int, int]:
             bars_cache[ticker] = fetch_bars(ticker, entry_date, max_end_by_ticker[ticker])
         bars = bars_cache[ticker]
         if not bars:
+            n_skipped_no_bars += 1
+            skipped_tickers.add(ticker)
             continue
 
         outcome = compute_paper_outcome(t, bars)
         if outcome is None:
+            n_skipped_no_outcome += 1
+            skipped_tickers.add(ticker)
             continue
 
         # 1. Close the trade row (includes the daily-HL audit fields)
@@ -802,7 +876,15 @@ def reconcile_event_paper_trades() -> tuple[int, int, int]:
         recompute_rule_payoff(rk)
         recompute_rule_brier_30d(rk)
 
-    return n_closed, n_rules_updated, n_matured
+    return {
+        "n_closed":             n_closed,
+        "n_rules_updated":      n_rules_updated,
+        "n_matured":            n_matured,
+        "n_skipped_no_bars":    n_skipped_no_bars,
+        "n_skipped_no_outcome": n_skipped_no_outcome,
+        "skipped_tickers":      sorted(skipped_tickers),
+        "trades_seen":          len(trades),
+    }
 
 
 def recompute_rule_payoff(rule_key: str) -> None:
@@ -986,18 +1068,41 @@ def main() -> int:
         # Phase 7 — close mature event paper trades + update per-rule calibration.
         # Always runs regardless of whether any signals were mature, so open
         # paper trades are reconciled even on low-signal days.
+        reconcile_meta: dict = {}
         try:
-            n_paper_closed, n_rules_updated, n_matured = reconcile_event_paper_trades()
+            r_stats = reconcile_event_paper_trades()
+            n_paper_closed   = r_stats["n_closed"]
+            n_rules_updated  = r_stats["n_rules_updated"]
+            n_matured        = r_stats["n_matured"]
             rows_in += n_paper_closed   # count open trades as input work
             if n_paper_closed or n_rules_updated:
                 print(f"Paper trades closed: {n_paper_closed}, "
                       f"rules updated: {n_rules_updated}, "
                       f"newly mature: {n_matured}")
+            # Surface the silent-drop counters — pulsecheck_price_agent reads these.
+            # Previously these were invisible; the 513-stuck-h1d traced to them.
+            if r_stats["n_skipped_no_bars"] or r_stats["n_skipped_no_outcome"]:
+                print(f"⚠️  reconcile skipped: no_bars={r_stats['n_skipped_no_bars']} "
+                      f"no_outcome={r_stats['n_skipped_no_outcome']} "
+                      f"affected_tickers={len(r_stats['skipped_tickers'])} "
+                      f"(seen={r_stats['trades_seen']})",
+                      file=sys.stderr)
             rows_out += n_paper_closed
+            reconcile_meta = {
+                "reconcile": {
+                    "trades_seen":          r_stats["trades_seen"],
+                    "n_closed":             n_paper_closed,
+                    "n_skipped_no_bars":    r_stats["n_skipped_no_bars"],
+                    "n_skipped_no_outcome": r_stats["n_skipped_no_outcome"],
+                    # Cap ticker list to keep payload bounded in pathological cases.
+                    "skipped_tickers":      r_stats["skipped_tickers"][:40],
+                    "skipped_tickers_count": len(r_stats["skipped_tickers"]),
+                }
+            }
         except Exception as e:  # noqa: BLE001 — never let learning loop crash the EOD job
             import traceback
             print(f"  paper-trade reconcile failed: {e}\n{traceback.format_exc()}", file=sys.stderr)
-        job_run_finish(run_id, "ok", rows_in, rows_out)
+        job_run_finish(run_id, "ok", rows_in, rows_out, meta=reconcile_meta or None)
         return 0
 
     except Exception as e:

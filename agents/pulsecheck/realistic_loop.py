@@ -23,7 +23,11 @@ from pulsecheck._pulse import Check, CheckResult, run_checks, sb_get, sb_count
 
 AGENT = "pulsecheck_realistic_loop"
 LOOP_NAME = "shadow_5k"
-RUNS_PER_DAY_FLOOR = 12      # hourly opens + daily mark = >=24/d; 12 is generous
+RUNS_PER_DAY_FLOOR = 6       # hourly opens (24/d) + 1 daily mark, but GHA cron
+                             # drops ~30% under runner-pool contention, AND the
+                             # workflow no-ops when there are no null-reason
+                             # setups. 6/day = 1 every 4h is the floor that
+                             # actually indicates "broken", not just "quiet".
 STARVATION_DAYS = 5          # 5 trading days of 0 null-reason setups = warn
 DRAWDOWN_PCT_WARN = 0.10     # 10% of bankroll
 DRAWDOWN_PCT_CRIT = 0.20

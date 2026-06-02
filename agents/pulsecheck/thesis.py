@@ -122,10 +122,40 @@ def candidate_dryness() -> CheckResult:
     )
 
 
+def rejection_distribution() -> CheckResult:
+    """Read the 24h rejection mix and flag any single fail_reason >60%.
+
+    Once stock_thesis_rejections has data (added 2026-06-02), this is the
+    primary diagnostic for the candidate_dryness alarm — it tells us WHICH
+    gate is binding. >60% of rejections through one gate means that gate
+    deserves the next fix (lower threshold / add exception / ship keywords).
+    """
+    try:
+        rows = sb_get("stock_thesis_rejection_mix", {"select": "fail_reason,n"})
+    except Exception as e:  # noqa: BLE001
+        return CheckResult("ok", f"view unavailable: {e}")
+    if not rows:
+        return CheckResult("ok", "no rejections in 24h (good — or instrumentation not yet writing)")
+    total = sum(int(r.get("n") or 0) for r in rows)
+    if total == 0:
+        return CheckResult("ok", "0 rejections recorded")
+    dominant = max(rows, key=lambda r: int(r.get("n") or 0))
+    dominant_share = int(dominant["n"]) / total
+    status = "warning" if dominant_share >= 0.60 else "ok"
+    return CheckResult(
+        status,
+        f"24h rejections: {total} total, dominant={dominant['fail_reason']} ({dominant_share:.0%})",
+        observed=dominant_share,
+        threshold=0.60,
+        meta={"mix": {r["fail_reason"]: int(r["n"]) for r in rows}},
+    )
+
+
 CHECKS = [
-    Check("recent_runs",        recent_runs,        depends_on=["pulsecheck_foundation"]),
-    Check("cap_consumption",    cap_consumption,    depends_on=["pulsecheck_foundation"]),
-    Check("candidate_dryness",  candidate_dryness,  depends_on=["pulsecheck_foundation"]),
+    Check("recent_runs",            recent_runs,            depends_on=["pulsecheck_foundation"]),
+    Check("cap_consumption",        cap_consumption,        depends_on=["pulsecheck_foundation"]),
+    Check("candidate_dryness",      candidate_dryness,      depends_on=["pulsecheck_foundation"]),
+    Check("rejection_distribution", rejection_distribution, depends_on=["pulsecheck_foundation"]),
 ]
 
 

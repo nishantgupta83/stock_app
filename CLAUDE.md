@@ -188,6 +188,31 @@ Layer 6 — PRESENTATION (read-only)
   a defined scope; shared facts have a single owner with `depends_on`
   declarations to prevent cascading false alarms.
 
+**Thesis rejection audit (added 2026-06-02):**
+- `stock_thesis_rejections` — append-only audit of clusters dropped by
+  thesis_agent before emit. Records fail_reason (cluster_passes vs
+  action_empty_low_score), score, catalyst_score, breakdown sample.
+  Used to measure WHICH gate is binding so the next thesis fix is
+  data-driven.
+- `stock_thesis_rejection_mix` (view) — rolling 24h fail_reason
+  distribution. Consumed by `pulsecheck_thesis.rejection_distribution`.
+
+**8. price_agent now has a stock_raw_prices fallback (2026-06-02).**
+- Prior bug: `fetch_bars` was yfinance-only. On transient failures it
+  returned `{}` and reconcile silently skipped the trade with `if not
+  bars: continue` — no log, no counter. The 513-stuck-h1d incident
+  traced to this. Trades stayed open across every subsequent run.
+- Fix: `fetch_bars` tries yfinance, falls back to `stock_raw_prices`
+  via `_bars_from_raw_prices`. Skip counters land in
+  `stock_job_runs.meta.reconcile.{n_skipped_no_bars, n_skipped_no_outcome,
+  skipped_tickers}`. `pulsecheck_price_agent.reconcile_skip_rate` reads
+  that meta and warns at >5% skip.
+- Cron bumped from `30 21 * * 1-5` (once daily) to `0 */2 * * 1-5`
+  (every 2h weekday) so transient yfinance hiccups recover within hours
+  rather than days.
+- One-shot cleanup: `scripts/close_stuck_paper_trades.py` resolved the
+  existing 513-trade backlog on 2026-06-02.
+
 **Feature flags (env vars):**
 - `SECTOR_CALIB_MULT_ENABLED` — toggles sector-aware scoring in `thesis_agent`.
   Default off. When on, score_evidence multiplies event-tied rule points by the

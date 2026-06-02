@@ -1,12 +1,15 @@
 name: price_agent
 
-# EOD learning loop — reconciles open signals against actual closing prices.
-# Runs at 21:30 UTC (4:30 PM ET) every weekday after US market close.
+# Reconciles open signals + paper trades against actual closing prices.
+# Cadence (2026-06-02 bump): every 2h on weekdays. Previously once daily
+# (30 21 * * 1-5) which left transient yfinance failures uncorrected for
+# 24h+ — the 513-stuck-h1d incident traced to this. The 2h cadence catches
+# both intraday catch-up runs AND post-close (21:00 UTC) settlement.
 # Safety: only repo secrets used; no untrusted user input interpolated into shell.
 
 on:
   schedule:
-    - cron: "30 21 * * 1-5"
+    - cron: "0 */2 * * 1-5"
   workflow_dispatch:
 
 concurrency:
@@ -18,14 +21,14 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
       - name: Record workflow start
         env:
           SUPABASE_URL:         ${{ secrets.SUPABASE_URL }}
           SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
         run: python agents/ops_recorder.py --phase start --agent workflow_price_agent
 
-      - uses: actions/setup-python@v5
+      - uses: actions/setup-python@v6
         with:
           python-version: "3.12"
           cache: pip

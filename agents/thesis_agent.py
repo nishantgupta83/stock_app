@@ -1199,6 +1199,77 @@ def action_for(score: float, direction: str, has_mature_rule: bool = False,
     return ""  # suppress
 
 
+def _record_rejected_clusters(thesis_run_id: int | None, scored: list[dict]) -> None:
+    """Audit clusters dropped by the candidate filter. See stock_thesis_rejections."""
+    rows = []
+    for s in scored:
+        cluster_ok = s.get("cluster_ok", False)
+        action = s.get("action") or ""
+        # Skip the happy-path clusters — those become signals, not rejections.
+        if cluster_ok and action:
+            continue
+        # Classify the binding gate. cluster_passes is the first checkpoint;
+        # if it failed, that's the reason. If it passed but action is empty,
+        # the score gate is the reason.
+        if not cluster_ok:
+            fail_reason = "cluster_passes"
+        else:
+            fail_reason = "action_empty_low_score"
+        # Compact breakdown sample — top 3 rules by abs(points) for context.
+        breakdown = s.get("breakdown") or []
+        try:
+            top3 = sorted(
+                (b for b in breakdown if isinstance(b, dict) and b.get("rule")),
+                key=lambda b: abs(float(b.get("points") or 0)),
+                reverse=True,
+            )[:3]
+            breakdown_sample = [
+                {"rule": b.get("rule"), "points": b.get("points"),
+                 "role": b.get("role"), "event_id": b.get("event_id")}
+                for b in top3
+            ]
+        except Exception:
+            breakdown_sample = []
+        # Source-agent set from the events in the cluster.
+        events = s.get("events") or []
+        try:
+            source_agents = sorted({source_agent_for(e) for e in events
+                                    if source_agent_for(e)})
+        except Exception:
+            source_agents = []
+        rows.append({
+            "thesis_run_id":     thesis_run_id,
+            "cluster_ticker":    s.get("ticker"),
+            "cluster_bucket":    s.get("bucket"),
+            "n_events":          len(events),
+            "source_agents":     source_agents,
+            "direction":         s.get("direction"),
+            "score":             float(s.get("score") or 0),
+            "catalyst_score":    float(s.get("catalyst_score") or 0),
+            "context_score":     float(s.get("context_score") or 0),
+            "background_score":  float(s.get("background_score") or 0),
+            "fail_reason":       fail_reason,
+            "cluster_label":     s.get("cluster_label"),
+            "action":            action,
+            "breakdown_sample":  breakdown_sample,
+        })
+    if not rows:
+        return
+    # Chunked POST — keep payload small even when a market-open run has
+    # hundreds of clusters.
+    chunk = 100
+    for i in range(0, len(rows), chunk):
+        try:
+            requests.post(
+                f"{SUPABASE_URL}/rest/v1/stock_thesis_rejections",
+                headers={**HEADERS_SB, "Prefer": "return=minimal"},
+                json=rows[i:i + chunk],
+                timeout=20,
+            )
+        except Exception as e:  # noqa: BLE001
+            print(f"  rejection batch {i}: {e}", file=sys.stderr)
+
+
 def fetch_rule_calibration() -> dict[str, dict]:
     """{rule_key → {accuracy, n_observations, is_mature}} from stock_rule_calibration.
     Empty dict on any failure → callers fall through to base scoring (no learned weight)."""
@@ -1706,6 +1777,20 @@ def main() -> int:
                 "news_causal_promoted": news_causal_promoted,
                 "news_top_headline":    news_top_causal_headline,
             })
+
+        # Audit rejected clusters BEFORE filtering — record one row per cluster
+        # that gets dropped so we can measure which gate is binding. Three
+        # buckets of rejection are interesting:
+        #   * cluster_passes failure (cluster_ok=False) — cluster_label has the reason
+        #   * action=="" (score<50 or non-bullish low-score) — score_too_low
+        #   * cluster_ok but downgraded to MOMENTUM_ONLY because catalyst_score==0
+        #     — these DO pass through (kept in candidates) but worth recording
+        #     so we can quantify the catalyst-class gap separately.
+        # Wrapped in try so a transient DB issue can't break thesis_agent itself.
+        try:
+            _record_rejected_clusters(run_id, scored)
+        except Exception as _rej_exc:  # noqa: BLE001
+            print(f"  rejection audit failed (non-fatal): {_rej_exc}", file=sys.stderr)
 
         # Filter: must pass cluster + have non-empty action
         candidates = [s for s in scored if s["cluster_ok"] and s["action"]]
