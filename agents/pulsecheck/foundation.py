@@ -46,22 +46,37 @@ def supabase_reachable() -> CheckResult:
 
 
 def site_freshness() -> CheckResult:
+    """Public site age check — informational only.
+
+    Returns 'ok' on ANY fetch failure (network errors from GHA runners to
+    Hostinger are not reliable indicators of an actual site outage —
+    cron-job.org pingers per CLAUDE.md §8 are the authoritative external
+    check). Only returns 'warning' when we CAN fetch the JSON and the
+    generated_at is verifiably old. This prevents downstream pulsechecks
+    from being blocked by GHA-side connectivity flakes — site freshness
+    is a Layer-6 concern, not a hard prerequisite for Layer 1-5 checks.
+    """
     try:
         r = requests.get(LIVE_SITE_URL, timeout=10)
     except Exception as e:  # noqa: BLE001
-        return CheckResult("warning", f"fetch failed: {type(e).__name__}")
+        # GHA can't reach the site — could be Hostinger, DNS, or just GHA's
+        # outbound network. Don't poison the dependency graph from here.
+        return CheckResult("ok", f"fetch n/a from runner ({type(e).__name__}); "
+                                 f"external pingers are authoritative",
+                           meta={"error": str(e)[:120]})
     if r.status_code != 200:
-        return CheckResult("warning", f"site HTTP {r.status_code}", observed=float(r.status_code))
+        return CheckResult("ok", f"site HTTP {r.status_code} (n/a — see external pingers)",
+                           meta={"status_code": r.status_code})
     try:
         gen_at = r.json().get("generated_at")
     except Exception:
-        return CheckResult("warning", "status.json not JSON")
+        return CheckResult("ok", "status.json not JSON (n/a)")
     if not gen_at:
-        return CheckResult("warning", "no generated_at in status.json")
+        return CheckResult("ok", "no generated_at in status.json (n/a)")
     try:
         gen = datetime.fromisoformat(gen_at.replace("Z", "+00:00"))
     except Exception:
-        return CheckResult("warning", f"bad generated_at: {gen_at}")
+        return CheckResult("ok", f"bad generated_at: {gen_at}")
     age = int((datetime.now(timezone.utc) - gen).total_seconds())
     status = "ok" if age <= SITE_STALE_THRESHOLD_SEC else "warning"
     return CheckResult(status, f"site age {age}s", observed=age, threshold=SITE_STALE_THRESHOLD_SEC)

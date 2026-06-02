@@ -60,7 +60,11 @@ def _freshness(agent_name: str, hours: int) -> CheckResult:
 
 def filing_agent_fresh() -> CheckResult:    return _freshness("filing_agent", 2)
 def truth_social_fresh() -> CheckResult:    return _freshness("truth_social_agent", 2)
-def earnings_agent_fresh() -> CheckResult:  return _freshness("earnings_agent", 6)
+def earnings_agent_fresh() -> CheckResult:
+    # earnings_agent.yml cron is `0 12 * * 0` (Sundays only) per the repo's
+    # current cadence. A 6h threshold made this warn every weekday-night.
+    # 7 days + 12h slack gives one Sunday-window grace.
+    return _freshness("earnings_agent", 7 * 24 + 12)
 
 
 CHECKS = [
