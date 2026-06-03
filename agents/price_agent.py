@@ -496,20 +496,44 @@ def fetch_open_paper_trades_to_close() -> list[dict]:
     close has passed). Conservative: include trades older than 1 day so we
     don't try to reconcile something opened 5 minutes ago.
 
-    Limit 2000: a bulk backfill can leave hundreds of legitimately-open
-    h=30 trades pinned to the queue head (their exit window hasn't arrived
-    yet), and a too-tight limit blocks newer closeable trades from being
-    seen at all. 2000 is comfortably above any expected backfill cohort
-    while staying within a single PostgREST response."""
+    Paginates because PostgREST silently caps single-page responses at 2000
+    rows. The 2000-row cap previously made the OLDEST 2000 (mostly h30/h15
+    backfill trades whose exit_target hasn't arrived yet) hide newer
+    closeable h1d trades — the same shape that caused the 2026-06-02
+    513-stuck-h1d incident, just at the production-run level instead of
+    the cleanup-script level. ASC order is preserved so each page is
+    deterministic; we de-dupe by id in case of rare race conditions.
+    """
     cutoff = (datetime.now(timezone.utc) - timedelta(days=1)).date().isoformat()
-    return sb_get("stock_event_paper_trades", {
-        "status":   "eq.open",
-        "entry_at": f"lte.{cutoff}T23:59:59+00:00",
-        "select":   "id,event_id,event_type,event_subtype,ticker,direction,"
-                    "entry_at,entry_price,horizon_days,rule_key,vehicle_type",
-        "order":    "entry_at.asc",
-        "limit":    "2000",
-    })
+    out: list[dict] = []
+    seen: set[int] = set()
+    offset = 0
+    page = 1000
+    while True:
+        rows = sb_get("stock_event_paper_trades", {
+            "status":   "eq.open",
+            "entry_at": f"lte.{cutoff}T23:59:59+00:00",
+            "select":   "id,event_id,event_type,event_subtype,ticker,direction,"
+                        "entry_at,entry_price,horizon_days,rule_key,vehicle_type",
+            "order":    "entry_at.asc",
+            "limit":    str(page),
+            "offset":   str(offset),
+        })
+        if not rows:
+            break
+        for r in rows:
+            if r.get("id") in seen:
+                continue
+            seen.add(r["id"])
+            out.append(r)
+        if len(rows) < page:
+            break
+        offset += page
+        # Hard cap at 50k to avoid runaway pagination in pathological cases.
+        if offset >= 50_000:
+            print(f"  fetch_open_paper_trades_to_close: cut at 50k rows", file=sys.stderr)
+            break
+    return out
 
 
 def fetch_archive_index() -> dict:
