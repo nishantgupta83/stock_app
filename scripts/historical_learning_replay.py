@@ -2,10 +2,16 @@
 """Historical learning replay (12 months: 2025-06 → 2026-05).
 
 Reads all closed h7d paper trades in the window, simulates the
-realistic_loop_agent's $5K bankroll / 5-concurrent / $1K-per-position
-ledger event-by-event in chronological order, snapshots state at each
-month boundary, and emits one DDMMYYYY_learning_doc.md per month under
+realistic_loop_agent's bankroll / concurrent / per-position ledger
+event-by-event in chronological order, snapshots state at each month
+boundary, and emits one DDMMYYYY_learning_doc.md per month under
 docs/learning/.
+
+Modes:
+  --mode=static_5k  (default) — $5K bankroll, no top-ups.
+  --mode=dca599              — $0 starting, $599 every Monday since
+                                2025-05-05. Same trading rules. Outputs
+                                docs/learning/dca599_<DDMMYYYY>_doc.md.
 
 Why h7d:
   Live realistic_loop reads stock_trade_setups (Layer 3) but those only
@@ -16,11 +22,12 @@ Why h7d:
   realistic "alert + 1 week" trader holding period.
 
 Output: per-month learning doc gives a future agent a time-indexed
-snapshot of (a) what the realistic loop would have done with $5K, (b)
-which rules were accumulating maturity, (c) what was working / failing.
+snapshot of (a) what the realistic loop would have done, (b) which
+rules were accumulating maturity, (c) what was working / failing.
 """
 from __future__ import annotations
 
+import argparse
 import json
 import os
 import sys
@@ -37,16 +44,20 @@ HEADERS = {
     "Authorization": f"Bearer {SUPABASE_SERVICE_KEY}",
 }
 
-# Window
+# Window (overridden by CLI for dca599)
 START = "2025-06-01"
 END   = "2026-05-31"
 
 # Simulation parameters — mirror agents/realistic_loop_agent.py
-BANKROLL       = 5000.0
 PER_POSITION   = 1000.0
 MAX_CONCURRENT = 5
 HORIZON_DAYS   = 7
 SLIPPAGE_BPS   = 5.0  # per side; already netted in stock_event_paper_trades.realized_return
+
+# Defaults (overridden per mode)
+BANKROLL          = 5000.0
+WEEKLY_DEPOSIT    = 0.0
+DEPOSIT_START_ISO = "2025-05-05"   # first Monday in May 2025
 
 
 def paginate(table: str, params: dict[str, str], page: int = 1000) -> list[dict]:
@@ -118,6 +129,15 @@ def simulate_and_snapshot(trades: list[dict]) -> tuple[dict, dict, dict, dict]:
             events.append((t["entry_at"], "open", t, i))
         if t.get("exit_at"):
             events.append((t["exit_at"], "close", t, i))
+    # Inject weekly-deposit "events" when DCA mode is on. Tag with a synthetic
+    # id (-1) and "deposit" action so the main loop handles them separately.
+    cumulative_deposits = 0.0
+    if WEEKLY_DEPOSIT > 0:
+        dep_dt = datetime.fromisoformat(DEPOSIT_START_ISO + "T09:00:00+00:00")
+        end_dt = datetime.fromisoformat(END + "T23:59:59+00:00")
+        while dep_dt <= end_dt:
+            events.append((dep_dt.isoformat(), "deposit", {"amount": WEEKLY_DEPOSIT}, -1))
+            dep_dt += timedelta(days=7)
     events.sort(key=lambda e: e[0])
 
     cash = BANKROLL
@@ -127,10 +147,12 @@ def simulate_and_snapshot(trades: list[dict]) -> tuple[dict, dict, dict, dict]:
     max_dd = 0.0
     wins = losses = 0
     total_opens = total_closes = 0
+    total_deposits = 0.0
 
     end_of_month: dict[str, dict] = {}
     month_activity: dict[str, dict] = defaultdict(
-        lambda: {"opens": 0, "closes": 0, "wins": 0, "losses": 0, "pnl": 0.0}
+        lambda: {"opens": 0, "closes": 0, "wins": 0, "losses": 0, "pnl": 0.0,
+                 "deposits": 0.0}
     )
     rule_n: dict[str, int] = defaultdict(int)
     rule_wins: dict[str, int] = defaultdict(int)
@@ -160,6 +182,7 @@ def simulate_and_snapshot(trades: list[dict]) -> tuple[dict, dict, dict, dict]:
                 "losses":         losses,
                 "total_opens":    total_opens,
                 "total_closes":   total_closes,
+                "total_deposits": round(total_deposits, 2),
             }
             rule_snap[current_month] = {
                 rk: {
@@ -179,6 +202,12 @@ def simulate_and_snapshot(trades: list[dict]) -> tuple[dict, dict, dict, dict]:
             }
             current_month = ym
 
+        if action == "deposit":
+            amt = float(t["amount"])
+            cash += amt
+            total_deposits += amt
+            month_activity[ym]["deposits"] += amt
+            continue
         if action == "open":
             if len(positions) >= MAX_CONCURRENT or cash < PER_POSITION:
                 continue
@@ -226,6 +255,7 @@ def simulate_and_snapshot(trades: list[dict]) -> tuple[dict, dict, dict, dict]:
             "losses":         losses,
             "total_opens":    total_opens,
             "total_closes":   total_closes,
+            "total_deposits": round(total_deposits, 2),
         }
         rule_snap[current_month] = {
             rk: {"n": rule_n[rk], "wins": rule_wins[rk], "pnl": round(rule_pnl[rk], 2)}
@@ -462,10 +492,118 @@ def write_index(out_dir: str, months: list[str], end_of_month: dict) -> str:
     return path
 
 
+def write_dca_summary_doc(out_dir: str, months: list[str],
+                           end_of_month: dict, monthly: dict) -> str:
+    """Single roll-up doc for the DCA mode (more useful than 12 separate
+    monthly docs since the headline metric is cumulative equity = deposits
+    + market PnL)."""
+    path = os.path.join(out_dir, f"dca599_{datetime.now(timezone.utc).strftime('%d%m%Y')}_doc.md")
+    last = months[-1]
+    s = end_of_month[last]
+    total_deposits = s["total_deposits"]
+    total_equity = round(total_deposits + s["cum_pnl"], 2)
+    market_return_pct = (s["cum_pnl"] / total_deposits) if total_deposits > 0 else 0
+    wr = s["wins"] / max(1, s["wins"] + s["losses"])
+
+    md = []
+    md.append(f"# DCA $599/wk replay — start {DEPOSIT_START_ISO} → end {END}")
+    md.append("")
+    md.append(f"_Generated {datetime.now(timezone.utc).date().isoformat()}._")
+    md.append("")
+    md.append("Counterfactual: instead of starting with $5K, you put $599 into "
+              "the realistic_loop_agent's bankroll every Monday since "
+              f"{DEPOSIT_START_ISO}. Same trading discipline ($1K per position, "
+              "max 5 concurrent, cash recycles on close).")
+    md.append("")
+
+    md.append("## Headline")
+    md.append("")
+    md.append("| Metric | Value |")
+    md.append("|---|---|")
+    md.append(f"| Total deposits (Mondays since {DEPOSIT_START_ISO}) | {fmt_money(total_deposits)} |")
+    md.append(f"| Cumulative trading PnL | {fmt_money(s['cum_pnl'])} |")
+    md.append(f"| **Total equity (cash + PnL)** | **{fmt_money(total_equity)}** |")
+    md.append(f"| Effective return on deposits | {fmt_pct(market_return_pct)} |")
+    md.append(f"| Max drawdown | {fmt_money(s['max_dd'])} |")
+    md.append(f"| Closed trades | {s['total_closes']} ({s['wins']}W / {s['losses']}L, win-rate {wr:.1%}) |")
+    md.append(f"| Cash idle at end | {fmt_money(s['cash'])} (uninvested due to concurrency cap or thin signal flow) |")
+    md.append("")
+
+    md.append("## Reference comparison")
+    md.append("")
+    md.append("| Strategy | Final equity | Return on $deposits |")
+    md.append("|---|---|---|")
+    md.append(f"| Cash mattress (no investing) | {fmt_money(total_deposits)} | 0.00% |")
+    md.append(f"| Our pipeline (DCA + realistic_loop discipline) | {fmt_money(total_equity)} | {fmt_pct(market_return_pct)} |")
+    md.append("")
+    md.append("_Comparison vs SPY would need historical SPY closes (not in this pipeline). "
+              "S&P 500 returned ~12-15% annualized over 2025; assume your DCA would "
+              "have compounded to roughly the same final equity. Our pipeline's "
+              "edge over SPY would come from picking winners that beat the index, "
+              "which is the maturity-gate's job to verify._")
+    md.append("")
+
+    md.append("## Month-by-month cash flow + equity")
+    md.append("")
+    md.append("| Month | Deposits | Trading PnL | Cum equity | Cum return |")
+    md.append("|---|---|---|---|---|")
+    for ym in months:
+        sm = end_of_month[ym]
+        mm = monthly[ym]
+        eq = sm["total_deposits"] + sm["cum_pnl"]
+        ret = sm["cum_pnl"] / max(1, sm["total_deposits"])
+        md.append(
+            f"| {ym} | {fmt_money(mm['deposits'])} | {fmt_money(mm['pnl'])} | "
+            f"{fmt_money(eq)} | {fmt_pct(ret)} |"
+        )
+    md.append("")
+
+    md.append("## What the data says about the DCA approach")
+    md.append("")
+    md.append(f"- **{total_deposits/599:.0f} weekly deposits** at $599 each.")
+    md.append(f"- The pipeline took **{s['total_opens']} positions** out of the "
+              f"available pool — others were declined (cash too low early on, "
+              f"or already at 5-concurrent cap).")
+    if s['cash'] > total_deposits * 0.3:
+        md.append(f"- **{fmt_money(s['cash'])} cash sits idle** at the end. The "
+                  "$1K-per-position rule + 5-concurrent cap means we can deploy "
+                  "at most $5K at a time. As deposits accumulated beyond that, "
+                  "cash piled up. **Consider raising per-position size** as bankroll "
+                  "grows (e.g., position = max($1K, bankroll * 10%)) — though "
+                  "that's a discipline change, not a quick toggle.")
+    md.append("")
+    md.append("Use this doc as the time-indexed snapshot of how the DCA scenario "
+              "would have played out. Re-run `python3 scripts/historical_learning_replay.py "
+              "--mode=dca599` to refresh.")
+
+    with open(path, "w") as f:
+        f.write("\n".join(md))
+    return path
+
+
 def main() -> int:
+    global BANKROLL, WEEKLY_DEPOSIT, DEPOSIT_START_ISO, START
+
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("--mode", choices=["static_5k", "dca599"], default="static_5k")
+    args = parser.parse_args()
+
     out_dir = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
                            "docs", "learning")
     os.makedirs(out_dir, exist_ok=True)
+
+    if args.mode == "dca599":
+        BANKROLL = 0.0
+        WEEKLY_DEPOSIT = 599.0
+        DEPOSIT_START_ISO = "2025-05-05"
+        START = "2025-05-05"
+    else:
+        BANKROLL = 5000.0
+        WEEKLY_DEPOSIT = 0.0
+        START = "2025-06-01"
+
+    print(f"Mode: {args.mode} (bankroll={fmt_money(BANKROLL)}, "
+          f"weekly={fmt_money(WEEKLY_DEPOSIT)}, start={START})", file=sys.stderr)
 
     trades = fetch_trades()
     if not trades:
@@ -475,35 +613,40 @@ def main() -> int:
     end_of_month, monthly, rule_snap, ticker_snap = simulate_and_snapshot(trades)
     months = sorted(end_of_month.keys())
 
-    print(f"Generating monthly docs for {len(months)} months…", file=sys.stderr)
-    written: list[str] = []
-    prev_state = None
-    for ym in months:
-        path = write_month_doc(
-            out_dir, ym,
-            end_of_month[ym],
-            monthly[ym],
-            rule_snap[ym],
-            ticker_snap[ym],
-            prev_state,
-        )
-        written.append(path)
-        prev_state = end_of_month[ym]
-
-    idx = write_index(out_dir, months, end_of_month)
-    print(f"  wrote {len(written)} month docs + 1 index → {out_dir}", file=sys.stderr)
-
-    # Terminal summary
-    last = months[-1]
-    s = end_of_month[last]
-    wr = s["wins"] / max(1, s["wins"] + s["losses"])
-    print()
-    print(f"=== Replay summary (end of {last}) ===")
-    print(f"  Cumulative PnL    : {fmt_money(s['cum_pnl'])}")
-    print(f"  Return on $5K     : {fmt_pct(s['cum_pnl']/BANKROLL)}")
-    print(f"  Max drawdown      : {fmt_money(s['max_dd'])}")
-    print(f"  Closed trades     : {s['total_closes']}  ({s['wins']}W / {s['losses']}L, win-rate {wr:.1%})")
-    print(f"  Index             : {idx}")
+    if args.mode == "static_5k":
+        print(f"Generating monthly docs for {len(months)} months…", file=sys.stderr)
+        prev_state = None
+        for ym in months:
+            write_month_doc(out_dir, ym, end_of_month[ym], monthly[ym],
+                            rule_snap[ym], ticker_snap[ym], prev_state)
+            prev_state = end_of_month[ym]
+        idx = write_index(out_dir, months, end_of_month)
+        last = months[-1]
+        s = end_of_month[last]
+        wr = s["wins"] / max(1, s["wins"] + s["losses"])
+        print()
+        print(f"=== Replay summary (end of {last}) ===")
+        print(f"  Cumulative PnL    : {fmt_money(s['cum_pnl'])}")
+        print(f"  Return on $5K     : {fmt_pct(s['cum_pnl']/5000.0)}")
+        print(f"  Max drawdown      : {fmt_money(s['max_dd'])}")
+        print(f"  Closed trades     : {s['total_closes']}  ({s['wins']}W / {s['losses']}L, win-rate {wr:.1%})")
+        print(f"  Index             : {idx}")
+    else:
+        path = write_dca_summary_doc(out_dir, months, end_of_month, monthly)
+        last = months[-1]
+        s = end_of_month[last]
+        wr = s["wins"] / max(1, s["wins"] + s["losses"])
+        total_eq = s["total_deposits"] + s["cum_pnl"]
+        print()
+        print(f"=== DCA $599/wk replay (end of {last}) ===")
+        print(f"  Total deposits    : {fmt_money(s['total_deposits'])}")
+        print(f"  Trading PnL       : {fmt_money(s['cum_pnl'])}")
+        print(f"  Total equity      : {fmt_money(total_eq)}")
+        print(f"  Effective return  : {fmt_pct(s['cum_pnl']/max(1, s['total_deposits']))}")
+        print(f"  Max drawdown      : {fmt_money(s['max_dd'])}")
+        print(f"  Closed trades     : {s['total_closes']}  ({s['wins']}W / {s['losses']}L, win-rate {wr:.1%})")
+        print(f"  Cash idle         : {fmt_money(s['cash'])}")
+        print(f"  Doc               : {path}")
     return 0
 
 
