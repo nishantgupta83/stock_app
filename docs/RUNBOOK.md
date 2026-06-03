@@ -349,3 +349,73 @@ includes `actions:write` for the same repo). No PAT is required.
 - GitHub Actions outage: nothing helps. Wait it out.
 - PAT revoked / expired: pinger fires return 401; cron-job.org emails after 2
   consecutive 401s; rotate via the procedure in §8.3.
+
+## 9. Learning artifacts cadence (monthly / quarterly)
+
+Added 2026-06-03. Three layers of time-indexed learning docs in
+`docs/learning/`:
+
+### 9.1 Monthly reconciliation
+
+Run at end of each month (or on demand) to regenerate the full
+sequential replay through the most recent data:
+
+```bash
+SUPABASE_URL="..." SUPABASE_SERVICE_KEY="..." \
+  python3 scripts/sequential_monthly_replay.py
+```
+
+Writes / overwrites:
+- `docs/learning/YYYYMM_monthly_reconc.md` — one per month, ~14 files.
+- `docs/learning/YYYYQq_quarterly_review.md` — auto-emitted at quarter ends.
+- `docs/learning/sequential_replay_summary_DDMMYYYY.md` — master roll-up.
+
+Idempotent. Each run uses the current state of
+`stock_event_paper_trades`, so re-running pulls in any new closed
+trades since the last run.
+
+### 9.2 Live quarterly consultant
+
+The "independent consultant" — a deterministic rule-based reviewer
+that reads live calibration + pulsecheck + recent monthly docs and
+produces actionable recommendations.
+
+```bash
+SUPABASE_URL="..." SUPABASE_SERVICE_KEY="..." \
+  python3 scripts/quarterly_consultant_review.py
+```
+
+Writes `docs/learning/YYYYQq_consultant_review.md` for the quarter
+that just ended. Run quarterly (early in the next quarter), or on
+demand whenever significant calibration changes have landed.
+
+The doc lists concrete actions: rule flips, structural skips, sizing
+amplifications. The operator decides which to ship — the consultant
+does not auto-apply anything.
+
+### 9.3 Pipeline-maturity scorecard
+
+Per-agent / per-layer maturity audit:
+
+```bash
+SUPABASE_URL="..." SUPABASE_SERVICE_KEY="..." \
+  python3 scripts/pipeline_maturity_audit.py
+```
+
+Writes `docs/pipeline-maturity-DDMMYYYY.md` showing operational %,
+coverage volume, calibration depth, and actionable tier population.
+
+### 9.4 What to do with the consultant's recommendations
+
+1. Read the latest `YYYYQq_consultant_review.md`.
+2. For each recommended flip, decide: does the evidence (n, acc, PF)
+   justify reversing direction?
+3. If yes: add the `rule_key` to a `STRUCTURAL_FLIP` set in
+   `agents/thesis_agent.py`, gate behind a new env-flag (mirror the
+   `SECTOR_CALIB_MULT_ENABLED` pattern), push, watch
+   `pulsecheck_thesis.rejection_distribution` for 2 weeks.
+4. Re-run the consultant after 2 weeks to confirm impact.
+
+This is the closed-loop operator workflow. The consultant proposes
+based on data; the operator decides; the pipeline learns from the
+applied change.

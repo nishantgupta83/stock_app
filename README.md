@@ -84,6 +84,11 @@ those three constraints in code:
 - [`docs/next-phases-roadmap.md`](docs/next-phases-roadmap.md) — phase ledger + open backlog
 - [`docs/RUNBOOK.md`](docs/RUNBOOK.md) — autonomous operation, failure modes, recovery
 - [`docs/ml-roadmap.md`](docs/ml-roadmap.md) — what "learning" actually means here (empirical calibration, not trained ML), four gate criteria for adding a real classifier, and the two specific decisions that would justify one
+- [`docs/pulsecheck.md`](docs/pulsecheck.md) — per-workflow health-monitoring framework (added 2026-06-02): how `agents/pulsecheck/*` agents work, dependency graph, when to extend
+- [`docs/realistic-loop.md`](docs/realistic-loop.md) — $5K shadow paper-trade portfolio design (loop isolation, sizing, lifecycle)
+- [`docs/learning/`](docs/learning/) — three-layer time-indexed learning record: monthly reconciliations, quarterly reviews, and on-demand live consultant. See [`docs/learning/README.md`](docs/learning/README.md) for the reading order
+- [`docs/findings/`](docs/findings/) — deferred-action findings (research artifacts whose action is deferred — see each doc's "what would change my mind" trigger)
+- Most recent pipeline-maturity scorecard: `docs/pipeline-maturity-DDMMYYYY.md` (regenerable via `python3 scripts/pipeline_maturity_audit.py`)
 
 ## Stack
 
