@@ -109,6 +109,37 @@ MAX_ALERTS_PER_DAY   = 5
 # have legitimately emitted MOMENTUM_ONLY signals (paper-tier, BUY/SELL
 # still maturity-gated). Feature flag (default off — flip via secret).
 CLUSTER_SCORE_OVERRIDE_THRESHOLD = 50.0
+
+# Structural flips: rule_keys with n>=30, PF<1.0, acc<50% per the 2026-06-03
+# quarterly consultant review. When STRUCTURAL_FLIP_ENABLED, signals whose
+# event-set is dominated by these rule_keys get their direction inverted
+# (bullish→bearish, bearish→bullish) at emit time.
+#
+# IMPORTANT: this only affects the LIVE thesis emit. event_paper_agent +
+# price_agent continue to record paper trades under the ORIGINAL direction
+# convention, so the calibration loop keeps producing the verdict ("this
+# rule loses money in this direction"). The flip is the operator's response
+# to that verdict, applied downstream. If a flip turns out to be wrong, the
+# calibration data is uncorrupted — disable the flag and we revert cleanly.
+#
+# Each rule's evidence at flip time (cited in docs/learning/2026Q1_consultant_review.md):
+#   filing_13g::h1d           n=95   acc=33.7%  PF=0.34
+#   earnings_release:miss:h30d n=124  acc=46.8%  PF=0.57
+#   earnings_release:miss:h15d n=145  acc=47.6%  PF=0.65
+#   8k_material_event::h1d    n=1168 acc=45.3%  PF=0.67
+#   earnings_release:beat:h1d  n=474  acc=43.2%  PF=0.79
+#
+# We use the LIVE-horizon rule_key (h1d, per horizon_for()) for the lookup.
+# Trades on longer horizons still calibrate as usual; the flip only fires
+# when the cluster's h1d-projection lands in this set.
+STRUCTURAL_FLIP: set[str] = {
+    "filing_13g::h1d",
+    "earnings_release:miss:h30d",
+    "earnings_release:miss:h15d",
+    "8k_material_event::h1d",
+    "earnings_release:beat:h1d",
+}
+
 # Chase-risk threshold: if the price has already moved >5% in the cluster's
 # direction since the earliest event, downgrade WATCH→RESEARCH (the move is
 # already in the price; we'd be chasing). Bearish AVOID_CHASE doesn't get
@@ -1314,6 +1345,55 @@ def _cluster_score_override_enabled() -> bool:
     return os.environ.get("CLUSTER_SCORE_OVERRIDE_ENABLED", "").lower() in ("1", "true", "yes")
 
 
+def _structural_flip_enabled() -> bool:
+    """Feature flag for the rule-key-based direction flip (default OFF).
+
+    Five rules currently in STRUCTURAL_FLIP — each backed by n>=30 evidence
+    of negative edge in their current direction. When ON, signals dominated
+    by these rule_keys emit the OPPOSITE direction."""
+    return os.environ.get("STRUCTURAL_FLIP_ENABLED", "").lower() in ("1", "true", "yes")
+
+
+def apply_structural_flip(events: list[dict], direction: str,
+                          breakdown: list[dict]) -> str:
+    """If the cluster's live-horizon rule_keys are dominated by STRUCTURAL_FLIP
+    rules, invert the direction. Adds a breakdown entry for traceability.
+
+    Dominance rule: >=50% of the cluster's events have a rule_key (computed
+    at h1d, the live emit horizon) in STRUCTURAL_FLIP. Below 50% we don't
+    flip — a single flipped event in a multi-source cluster shouldn't override
+    the rest.
+
+    Returns the (possibly flipped) direction."""
+    if not _structural_flip_enabled() or not STRUCTURAL_FLIP:
+        return direction
+    if direction not in ("bullish", "bearish"):
+        # neutral, mixed, etc. — flip is undefined
+        return direction
+    flipped = []
+    for e in events:
+        et = e.get("event_type")
+        if not et:
+            continue
+        rk = _rule_key.derive(et, e.get("event_subtype"), 1)
+        if rk in STRUCTURAL_FLIP:
+            flipped.append(rk)
+    if not flipped or len(flipped) * 2 < len(events):
+        return direction
+    new_direction = "bearish" if direction == "bullish" else "bullish"
+    breakdown.append({
+        "rule":       "structural_flip_applied",
+        "points":     0,
+        "raw_points": 0,
+        "event_id":   None,
+        "detail":     f"{direction}→{new_direction} based on {len(flipped)}/{len(events)} "
+                      f"flipped rule_keys: {sorted(set(flipped))[:3]}",
+        "role":       "bonus",
+        "catalyst_ok": True,
+    })
+    return new_direction
+
+
 def fetch_sector_multipliers() -> dict[tuple[str, str], float]:
     """{(rule_key, sector) → multiplier} from stock_rule_sector_multiplier view.
 
@@ -1721,6 +1801,11 @@ def main() -> int:
                 ticker_sectors=ticker_sectors,
             )
             direction = signal_direction(ev_list)
+            # Structural flip: if STRUCTURAL_FLIP_ENABLED and >=50% of the
+            # cluster's events are in the flip set, invert the direction. The
+            # flip is reflected in the breakdown so downstream audits can see
+            # which signals were flipped and why.
+            direction = apply_structural_flip(ev_list, direction, breakdown)
 
             # Apply intelligence bonuses
             sb, sb_detail = sector_cluster_bonus(ticker, direction, wide_events, watchlist_map)

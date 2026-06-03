@@ -38,6 +38,7 @@ jobs:
           TELEGRAM_CHAT_ID:                ${{ secrets.TELEGRAM_CHAT_ID }}
           SECTOR_CALIB_MULT_ENABLED:       ${{ secrets.SECTOR_CALIB_MULT_ENABLED }}
           CLUSTER_SCORE_OVERRIDE_ENABLED:  ${{ secrets.CLUSTER_SCORE_OVERRIDE_ENABLED }}
+          STRUCTURAL_FLIP_ENABLED:         ${{ secrets.STRUCTURAL_FLIP_ENABLED }}
           PYTHONPATH:                      agents
         run: python agents/thesis_agent.py
       - name: Record workflow finish
