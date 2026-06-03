@@ -119,6 +119,43 @@ The bullish regex is one row — better to *replace* it with a wider regex
 than to scatter literal terms (regex compiles once per article rather
 than 80 substring matches).
 
+## What actually shipped (2026-06-02)
+
+**Migration 0036 added 46 catalyst phrases** as `icontains` rules (regex
+reserved for the future ambiguity-fix pass). Categories:
+
+| Category | Count | Direction |
+|---|---|---|
+| Price target raises | 6 | long |
+| Price target cuts | 4 | short |
+| Analyst initiations (buy/outperform) | 4 | long |
+| Analyst sells/downgrades | 5 | short |
+| AI / cloud catalysts | 6 | long |
+| FDA / Biotech catalysts | 7 | long |
+| FDA / Biotech bearish | 5 | short |
+| Geopolitical / tariffs | 5 | short |
+| Operational risk | 4 | short |
+
+**Total enabled news rules: 70** (was 24). Distribution: 24 long, 24
+short, 22 neutral (ticker-name matchers).
+
+Specifically NOT added (deferred to a follow-up that needs regex):
+- Generic verbs like "positive" / "negative" / "rally" alone — false
+  positive risk on context like "rejected bear case"
+- Conference names without context (Computex / WWDC) — the venue is
+  not the catalyst; "positives at Computex" is, but without a
+  compound matcher the venue alone fires too broadly.
+- The companion `2026-06-02_sev2-news-bar-design.md` proposal covers
+  the latter via watchlist-aware half-points.
+
+**Reversal:** any rule is independently disable-able:
+
+```sql
+update stock_keyword_rules set enabled=false where rule_label='kwd0036_xyz';
+```
+
+No deploy required. news_agent reloads rules on every run.
+
 ## What would change my mind on rolling it out
 
 - A pulsecheck-derived precision/recall measurement on the new

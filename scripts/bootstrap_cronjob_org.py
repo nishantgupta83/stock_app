@@ -118,6 +118,69 @@ WORKFLOWS = {
             "wdays": [-1],
         },
     },
+    # ---------------------------------------------------------------
+    # Hourly learning & monitoring loops (added 2026-06-02).
+    # NVDA-on-6/2 audit found event_paper_agent firing 1-2x/day instead
+    # of its hourly cron — many news_article events fell outside the
+    # 150-min lookback between runs, never becoming paper trades, so
+    # rule_calibration starved. Same drop rate hit the realistic loop
+    # and the new price_agent cron. Pingers staggered 17 min off each
+    # GHA slot so concurrency-cancel absorbs the duplicate when GHA
+    # fires on time.
+    # ---------------------------------------------------------------
+    "event_paper_agent.yml": {
+        "title": "stock_app:event_paper_agent",
+        # GHA cron: 5 * * * * → pinger at :22 hourly catches the drop.
+        "schedule": {
+            "timezone": "UTC",
+            "minutes": [22],
+            "hours": [-1],
+            "mdays": [-1],
+            "months": [-1],
+            "wdays": [-1],
+        },
+    },
+    "realistic_loop_agent.yml": {
+        "title": "stock_app:realistic_loop_agent",
+        # GHA cron: 15 * * * * (open) + 30 21 * * * (mark).
+        # Pinger at :32 covers the open path; the daily mark is short
+        # enough to tolerate a missed slot until the next 2h pulse.
+        "schedule": {
+            "timezone": "UTC",
+            "minutes": [32],
+            "hours": [-1],
+            "mdays": [-1],
+            "months": [-1],
+            "wdays": [-1],
+        },
+    },
+    "price_agent.yml": {
+        "title": "stock_app:price_agent",
+        # GHA cron: 0 */2 * * 1-5 (weekday every 2h). Pinger fires at
+        # :17 of those same even hours on weekdays.
+        "schedule": {
+            "timezone": "UTC",
+            "minutes": [17],
+            "hours": [0, 2, 4, 6, 8, 10, 12, 14, 16, 18, 20, 22],
+            "mdays": [-1],
+            "months": [-1],
+            "wdays": [1, 2, 3, 4, 5],
+        },
+    },
+    "pulsecheck.yml": {
+        "title": "stock_app:pulsecheck",
+        # GHA cron: 20 * * * * (hourly). Pinger at :47 — half-cycle off
+        # so we get either a fresh GHA run or a fresh pinger run within
+        # 30 min, max.
+        "schedule": {
+            "timezone": "UTC",
+            "minutes": [47],
+            "hours": [-1],
+            "mdays": [-1],
+            "months": [-1],
+            "wdays": [-1],
+        },
+    },
 }
 
 CRONJOB_API = "https://api.cron-job.org"

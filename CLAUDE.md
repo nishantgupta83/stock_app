@@ -49,14 +49,22 @@ transparency and to unlock GitHub Actions free minutes. See [`README.md`](README
 **6. GitHub Actions cron is best-effort, not a guarantee.**
 - Documented behavior: `schedule:` triggers can be delayed or dropped under runner-pool
   load. We've observed >90-min gaps in `*/15` workflows.
-- Mitigation: external pingers at `cron-job.org` re-dispatch the 7 tightest-cadence
-  workflows (`site_generator`, `paper_trade_agent`, `intraday_alert_agent`,
-  `filing_agent`, `news_agent`, `thesis_agent`, `truth_social_agent`) staggered off
-  the GHA cron. Bootstrap script: `scripts/bootstrap_cronjob_org.py` (re-runnable,
-  idempotent — see RUNBOOK §8).
-- All seven workflows already have `concurrency: cancel-in-progress: true`, so a
+- Mitigation: external pingers at `cron-job.org` re-dispatch tightest-cadence
+  workflows staggered off the GHA cron. Bootstrap script:
+  `scripts/bootstrap_cronjob_org.py` (re-runnable, idempotent — see RUNBOOK §8).
+- Workflows covered (as of 2026-06-02): `site_generator`, `paper_trade_agent`,
+  `intraday_alert_agent`, `filing_agent`, `news_agent`, `thesis_agent`,
+  `truth_social_agent`, **`event_paper_agent`, `realistic_loop_agent`,
+  `price_agent`, `pulsecheck`** (last four added 2026-06-02 after the
+  NVDA-on-6/2 audit revealed event_paper_agent firing 1-2x/day instead
+  of hourly, causing learning-corpus starvation).
+- All workflows have `concurrency: cancel-in-progress: true` so a
   duplicate dispatch from GHA cron + pinger is harmless — one is cancelled within
   ~1 second.
+- **Activation:** new pinger entries require re-running
+  `python scripts/bootstrap_cronjob_org.py` with `CRONJOB_API_KEY` +
+  `GH_DISPATCH_PAT` env set. Idempotent — existing pingers get PATCHed,
+  missing ones get PUT.
 
 ## Project conventions
 
