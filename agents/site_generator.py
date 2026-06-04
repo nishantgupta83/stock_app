@@ -864,21 +864,23 @@ def sector_rotation_data(events: list[dict]) -> list[dict]:
 
     # Watchlists we surface on the dashboard, in display order
     SURFACED = [
-        ("ai_compute",    "AI · compute"),
-        ("ai_optical",    "AI · optical"),
-        ("ai_servers",    "AI · servers"),
-        ("ai_power",      "AI · power"),
-        ("ai_software",   "AI · software"),
-        ("ai_neocloud",   "AI · neocloud"),
-        ("defense_primes","defense · primes"),
-        ("defense_cyber", "defense · cyber"),
-        ("biotech_glp1",  "biotech · GLP-1"),
-        ("pharma_majors", "pharma · majors"),
-        ("ev_makers",     "energy · EV"),
-        ("nuclear",       "energy · nuclear"),
-        ("retail_big_box","consumer · retail"),
-        ("travel_leisure","consumer · travel"),
-        ("macro_rates",   "macro · rates"),
+        ("ai_compute",       "AI · compute"),
+        ("ai_optical",       "AI · optical"),
+        ("ai_servers",       "AI · servers"),
+        ("ai_power",         "AI · power"),
+        ("ai_software",      "AI · software"),
+        ("ai_neocloud",      "AI · neocloud"),
+        ("water_datacenter", "datacenter · water/cooling"),
+        ("defense_primes",   "defense · primes"),
+        ("defense_cyber",    "defense · cyber"),
+        ("biotech_glp1",     "biotech · GLP-1"),
+        ("pharma_majors",    "pharma · majors"),
+        ("ev_makers",        "energy · EV"),
+        ("nuclear",          "energy · nuclear"),
+        ("uranium_pureplay", "energy · uranium pure-play"),
+        ("retail_big_box",   "consumer · retail"),
+        ("travel_leisure",   "consumer · travel"),
+        ("macro_rates",      "macro · rates"),
     ]
 
     def _bull_bear(ev: dict) -> int:
