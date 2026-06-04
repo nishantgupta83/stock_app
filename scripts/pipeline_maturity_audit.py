@@ -161,37 +161,39 @@ def main() -> int:
         else:
             rules_by_agent["(unknown)"].append(r)
 
-    # Maturity tiers (from sql/0031)
+    # Maturity tiers — READ from canonical fields, do NOT recompute locally.
+    # (2026-06-04 fix: the prior local logic used acc>=0.90+PF>1.5 which was
+    # the OLD adult-gate definition. After the gate was redefined in
+    # agents/price_agent.py to payoff-first criteria (n>=100 + PF>=2.0 +
+    # mean>=0.5%), this script was reporting different tier counts than the
+    # canonical `tier` / `is_mature*` fields in stock_rule_calibration.
+    # Codex external review caught the drift. Single source of truth: DB.)
     def tier_counts(rules: list[dict]) -> dict[str, int]:
-        c = {"n<30": 0, "child(n>=30,acc<70)": 0, "teen(n>=30,acc>=70)": 0,
-             "young(n>=30,acc>=80)": 0, "adult(n>=30,acc>=90,pf>1.5)": 0}
+        c = {"n<30": 0, "child": 0, "teen": 0, "young_adult": 0, "adult": 0}
         for r in rules:
             n = int(r.get("n_observations") or 0)
-            acc = float(r.get("accuracy") or 0)
-            pf = r.get("profit_factor")
-            pf = float(pf) if pf is not None else None
+            tier = (r.get("tier") or "child").lower()
+            # The `tier` column defaults to "child" even for n<30 rows (see
+            # price_agent.py:695-703 — tier is derived from is_mature* flags;
+            # n<30 falls through to "child"). For human-readable reporting
+            # we still want to split out the immature bucket, so we use n
+            # to distinguish:
             if n < 30:
                 c["n<30"] += 1
-            elif acc >= 0.90 and pf is not None and pf > 1.5:
-                c["adult(n>=30,acc>=90,pf>1.5)"] += 1
-            elif acc >= 0.80:
-                c["young(n>=30,acc>=80)"] += 1
-            elif acc >= 0.70:
-                c["teen(n>=30,acc>=70)"] += 1
+            elif tier in c:
+                c[tier] += 1
             else:
-                c["child(n>=30,acc<70)"] += 1
+                # Unknown tier value — count as child to avoid losing the row
+                c["child"] += 1
         return c
 
-    # Tradeable rules — n >= 30 AND (acc >= 50% AND PF > 1) — basic "has edge"
+    # "Tradeable" = at least teen tier (is_mature_70 True). Teen tier requires
+    # n>=30 + acc>=70% + mean_realized > 0 — a meaningful "has shown positive
+    # expectancy" floor. Reading the canonical flag instead of inventing a
+    # new "tradeable" definition keeps this script aligned with the rest of
+    # the pipeline.
     def tradeable_count(rules: list[dict]) -> int:
-        c = 0
-        for r in rules:
-            n = int(r.get("n_observations") or 0)
-            acc = float(r.get("accuracy") or 0)
-            pf = r.get("profit_factor")
-            if n >= 30 and acc >= 0.50 and pf is not None and float(pf) > 1.0:
-                c += 1
-        return c
+        return sum(1 for r in rules if r.get("is_mature_70"))
 
     # Write the report
     out_dir = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "docs")
@@ -227,8 +229,8 @@ def main() -> int:
     # Rule maturity for INGEST: aggregate
     ingest_rules = [r for a in ingest_agents for r in rules_by_agent.get(a, [])]
     tiers = tier_counts(ingest_rules)
-    mature_l1 = sum(v for k, v in tiers.items() if not k.startswith("n<30") and not k.startswith("child"))
-    cal_pct_l1 = (tiers["n<30"] == 0 or len(ingest_rules) == 0) * 0
+    # teen+ = teen + young_adult + adult (any rule with is_mature_70=True)
+    mature_l1 = tiers["teen"] + tiers["young_adult"] + tiers["adult"]
     cal_pct_l1 = (1 - tiers["n<30"] / max(1, len(ingest_rules))) * 100
     act_pct_l1 = mature_l1 / max(1, len(ingest_rules)) * 100
     md.append(f"| **L1 INGEST** | {op_pct_l1:.0f}% ({ingest_runs}/{ingest_expected} cron) | "
@@ -304,10 +306,10 @@ def main() -> int:
         op = min(100, r.get("runs", 0) / max(1, expected) * 100)
         rules = rules_by_agent.get(ag, [])
         tiers = tier_counts(rules)
-        n_at_30 = sum(v for k, v in tiers.items() if not k.startswith("n<30"))
+        n_at_30 = sum(v for k, v in tiers.items() if k != "n<30")
         trade = tradeable_count(rules)
-        teen_plus = sum(v for k, v in tiers.items() if not k.startswith("n<30") and not k.startswith("child"))
-        adult = tiers["adult(n>=30,acc>=90,pf>1.5)"]
+        teen_plus = tiers["teen"] + tiers["young_adult"] + tiers["adult"]
+        adult = tiers["adult"]
         md.append(f"| `{ag}` | {op:.0f}% | {r.get('runs', 0)}/{expected} | "
                   f"{r.get('rows_out', 0):,} | {len(rules)} | {n_at_30} | "
                   f"{trade} | {teen_plus} | {adult} |")
@@ -318,13 +320,26 @@ def main() -> int:
     # ============================================================
     md.append("## Population by tier (all rule_keys)")
     md.append("")
+    md.append("_Reads canonical `tier` + `is_mature_*` flags from "
+              "`stock_rule_calibration` — these are set by "
+              "`agents/price_agent.py:upsert_calibration` and reflect the "
+              "current gate definitions (see `ADULT_MIN_N/PF/MEAN` constants)._")
+    md.append("")
     all_tiers = tier_counts(cal)
     total = len(cal)
+    tier_defs = {
+        "n<30":        "n < 30 (insufficient sample)",
+        "child":       "n ≥ 30, below teen gate",
+        "teen":        "n ≥ 30, acc ≥ 70%, mean_realized > 0",
+        "young_adult": "n ≥ 30, acc ≥ 80%, PF > 1.2",
+        "adult":       "n ≥ 100, PF ≥ 2.0, mean_realized ≥ 0.5% (BUY/SELL unlock)",
+    }
     md.append("| Tier | Definition | Count | Share |")
     md.append("|---|---|---|---|")
-    for k, v in all_tiers.items():
+    for k in ("n<30", "child", "teen", "young_adult", "adult"):
+        v = all_tiers.get(k, 0)
         share = v / max(1, total) * 100
-        md.append(f"| `{k}` | {k.replace('(', ' (')} | {v} | {share:.1f}% |")
+        md.append(f"| `{k}` | {tier_defs[k]} | {v} | {share:.1f}% |")
     md.append(f"| **TOTAL** | | **{total}** | 100% |")
     md.append("")
 

@@ -380,8 +380,13 @@ def fetch_rule_calibration() -> list[dict]:
     (rolling-30d vs lifetime accuracy gap). Falls back gracefully if the
     columns aren't present yet — sb_get logs an error and returns []."""
     rows = sb_get("stock_rule_calibration", {
-        "select": "rule_key,n_observations,n_correct,accuracy,mean_realized_pct,"
-                  "is_mature,matured_at,last_updated,"
+        # is_mature_70 + tier added 2026-06-04 so consumers can read the
+        # canonical training-tier flag instead of recomputing from raw
+        # accuracy+n (which drifted from the canonical gate after the
+        # adult redefinition). Adds ~50 bytes/row × 200 rows = ~10KB per
+        # request — negligible vs the EOD-cadence change made same day.
+        "select": "rule_key,n_observations,n_correct,accuracy,mean_realized_pct,profit_factor,"
+                  "is_mature,is_mature_70,is_mature_80,tier,matured_at,last_updated,"
                   "brier_30d,accuracy_30d,n_closed_30d,last_brier_recomputed_at",
         "order":  "n_observations.desc",
         "limit":  "200",
@@ -389,7 +394,8 @@ def fetch_rule_calibration() -> list[dict]:
     if not rows:
         # Columns may not exist yet (pre-migration). Retry with the legacy select.
         rows = sb_get("stock_rule_calibration", {
-            "select": "rule_key,n_observations,n_correct,accuracy,mean_realized_pct,is_mature,matured_at,last_updated",
+            "select": "rule_key,n_observations,n_correct,accuracy,mean_realized_pct,"
+                      "is_mature,is_mature_70,is_mature_80,tier,matured_at,last_updated",
             "order":  "n_observations.desc",
             "limit":  "200",
         })
@@ -1315,26 +1321,26 @@ def _emit_status_json(
                 and (s.get("fired_at") or "").startswith(today_prefix)):
             by_action[s.get("action") or "unknown"] += 1
 
-    # Tag every rule with both gates so consumers (digest, dashboard) can
-    # filter by either. is_mature is canonical (set by price_agent on the
-    # production gate); is_mature_training is derived here from the same
-    # underlying numbers using the lower threshold.
+    # Read canonical tier flags from stock_rule_calibration. Both gates are
+    # set by agents/price_agent.py:upsert_calibration based on the
+    # current ADULT_* / TIER_GATE_* constants. This dashboard MUST NOT
+    # reinvent the gates — codex 2026-06-04 review caught the prior
+    # _tier_flags() helper drifting from the canonical definition after
+    # the adult gate was redefined (accuracy-only → payoff-first).
     def _tier_flags(r: dict) -> dict:
-        n   = int(r.get("n_observations") or 0)
-        acc = float(r.get("accuracy") or 0)
         return {
-            "meets_training_gate":   (n >= MATURITY_MIN_N) and (acc >= MATURITY_TRAINING_ACC),
-            "meets_production_gate": (n >= MATURITY_MIN_N) and (acc >= MATURITY_PRODUCTION_ACC),
+            "meets_training_gate":   bool(r.get("is_mature_70")),  # teen+
+            "meets_production_gate": bool(r.get("is_mature")),     # adult (BUY/SELL)
         }
 
     mature_production_keys = [r["rule_key"] for r in cal_rows
                               if r.get("is_mature") and r.get("rule_key")]
     # Training-mature includes production-mature (production is a superset)
     mature_training_keys = [r["rule_key"] for r in cal_rows
-                            if _tier_flags(r)["meets_training_gate"] and r.get("rule_key")]
+                            if r.get("is_mature_70") and r.get("rule_key")]
 
     closest = sorted(
-        (r for r in cal_rows if not _tier_flags(r)["meets_training_gate"]),
+        (r for r in cal_rows if not r.get("is_mature_70")),
         key=lambda r: (int(r.get("n_observations") or 0),
                        float(r.get("accuracy") or 0)),
         reverse=True,
