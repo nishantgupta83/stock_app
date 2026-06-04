@@ -13,19 +13,25 @@ on:
   # is throttled. Cron remains as a baseline for fully-idle periods.
   # No untrusted inputs used — workflow_run filters by hardcoded names + main branch.
   schedule:
-    - cron: "*/15 * * * *"
+    # Cadence cut to EOD-only 2026-06-04 (was */15 + 7-workflow workflow_run).
+    # Rationale:
+    #   * Supabase free-tier egress is 5 GB/month; we were at ~465 MB/day
+    #     with site_generator the single largest consumer (~3,000 GET/day
+    #     across ~96 runs/day × 32 GET calls per run).
+    #   * Telegram is the realtime path for alerts. The dashboard is the
+    #     end-of-day reflection layer — and during this discipline phase
+    #     Layer 2 is silent most of the session anyway, so intraday
+    #     freshness delivered little marginal value while costing ~95% of
+    #     L6's egress.
+    #   * 22:00 UTC = 6 PM ET, ~2h after US market close. Bars settled,
+    #     EOD price_agent reconcile usually done by then. One refresh
+    #     per day captures the day's full state.
+    #   * Operator can workflow_dispatch a manual refresh at any time
+    #     (e.g. weekend market-news review).
+    # workflow_run on upstream completion DROPPED entirely — Telegram is
+    # the realtime channel; site_generator no longer chases every event.
+    - cron: "0 22 * * *"
   workflow_dispatch:
-  workflow_run:
-    workflows:
-      - intraday_alert_agent
-      - thesis_agent
-      - news_agent
-      - truth_social_agent
-      - paper_trade_agent
-      - filing_agent
-      - event_paper_agent
-    types: [completed]
-    branches: [main]
 
 concurrency:
   group: site_generator
@@ -38,14 +44,14 @@ jobs:
     permissions:
       contents: read
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
       - name: Record workflow start
         env:
           SUPABASE_URL:         ${{ secrets.SUPABASE_URL }}
           SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
         run: python agents/ops_recorder.py --phase start --agent workflow_site_generator
 
-      - uses: actions/setup-python@v5
+      - uses: actions/setup-python@v6
         with:
           python-version: "3.12"
           cache: pip
@@ -67,7 +73,7 @@ jobs:
       # under the workflow's timeout-minutes: 8 budget.
       - name: Deploy to Hostinger via FTPS (attempt 1)
         id: deploy1
-        uses: SamKirkland/FTP-Deploy-Action@v4.3.5
+        uses: SamKirkland/FTP-Deploy-Action@v4.4.0
         continue-on-error: true
         with:
           server:          ftp.hub4apps.com
@@ -86,7 +92,7 @@ jobs:
       - name: Deploy to Hostinger via FTPS (attempt 2 — only if attempt 1 failed)
         id: deploy2
         if: steps.deploy1.outcome == 'failure'
-        uses: SamKirkland/FTP-Deploy-Action@v4.3.5
+        uses: SamKirkland/FTP-Deploy-Action@v4.4.0
         continue-on-error: true
         with:
           server:          ftp.hub4apps.com
@@ -101,7 +107,7 @@ jobs:
 
       - name: Deploy to Hostinger via FTPS (attempt 3 — only if 1 and 2 failed)
         if: steps.deploy1.outcome == 'failure' && steps.deploy2.outcome == 'failure'
-        uses: SamKirkland/FTP-Deploy-Action@v4.3.5
+        uses: SamKirkland/FTP-Deploy-Action@v4.4.0
         # NO continue-on-error — third failure should fail the workflow
         with:
           server:          ftp.hub4apps.com

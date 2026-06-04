@@ -481,14 +481,42 @@ def job_run_finish(run_id: int | None, status: str, rows_in: int, rows_out: int,
 # sizing multipliers in risk_agent and eligibility in the realistic-paper
 # loop (sql/0032). These constants MUST mirror
 # scripts/learning_snapshot.py:TIER_GATES.
-MATURITY_ACCURACY     = 0.90    # adult acc threshold (legacy const name retained)
-MATURITY_MIN_N        = 30      # all tiers require ≥ this many closed observations
+MATURITY_ACCURACY     = 0.90    # legacy const; now used only by HIGH_CONVICTION flag
+MATURITY_MIN_N        = 30      # teen tier minimum sample
 TIER_GATE_TEEN_ACC    = 0.70
 TIER_GATE_YOUNG_ACC   = 0.80
 TIER_GATE_ADULT_ACC   = MATURITY_ACCURACY   # alias for clarity inside flag math
 TIER_GATE_TEEN_MR     = 0.0     # teen also requires mean_realized_pct > 0
 TIER_GATE_YOUNG_PF    = 1.2     # young_adult also requires profit_factor > 1.2
-TIER_GATE_ADULT_PF    = 1.5     # adult also requires profit_factor > 1.5
+TIER_GATE_ADULT_PF    = 1.5     # legacy adult PF gate (still used in HIGH_CONVICTION)
+
+# Adult-tier redefinition (2026-06-04 after codex external review):
+# The old adult gate (acc>=0.90 + n>=30 + PF>1.5) only fires for direction-
+# match-correct rules where accuracy is extreme. It REJECTS strong-evidenced
+# payoff-positive rules whose accuracy is just "trader-realistic" (55-70%).
+#
+# The clinical_readout:active_not_recruiting:h15d pathology proved the old
+# gate is BOTH too strict AND missing a critical check: that rule has
+# acc=90.9%, PF=9.33, but mean_realized_pct=-0.12% (negative). The acc-only
+# gate would have promoted it; the realized data says it loses money.
+#
+# New adult tier uses payoff-first criteria with NO accuracy floor:
+#   * n >= 100   — statistical power (3x the teen-tier 30)
+#   * PF >= 2.0  — favorable payoff (wins meaningfully larger than losses)
+#   * mean_realized_pct >= +0.5%  — positive expectancy AFTER slippage
+#
+# Under this definition `8k_material_event::h15d` qualifies (n=1155, PF=2.81,
+# mean=+2.36%) — the genuinely strongest rule in the corpus.
+#
+# The old acc-extreme gate is kept as a separate `is_high_conviction` flag
+# (it's still useful for very-rare extreme rules, just not the BUY/SELL gate).
+ADULT_MIN_N      = 100
+ADULT_MIN_PF     = 2.0
+ADULT_MIN_MEAN   = 0.005  # 0.5% mean realized per closed trade (after slippage)
+HIGH_CONV_MIN_N  = MATURITY_MIN_N
+HIGH_CONV_MIN_ACC = MATURITY_ACCURACY
+HIGH_CONV_MIN_PF  = TIER_GATE_ADULT_PF
+HIGH_CONV_MIN_MEAN = 0.0    # high-conviction also requires non-negative mean
 
 
 def fetch_open_paper_trades_to_close() -> list[dict]:
@@ -623,9 +651,22 @@ def upsert_calibration(rule_key: str, current: dict | None,
         n_ok and accuracy >= TIER_GATE_YOUNG_ACC
             and pf_for_gate is not None and pf_for_gate > TIER_GATE_YOUNG_PF
     )
+    # NEW adult gate (2026-06-04): payoff-first, no accuracy floor.
+    # Requires statistical power (n>=100), favorable payoff (PF>=2.0), and
+    # positive expectancy (mean_realized_pct >= 0.5%). See module-level
+    # ADULT_* constants for rationale.
     is_mature = bool(
-        n_ok and accuracy >= TIER_GATE_ADULT_ACC
-            and pf_for_gate is not None and pf_for_gate > TIER_GATE_ADULT_PF
+        n_obs >= ADULT_MIN_N
+            and pf_for_gate is not None and pf_for_gate >= ADULT_MIN_PF
+            and mean_new >= ADULT_MIN_MEAN
+    )
+    # Separate flag for the old acc-extreme gate (rare-but-extreme rules).
+    # Not currently consumed but persisted for future analysis.
+    is_high_conviction = bool(
+        n_obs >= HIGH_CONV_MIN_N
+            and accuracy >= HIGH_CONV_MIN_ACC
+            and pf_for_gate is not None and pf_for_gate > HIGH_CONV_MIN_PF
+            and mean_new >= HIGH_CONV_MIN_MEAN
     )
 
     was_70 = bool(cur.get("is_mature_70"))

@@ -31,7 +31,11 @@ from pulsecheck._pulse import Check, CheckResult, run_checks, sb_get
 AGENT = "pulsecheck_foundation"
 
 LIVE_SITE_URL = "https://hub4apps.com/stock_app/status.json"
-SITE_STALE_THRESHOLD_SEC = 30 * 60          # 30 min — beyond this is suspicious
+# Bumped 2026-06-04 from 30 min to 26 h to match site_generator's new
+# EOD-only cadence (cron "0 22 * * *"). Anything older than ~1 EOD cycle
+# plus slop indicates the site_generator job failed or Hostinger upload
+# stuck — that's the real warning condition now.
+SITE_STALE_THRESHOLD_SEC = 26 * 60 * 60
 BARS_STALE_THRESHOLD_DAYS = 5               # weekend + 1 holiday tolerance
 
 
