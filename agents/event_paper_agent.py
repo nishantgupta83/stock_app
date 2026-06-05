@@ -26,6 +26,7 @@ from __future__ import annotations
 import os
 import sys
 import time
+from collections import Counter
 from datetime import datetime, timedelta, timezone
 
 import requests
@@ -39,6 +40,20 @@ from filing_agent import (   # type: ignore
 import _rule_key   # type: ignore  # agents/ is on sys.path at runtime
 
 LOOKBACK_MIN = 150              # 120min cron window + 30min buffer for GHA queue jitter
+# FIX-2 (2026-06-05): entry must be anchored to the close on/after the event,
+# not the latest close (which leaked pre-event prices into calibration). An
+# intraday event's same-day EOD close may not be ingested yet, so the trade is
+# DEFERRED and retried until that close lands. We therefore re-scan events over
+# a multi-day window (not just LOOKBACK_MIN) and anti-join against already-
+# opened events so only genuinely-unfilled ones are processed. 4 days covers a
+# 3-day holiday weekend. Egress note: this re-reads the recent-events window
+# each run; the egress-optimal form is a server-side anti-join VIEW (follow-up).
+RETRY_LOOKBACK_DAYS = 4
+# Live runs floor the entry anchor at created_at (we can't enter before we KNEW
+# of an event — prevents a late-ingested live row from filling at a backdated
+# close price_agent would then close with hindsight). Backfill runs anchor on
+# event_at alone (intentional historical simulation). Set True by --backfill-days.
+BACKFILL_MODE = False
 SEVERITY_FLOOR = 2              # ignore noise events
 # Multi-horizon: every event opens four parallel paper trades. Same direction,
 # same entry price, different exit horizons. rule_key carries the horizon so
@@ -114,9 +129,9 @@ def fetch_recent_events(min_severity: int, since_iso: str) -> list[dict]:
             ("created_at", f"gte.{since_iso}"),
             ("severity", f"gte.{min_severity}"),
             ("ticker",   "not.is.null"),
-            ("select",   "id,event_type,event_subtype,ticker,event_at,severity,payload"),
+            ("select",   "id,event_type,event_subtype,ticker,event_at,created_at,severity,payload"),
             ("order",    "event_at.asc"),
-            ("limit",    "1000"),
+            ("limit",    "2000"),
         ],
         timeout=20,
     )
@@ -261,6 +276,98 @@ def derive_rule_key(event: dict, horizon_days: int) -> str:
     return _rule_key.derive(event["event_type"], event.get("event_subtype"), horizon_days)
 
 
+def fetch_close_window(tickers: list[str], since_date: str) -> dict[str, list[dict]]:
+    """{ticker → [{ts, close} rows sorted ASC]} from stock_raw_prices since
+    `since_date` (a YYYY-MM-DD). Unlike fetch_latest_closes (latest only), this
+    returns the full window so entry can be anchored to the close on/after each
+    event's own date — required for both live deferral and historical backfill.
+    Paginated so a wide window across many tickers isn't silently truncated."""
+    if not tickers:
+        return {}
+    in_list = ",".join(f'"{t}"' for t in tickers)
+    out: dict[str, list[dict]] = {}
+    offset, page = 0, 1000
+    while True:
+        r = requests.get(
+            f"{SUPABASE_URL}/rest/v1/stock_raw_prices",
+            headers=HEADERS_SB,
+            params={
+                "ticker": f"in.({in_list})",
+                "ts":     f"gte.{since_date}",
+                "select": "ticker,ts,close",
+                "order":  "ticker.asc,ts.asc",
+                "offset": str(offset),
+                "limit":  str(page),
+            },
+            timeout=30,
+        )
+        if r.status_code != 200:
+            print(f"  fetch_close_window: {r.status_code} {r.text[:200]}", file=sys.stderr)
+            break
+        batch = r.json()
+        for row in batch:
+            t = row.get("ticker")
+            if t and row.get("close") is not None:
+                out.setdefault(t, []).append(row)
+        if len(batch) < page:
+            break
+        offset += page
+    return out
+
+
+def _to_date(x) -> str | None:
+    try:
+        return datetime.fromisoformat(str(x).replace("Z", "+00:00")).date().isoformat()
+    except (TypeError, ValueError):
+        return None
+
+
+def _event_anchor_date(event: dict, floor_created_at: bool = False) -> str | None:
+    """The date (YYYY-MM-DD) the entry close must be on/after.
+
+    Base anchor = the event's own date (event_at), so a historically-replayed
+    BACKFILL event enters at its OWN event-day close, not today's.
+
+    When `floor_created_at` (live runs), the anchor is raised to
+    max(event_at, created_at): we cannot enter before we KNEW of the event, so a
+    late-ingested live row (old event_at, recent created_at) won't fill at a
+    backdated close that price_agent would then close with hindsight. For a
+    normal live event event_at ≈ created_at, so this is a no-op."""
+    ead = _to_date(event.get("event_at"))
+    if ead is None:
+        return None
+    if floor_created_at:
+        cad = _to_date(event.get("created_at"))
+        if cad:
+            return max(ead, cad)
+    return ead
+
+
+def pick_entry_close(event: dict, closes_asc: list[dict],
+                     floor_created_at: bool = False) -> dict | None:
+    """First close on/after the event's anchor date (the earliest tradable
+    close once the event was known). None → defer: the anchor close hasn't
+    landed yet (intraday before EOD ingest), so the trade is retried next run
+    rather than filled at a pre-event price.
+
+    NOTE (follow-up): comparison is date-level. An after-market-close event
+    (e.g. 16:30 ET 8-K) will still match the same calendar date's 16:00 close,
+    a <1-session lookahead. Correcting that needs market-hours logic
+    (agents/market calendar); deferred as a smaller, separate refinement."""
+    anchor = _event_anchor_date(event, floor_created_at=floor_created_at)
+    if anchor is None or not closes_asc:
+        return None
+    for row in closes_asc:
+        ts = row.get("ts") or ""
+        if ts[:10] >= anchor:
+            try:
+                if float(row["close"]) > 0:
+                    return row
+            except (TypeError, ValueError, KeyError):
+                continue
+    return None
+
+
 def build_paper_trades(event: dict, ticker_kind: str, latest_close: dict) -> list[dict]:
     """Four open paper trades per event — one per horizon in HORIZONS.
     Returns [] if entry price is unavailable (yfinance backfill gap)."""
@@ -362,10 +469,16 @@ def main() -> int:
     run_id = job_run_start("event_paper_agent")
     n_events = n_skipped = n_built = n_written = 0
     try:
-        since = (datetime.now(timezone.utc) - timedelta(minutes=LOOKBACK_MIN)).isoformat()
+        # FIX-2: scan a multi-day window (not just LOOKBACK_MIN) so events whose
+        # anchor close wasn't ingested yet get retried until it lands. Backfill
+        # (--backfill-days widens LOOKBACK_MIN) automatically extends this.
+        lookback_days = max(RETRY_LOOKBACK_DAYS, LOOKBACK_MIN / (24 * 60))
+        since_dt = datetime.now(timezone.utc) - timedelta(days=lookback_days)
+        since = since_dt.isoformat()
         events = fetch_recent_events(SEVERITY_FLOOR, since)
         n_events = len(events)
-        print(f"Found {n_events} events since {since[:19]} (severity ≥ {SEVERITY_FLOOR})")
+        print(f"Found {n_events} events since {since[:19]} (severity ≥ {SEVERITY_FLOOR}, "
+              f"{lookback_days:.1f}d retry window)")
         if not events:
             job_run_finish(run_id, "ok", 0, 0)
             return 0
@@ -390,46 +503,42 @@ def main() -> int:
         if n_skipped:
             print(f"  skipped {n_skipped} events on non-tradeable tickers (mutual funds, indices, INST_*)")
 
-        tickers = sorted({e["ticker"] for e in tradeable_events})
-        closes = fetch_latest_closes(tickers)
+        # FIX-2 anti-join: skip only events that are ALREADY COMPLETE (all
+        # horizons present), so the multi-day retry scan doesn't re-process
+        # fully-opened events — but PARTIAL prior writes (only some horizons
+        # landed) still flow through to heal their missing horizons via the
+        # composite (event,horizon) filter below. Excluding any-horizon events
+        # here would permanently strand partials (regression caught in review).
+        horizon_counts = Counter(eid for (eid, _h) in already_traded)
+        complete_event_ids = {eid for eid, c in horizon_counts.items() if c >= len(HORIZONS)}
+        pending = [e for e in tradeable_events if e["id"] not in complete_event_ids]
+        print(f"  {len(pending)} events to anchor "
+              f"({len(complete_event_ids)} already complete; "
+              f"{len(horizon_counts) - len(complete_event_ids)} partial → healing)")
 
-        # Stale-price gate: drop tickers whose latest close is older than
-        # STALE_PRICE_MAX_AGE_DAYS. Logged so we can audit how many
-        # would-be paper trades are skipped due to stale data — high
-        # stale-skip count is a sign the ingest path needs attention.
-        now_utc = datetime.now(timezone.utc)
-        stale_threshold = now_utc - timedelta(days=STALE_PRICE_MAX_AGE_DAYS)
-        stale_tickers: dict[str, str] = {}
-        for t, row in list(closes.items()):
-            ts_raw = row.get("ts") or ""
-            try:
-                ts = datetime.fromisoformat(ts_raw.replace("Z", "+00:00"))
-                # Supabase returns timestamptz as "2026-05-11T00:00:00+00:00"
-                # but legacy/migrated rows may be naive. Force tz-aware to
-                # avoid "can't compare offset-naive and offset-aware datetimes"
-                # (regression introduced in commit d4627b3, observed 2026-05-13+).
-                if ts.tzinfo is None:
-                    ts = ts.replace(tzinfo=timezone.utc)
-            except (TypeError, ValueError):
-                stale_tickers[t] = "unparseable_ts"
-                del closes[t]
-                continue
-            if ts < stale_threshold:
-                age_days = (now_utc - ts).days
-                stale_tickers[t] = f"close_{age_days}d_old"
-                del closes[t]
+        # Per-event anchored entry: fetch the close window once, then for each
+        # event pick the first close ON/AFTER its event date. No pre-event-price
+        # fills; events whose anchor close hasn't ingested yet are deferred.
+        tickers = sorted({e["ticker"] for e in pending})
+        # Side-effect: yfinance-backfill missing/stale tickers' latest close into
+        # stock_raw_prices (the 5/19–5/21 ingest-gap safety net) BEFORE reading
+        # the window. We don't use the return value — fetch_close_window reads
+        # the now-refreshed table.
+        fetch_latest_closes(tickers)
+        close_window = fetch_close_window(tickers, since_dt.date().isoformat())
 
         rows: list[dict] = []
-        n_skipped_stale = 0
-        for e in tradeable_events:
-            t = e["ticker"]
-            close_row = closes.get(t)
-            if not close_row:
-                if t in stale_tickers:
-                    n_skipped_stale += 1
+        n_deferred = 0
+        deferred_tickers: set[str] = set()
+        for e in pending:
+            entry_close = pick_entry_close(e, close_window.get(e["ticker"], []),
+                                           floor_created_at=not BACKFILL_MODE)
+            if entry_close is None:
+                n_deferred += 1   # anchor close (>= event date) not available yet → retry next run
+                deferred_tickers.add(e["ticker"])
                 continue
             # 4 trades per event — one per horizon in HORIZONS
-            rows.extend(build_paper_trades(e, kinds[t], close_row))
+            rows.extend(build_paper_trades(e, kinds[e["ticker"]], entry_close))
 
         # Composite-key filter: drop only the (event,horizon) pairs already
         # written, not the whole event. Missing horizons from a partial prior
@@ -441,10 +550,10 @@ def main() -> int:
             print(f"  filtered {n_filtered_existing} rows whose (event,horizon) already existed")
         n_written = write_paper_trades(rows)
 
-        if stale_tickers:
-            print(f"  STALE-PRICE GATE: dropped {len(stale_tickers)} tickers, "
-                  f"skipping {n_skipped_stale} events. Sample: "
-                  f"{dict(list(stale_tickers.items())[:5])}")
+        if n_deferred:
+            print(f"  DEFERRED {n_deferred} events ({len(deferred_tickers)} tickers): anchor "
+                  f"close (>= event date) not yet ingested — retry next run (avoids pre-event "
+                  f"fill). Sample: {sorted(deferred_tickers)[:8]}")
 
         elapsed = time.time() - started
         print(f"DONE in {elapsed:.1f}s — {n_events} events seen, {n_built} paper trades built, "
@@ -468,6 +577,9 @@ if __name__ == "__main__":
                     help="Replay events created in the last N calendar days instead of LOOKBACK_MIN window.")
     args = ap.parse_args()
     if args.backfill_days > 0:
-        # Override LOOKBACK_MIN globally so main() uses the wider window
+        # Override LOOKBACK_MIN globally so main() uses the wider window, and
+        # anchor on event_at alone (intentional historical simulation — no
+        # created_at floor, since we're deliberately replaying past events).
         LOOKBACK_MIN = args.backfill_days * 24 * 60
+        BACKFILL_MODE = True
     sys.exit(main())
