@@ -607,8 +607,16 @@ def enrich_cal_from_archive(cal: dict, archive_index: dict) -> None:
 
 def fetch_calibration_map() -> dict[str, dict]:
     """{rule_key → {n_observations, n_correct, mean_realized_pct, is_mature}}"""
+    # FIX-1C (2026-06-05): include profit_factor + the per-tier mature flags.
+    # upsert_calibration() PF-gates young_adult/adult/high_conviction on
+    # cur["profit_factor"], and the in-loop cache refresh reads is_mature_70/80
+    # — both were absent here, so the live path evaluated PF-based maturity
+    # from None (recompute_rule_payoff corrected it a batch later, but the
+    # upsert path's tier flags were wrong in-between). Selecting them removes
+    # the None-gating.
     rows = sb_get("stock_rule_calibration", {
-        "select": "rule_key,n_observations,n_correct,accuracy,mean_realized_pct,is_mature,matured_at",
+        "select": "rule_key,n_observations,n_correct,accuracy,mean_realized_pct,"
+                  "profit_factor,is_mature,is_mature_70,is_mature_80,matured_at",
     })
     return {r["rule_key"]: r for r in rows}
 
@@ -858,7 +866,7 @@ def reconcile_event_paper_trades() -> dict:
     archive_index = fetch_archive_index()
     enrich_cal_from_archive(cal, archive_index)
     n_closed = n_rules_updated = n_matured = 0
-    n_skipped_no_bars = n_skipped_no_outcome = 0
+    n_skipped_no_bars = n_skipped_no_outcome = n_skipped_close_failed = 0
     skipped_tickers: set[str] = set()
 
     # Cache bars per ticker — avoid yfinance round-trips for the same ticker.
@@ -900,8 +908,14 @@ def reconcile_event_paper_trades() -> dict:
                 skipped_tickers.add(ticker)
             continue
 
-        # 1. Close the trade row (includes the daily-HL audit fields)
-        sb_patch(f"stock_event_paper_trades?id=eq.{t['id']}", {
+        # 1. Close the trade row (includes the daily-HL audit fields).
+        # ATOMICITY (FIX-1A, 2026-06-05): only count this trade into
+        # calibration if the close PATCH actually persisted. Open trades are
+        # re-fetched by status=eq.open each run, so if the PATCH fails but we
+        # still incremented n_closed + calibration, the same still-open trade
+        # would be counted AGAIN next run — inflating n_observations and
+        # poisoning profit_factor. Skip on failure; it retries next run.
+        close_ok = sb_patch(f"stock_event_paper_trades?id=eq.{t['id']}", {
             "status":          "closed",
             "exit_at":         outcome["exit_at"],
             "exit_price":      outcome["exit_price"],
@@ -912,6 +926,9 @@ def reconcile_event_paper_trades() -> dict:
             "target_hit":      outcome.get("target_hit"),
             "stop_hit":        outcome.get("stop_hit"),
         })
+        if not close_ok:
+            n_skipped_close_failed += 1
+            continue
         n_closed += 1
 
         # 2. Update per-rule calibration
@@ -959,6 +976,7 @@ def reconcile_event_paper_trades() -> dict:
         "n_matured":            n_matured,
         "n_skipped_no_bars":    n_skipped_no_bars,
         "n_skipped_no_outcome": n_skipped_no_outcome,
+        "n_skipped_close_failed": n_skipped_close_failed,
         "skipped_tickers":      sorted(skipped_tickers),
         "trades_seen":          len(trades),
     }
@@ -972,12 +990,27 @@ def recompute_rule_payoff(rule_key: str) -> None:
     mean_mfe_pct, mean_mae_pct. Skipped if the rule has < 5 closed trades
     (not enough sample to be meaningful).
     """
-    rows = sb_get("stock_event_paper_trades", {
-        "rule_key": f"eq.{rule_key}",
-        "status":   "eq.closed",
-        "select":   "realized_return,correct,mfe_pct,mae_pct,target_hit,stop_hit",
-        "limit":    "1000",
-    })
+    # PAGINATE over the FULL closed population (FIX-1B, 2026-06-05). The prior
+    # single `limit=1000` with no order computed profit_factor over a
+    # truncated, arbitrary subset while n_observations counts the full
+    # population — so PF and n disagreed for high-volume rules (8k_* exceed
+    # 1000 closed). A suppression gate reading PF must see PF over the same
+    # rows n represents. Stable order (id.asc) makes paging deterministic.
+    rows: list[dict] = []
+    offset, page = 0, 1000
+    while True:
+        batch = sb_get("stock_event_paper_trades", {
+            "rule_key": f"eq.{rule_key}",
+            "status":   "eq.closed",
+            "select":   "realized_return,correct,mfe_pct,mae_pct,target_hit,stop_hit",
+            "order":    "id.asc",
+            "offset":   str(offset),
+            "limit":    str(page),
+        })
+        rows.extend(batch)
+        if len(batch) < page:
+            break
+        offset += page
     if not rows or len(rows) < 5:
         return
 
