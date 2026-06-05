@@ -108,8 +108,6 @@ MAX_ALERTS_PER_DAY   = 5
 # single_source_no_exception; 9 of those clusters had score>=50 and would
 # have legitimately emitted MOMENTUM_ONLY signals (paper-tier, BUY/SELL
 # still maturity-gated). Feature flag (default off — flip via secret).
-CLUSTER_SCORE_OVERRIDE_THRESHOLD = 50.0
-
 # ─── TEMPORARY SCAFFOLDING (2026-06-04) — NOT the final design ──────────────
 # The emit floor (RESEARCH tier) was calibrated against the PRE-PR1A score
 # scale. PR1A (2026-05-22) zeroed background-role 13F inflation, ~halving the
@@ -125,6 +123,16 @@ CLUSTER_SCORE_OVERRIDE_THRESHOLD = 50.0
 # docs/design/layer2-metalabeling-funnel.md. Remove this constant when 2.b lands.
 # Env-overridable for fast rollback: `THESIS_RECALL_FLOOR=50` restores old gate.
 THESIS_RECALL_FLOOR = float(os.environ.get("THESIS_RECALL_FLOOR", "30"))
+
+# Cluster-passes score override: a single-source cluster whose COMPUTED score
+# crosses this threshold is promoted past the ≥2-source heuristic, deferring to
+# the rubric (which already encodes "alert-worthy"). This is the SECOND gate
+# that was independently pinned at the stale pre-PR1A 50 — a lone but proven
+# catalyst (8-K, PF 2.81) must clear the SAME recall floor as any other signal,
+# so the two are unified here. They re-tune together when 2.b lands.
+# Confirmed by 2026-06-02 rejection audit: 100% of thesis silence traced to
+# single_source_no_exception. BUY/SELL stay maturity-gated regardless.
+CLUSTER_SCORE_OVERRIDE_THRESHOLD = THESIS_RECALL_FLOOR
 
 # Structural flips: rule_keys with n>=30, PF<1.0, acc<50% per the 2026-06-03
 # quarterly consultant review. When STRUCTURAL_FLIP_ENABLED, signals whose
@@ -1353,13 +1361,19 @@ def _sector_mult_enabled() -> bool:
 
 
 def _cluster_score_override_enabled() -> bool:
-    """Feature flag for the score-based cluster_passes override (default OFF).
+    """Feature flag for the score-based cluster_passes override.
 
-    When ON, single-source clusters whose computed score crosses
-    CLUSTER_SCORE_OVERRIDE_THRESHOLD get cluster_ok=True, bypassing the
-    source-count heuristic for proven-conviction clusters. See the rejection
-    audit (stock_thesis_rejections) for the data-driven rationale."""
-    return os.environ.get("CLUSTER_SCORE_OVERRIDE_ENABLED", "").lower() in ("1", "true", "yes")
+    STOPGAP (2026-06-04): default ON. Previously default OFF gated behind a
+    secret whose value was never actually "true" — that, plus the stale 50
+    threshold, was the SECOND cause of the 13-day Layer 2 silence (the first
+    being the action emit floor). A single-source but individually-proven
+    catalyst (lone 8-K, PF 2.81) must clear the recall floor like any other.
+    Now that CLUSTER_SCORE_OVERRIDE_THRESHOLD is tied to THESIS_RECALL_FLOOR,
+    this is enabled unless EXPLICITLY disabled. Set
+    CLUSTER_SCORE_OVERRIDE_ENABLED=0/false/no/off to roll back.
+    BUY/SELL stay maturity-gated regardless. Reworked when 2.b lands."""
+    val = os.environ.get("CLUSTER_SCORE_OVERRIDE_ENABLED", "").strip().lower()
+    return val not in ("0", "false", "no", "off")
 
 
 def _structural_flip_enabled() -> bool:
