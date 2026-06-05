@@ -104,10 +104,12 @@ Sequenced — cheap/high-value first, statistical machinery deferred until cell 
 
 Per `feedback_pr_sizing` — one behavior per PR, measurement gate between:
 
-1. **PR-A — 2.a candidate generation + `stock_signal_candidates`.** Loose recall floor; score retained for ranking. Measure: candidate volume, recall vs. known catalysts. (The current stopgap floor=30 is the interim stand-in for this.)
-2. **PR-B — walk-forward calibration read path.** A `rule_key::horizon` expectancy lookup that only sees trades closed before the decision time. Validate with `calibrate_emit_floor.py` (walk-forward mode added). Measure: gate decisions match diagnosis on held-out windows.
-3. **PR-C — 2.b gate (Tier-1 guardrails only) + orchestrator compact alert.** Horizon-aware act/pass; one alert/catalyst with horizon profile; rule×horizon maturity. Measure: emission rate, paper-trade accuracy/PF of emitted vs suppressed, false-suppression audit.
-4. **PR-D (deferred) — Tier-2 statistical guardrails** once cell counts warrant.
+0. **PR-A — feasibility measurement [DONE 2026-06-05].** `scripts/measure_candidate_coverage.py`. **Finding:** of 37,211 raw events/180d only 7,449 are catalyst-role candidates (Form 4 / 13F are background, 80% of raw volume — excluded). Catalyst event-volume gateable coverage = **94.1%**; the n≥100 cells are exactly the high-frequency classes (8-K, news, earnings, clinical). **Verdict (Claude + Codex review): COMMIT to the architecture, but START NARROW** — gate only the HF n≥100 classes; fail-open 13G / truth-niche / tail to WATCH until their cells mature. Caveat: 94% is event-volume, not a cluster replay; the commit-grade cluster-level number is deferred to PR-B0 (below), but the *start-narrow* decision is robust to it.
+1. **PR-A.1 — 2.a candidate generation + `stock_signal_candidates`.** Loose recall floor; score retained for ranking. (The current stopgap floor=30 is the interim stand-in.)
+2. **PR-B0 — cluster-replay coverage (commit-grade).** Upgrade the measurement to group events by (ticker, window), score, keep clusters ≥floor, and report candidate-level **and** candidate×horizon gateable coverage. Confirms the narrow-gate class list before it gates suppression.
+3. **PR-B — walk-forward calibration read path.** A `rule_key::horizon` expectancy lookup that only sees trades closed before the decision time. Validate with `calibrate_emit_floor.py` (walk-forward mode added).
+4. **PR-C — 2.b NARROW gate (HF classes, Tier-1 guardrails) + orchestrator compact alert.** Horizon-aware act/pass for 8-K/news/earnings/clinical; everything else fails open to WATCH; one alert/catalyst with horizon profile; rule×horizon maturity. Measure: emission rate, paper-trade accuracy/PF of emitted vs suppressed, false-suppression audit.
+5. **PR-D (deferred) — widen the gate to maturing classes (13G, truth-niche) + Tier-2 statistical guardrails** once their cells reach n≥100.
 
 Remove the `THESIS_RECALL_FLOOR` / override stopgap scaffolding when PR-C lands.
 
