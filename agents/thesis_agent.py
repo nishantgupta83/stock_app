@@ -110,6 +110,22 @@ MAX_ALERTS_PER_DAY   = 5
 # still maturity-gated). Feature flag (default off — flip via secret).
 CLUSTER_SCORE_OVERRIDE_THRESHOLD = 50.0
 
+# ─── TEMPORARY SCAFFOLDING (2026-06-04) — NOT the final design ──────────────
+# The emit floor (RESEARCH tier) was calibrated against the PRE-PR1A score
+# scale. PR1A (2026-05-22) zeroed background-role 13F inflation, ~halving the
+# scale (verified: PFE same biotech catalyst 91.51 → 44.17), but this floor was
+# never re-tuned → Layer 2 emitted 0 signals for 13 days while Layer 5 kept
+# learning (6 rules matured, PF 2.8–9.3). Dropping the recall floor 50→30
+# unblocks emission and resumes feeding the learning loop. 30 is the empirically
+# defensible recall floor: it admits the weakest MATURE rule (a lone 8-K = 25pts,
+# 8k_material_event::h15d PF 2.81, acc_30d 0.90) while the noise floor sits at
+# avg ~5.6. MAX_ALERTS_PER_DAY=5 + dedup cap any flood.
+# THE REAL FIX is the 2.a/2.b meta-labeling funnel (loose recall floor + a
+# payoff-aware precision gate keyed on stock_rule_calibration expectancy) — see
+# docs/design/layer2-metalabeling-funnel.md. Remove this constant when 2.b lands.
+# Env-overridable for fast rollback: `THESIS_RECALL_FLOOR=50` restores old gate.
+THESIS_RECALL_FLOOR = float(os.environ.get("THESIS_RECALL_FLOOR", "30"))
+
 # Structural flips: rule_keys with n>=30, PF<1.0, acc<50% per the 2026-06-03
 # quarterly consultant review. When STRUCTURAL_FLIP_ENABLED, signals whose
 # event-set is dominated by these rule_keys get their direction inverted
@@ -1214,7 +1230,8 @@ def action_for(score: float, direction: str, has_mature_rule: bool = False,
     """
     bull_buy   = 70 + (10 if risk_off else 0)
     bull_watch = 70 + (10 if risk_off else 0)
-    bull_res   = 50 + (10 if risk_off else 0)
+    # Recall floor (RESEARCH tier) — temporary stopgap, see THESIS_RECALL_FLOOR.
+    bull_res   = THESIS_RECALL_FLOOR + (10 if risk_off else 0)
 
     # Maturity gate unchanged
     if has_mature_rule:
@@ -1236,7 +1253,7 @@ def action_for(score: float, direction: str, has_mature_rule: bool = False,
     # Non-bullish neutral high-score case (e.g., earnings_release uncertain direction)
     if score >= 70:
         return "CATALYST_WATCH" if has_catalyst else "MOMENTUM_ONLY"
-    if score >= 50:
+    if score >= THESIS_RECALL_FLOOR:   # recall floor stopgap (was 50)
         return "CATALYST_RESEARCH" if has_catalyst else "MOMENTUM_ONLY"
     return ""  # suppress
 

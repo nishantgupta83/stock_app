@@ -191,9 +191,32 @@ def test_action_for_research_band_split_by_catalyst_score():
 
 
 def test_action_for_low_score_suppressed():
-    """Below research threshold, no action regardless of catalyst."""
-    assert action_for(30, "bullish", catalyst_score=5) == ""
-    assert action_for(30, "bullish", catalyst_score=0) == ""
+    """Below the recall floor, no action regardless of catalyst.
+
+    Recall floor dropped 50→30 on 2026-06-04 (THESIS_RECALL_FLOOR stopgap),
+    so the suppression boundary is now <30. Scores at/above 30 emit (see
+    test_action_for_recall_floor_stopgap).
+    """
+    assert action_for(25, "bullish", catalyst_score=5) == ""
+    assert action_for(25, "bullish", catalyst_score=0) == ""
+
+
+def test_action_for_recall_floor_stopgap():
+    """Stopgap (2026-06-04): recall floor is 30, not 50.
+
+    PR1A (2026-05-22) ~halved the score scale; the old 50 floor then rejected
+    every genuine catalyst (PFE 3×clinical scored 44 → suppressed; GOOG filing
+    49.756 → suppressed). At floor 30 these emit. Locks the unblock so a future
+    refactor can't silently restore the 50 floor without this test failing.
+    """
+    # PFE-class: 3 clinical events, catalyst_score 36, total ~44 → RESEARCH
+    assert action_for(44, "bullish", catalyst_score=36) == "CATALYST_RESEARCH"
+    # GOOG-class: filing at 49.756, just under old floor → now emits
+    assert action_for(49.756, "bullish", catalyst_score=20) == "CATALYST_RESEARCH"
+    # A lone mature 8-K (25 pts) sits at the boundary → emits
+    assert action_for(30, "bullish", catalyst_score=25) == "CATALYST_RESEARCH"
+    # No verified catalyst still degrades to MOMENTUM_ONLY honesty
+    assert action_for(44, "bullish", catalyst_score=0) == "MOMENTUM_ONLY"
 
 
 def test_action_for_mature_rule_emits_buy_sell():
