@@ -33,6 +33,12 @@ AGENT = "pulsecheck_price_agent"
 RUNS_PER_24H_FLOOR = 3
 SKIP_RATE_WARN     = 0.05      # 5% silent-drop rate = early alert
 SKIP_RATE_CRIT     = 0.20
+# Volume guard: the skip RATE is volume-sensitive, so a handful of genuinely
+# pending trades (e.g. weekend exits awaiting Monday's not-yet-ingested EOD bar)
+# can spike the rate to >20% when total reconcile volume is also small. Require
+# an absolute skip count before alarming. Set well above a weekend batch but far
+# below the 513-stuck-h1d incident, so real regressions still fire.
+MIN_SKIP_ABS       = 20
 ORPHAN_SIGNAL_AGE_DAYS  = 30   # h1d signals stuck in 'sent' for 30+ days = stuck
 ORPHAN_SIGNAL_WARN      = 50
 STUCK_H1D_WARN     = 50
@@ -57,6 +63,30 @@ def recent_runs() -> CheckResult:
     status = "ok" if n >= RUNS_PER_24H_FLOOR else "warning"
     return CheckResult(status, f"{n} runs in last 24h", observed=float(n),
                        threshold=float(RUNS_PER_24H_FLOOR))
+
+
+def classify_skip_rate(closed: int, no_bars: int, no_outcome: int) -> tuple[str, float]:
+    """Severity from reconcile skip counts, with an absolute-skip volume guard.
+
+    Returns (status, rate). A non-zero rate below MIN_SKIP_ABS is held at 'ok'
+    so a small batch of pending trades can't trip a false CRITICAL at low
+    volume; the 513-stuck regression (large absolute count) still escalates.
+    """
+    skipped = no_bars + no_outcome
+    total = closed + skipped
+    if total == 0:
+        return "ok", 0.0
+    rate = skipped / total
+    # The absolute floor gates ONLY the CRITICAL page: a few pending trades at
+    # low volume (e.g. Monday-morning weekend exits awaiting that day's EOD bar)
+    # must not page. But a high rate still WARNS regardless of count, so a small
+    # PERSISTENT failure stays visible — floor-before-rate would silence a
+    # 100%-skip low-volume failure entirely (Codex review).
+    if rate >= SKIP_RATE_CRIT and skipped >= MIN_SKIP_ABS:
+        return "critical", rate
+    if rate >= SKIP_RATE_WARN:
+        return "warning", rate
+    return "ok", rate
 
 
 def reconcile_skip_rate() -> CheckResult:
@@ -87,20 +117,14 @@ def reconcile_skip_rate() -> CheckResult:
     no_bars = int(rec.get("n_skipped_no_bars") or 0)
     no_outcome = int(rec.get("n_skipped_no_outcome") or 0)
     skipped = no_bars + no_outcome
-    total = closed + skipped
-    if total == 0:
+    if closed + skipped == 0:
         return CheckResult("ok", "no trades needed reconcile this run")
-    rate = skipped / total
-    if rate >= SKIP_RATE_CRIT:
-        status = "critical"
-    elif rate >= SKIP_RATE_WARN:
-        status = "warning"
-    else:
-        status = "ok"
+    status, rate = classify_skip_rate(closed, no_bars, no_outcome)
+    guarded = " [below abs floor]" if skipped < MIN_SKIP_ABS else ""
     return CheckResult(
         status,
         f"latest run: closed={closed} skipped_no_bars={no_bars} "
-        f"skipped_no_outcome={no_outcome} ({rate:.1%})",
+        f"skipped_no_outcome={no_outcome} ({rate:.1%}){guarded}",
         observed=rate,
         threshold=SKIP_RATE_WARN,
         meta={"started_at": rows[0].get("started_at"),

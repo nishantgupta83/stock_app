@@ -302,6 +302,10 @@ td code {
 .tag.CHASE_RISK  { color: var(--bear); border-color: var(--bear-dim); }
 .tag.BUY         { background: var(--bull); color: var(--bg); border-color: var(--bull); font-weight: 600; }
 .tag.SELL        { background: var(--bear); color: var(--bg); border-color: var(--bear); font-weight: 600; }
+/* Post-PR1A catalyst vocabulary (emitted since 2026-05-22; styled 2026-06-08). */
+.tag.CATALYST_WATCH    { background: var(--accent); color: var(--bg); border-color: var(--accent); font-weight: 600; }
+.tag.CATALYST_RESEARCH { color: var(--accent); border-color: var(--accent-dim); }
+.tag.MOMENTUM_ONLY     { color: var(--sky); border-color: var(--sky); }
 
 .tag.PAPER_LONG       { color: var(--bull); border-color: var(--bull-dim); }
 .tag.PAPER_WATCH      { color: var(--accent); border-color: var(--accent-dim); }
