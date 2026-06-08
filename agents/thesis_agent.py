@@ -563,6 +563,7 @@ def score_evidence(events: list[dict],
                    agent_weights: dict[str, float] | None = None,
                    sector_multipliers: dict[tuple[str, str], float] | None = None,
                    ticker_sectors: dict[str, str] | None = None,
+                   now: datetime | None = None,
                    ) -> tuple[float, list[dict]]:
     """Apply Phase-1 rubric. Returns (total_score, breakdown).
 
@@ -592,7 +593,11 @@ def score_evidence(events: list[dict],
     ev_catalyst_eligible: dict[int, bool] = {}
     # event_id → event dict (for sector-multiplier lookup keyed by event_type+ticker)
     ev_lookup: dict[int, dict] = {e["id"]: e for e in events if e.get("id") is not None}
-    now = datetime.now(timezone.utc)
+    # Injectable clock: a historical replay (PR-B0) passes the cluster's run_at
+    # so catalyst-age eligibility is judged as-of that run, not today (else old
+    # events lose catalyst role and scores are understated). Live path passes
+    # None → wall clock, behavior unchanged.
+    now = now or datetime.now(timezone.utc)
     for e in events:
         ev_id = e.get("id")
         if ev_id is None:
@@ -1913,6 +1918,171 @@ def retry_dispatch_failed(cap_remaining: int) -> int:
 # Main
 # ============================================================
 
+def score_cluster(
+    events: list[dict],
+    *,
+    rule_calibration: dict[str, dict],
+    bucket: str | None = None,
+    now: datetime | None = None,
+    agent_weights: dict[str, float] | None = None,
+    sector_multipliers: dict | None = None,
+    ticker_sectors: dict | None = None,
+    risk_off: bool = False,
+    wide_events: list[dict] | None = None,
+    watchlist_map: dict | None = None,
+    news_fetch=None,
+) -> dict:
+    """Score ONE cluster of events into a `scored` dict — the Layer-2 scoring
+    core shared by thesis_agent.main() (live) and the PR-B0 historical replay,
+    so the score that decides '>= recall floor' and the rule_keys cannot drift.
+
+    Pure given its injected inputs:
+      * now           — clock for catalyst-age eligibility (replay passes the
+                        cluster's run_at; None → wall clock = live behavior).
+      * wide_events/watchlist_map — intelligence-bonus inputs (replay passes
+                        []/{} → bonuses contribute 0, no lookahead).
+      * news_fetch    — callable(ticker)->list[news] for the PR1B promotion;
+                        None disables it (replay no-lookahead). main() passes a
+                        live fetch_recent_news lambda.
+    """
+    ticker = events[0]["ticker"] if events else ""
+    wide_events = wide_events or []
+    watchlist_map = watchlist_map or {}
+
+    ok, cluster_label = cluster_passes(events)
+    score, breakdown = score_evidence(
+        events,
+        agent_weights=agent_weights,
+        sector_multipliers=sector_multipliers,
+        ticker_sectors=ticker_sectors,
+        now=now,
+    )
+    direction = signal_direction(events)
+    direction = apply_structural_flip(events, direction, breakdown)
+
+    sb, sb_detail = sector_cluster_bonus(ticker, direction, wide_events, watchlist_map)
+    if sb:
+        score += sb
+        breakdown.append({"rule": "sector_cluster_bonus", "points": sb,
+                          "event_id": None, "detail": sb_detail})
+    hb, hb_detail = hyperscaler_capex_echo(ticker, wide_events)
+    if hb:
+        score += hb
+        breakdown.append({"rule": "hyperscaler_capex_echo", "points": hb,
+                          "event_id": None, "detail": hb_detail})
+    pb, pb_detail = power_scarcity_active(ticker, wide_events, watchlist_map)
+    if pb:
+        score += pb
+        breakdown.append({"rule": "power_scarcity_boost", "points": pb,
+                          "event_id": None, "detail": pb_detail})
+
+    mature = cluster_has_mature_rule(events, rule_calibration)
+    sub_scores = decompose_score(breakdown)
+
+    # PR1B race-window / classifier-gap safety net. Disabled when news_fetch is
+    # None (replay no-lookahead mode), so an old cluster isn't promoted by news
+    # that didn't exist at its run_at.
+    news_causal_promoted = False
+    news_top_causal_headline: str | None = None
+    recent_news: list[dict] = []
+    if sub_scores["catalyst"] == 0 and news_fetch is not None:
+        from _catalyst_policy import is_causal_headline
+        recent_news = news_fetch(ticker) or []
+        for n in recent_news:
+            if is_causal_headline(n.get("headline") or ""):
+                news_causal_promoted = True
+                news_top_causal_headline = n.get("headline")
+                breakdown.append({
+                    "rule":         "news_causal_promoted",
+                    "points":       8,
+                    "raw_points":   8,
+                    "event_id":     None,
+                    "detail":       f"raw_news 48h: {(news_top_causal_headline or '')[:120]}",
+                    "role":         "catalyst",
+                    "catalyst_ok":  True,
+                })
+                score += 8
+                sub_scores = decompose_score(breakdown)
+                break
+
+    action = action_for(score, direction, has_mature_rule=mature,
+                        risk_off=risk_off,
+                        catalyst_score=sub_scores["catalyst"])
+
+    # Score-based cluster_passes override (see main()/CLAUDE.md for rationale).
+    if (not ok
+        and _cluster_score_override_enabled()
+        and score >= CLUSTER_SCORE_OVERRIDE_THRESHOLD
+        and action):
+        breakdown.append({
+            "rule":       "cluster_passes_override",
+            "points":     0,
+            "event_id":   None,
+            "detail":     f"score={round(score, 1)}>={CLUSTER_SCORE_OVERRIDE_THRESHOLD}; "
+                          f"original cluster_label={cluster_label}",
+            "role":       "bonus",
+            "catalyst_ok": True,
+        })
+        ok = True
+        cluster_label = f"override:high_score_{int(score)}"
+
+    return {
+        "ticker":   ticker,
+        "bucket":   bucket,
+        "events":   events,
+        "score":    score,
+        "catalyst_score":   sub_scores["catalyst"],
+        "context_score":    sub_scores["context"],
+        "background_score": sub_scores["background"],
+        "action":   action,
+        "direction": direction,
+        "cluster_ok": ok,
+        "cluster_label": cluster_label,
+        "breakdown": breakdown,
+        "dedupe_key": f"thesis_{ticker}_{bucket}",
+        "has_mature_rule": mature,
+        "risk_off": risk_off,
+        "recent_news":          recent_news,
+        "news_causal_promoted": news_causal_promoted,
+        "news_top_headline":    news_top_causal_headline,
+    }
+
+
+def build_and_score_clusters(
+    events: list[dict],
+    *,
+    rule_calibration: dict[str, dict],
+    now_fn=None,
+    **score_kwargs,
+) -> list[dict]:
+    """Group events into (ticker, CLUSTER_WINDOW_MIN bucket) clusters by
+    event_at — the LIVE grouping — and score each via score_cluster().
+
+    now_fn: optional callable(ev_list)->datetime giving the per-cluster clock.
+    Live path passes None → score_cluster uses the wall clock (unchanged). The
+    replay (which does its own created_at-windowed grouping) calls score_cluster
+    directly rather than this wrapper.
+    """
+    clusters: dict[tuple[str, str], list[dict]] = defaultdict(list)
+    for e in events:
+        try:
+            t = datetime.fromisoformat(e["event_at"].replace("Z", "+00:00"))
+        except Exception:  # noqa: BLE001
+            continue
+        bucket = t.replace(second=0, microsecond=0)
+        bucket = bucket.replace(minute=(bucket.minute // CLUSTER_WINDOW_MIN) * CLUSTER_WINDOW_MIN)
+        clusters[(e["ticker"], bucket.isoformat())].append(e)
+
+    scored = []
+    for (ticker, bucket), ev_list in clusters.items():
+        now = now_fn(ev_list) if now_fn else None
+        scored.append(score_cluster(
+            ev_list, rule_calibration=rule_calibration,
+            bucket=bucket, now=now, **score_kwargs,
+        ))
+    return scored
+
+
 def main() -> int:
     started = time.time()
     run_id = job_run_start("thesis_agent")
@@ -1980,19 +2150,6 @@ def main() -> int:
         elif _sector_mult_enabled():
             print("Sector calib multipliers: enabled but view returned 0 rows")
 
-        # Group by (ticker, 5-min bucket)
-        clusters: dict[tuple[str, str], list[dict]] = defaultdict(list)
-        for e in events:
-            try:
-                t = datetime.fromisoformat(e["event_at"].replace("Z", "+00:00"))
-            except Exception:
-                continue
-            bucket = t.replace(second=0, microsecond=0)
-            bucket = bucket.replace(minute=(bucket.minute // CLUSTER_WINDOW_MIN) * CLUSTER_WINDOW_MIN)
-            clusters[(e["ticker"], bucket.isoformat())].append(e)
-
-        print(f"Distinct (ticker, 5-min) clusters: {len(clusters)}")
-
         print(f"Alerts already sent today: {already_today} (cap remaining after retries: {cap_remaining})")
 
         # Intelligence layer — cross-rule context for sector/hyperscaler/power signals
@@ -2002,127 +2159,23 @@ def main() -> int:
         if risk_off:
             print("⚠️  Macro risk-off active (VIX > 25) — bullish thresholds tightened +10")
 
-        # Score and rank
-        scored = []
-        for (ticker, bucket), ev_list in clusters.items():
-            ok, cluster_label = cluster_passes(ev_list)
-            score, breakdown = score_evidence(
-                ev_list,
-                agent_weights=agent_weights,
-                sector_multipliers=sector_multipliers,
-                ticker_sectors=ticker_sectors,
-            )
-            direction = signal_direction(ev_list)
-            # Structural flip: if STRUCTURAL_FLIP_ENABLED and >=50% of the
-            # cluster's events are in the flip set, invert the direction. The
-            # flip is reflected in the breakdown so downstream audits can see
-            # which signals were flipped and why.
-            direction = apply_structural_flip(ev_list, direction, breakdown)
-
-            # Apply intelligence bonuses
-            sb, sb_detail = sector_cluster_bonus(ticker, direction, wide_events, watchlist_map)
-            if sb:
-                score += sb
-                breakdown.append({"rule": "sector_cluster_bonus", "points": sb,
-                                  "event_id": None, "detail": sb_detail})
-            hb, hb_detail = hyperscaler_capex_echo(ticker, wide_events)
-            if hb:
-                score += hb
-                breakdown.append({"rule": "hyperscaler_capex_echo", "points": hb,
-                                  "event_id": None, "detail": hb_detail})
-            pb, pb_detail = power_scarcity_active(ticker, wide_events, watchlist_map)
-            if pb:
-                score += pb
-                breakdown.append({"rule": "power_scarcity_boost", "points": pb,
-                                  "event_id": None, "detail": pb_detail})
-
-            mature = cluster_has_mature_rule(ev_list, rule_calibration)
-            sub_scores = decompose_score(breakdown)
-
-            # PR1B: race-window / classifier-gap safety net. If the normalized
-            # events for this cluster don't yield catalyst_score>0, fetch
-            # last-48h raw_news for the ticker and apply the causal-keyword
-            # classifier. A matched causal headline promotes the signal back
-            # to CATALYST_* tier (operator sees the real cause); generic
-            # headlines without catalyst keywords get attached as context but
-            # do NOT promote — signal stays MOMENTUM_ONLY honestly.
-            news_causal_promoted = False
-            news_top_causal_headline: str | None = None
-            recent_news: list[dict] = []
-            if sub_scores["catalyst"] == 0:
-                from _catalyst_policy import is_causal_headline
-                recent_news = fetch_recent_news(ticker, hours=48, limit=5)
-                for n in recent_news:
-                    if is_causal_headline(n.get("headline") or ""):
-                        news_causal_promoted = True
-                        news_top_causal_headline = n.get("headline")
-                        # Inject a synthetic catalyst entry into breakdown so
-                        # decompose_score reflects it on the next call AND the
-                        # operator can see the source attribution.
-                        breakdown.append({
-                            "rule":         "news_causal_promoted",
-                            "points":       8,
-                            "raw_points":   8,
-                            "event_id":     None,
-                            "detail":       f"raw_news 48h: {(news_top_causal_headline or '')[:120]}",
-                            "role":         "catalyst",
-                            "catalyst_ok":  True,
-                        })
-                        score += 8
-                        sub_scores = decompose_score(breakdown)
-                        break
-
-            action = action_for(score, direction, has_mature_rule=mature,
-                                risk_off=risk_off,
-                                catalyst_score=sub_scores["catalyst"])
-
-            # Score-based cluster_passes override.
-            # When CLUSTER_SCORE_OVERRIDE_ENABLED, a cluster that failed the
-            # source-count heuristic but whose computed score crosses the
-            # rubric's own alert threshold gets promoted to ok=True. The rubric
-            # is the authoritative judgment of "alert-worthy"; cluster_passes
-            # is a pre-rubric coarse filter. When the rubric says yes (>=50)
-            # and cluster_passes says no, defer to the rubric.
-            # Note: this DOES NOT bypass maturity gating (BUY/SELL still
-            # require an is_mature rule) or the daily cap. It only lifts the
-            # cluster-source double-gate for high-conviction single-source
-            # clusters that would otherwise be silently dropped.
-            if (not ok
-                and _cluster_score_override_enabled()
-                and score >= CLUSTER_SCORE_OVERRIDE_THRESHOLD
-                and action):
-                breakdown.append({
-                    "rule":       "cluster_passes_override",
-                    "points":     0,           # informational; score already computed
-                    "event_id":   None,
-                    "detail":     f"score={round(score, 1)}>={CLUSTER_SCORE_OVERRIDE_THRESHOLD}; "
-                                  f"original cluster_label={cluster_label}",
-                    "role":       "bonus",
-                    "catalyst_ok": True,
-                })
-                ok = True
-                cluster_label = f"override:high_score_{int(score)}"
-
-            scored.append({
-                "ticker":   ticker,
-                "bucket":   bucket,
-                "events":   ev_list,
-                "score":    score,
-                "catalyst_score":   sub_scores["catalyst"],
-                "context_score":    sub_scores["context"],
-                "background_score": sub_scores["background"],
-                "action":   action,
-                "direction": direction,
-                "cluster_ok": ok,
-                "cluster_label": cluster_label,
-                "breakdown": breakdown,
-                "dedupe_key": f"thesis_{ticker}_{bucket}",
-                "has_mature_rule": mature,
-                "risk_off": risk_off,
-                "recent_news":          recent_news,
-                "news_causal_promoted": news_causal_promoted,
-                "news_top_headline":    news_top_causal_headline,
-            })
+        # Group by (ticker, CLUSTER_WINDOW_MIN bucket) + score each via the
+        # shared core. now_fn=None → wall clock (live behavior unchanged). The
+        # PR-B0 cluster-replay calls the SAME score_cluster() so the score that
+        # decides '>= recall floor' and the rule_keys cannot drift.
+        scored = build_and_score_clusters(
+            events,
+            rule_calibration=rule_calibration,
+            now_fn=None,
+            agent_weights=agent_weights,
+            sector_multipliers=sector_multipliers,
+            ticker_sectors=ticker_sectors,
+            risk_off=risk_off,
+            wide_events=wide_events,
+            watchlist_map=watchlist_map,
+            news_fetch=lambda t: fetch_recent_news(t, hours=48, limit=5),
+        )
+        print(f"Distinct (ticker, 5-min) clusters: {len(scored)}")
 
         # Audit rejected clusters BEFORE filtering — record one row per cluster
         # that gets dropped so we can measure which gate is binding. Three
