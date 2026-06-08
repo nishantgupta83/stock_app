@@ -122,6 +122,83 @@ def candidate_dryness() -> CheckResult:
     )
 
 
+_SEVERITY_RANK = {"ok": 0, "warning": 1, "critical": 2}
+
+
+def classify_emit(emit: dict) -> tuple[str, str]:
+    """Per-run severity from a thesis run's meta.emit block.
+
+    Uses ATTEMPTED inserts (emitted + failed), NOT n_candidates — candidates
+    includes recently_dispatched dedupe-skips, which never attempted an insert.
+    """
+    n_failed = int(emit.get("n_insert_failed") or 0)
+    n_emit = int(emit.get("n_emitted") or 0)
+    # n_attempted is written by thesis_agent; fall back to emitted+failed for
+    # any run recorded before that field existed.
+    n_attempted = int(emit.get("n_attempted") or (n_emit + n_failed))
+    if n_failed > 0 and n_emit == 0 and n_attempted > 0:
+        return "critical", f"all {n_failed} signal inserts rejected (attempted={n_attempted})"
+    if n_failed > 0:
+        return "warning", f"{n_failed} signal insert(s) failed (emitted={n_emit})"
+    return "ok", f"attempted={n_attempted} emitted={n_emit}"
+
+
+def worst_emit(runs: list[dict]) -> tuple[str, str]:
+    """Worst per-run emit severity across a window of runs.
+
+    Cadence guard (Codex review): thesis runs ~*/5min but this pulsecheck runs
+    hourly, so a clean/no-candidate run can immediately follow a fully-rejected
+    one. Latest-row-only would re-hide the Finding-C failure; scan the window
+    and surface the worst.
+    """
+    worst = ("ok", "no insert failures in window")
+    for row in runs:
+        meta = (row.get("meta") or {})
+        emit = (meta.get("emit") or {}) if isinstance(meta, dict) else {}
+        if not emit:
+            continue
+        status, detail = classify_emit(emit)
+        if _SEVERITY_RANK[status] > _SEVERITY_RANK[worst[0]]:
+            worst = (status, detail)
+    return worst
+
+
+INSERT_FAIL_WINDOW_HOURS = 3
+
+
+def insert_failures() -> CheckResult:
+    """Did any recent thesis run lose signals to a DB insert rejection?
+
+    Reads stock_job_runs.meta.emit over the last INSERT_FAIL_WINDOW_HOURS.
+    CRITICAL when a run scored candidates but emitted 0 because every insert
+    was rejected — the silent failure mode that hid for 13 days in 2026-06
+    (action CHECK constraint). WARNING on partial losses.
+    """
+    since = (_now() - timedelta(hours=INSERT_FAIL_WINDOW_HOURS)).isoformat()
+    rows = sb_get("stock_job_runs", {
+        "agent":      "eq.thesis_agent",
+        "started_at": f"gte.{since}",
+        "order":      "started_at.desc",
+        "limit":      "100",
+        "select":     "started_at,status,meta",
+    })
+    if not rows:
+        return CheckResult("warning", "no thesis_agent runs in window", observed=0.0)
+    status, detail = worst_emit(rows)
+    total_failed = sum(
+        int(((r.get("meta") or {}).get("emit") or {}).get("n_insert_failed") or 0)
+        for r in rows if isinstance(r.get("meta"), dict)
+    )
+    return CheckResult(
+        status,
+        f"{INSERT_FAIL_WINDOW_HOURS}h window: {detail}",
+        observed=float(total_failed),
+        threshold=1.0,
+        meta={"window_hours": INSERT_FAIL_WINDOW_HOURS,
+              "total_insert_failed": total_failed},
+    )
+
+
 def rejection_distribution() -> CheckResult:
     """Read the 24h rejection mix and flag any single fail_reason >60%.
 
@@ -155,6 +232,7 @@ CHECKS = [
     Check("recent_runs",            recent_runs,            depends_on=["pulsecheck_foundation"]),
     Check("cap_consumption",        cap_consumption,        depends_on=["pulsecheck_foundation"]),
     Check("candidate_dryness",      candidate_dryness,      depends_on=["pulsecheck_foundation"]),
+    Check("insert_failures",        insert_failures,        depends_on=["pulsecheck_foundation"]),
     Check("rejection_distribution", rejection_distribution, depends_on=["pulsecheck_foundation"]),
 ]
 

@@ -226,21 +226,29 @@ def job_run_start(agent: str) -> int | None:
     return None
 
 
-def job_run_finish(run_id: int | None, status: str, rows_in: int, rows_out: int, err: str | None = None) -> None:
+def job_run_finish(run_id: int | None, status: str, rows_in: int, rows_out: int,
+                   err: str | None = None, meta: dict | None = None) -> None:
     if run_id is None:
         return
     try:
-        requests.patch(
+        payload = {
+            "finished_at": datetime.now(timezone.utc).isoformat(),
+            "status":      status,
+            "rows_in":     rows_in,
+            "rows_out":    rows_out,
+            "error_text":  err,
+        }
+        if meta:
+            payload["meta"] = meta
+        r = requests.patch(
             f"{SUPABASE_URL}/rest/v1/stock_job_runs?id=eq.{run_id}",
             headers=HEADERS_SB,
-            json={
-                "finished_at": datetime.now(timezone.utc).isoformat(),
-                "status":      status,
-                "rows_in":     rows_in,
-                "rows_out":    rows_out,
-                "error_text":  err,
-            }, timeout=10,
+            json=payload, timeout=10,
         )
+        # Don't swallow a failed status/meta write — that would re-create the
+        # very blind spot this instrumentation exists to close.
+        if r.status_code >= 400:
+            print(f"  job_run_finish PATCH {r.status_code}: {r.text[:300]}", file=sys.stderr)
     except Exception as e:  # noqa: BLE001
         print(f"  job_run_finish failed: {e}", file=sys.stderr)
 
@@ -1658,6 +1666,48 @@ def evidence_summary(events: list[dict]) -> str:
 # Signal write + dispatch
 # ============================================================
 
+# Populated by write_signal() on a HARD insert rejection (non-2xx that we
+# could not recover via the CHASE_RISK fallback). main() drains it into
+# stock_job_runs.meta so a silent DB rejection — the Finding-C class that hid
+# for 13 days in 2026-06 — surfaces loudly instead of finishing the run 'ok'.
+# Single-threaded per process; main() clears it at run start, tests reset it.
+_INSERT_FAILURES: list[dict] = []
+
+
+def _record_insert_failure(ticker: str, action: str, resp) -> None:
+    """Capture a whitelisted summary of a rejected signal insert.
+
+    Stores HTTP status + parsed PostgREST error code/message (not raw r.text)
+    so the sample is safe to surface in job meta / the dashboard.
+    """
+    db_code = None
+    message = ""
+    try:
+        body = resp.json()
+        if isinstance(body, dict):
+            db_code = body.get("code")
+            message = (body.get("message") or body.get("details") or "")[:200]
+    except Exception:  # noqa: BLE001
+        message = (getattr(resp, "text", "") or "")[:200]
+    _INSERT_FAILURES.append({
+        "ticker":  ticker,
+        "action":  action,           # action actually ATTEMPTED (post-fallback)
+        "code":    getattr(resp, "status_code", None),
+        "db_code": db_code,
+        "message": message,
+    })
+
+
+def emit_run_status(n_attempted: int, n_emitted: int, n_insert_failed: int) -> str:
+    """Run status for a thesis emit cycle.
+
+    Any signal lost to a DB rejection means the run did not fully succeed →
+    'partial' (a CHECK-allowed status, sql/0004). pulsecheck severity
+    distinguishes 'all rejected' (critical) from a partial loss (warning).
+    """
+    return "partial" if n_insert_failed > 0 else "ok"
+
+
 def write_signal_evidence(signal_id: int, events: list[dict]) -> None:
     """Upsert signal-to-event evidence so reruns can heal partial writes."""
     ev_rows = [{
@@ -1803,12 +1853,15 @@ def write_signal(ticker: str, score: float, action: str, direction: str,
                       file=sys.stderr)
             else:
                 print(f"  signal insert {r.status_code}: {r.text}", file=sys.stderr)
+                _record_insert_failure(ticker, payload["action"], r)
                 return None
         else:
             print(f"  signal insert {r.status_code}: {r.text}", file=sys.stderr)
+            _record_insert_failure(ticker, payload["action"], r)
             return None
     if r.status_code not in (200, 201) or not r.json():
         print(f"  signal insert {r.status_code}: {r.text}", file=sys.stderr)
+        _record_insert_failure(ticker, payload["action"], r)
         return None
     sig = r.json()[0]
     sig_id = sig["id"]
@@ -1865,6 +1918,8 @@ def main() -> int:
     run_id = job_run_start("thesis_agent")
     sent = 0
     suppressed = 0
+    emitted = 0
+    _INSERT_FAILURES.clear()
 
     try:
         # Per-lane cap: count only signals this agent emits (model_version=MODEL_VERSION).
@@ -1881,7 +1936,13 @@ def main() -> int:
         events = fetch_fresh_events()
         print(f"Fresh events in last {FRESHNESS_WINDOW_MIN}m: {len(events)}")
         if not events:
-            job_run_finish(run_id, "ok", 0, sent)
+            # Always carry an emit block (even all-zero) so pulsecheck's
+            # insert_failures() distinguishes "ran, nothing to emit" from
+            # "instrumentation missing".
+            job_run_finish(run_id, "ok", 0, sent, meta={"emit": {
+                "n_candidates": 0, "n_attempted": 0, "n_emitted": 0,
+                "n_insert_failed": 0, "insert_error_samples": [],
+            }})
             return 0
 
         # Learning loop: pull current per-agent weights so well-performing agents
@@ -2140,6 +2201,7 @@ def main() -> int:
             )
             if sig_id is None:
                 continue
+            emitted += 1
             # Severity-4 events bypass the daily cap (LITE-style critical alerts).
             # RESEARCH-tier gets promoted to dispatch when a sev4 event is present.
             max_sev = max((e.get("severity") or 0) for e in cand["events"])
@@ -2179,8 +2241,24 @@ def main() -> int:
             print(f"  candidate ledger failed (non-fatal): {_cand_exc}", file=sys.stderr)
 
         elapsed = time.time() - started
-        print(f"Done in {elapsed:.1f}s. Sent: {sent}, suppressed: {suppressed}, candidates: {len(candidates)}")
-        job_run_finish(run_id, "ok", len(events), sent + suppressed)
+        n_failed = len(_INSERT_FAILURES)
+        n_attempted = emitted + n_failed
+        emit_meta = {"emit": {
+            "n_candidates":         len(candidates),
+            "n_attempted":          n_attempted,
+            "n_emitted":            emitted,
+            "n_insert_failed":      n_failed,
+            "insert_error_samples": _INSERT_FAILURES[:5],
+        }}
+        status = emit_run_status(n_attempted, emitted, n_failed)
+        # error_text mirrors the failure into the column job-run/dashboard views
+        # read directly (they don't unpack meta) so 'partial' is triageable.
+        err_text = (f"{n_failed} signal insert failure(s); {emitted} emitted "
+                    f"of {n_attempted} attempted") if n_failed else None
+        print(f"Done in {elapsed:.1f}s. Sent: {sent}, suppressed: {suppressed}, "
+              f"candidates: {len(candidates)}, insert_failed: {n_failed}")
+        job_run_finish(run_id, status, len(events), sent + suppressed,
+                       err=err_text, meta=emit_meta)
         return 0
 
     except Exception as e:  # noqa: BLE001
