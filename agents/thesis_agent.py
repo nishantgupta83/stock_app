@@ -1337,6 +1337,126 @@ def _record_rejected_clusters(thesis_run_id: int | None, scored: list[dict]) -> 
             print(f"  rejection batch {i}: {e}", file=sys.stderr)
 
 
+# Horizons each candidate's rules span — must match event_paper_agent.HORIZONS
+# so the rule_key::horizon cells 2.b reads line up with what Layer 5 calibrates.
+_CANDIDATE_HORIZONS = (1, 7, 15, 30)
+
+
+def _existing_candidate_keys(dedup_keys: list[str], hours: int = 6) -> set[str] | None:
+    """dedup_keys already written to stock_signal_candidates in the last `hours`.
+    Bounds growth: a fresh cluster recurring every 5-min run records ONE
+    candidate row per 6h window, not one per run.
+
+    Returns None on ANY query failure — the caller then FAILS CLOSED (skips
+    writes this run) rather than treating failure as "nothing exists", which
+    would re-write every cluster and bloat the ledger. Chunks the IN(...) by
+    key count so a market-open candidate set can't blow the URL length."""
+    keys = sorted({k for k in dedup_keys if k})
+    if not keys:
+        return set()
+    since = (datetime.now(timezone.utc) - timedelta(hours=hours)).isoformat()
+    found: set[str] = set()
+    for i in range(0, len(keys), 80):
+        in_list = ",".join(f'"{k}"' for k in keys[i:i + 80])
+        try:
+            r = requests.get(
+                f"{SUPABASE_URL}/rest/v1/stock_signal_candidates",
+                headers=HEADERS_SB,
+                params={"dedup_key": f"in.({in_list})",
+                        "created_at": f"gte.{since}", "select": "dedup_key", "limit": "5000"},
+                timeout=15,
+            )
+            if r.status_code != 200:
+                print(f"  _existing_candidate_keys {r.status_code}: {r.text[:120]}", file=sys.stderr)
+                return None  # fail closed
+            found.update(row["dedup_key"] for row in r.json() if row.get("dedup_key"))
+        except Exception as e:  # noqa: BLE001
+            print(f"  _existing_candidate_keys: {e}", file=sys.stderr)
+            return None  # fail closed
+    return found
+
+
+def _record_candidates(thesis_run_id: int | None, scored: list[dict]) -> None:
+    """Layer 2.a output: one row per cluster clearing the loose recall floor.
+
+    This is the seam that makes 2.a inspectable and feeds the PR-B0 cluster-
+    replay coverage measurement. It does NOT change emit behavior — the
+    orchestrator still emits from `candidates` below. score is recorded for
+    ranking; rule_keys are the (rule_key::horizon) cells 2.b will gate on.
+    """
+    cands = [s for s in scored if float(s.get("score") or 0) >= THESIS_RECALL_FLOOR]
+    if not cands:
+        return
+    # Cap the per-run work (highest-score first) so a pathological market-open
+    # run can't spend unbounded time on the ledger side-write.
+    cands.sort(key=lambda s: float(s.get("score") or 0), reverse=True)
+    cands = cands[:200]
+    existing = _existing_candidate_keys([s.get("dedupe_key") for s in cands])
+    if existing is None:
+        # Prefilter failed → fail closed (skip writes) rather than risk dup bloat.
+        print("  candidate ledger: prefilter failed, skipping writes this run", file=sys.stderr)
+        return
+    rows = []
+    for s in cands:
+        dk = s.get("dedupe_key")
+        if not dk or dk in existing:
+            continue
+        events = s.get("events") or []
+        # Constituent rule_key::horizon cells — what 2.b looks up in calibration.
+        rule_keys = set()
+        for e in events:
+            et = e.get("event_type")
+            if not et:
+                continue
+            sub = e.get("event_subtype")
+            for h in _CANDIDATE_HORIZONS:
+                try:
+                    rule_keys.add(_rule_key.derive(et, sub, h))
+                except Exception:  # noqa: BLE001
+                    continue
+        try:
+            source_agents = sorted({source_agent_for(e) for e in events if source_agent_for(e)})
+        except Exception:  # noqa: BLE001
+            source_agents = []
+        breakdown = s.get("breakdown") or []
+        try:
+            top = sorted((b for b in breakdown if isinstance(b, dict) and b.get("rule")),
+                         key=lambda b: abs(float(b.get("points") or 0)), reverse=True)[:5]
+            breakdown_sample = [{"rule": b.get("rule"), "points": b.get("points"),
+                                 "role": b.get("role"), "event_id": b.get("event_id")} for b in top]
+        except Exception:  # noqa: BLE001
+            breakdown_sample = []
+        rows.append({
+            "candidate_run_id": thesis_run_id,
+            "ticker":           s.get("ticker"),
+            "cluster_bucket":   s.get("bucket"),
+            "direction":        s.get("direction"),
+            "score":            float(s.get("score") or 0),
+            "recall_floor":     THESIS_RECALL_FLOOR,
+            "catalyst_score":   float(s.get("catalyst_score") or 0),
+            "context_score":    float(s.get("context_score") or 0),
+            "background_score": float(s.get("background_score") or 0),
+            "n_events":         len(events),
+            "source_agents":    source_agents,
+            "rule_keys":        sorted(rule_keys),
+            "dedup_key":        dk,
+            "breakdown":        breakdown_sample,
+        })
+    if not rows:
+        return
+    chunk = 100
+    for i in range(0, len(rows), chunk):
+        try:
+            requests.post(
+                f"{SUPABASE_URL}/rest/v1/stock_signal_candidates",
+                headers={**HEADERS_SB, "Prefer": "return=minimal"},
+                json=rows[i:i + chunk],
+                timeout=20,
+            )
+        except Exception as e:  # noqa: BLE001
+            print(f"  candidate batch {i}: {e}", file=sys.stderr)
+
+
 def fetch_rule_calibration() -> dict[str, dict]:
     """{rule_key → {accuracy, n_observations, is_mature}} from stock_rule_calibration.
     Empty dict on any failure → callers fall through to base scoring (no learned weight)."""
@@ -2048,6 +2168,15 @@ def main() -> int:
                 mark_signal_status(sig_id, "suppressed")
                 suppressed += 1
                 print(f"  {ticker}: suppressed action={cand['action']} score={cand['score']:.0f} cap_remaining={cap_remaining}")
+
+        # Layer 2.a candidate ledger (PR-A.1): record EVERY cluster clearing the
+        # loose recall floor so 2.a is inspectable + PR-B0 can replay coverage.
+        # Deliberately AFTER emit/dispatch so its network I/O can never delay a
+        # live alert against the workflow timeout. Non-fatal.
+        try:
+            _record_candidates(run_id, scored)
+        except Exception as _cand_exc:  # noqa: BLE001
+            print(f"  candidate ledger failed (non-fatal): {_cand_exc}", file=sys.stderr)
 
         elapsed = time.time() - started
         print(f"Done in {elapsed:.1f}s. Sent: {sent}, suppressed: {suppressed}, candidates: {len(candidates)}")
