@@ -236,6 +236,17 @@ Layer 6 — PRESENTATION (read-only)
   `stock_signals.score_breakdown[]` as a `cluster_passes_override` entry.
   Required after rejection-audit data (`stock_thesis_rejections`) showed
   100% of thesis silence traced to single_source_no_exception.
+  **✅ 2026-06-08 ROOT CAUSE CORRECTED (the earlier secret hypothesis was WRONG).**
+  Layer-2 silence was NOT the `CLUSTER_SCORE_OVERRIDE_ENABLED` secret. The binding
+  cause was a `stock_signals.action` CHECK constraint that silently rejected the
+  entire post-PR1A vocabulary (`CATALYST_*`/`MOMENTUM_ONLY`); `write_signal`
+  swallowed the insert error so runs finished `status=ok` rows_out=0 — invisible
+  for 13 days. Fixed in `sql/0040` (commit `974d967`); thesis emitted 6 signals
+  immediately after. The stale emit floor (50→30) and this override were
+  necessary but UPSTREAM of that DB gate, so they couldn't make emission work
+  alone. `write_signal` now surfaces insert failures into `stock_job_runs.meta`
+  (commit `cc250e8`) so this class can't hide again. Do NOT act on the old
+  "set the secret" advice.
 
 **7. `MAX_ALERTS_PER_DAY` in `thesis_agent` is now per-lane, not global.**
 - Prior bug: `alerts_sent_today()` queried `stock_signals` without filtering

@@ -1,7 +1,26 @@
 # Score-based cluster_passes override — data-driven L2 unblock
 
 **Date:** 2026-06-02
-**Status:** Shipped flag-on (feature: `CLUSTER_SCORE_OVERRIDE_ENABLED`)
+**Status:** Shipped at code level. **Root cause of L2 silence CORRECTED 2026-06-08 — it was NOT this flag (see correction below).**
+
+---
+
+> **2026-06-08 CORRECTION (supersedes the 06-04 status update below):**
+> The 06-04 conclusion — that L2 silence was caused by `CLUSTER_SCORE_OVERRIDE_ENABLED`
+> not being `"true"` — was **WRONG**. The binding cause was a `stock_signals.action`
+> CHECK constraint silently rejecting the post-PR1A vocabulary
+> (`CATALYST_*`/`MOMENTUM_ONLY`); `write_signal` swallowed the insert error so runs
+> finished `ok` rows_out=0. Fixed in `sql/0040` (commit `974d967`); thesis emitted
+> immediately after. This override + the floor (50→30) were necessary but upstream
+> of the DB gate. Do NOT set the secret as a "fix". The 06-04 note below is kept
+> only as a record of the wrong turn.
+
+> **2026-06-04 status update (SUPERSEDED — see correction above):**
+> The "After" column below describes the intended behavior, not the actual behavior. As of 2026-06-04, `thesis_agent` has emitted **0 rubric-v1.1 signals since 2026-05-22** — the override flag was code-deployed and wired through `.github/workflows/thesis_agent.yml`, but the production secret value of `CLUSTER_SCORE_OVERRIDE_ENABLED` is not `"true"`/`"1"`/`"yes"`. All 9 rejections with score≥50 (NFLX, 2026-06-02 22:37–23:12) were rejected → flag is OFF in runtime. Fix: `gh secret set CLUSTER_SCORE_OVERRIDE_ENABLED --repo nishantgupta83/stock_app --body "true"`. Full audit in the 06-04 finding.
+
+---
+
+
 
 ## What the data showed
 
