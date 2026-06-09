@@ -327,6 +327,38 @@ def _event_within_real_ttl(event: dict, now: datetime) -> bool:
     return (now - ea) <= timedelta(hours=ttl_hours)
 
 
+# Payload sub-fields the scoring path actually reads (audited + Codex-validated
+# 2026-06-09). The event fetches SELECT only these via `payload->field`
+# projection instead of the full payload (~65% of stock_normalized_events row
+# bytes), then _reassemble_payload rebuilds row['payload'] so every downstream
+# `e['payload'][field]` read is unchanged.
+_EVENT_PAYLOAD_FIELDS = (
+    "direction_prior", "surprise_pct", "rel_strength_pct", "matched_keyword",
+    "filer_count", "amount", "accession_number", "primary_doc_desc",
+    "headline", "title", "8k_items",
+)
+
+
+def _event_payload_select() -> str:
+    """PostgREST projection clause for just the scoring-needed payload fields."""
+    return ",".join(f"payload->{f}" for f in _EVENT_PAYLOAD_FIELDS)
+
+
+def _reassemble_payload(row: dict) -> dict:
+    """PostgREST returns `payload->field` projections as TOP-LEVEL keys; rebuild
+    row['payload'] from them so the scoring code (e['payload'][field]) is
+    untouched.
+
+    OMIT None-valued projections (PostgREST returns null for an absent JSON key)
+    so a missing field falls through to the caller's `.get(field, DEFAULT)` — e.g.
+    direction_prior defaults to 'long'/'neutral'. Keeping the key as None would
+    return None instead of the default and silently change scoring direction
+    (Codex review 2026-06-09)."""
+    row["payload"] = {f: v for f in _EVENT_PAYLOAD_FIELDS
+                      if (v := row.pop(f, None)) is not None}
+    return row
+
+
 def fetch_fresh_events() -> list[dict]:
     """Pull normalized_events that LANDED in the freshness window, then drop
     rows whose real-world event_at is older than the per-event_type TTL.
@@ -344,14 +376,15 @@ def fetch_fresh_events() -> list[dict]:
     params = [
         ("created_at", f"gte.{cutoff}"),
         ("ticker", "not.is.null"),
-        ("select", "id,event_type,event_subtype,ticker,event_at,created_at,severity,source_table,parser_confidence,payload"),
+        ("select", "id,event_type,event_subtype,ticker,event_at,created_at,"
+                   "severity,source_table,parser_confidence," + _event_payload_select()),
         ("order", "created_at.desc"),
         ("limit", "500"),
     ]
     r = requests.get(f"{SUPABASE_URL}/rest/v1/stock_normalized_events",
                      headers=HEADERS_SB, params=params, timeout=20)
     r.raise_for_status()
-    raw = r.json()
+    raw = [_reassemble_payload(e) for e in r.json()]
     return [e for e in raw if _event_within_real_ttl(e, now)]
 
 
@@ -891,7 +924,7 @@ def fetch_recent_events_window(hours: int) -> list[dict]:
             ("created_at", f"gte.{cutoff}"),
             ("severity",   "gte.2"),
             ("ticker",     "not.is.null"),
-            ("select",     "ticker,event_type,severity,payload,created_at"),
+            ("select",     "ticker,event_type,severity,created_at," + _event_payload_select()),
             ("order",      "created_at.desc"),
             ("limit",      "500"),
         ],
@@ -899,7 +932,7 @@ def fetch_recent_events_window(hours: int) -> list[dict]:
     )
     if r.status_code != 200:
         return []
-    return r.json()
+    return [_reassemble_payload(e) for e in r.json()]
 
 
 def sector_cluster_bonus(ticker: str, direction: str, recent_events: list[dict],
@@ -1039,7 +1072,7 @@ def is_risk_off() -> bool:
             ("event_type", "in.(vix_spike,yield_milestone,fomc_decision)"),
             ("created_at", f"gte.{cutoff}"),
             ("severity",   "gte.3"),
-            ("select",     "event_type,event_subtype,severity,payload"),
+            ("select",     "event_type,event_subtype,severity"),  # reads no payload
             ("limit",      "10"),
         ],
         timeout=10,
