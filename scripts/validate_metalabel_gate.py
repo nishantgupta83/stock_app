@@ -38,6 +38,7 @@ from __future__ import annotations
 import argparse
 import os
 import sys
+from collections import defaultdict
 from datetime import datetime, timedelta, timezone
 
 import requests
@@ -93,6 +94,29 @@ def match_label(idx: dict, event_id: int | None, horizon: int) -> tuple[float, b
     if event_id is None:
         return None
     return idx.get((event_id, horizon))
+
+
+def per_cell_breakdown(cands: list[dict], idx: dict, horizons, now: datetime,
+                       mature_tol_days: int) -> dict[str, dict]:
+    """Group candidates by their PRIMARY (rule_key::horizon) cell.
+
+    Returns {cell: {"n_cand": int, "labels": [realized_return, ...]}} where
+    labels are the matured candidate outcomes for that cell. Lets the diagnostic
+    show WHICH cells drive the act/suppress decisions and whether their pooled
+    expectancy actually matches the candidate outcomes."""
+    cells: dict[str, dict] = defaultdict(lambda: {"n_cand": 0, "labels": []})
+    for c in cands:
+        et, sub, eid = primary_event(c["events"])
+        if not et:
+            continue
+        for h in horizons:
+            cell = _rule_key.derive(et, sub, h)
+            cells[cell]["n_cand"] += 1
+            if c["run_at"] <= now - timedelta(days=h + mature_tol_days):
+                lbl = match_label(idx, eid, h)
+                if lbl is not None:
+                    cells[cell]["labels"].append(lbl[0])
+    return cells
 
 
 # ----------------------------------------------------------------------------
@@ -206,6 +230,29 @@ def main() -> int:
                   f"{counts['suppressed_low_pf']:>6} {counts['fail_open_thin']:>9} "
                   f"{a:>7.2f}%({len(act_ret):>2}) {s:>8.2f}%({len(sup_ret):>2}) "
                   f"{fn:>9.1f}% {censored:>9}")
+        print()
+
+        # PER-CELL DIAGNOSTIC: which primary cells drive the decisions, with a
+        # POOLED full-corpus read (uses ALL closed trades, NOT walk-forward — so
+        # it LEAKS; directional only). Pooled has more data than any single
+        # run_at, so it explains whether an acting cell is genuinely profitable
+        # or the walk-forward result was just thin/noisy.
+        cells = per_cell_breakdown(cands, idx, _CANDIDATE_HORIZONS, now,
+                                   args.match_tol_days)
+        print("  per-cell (pooled = full-corpus, LEAKY/directional; top 18 by candidates):")
+        print(f"  {'cell':<34} {'cand':>4} {'pool_n':>6} {'pool_pf':>7} "
+              f"{'pool_exp%':>9} {'pool_gate':>10} {'cand_ret%':>11}")
+        ranked = sorted(cells.items(), key=lambda kv: kv[1]["n_cand"], reverse=True)[:18]
+        for cell, agg in ranked:
+            pooled = walkforward_stats(trades, cell, now)   # as_of=now → all closed
+            _, reason = gate_decision(pooled, pf_bar=args.pf_bar, min_n=args.min_n)
+            labels = agg["labels"]
+            cret = (sum(labels) / len(labels) * 100) if labels else float("nan")
+            pf = pooled["pf"]
+            pf_s = "inf" if pf == float("inf") else f"{pf:.2f}"
+            print(f"  {cell:<34} {agg['n_cand']:>4} {pooled['n']:>6} {pf_s:>7} "
+                  f"{pooled['expectancy']*100:>8.2f}% {reason.split('_')[0]:>10} "
+                  f"{cret:>9.2f}%({len(labels):>2})")
         print()
 
     print("Walk-forward (gate stats use only trades closed before each run_at). "

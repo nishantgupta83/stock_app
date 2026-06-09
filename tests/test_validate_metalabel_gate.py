@@ -8,6 +8,7 @@ outcome, never a neighbour's (Codex review).
 from __future__ import annotations
 
 import importlib.util
+from datetime import datetime, timedelta, timezone
 from pathlib import Path
 
 _SPEC = importlib.util.spec_from_file_location(
@@ -58,3 +59,23 @@ class TestLabelMatching:
     def test_none_for_missing_event_id(self):
         idx = self._idx((3, 15, 0.05, True))
         assert vmg.match_label(idx, None, 15) is None
+
+
+class TestPerCellBreakdown:
+    def test_groups_by_primary_cell_and_collects_mature_labels(self):
+        now = datetime(2026, 6, 1, tzinfo=timezone.utc)
+        # One mature candidate (run_at old enough for h1d label) and one too
+        # recent (censored at h1d → no label collected).
+        old = {"events": [_evt("8k_material_event", "", 3)],
+               "run_at": now - timedelta(days=20)}
+        recent = {"events": [_evt("8k_material_event", "", 7)],
+                  "run_at": now - timedelta(hours=1)}
+        idx = vmg.build_label_index([
+            {"event_id": 3, "horizon_days": 1, "realized_return": 0.02, "correct": True},
+            {"event_id": 7, "horizon_days": 1, "realized_return": 0.09, "correct": True},
+        ])
+        cells = vmg.per_cell_breakdown([old, recent], idx, (1,), now, mature_tol_days=3)
+        h1 = cells["8k_material_event::h1d"]
+        assert h1["n_cand"] == 2                 # both candidates counted
+        assert h1["labels"] == [0.02]            # only the mature one's label
+
