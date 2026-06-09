@@ -57,25 +57,27 @@ def walkforward_stats(trades: list[dict], rule_key: str, as_of: datetime) -> dic
     to the system strictly before `as_of` (walk-forward / leakage-purged).
 
     A trade counts only if BOTH:
-      * realized_at < as_of  — it had closed (outcome existed), and
-      * created_at  < as_of  — its ROW existed in the DB.
+      * exit_at    < as_of  — it had closed (outcome existed), and
+      * created_at < as_of  — its ROW existed in the DB.
     The created_at guard is essential because this pipeline BACKFILLS paper
-    trades: a backfilled row has a historical realized_at but a recent created_at
-    and was NOT in calibration at as_of — realized_at alone would leak it
+    trades: a backfilled row has a historical exit_at but a recent created_at
+    and was NOT in calibration at as_of — exit_at alone would leak it
     (Codex review). It also reinforces self-exclusion of the candidate's own
     trade (which both closes and, if backfilled, lands after as_of).
 
-    trades: rows with {rule_key, realized_return, correct, realized_at, created_at}.
-    Missing/unparseable realized_at -> excluded (can't prove it predates as_of).
-    created_at is enforced only when present (some old rows may lack it).
+    trades: rows with {rule_key, realized_return, correct, exit_at, created_at}.
+    (exit_at is stock_event_paper_trades' close timestamp; there is no
+    realized_at column on that table.)
+    Missing/unparseable exit_at -> excluded (can't prove it predates as_of).
+    created_at is enforced only when present.
     """
     returns: list[float] = []
     correct: list[bool] = []
     for t in trades:
         if t.get("rule_key") != rule_key:
             continue
-        ra = _parse(t.get("realized_at"))
-        if ra is None or ra >= as_of:
+        xa = _parse(t.get("exit_at"))
+        if xa is None or xa >= as_of:
             continue
         ca = _parse(t.get("created_at"))
         if ca is not None and ca >= as_of:

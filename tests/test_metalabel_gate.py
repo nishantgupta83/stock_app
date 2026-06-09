@@ -51,12 +51,12 @@ class TestGateDecision:
         assert reason == "fail_open_thin"
 
 
-def _trade(rule_key, ret, correct, realized_at, created_at="anchor"):
-    # created_at defaults to the same instant as realized_at unless overridden,
+def _trade(rule_key, ret, correct, exit_at, created_at="anchor"):
+    # created_at defaults to the same instant as exit_at unless overridden,
     # so the backfill guard is only exercised by the dedicated test.
-    ca = realized_at if created_at == "anchor" else created_at
+    ca = exit_at if created_at == "anchor" else created_at
     return {"rule_key": rule_key, "realized_return": ret, "correct": correct,
-            "realized_at": realized_at.isoformat() if realized_at else None,
+            "exit_at": exit_at.isoformat() if exit_at else None,
             "created_at": ca.isoformat() if ca else None}
 
 

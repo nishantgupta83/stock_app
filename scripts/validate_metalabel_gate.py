@@ -134,7 +134,7 @@ def main() -> int:
     print("Fetching closed paper trades ...", file=sys.stderr)
     trades = _page("stock_event_paper_trades", {
         "status": "eq.closed",
-        "select": "rule_key,realized_return,correct,realized_at,created_at,"
+        "select": "rule_key,realized_return,correct,exit_at,created_at,"
                   "event_id,horizon_days",
     })
     idx = build_label_index(trades)
