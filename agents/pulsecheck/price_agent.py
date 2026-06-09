@@ -177,11 +177,56 @@ def orphaned_signals() -> CheckResult:
     )
 
 
+WINRATE_DRIFT_THRESHOLD     = 0.25   # lifetime − recent winrate gap that warns
+WINRATE_DRIFT_MIN_RECENT_N  = 10     # need enough recent closes to trust the gap
+
+
+def classify_winrate_drift(lifetime_acc, acc_30d, n_closed_30d, *,
+                           threshold: float = WINRATE_DRIFT_THRESHOLD,
+                           min_recent_n: int = WINRATE_DRIFT_MIN_RECENT_N) -> tuple[str, str]:
+    """Flag a rule whose RECENT winrate has fallen far below its lifetime —
+    the regime-break pattern (e.g. news_article:neutral:h7d, lifetime ~52% but
+    recent 14%) that erodes calibration before the PR-C recent-window gate lands.
+    Monitor only — does NOT change behavior."""
+    if lifetime_acc is None or acc_30d is None or (n_closed_30d or 0) < min_recent_n:
+        return "ok", "insufficient recent closes"
+    drift = float(lifetime_acc) - float(acc_30d)   # +ve = recent worse
+    if drift > threshold:
+        return "warning", f"recent {acc_30d:.0%} vs lifetime {lifetime_acc:.0%} (−{drift*100:.0f}pts, n_30d={n_closed_30d})"
+    return "ok", f"recent {acc_30d:.0%} ≈ lifetime {lifetime_acc:.0%}"
+
+
+def calibration_drift() -> CheckResult:
+    """Surface rules whose trailing-30d winrate diverges sharply from lifetime
+    (uses calibration's accuracy_30d vs accuracy — written exactly for this)."""
+    rows = sb_get("stock_rule_calibration", {
+        "select": "rule_key,accuracy,accuracy_30d,n_closed_30d,n_observations",
+        "order":  "n_observations.desc",
+        "limit":  "500",
+    })
+    drifting = []
+    for r in rows or []:
+        status, detail = classify_winrate_drift(
+            r.get("accuracy"), r.get("accuracy_30d"), r.get("n_closed_30d"))
+        if status == "warning":
+            drifting.append(f"{r.get('rule_key')}: {detail}")
+    status = "warning" if drifting else "ok"
+    return CheckResult(
+        status,
+        (f"{len(drifting)} rule(s) with >{WINRATE_DRIFT_THRESHOLD:.0%} recent winrate drop"
+         if drifting else "no sharp recent winrate drops"),
+        observed=float(len(drifting)),
+        threshold=1.0,
+        meta={"drifting": drifting[:10]},
+    )
+
+
 CHECKS = [
     Check("recent_runs",          recent_runs,          depends_on=["pulsecheck_foundation"]),
     Check("reconcile_skip_rate",  reconcile_skip_rate,  depends_on=["pulsecheck_foundation"]),
     Check("stuck_h1d_backlog",    stuck_h1d_backlog,    depends_on=["pulsecheck_foundation"]),
     Check("orphaned_signals",     orphaned_signals,     depends_on=["pulsecheck_foundation"]),
+    Check("calibration_drift",    calibration_drift,    depends_on=["pulsecheck_foundation"]),
 ]
 
 
