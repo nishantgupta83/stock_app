@@ -1,6 +1,6 @@
 # Quarterly review — 2025Q4
 
-_Generated 2026-06-03._
+_Generated 2026-06-04._
 
 **Independent-consultant view across the prior 3 months.** Reads monthly reconciliations and the calibration trajectory; provides insights that wouldn't be visible in a single month's view.
 

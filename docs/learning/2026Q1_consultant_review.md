@@ -1,6 +1,6 @@
 # Quarterly consultant review — 2026Q1
 
-_Generated 2026-06-03. Window: 2026-01-01 → 2026-03-31._
+_Generated 2026-06-04. Window: 2026-01-01 → 2026-03-31._
 
 **Independent automated review.** Reads the last 3 monthly reconciliations, the live `stock_rule_calibration` table, the pulsecheck dashboard, and closed paper trades for the quarter. Produces deterministic recommendations using the same thresholds the monthly reconciler uses. **Not LLM-generated — no judgment calls beyond the stated thresholds.**
 
@@ -27,9 +27,9 @@ Feeds back into the pipeline as: a list of concrete rule-level actions the opera
 
 | Agent | Check | Status | Detail |
 |---|---|---|---|
-| `pulsecheck_news` | `classifier_neutrality` | warning | 24h neutral share: 206/240 (86%) |
+| `pulsecheck_news` | `classifier_neutrality` | warning | 24h neutral share: 214/248 (86%) |
 | `pulsecheck_realistic_loop` | `input_starvation` | warning | null-reason setups in last 5d: 0 |
-| `pulsecheck_thesis` | `rejection_distribution` | warning | 24h rejections: 7943 total, dominant=cluster_passes (98 |
+| `pulsecheck_thesis` | `rejection_distribution` | warning | 24h rejections: 8522 total, dominant=cluster_passes (98 |
 
 ## Recommended actions (data-driven)
 
@@ -43,7 +43,7 @@ Adding these to a STRUCTURAL_FLIP set in `agents/thesis_agent.py` and feature-fl
 | `earnings_release:miss:h30d` | 124 | 46.8% | 0.57 |
 | `earnings_release:miss:h15d` | 145 | 47.6% | 0.65 |
 | `8k_material_event::h1d` | 1168 | 45.3% | 0.67 |
-| `earnings_release:beat:h1d` | 474 | 43.2% | 0.79 |
+| `earnings_release:beat:h1d` | 474 | 43.2% | 0.77 |
 
 ### Structural skips (1 rules cross acc<30% at n≥30)
 

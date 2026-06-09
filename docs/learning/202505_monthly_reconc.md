@@ -1,6 +1,6 @@
 # Monthly reconciliation — 2025-05
 
-_Generated 2026-06-03._
+_Generated 2026-06-04._
 
 Sequential learning replay: $500 weekly deposits, $500 base position size, max 10 concurrent. Each prior month's reconciliation produced rule-level flips, skips, and amplifiers that THIS month's trading respected.
 
