@@ -1,0 +1,67 @@
+name: learning_snapshot
+
+# Captures stock_rule_calibration + agent_weights + closed-trade rollup to
+# snapshots/YYYY-MM-DD.json and commits it back to the repo. Runs weekday
+# evenings 30 minutes after price_agent (21:30 UTC) so the snapshot reflects
+# the day's EOD reconciliation.
+
+on:
+  schedule:
+    - cron: "0 22 * * 1-5"
+  workflow_dispatch:
+
+concurrency:
+  group: learning_snapshot
+  cancel-in-progress: false
+
+permissions:
+  contents: write
+
+jobs:
+  snapshot:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Record workflow start
+        env:
+          SUPABASE_URL:         ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
+        run: python agents/ops_recorder.py --phase start --agent workflow_learning_snapshot
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+
+      - name: Capture snapshot
+        env:
+          SUPABASE_URL:         ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
+        run: python scripts/learning_snapshot.py capture
+
+      - name: Commit and push
+        run: |
+          set -e
+          git config user.name  "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          if [ -z "$(git status --porcelain snapshots/)" ]; then
+            echo "No snapshot changes (already captured for today)."
+            exit 0
+          fi
+          git add snapshots/
+          today=$(date -u +%Y-%m-%d)
+          git commit -m "chore(snapshot): auto-capture ${today} learning state"
+          git push
+
+      - name: Record workflow finish
+        if: always()
+        env:
+          SUPABASE_URL:         ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
+          WORKFLOW_STATUS:      ${{ job.status }}
+        run: python agents/ops_recorder.py --phase finish --agent workflow_learning_snapshot --status "$WORKFLOW_STATUS"
