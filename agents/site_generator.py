@@ -20,6 +20,8 @@ import requests
 import yfinance as yf
 from jinja2 import Environment, FileSystemLoader, select_autoescape
 
+from _lanes import THESIS_MODEL_VERSION  # Layer-2 lane identity (no cross-lane bleed)
+
 try:
     from curl_cffi import requests as cffi_requests
     _CF_SESSION = cffi_requests.Session(impersonate="chrome")
@@ -265,11 +267,29 @@ def fetch_latest_backtest() -> dict | None:
 
 
 def count_alerts_today() -> int:
+    # Thesis lane ONLY — the daily cap is per-lane (CLAUDE.md note #7), and the
+    # "Layer 2 signals today" metric must not count intraday-spike (L1) signals.
+    # Pre-2026-06-09 this summed all lanes and overstated Layer 2 ~4-6x.
     today = datetime.now(timezone.utc).date().isoformat()
     rows = sb_get("stock_signals", {
-        "fired_at":  f"gte.{today}T00:00:00Z",
-        "status_v2": "eq.sent",
-        "select":    "id",
+        "fired_at":      f"gte.{today}T00:00:00Z",
+        "status_v2":     "eq.sent",
+        "model_version": f"eq.{THESIS_MODEL_VERSION}",
+        "select":        "id",
+    })
+    return len(rows)
+
+
+def count_non_thesis_signals_today() -> int:
+    """NON-thesis sent signals today (intraday-spike + activist/energy/etc.
+    direct-alert lanes) — reported SEPARATELY so the board doesn't fold any
+    non-Layer-2 producer into the Layer-2 count."""
+    today = datetime.now(timezone.utc).date().isoformat()
+    rows = sb_get("stock_signals", {
+        "fired_at":      f"gte.{today}T00:00:00Z",
+        "status_v2":     "eq.sent",
+        "model_version": f"neq.{THESIS_MODEL_VERSION}",
+        "select":        "id",
     })
     return len(rows)
 
@@ -288,9 +308,10 @@ def count_alerts_today_split() -> tuple[int, int]:
     when any contributing event has severity=4)."""
     today = datetime.now(timezone.utc).date().isoformat()
     rows = sb_get("stock_signals", {
-        "fired_at":  f"gte.{today}T00:00:00Z",
-        "status_v2": "eq.sent",
-        "select":    "id,score_breakdown",
+        "fired_at":      f"gte.{today}T00:00:00Z",
+        "status_v2":     "eq.sent",
+        "model_version": f"eq.{THESIS_MODEL_VERSION}",
+        "select":        "id,score_breakdown",
     })
     bypass = 0
     for r in rows:
@@ -1265,6 +1286,7 @@ def _emit_status_json(
     fresh_events: int,
     trade_setups: list[dict],
     risk_decisions: list[dict],
+    non_thesis_signals_today: int = 0,
 ) -> None:
     """Emit dist/status.json — machine-readable view of pipeline state.
 
@@ -1438,8 +1460,9 @@ def _emit_status_json(
                 "last_event_at":       last_event_at,
             },
             "intelligence": {
-                "signals_today":   alerts_today,
-                "open_candidates": open_signals,
+                "signals_today":            alerts_today,             # thesis lane only (rubric)
+                "non_thesis_signals_today": non_thesis_signals_today, # intraday + other direct-alert lanes
+                "open_candidates":          open_signals,
             },
             "trade_construction": {
                 "setups_today":  len(setups_today),
@@ -1521,6 +1544,7 @@ def render_all() -> int:
     weights      = fetch_latest_agent_weights()
     backtest     = fetch_latest_backtest()
     alerts_today = count_alerts_today()
+    non_thesis_signals_today = count_non_thesis_signals_today()
     alerts_cap_counted, alerts_bypass = count_alerts_today_split()
     open_signals = count_open_signals()
     fresh_events = count_fresh_events()
@@ -1870,6 +1894,7 @@ def render_all() -> int:
         fresh_events=fresh_events,
         trade_setups=trade_setups,
         risk_decisions=risk_decisions,
+        non_thesis_signals_today=non_thesis_signals_today,
     )
 
     total_html = len(list(DIST_DIR.glob("*.html"))) + len(list(alert_dir.glob("*.html")))

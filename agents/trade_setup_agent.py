@@ -35,6 +35,7 @@ from typing import Optional
 import requests
 
 import _rule_key   # agents/ on sys.path at runtime; canonical rule_key
+from _lanes import THESIS_MODEL_VERSION, L3_INPUT_STATUSES  # L3 input contract
 
 SUPABASE_URL = os.environ["SUPABASE_URL"].rstrip("/")
 SUPABASE_KEY = os.environ["SUPABASE_SERVICE_KEY"]
@@ -106,35 +107,89 @@ def job_run_start() -> int | None:
 
 
 def job_run_finish(run_id: int | None, status: str,
-                   rows_in: int, rows_out: int, err: str | None = None) -> None:
+                   rows_in: int, rows_out: int, err: str | None = None,
+                   meta: dict | None = None) -> None:
     if run_id is None:
         return
     try:
+        payload = {
+            "finished_at": datetime.now(timezone.utc).isoformat(),
+            "status":      status,
+            "rows_in":     rows_in,
+            "rows_out":    rows_out,
+            "error_text":  err,
+        }
+        if meta:
+            payload["meta"] = meta
         requests.patch(
             f"{SUPABASE_URL}/rest/v1/stock_job_runs?id=eq.{run_id}",
             headers=HEADERS_SB,
-            json={
-                "finished_at": datetime.now(timezone.utc).isoformat(),
-                "status":      status,
-                "rows_in":     rows_in,
-                "rows_out":    rows_out,
-                "error_text":  err,
-            }, timeout=10,
+            json=payload, timeout=10,
         )
     except Exception:
         pass
 
 
+# Populated by fetch_recent_signals each call; main() drains it into job meta.
+# 'starved' (fetched>0 but eligible==0) is the canary for a lane/version drift
+# that would silently produce 0 setups — same silent-failure class as the
+# swallowed signal insert and the dead VIX path.
+LAST_INPUT_STATS: dict = {}
+
+
 def fetch_recent_signals() -> list[dict]:
+    """Layer-3 input = Layer-2 output ONLY.
+
+    Filters stock_signals (a shared table) to the thesis lane
+    (model_version == THESIS_MODEL_VERSION) and non-suppressed statuses
+    (L3_INPUT_STATUSES). Pre-2026-06-09 this filtered only fired_at, so
+    intraday-spike (L1) and explicitly-suppressed thesis signals bled into L3
+    setup construction (verified boundary leak). Filtered in Python (not
+    PostgREST) so we can record exclusion counts + a starvation canary.
+    """
     from datetime import timedelta as _td
     cutoff = (datetime.now(timezone.utc) - _td(hours=LOOKBACK_HOURS)).isoformat()
-    return sb_get("stock_signals", {
-        "fired_at": f"gte.{cutoff}",
+    # Eligible input is DB-FILTERED (not Python-filtered after a capped page) so
+    # the limit applies to thesis-only signals (~5/day) and a flood of intraday
+    # volume can't crowd eligible thesis rows out of the page (Codex review).
+    status_in = ",".join(L3_INPUT_STATUSES)
+    eligible_raw = sb_get("stock_signals", {
+        "fired_at":      f"gte.{cutoff}",
+        "model_version": f"eq.{THESIS_MODEL_VERSION}",
+        "status_v2":     f"in.({status_in})",
         "select": "id,ticker,direction,action,score,fired_at,valid_until,"
-                  "horizon_days,score_breakdown,weight_at_time",
+                  "horizon_days,score_breakdown,weight_at_time,model_version,status_v2",
         "order":  "fired_at.desc",
         "limit":  "500",
     })
+    # Defensive re-filter — a no-op in prod (DB already filtered), but enforces
+    # the contract under a stub and against any PostgREST filter surprise.
+    eligible = [s for s in eligible_raw
+                if s.get("model_version") == THESIS_MODEL_VERSION
+                and s.get("status_v2") in L3_INPUT_STATUSES]
+    # Window sample (telemetry + starvation canary): how many signals landed at
+    # all? If >0 but eligible==0, a lane/version drift starved L3.
+    window = sb_get("stock_signals", {
+        "fired_at": f"gte.{cutoff}",
+        "select":   "id,model_version,status_v2",
+        "limit":    "500",
+    })
+    n_lane = sum(1 for s in window if s.get("model_version") != THESIS_MODEL_VERSION)
+    n_status = sum(1 for s in window
+                   if s.get("model_version") == THESIS_MODEL_VERSION
+                   and s.get("status_v2") not in L3_INPUT_STATUSES)
+    LAST_INPUT_STATS.clear()
+    LAST_INPUT_STATS.update({
+        "n_fetched": len(window), "n_eligible": len(eligible),
+        "n_excluded_lane": n_lane, "n_excluded_status": n_status,
+        "starved": bool(window) and not eligible,
+    })
+    if LAST_INPUT_STATS["starved"]:
+        print(f"  ⚠️  L3 STARVED: {len(window)} signals in window, 0 eligible "
+              f"(lane-excluded={n_lane}, status-excluded={n_status}). "
+              f"Check thesis MODEL_VERSION vs _lanes.THESIS_MODEL_VERSION.",
+              file=sys.stderr)
+    return eligible
 
 
 def fetch_existing_setup_signal_ids(signal_ids: list[int]) -> set[int]:
@@ -347,7 +402,15 @@ def main() -> int:
         rows_in = len(signals)
         print(f"Fetched {rows_in} signals from last {LOOKBACK_HOURS}h")
         if not signals:
-            job_run_finish(run_id, "ok", 0, 0)
+            # Starved (signals landed in-window but 0 were eligible) is an
+            # anomaly worth screaming — flip to 'partial' so it shows in
+            # job_runs, not a silent 'ok' rows_out=0.
+            starved = LAST_INPUT_STATS.get("starved")
+            job_run_finish(
+                run_id, "partial" if starved else "ok", 0, 0,
+                err=("L3 starved: signals in window, 0 eligible (lane/version drift?)"
+                     if starved else None),
+                meta={"l3_input": dict(LAST_INPUT_STATS)})
             return 0
 
         existing = fetch_existing_setup_signal_ids([s["id"] for s in signals])
@@ -370,7 +433,8 @@ def main() -> int:
 
         rows_out = write_setups(setups)
         print(f"DONE — wrote {rows_out} trade setups")
-        job_run_finish(run_id, "ok", rows_in, rows_out)
+        job_run_finish(run_id, "ok", rows_in, rows_out,
+                       meta={"l3_input": dict(LAST_INPUT_STATS)})
         return 0
 
     except Exception as exc:
