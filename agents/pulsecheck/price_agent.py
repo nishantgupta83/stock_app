@@ -199,10 +199,15 @@ def classify_winrate_drift(lifetime_acc, acc_30d, n_closed_30d, *,
 def calibration_drift() -> CheckResult:
     """Surface rules whose trailing-30d winrate diverges sharply from lifetime
     (uses calibration's accuracy_30d vs accuracy — written exactly for this)."""
+    # Egress-minimal: server-side filter to only drift-ELIGIBLE rows (recent
+    # closes present + enough of them), so the hourly read fetches a handful of
+    # candidate cells, not the whole calibration table.
     rows = sb_get("stock_rule_calibration", {
-        "select": "rule_key,accuracy,accuracy_30d,n_closed_30d,n_observations",
-        "order":  "n_observations.desc",
-        "limit":  "500",
+        "select":       "rule_key,accuracy,accuracy_30d,n_closed_30d,n_observations",
+        "accuracy_30d": "not.is.null",
+        "n_closed_30d": f"gte.{WINRATE_DRIFT_MIN_RECENT_N}",
+        "order":        "n_observations.desc",
+        "limit":        "200",
     })
     drifting = []
     for r in rows or []:

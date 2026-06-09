@@ -31,7 +31,14 @@ def test_count_alerts_split_is_thesis_scoped(monkeypatch):
     assert seen["params"].get("model_version") == f"eq.{THESIS_MODEL_VERSION}"
 
 
-def test_non_thesis_count_excludes_thesis(monkeypatch):
-    seen = _capture_params(monkeypatch)
-    site_generator.count_non_thesis_signals_today()
-    assert seen["params"].get("model_version") == f"neq.{THESIS_MODEL_VERSION}"
+def test_non_thesis_count_derived_no_extra_query():
+    # Egress: derived from the already-fetched signals list — adds NO new read.
+    sigs = [
+        {"model_version": THESIS_MODEL_VERSION, "status_v2": "sent",
+         "fired_at": __import__("datetime").datetime.now(
+             __import__("datetime").timezone.utc).date().isoformat() + "T10:00:00Z"},
+        {"model_version": "intraday-spike-v1", "status_v2": "sent",
+         "fired_at": __import__("datetime").datetime.now(
+             __import__("datetime").timezone.utc).date().isoformat() + "T10:00:00Z"},
+    ]
+    assert site_generator.count_non_thesis_today(sigs) == 1   # only the intraday one

@@ -167,28 +167,22 @@ def fetch_recent_signals() -> list[dict]:
     eligible = [s for s in eligible_raw
                 if s.get("model_version") == THESIS_MODEL_VERSION
                 and s.get("status_v2") in L3_INPUT_STATUSES]
-    # Window sample (telemetry + starvation canary): how many signals landed at
-    # all? If >0 but eligible==0, a lane/version drift starved L3.
-    window = sb_get("stock_signals", {
-        "fired_at": f"gte.{cutoff}",
-        "select":   "id,model_version,status_v2",
-        "limit":    "500",
-    })
-    n_lane = sum(1 for s in window if s.get("model_version") != THESIS_MODEL_VERSION)
-    n_status = sum(1 for s in window
-                   if s.get("model_version") == THESIS_MODEL_VERSION
-                   and s.get("status_v2") not in L3_INPUT_STATUSES)
+    # Starvation canary, EGRESS-MINIMAL: only when 0 eligible do a 1-row probe to
+    # tell "filter starved us (signals exist)" from "genuinely quiet". Normal
+    # runs cost ONE small filtered read (~handful of rows) — cheaper than the
+    # old unfiltered 500-row fetch. (Version drift is also caught at CI by
+    # test_lane_constant_matches_thesis_producer.)
+    starved = False
+    if not eligible:
+        probe = sb_get("stock_signals", {
+            "fired_at": f"gte.{cutoff}", "select": "id", "limit": "1",
+        })
+        starved = bool(probe)
     LAST_INPUT_STATS.clear()
-    LAST_INPUT_STATS.update({
-        "n_fetched": len(window), "n_eligible": len(eligible),
-        "n_excluded_lane": n_lane, "n_excluded_status": n_status,
-        "starved": bool(window) and not eligible,
-    })
-    if LAST_INPUT_STATS["starved"]:
-        print(f"  ⚠️  L3 STARVED: {len(window)} signals in window, 0 eligible "
-              f"(lane-excluded={n_lane}, status-excluded={n_status}). "
-              f"Check thesis MODEL_VERSION vs _lanes.THESIS_MODEL_VERSION.",
-              file=sys.stderr)
+    LAST_INPUT_STATS.update({"n_eligible": len(eligible), "starved": starved})
+    if starved:
+        print("  ⚠️  L3 STARVED: signals in window but 0 eligible — check thesis "
+              "MODEL_VERSION vs _lanes.THESIS_MODEL_VERSION.", file=sys.stderr)
     return eligible
 
 

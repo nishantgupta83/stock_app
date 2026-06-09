@@ -280,18 +280,16 @@ def count_alerts_today() -> int:
     return len(rows)
 
 
-def count_non_thesis_signals_today() -> int:
-    """NON-thesis sent signals today (intraday-spike + activist/energy/etc.
-    direct-alert lanes) — reported SEPARATELY so the board doesn't fold any
-    non-Layer-2 producer into the Layer-2 count."""
+def count_non_thesis_today(signals: list[dict]) -> int:
+    """NON-thesis sent signals today (intraday-spike + activist/energy/etc.) —
+    derived from the already-fetched recent-signals list so it adds ZERO extra
+    Supabase reads (preserves the EOD egress budget). Reported separately so the
+    board doesn't fold non-Layer-2 producers into the Layer-2 count."""
     today = datetime.now(timezone.utc).date().isoformat()
-    rows = sb_get("stock_signals", {
-        "fired_at":      f"gte.{today}T00:00:00Z",
-        "status_v2":     "eq.sent",
-        "model_version": f"neq.{THESIS_MODEL_VERSION}",
-        "select":        "id",
-    })
-    return len(rows)
+    return sum(1 for s in signals
+               if s.get("model_version") != THESIS_MODEL_VERSION
+               and s.get("status_v2") == "sent"
+               and (s.get("fired_at") or "").startswith(today))
 
 
 def count_alerts_today_split() -> tuple[int, int]:
@@ -1544,7 +1542,6 @@ def render_all() -> int:
     weights      = fetch_latest_agent_weights()
     backtest     = fetch_latest_backtest()
     alerts_today = count_alerts_today()
-    non_thesis_signals_today = count_non_thesis_signals_today()
     alerts_cap_counted, alerts_bypass = count_alerts_today_split()
     open_signals = count_open_signals()
     fresh_events = count_fresh_events()
@@ -1894,7 +1891,7 @@ def render_all() -> int:
         fresh_events=fresh_events,
         trade_setups=trade_setups,
         risk_decisions=risk_decisions,
-        non_thesis_signals_today=non_thesis_signals_today,
+        non_thesis_signals_today=count_non_thesis_today(signals),
     )
 
     total_html = len(list(DIST_DIR.glob("*.html"))) + len(list(alert_dir.glob("*.html")))

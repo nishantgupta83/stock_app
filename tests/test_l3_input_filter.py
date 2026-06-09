@@ -49,14 +49,14 @@ class TestFetchRecentSignalsFilter:
         assert sorted(s["id"] for s in kept) == [1, 2]
 
     def test_starvation_telemetry(self, monkeypatch):
+        # All rows ineligible (intraday + suppressed) → eligible empty → the
+        # probe (same stub) finds signals in-window → starved. Egress-minimal:
+        # the probe only fires because eligible was empty.
         rows = [_sig(4, "intraday-spike-v1", "sent"),
                 _sig(3, "rubric-v1.1", "suppressed")]
         self._patch(monkeypatch, rows)
         kept = trade_setup_agent.fetch_recent_signals()
         assert kept == []
         stats = trade_setup_agent.LAST_INPUT_STATS
-        assert stats["n_fetched"] == 2
         assert stats["n_eligible"] == 0
-        assert stats["n_excluded_lane"] == 1      # the intraday one
-        assert stats["n_excluded_status"] == 1    # the suppressed one
-        assert stats["starved"] is True           # fetched>0 but eligible==0
+        assert stats["starved"] is True
