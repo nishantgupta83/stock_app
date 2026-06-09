@@ -19,7 +19,10 @@ Data sources (all free, no paid APIs):
       PAYEMS    Non-farm payrolls (monthly first Friday)
       UNRATE    Unemployment rate (monthly)
       DFEDTARU  Fed funds target upper bound (changes on FOMC days)
-  - VIX: already in stock_raw_prices via existing context watchlist.
+  - VIX: ⚠️ NOT currently ingested into stock_raw_prices (verified 2026-06-09 —
+    zero VIX rows). check_vix_regime() + thesis_agent.is_risk_off()'s VIX branch
+    therefore fail open silently; only the yield/FOMC regime paths are live.
+    Wire VIX into price ingestion before relying on VIX-based risk-off.
 
 Events emitted to stock_normalized_events (ticker='MACRO' sentinel):
   - yield_milestone    severity 3-4  (10Y crosses 5% / curve inverts vs 2Y)

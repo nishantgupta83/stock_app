@@ -1018,6 +1018,16 @@ def is_risk_off() -> bool:
                 return True
         except (TypeError, ValueError, KeyError):
             pass
+    elif r.status_code == 200:
+        # No VIX rows → the VIX dimension of risk-off is INACTIVE. We still fail
+        # open (never suppress on missing data) but say so LOUDLY: a silent
+        # phantom safety net is worse than a known-absent one. VIX is not
+        # currently ingested into stock_raw_prices (verified 2026-06-09); wire
+        # it before relying on VIX-based risk-off with real capital. The
+        # yield_milestone / fomc_decision paths below are still live.
+        print("  ⚠️  risk_off: 0 VIX rows in stock_raw_prices — VIX dimension "
+              "INACTIVE (failing open; yield/FOMC regime paths still live).",
+              file=sys.stderr)
 
     # 2. macro_rates_agent regime events in last 24h
     cutoff = (datetime.now(timezone.utc) - timedelta(hours=24)).isoformat()
