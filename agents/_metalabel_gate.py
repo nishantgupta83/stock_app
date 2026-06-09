@@ -28,6 +28,11 @@ from datetime import datetime
 DEFAULT_PF_BAR = 1.5
 DEFAULT_MIN_N = 100
 
+# The exhaustive set of reasons gate_decision can return. Consumers key their
+# tallies off this so they can't drift from the decision logic (a harness that
+# hard-coded "act" instead of "calibrated_profitable" KeyError'd live).
+GATE_REASONS = ("calibrated_profitable", "suppressed_low_pf", "fail_open_thin")
+
 
 def expectancy_stats(returns: list[float], correct: list[bool]) -> dict:
     """n, win-rate, profit_factor, expectancy (mean return) from raw outcomes.

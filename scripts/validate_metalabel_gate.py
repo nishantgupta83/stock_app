@@ -45,7 +45,7 @@ import requests
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "agents"))
 sys.path.insert(0, os.path.dirname(__file__))
 import _rule_key  # noqa: E402
-from _metalabel_gate import walkforward_stats, gate_decision  # noqa: E402
+from _metalabel_gate import walkforward_stats, gate_decision, GATE_REASONS  # noqa: E402
 from thesis_agent import (  # noqa: E402
     score_cluster, CLUSTER_WINDOW_MIN, FRESHNESS_WINDOW_MIN,
     THESIS_RECALL_FLOOR, _CANDIDATE_HORIZONS,
@@ -170,7 +170,7 @@ def main() -> int:
         print(f"{'horizon':>8} {'act':>5} {'suppr':>6} {'failopen':>9} "
               f"{'act_ret%':>10} {'suppr_ret%':>12} {'suppr_FN%':>10} {'censored':>9}")
         for h in _CANDIDATE_HORIZONS:
-            counts = {"act": 0, "suppressed_low_pf": 0, "fail_open_thin": 0}
+            counts = {r: 0 for r in GATE_REASONS}
             act_ret: list[float] = []
             sup_ret: list[float] = []
             sup_fn = 0          # suppressed candidates that actually won (the cost)
@@ -202,7 +202,7 @@ def main() -> int:
             a = (sum(act_ret) / len(act_ret) * 100) if act_ret else float("nan")
             s = (sum(sup_ret) / len(sup_ret) * 100) if sup_ret else float("nan")
             fn = (100.0 * sup_fn / len(sup_ret)) if sup_ret else float("nan")
-            print(f"{('h'+str(h)+'d'):>8} {counts['act']:>5} "
+            print(f"{('h'+str(h)+'d'):>8} {counts['calibrated_profitable']:>5} "
                   f"{counts['suppressed_low_pf']:>6} {counts['fail_open_thin']:>9} "
                   f"{a:>7.2f}%({len(act_ret):>2}) {s:>8.2f}%({len(sup_ret):>2}) "
                   f"{fn:>9.1f}% {censored:>9}")

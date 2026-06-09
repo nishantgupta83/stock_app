@@ -14,7 +14,9 @@ from __future__ import annotations
 
 from datetime import datetime, timezone
 
-from _metalabel_gate import gate_decision, walkforward_stats, expectancy_stats
+from _metalabel_gate import (
+    gate_decision, walkforward_stats, expectancy_stats, GATE_REASONS,
+)
 
 AS_OF = datetime(2026, 4, 1, tzinfo=timezone.utc)
 
@@ -49,6 +51,19 @@ class TestGateDecision:
         action, reason = gate_decision(None, pf_bar=1.5, min_n=100)
         assert action == "watch"
         assert reason == "fail_open_thin"
+
+    def test_every_reason_is_in_gate_reasons(self):
+        # Consumers (the validator's tally) key off GATE_REASONS; if a reason
+        # string drifts out of that set, their dict KeyErrors live. Lock it.
+        cases = [
+            {"n": 150, "pf": 2.0, "expectancy": 0.03},   # act
+            {"n": 150, "pf": 1.1, "expectancy": 0.02},   # suppress
+            {"n": 5, "pf": 9.0, "expectancy": 0.1},      # fail-open
+            None,                                          # fail-open
+        ]
+        for stats in cases:
+            _, reason = gate_decision(stats, pf_bar=1.5, min_n=100)
+            assert reason in GATE_REASONS
 
 
 def _trade(rule_key, ret, correct, exit_at, created_at="anchor"):
