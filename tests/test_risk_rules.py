@@ -167,10 +167,10 @@ def test_immature_rule_gets_immature_multiplier():
 
 def test_production_mature_rule_gets_full_multiplier():
     setup = _setup(rule_key="mature:foo:h7d")
-    # adult tier requires n≥30 AND acc≥0.90 AND profit_factor>1.5 — the
-    # PF-aware gate (payoff sanity, not accuracy-only). Supply profit_factor.
-    cal = {"mature:foo:h7d": {"accuracy": 0.92, "n_observations": 35,
-                              "profit_factor": 1.8}}
+    # adult tier = CANONICAL payoff-first gate: n≥100 AND PF≥2.0 AND
+    # mean_realized_pct≥0.5% (NO accuracy floor). Supply all three.
+    cal = {"mature:foo:h7d": {"n_observations": 120, "profit_factor": 2.5,
+                              "mean_realized_pct": 0.01}}
     decision = evaluate_setup(setup, cal=cal, state=_state())
     expected_risk = PORTFOLIO_NAV_BASELINE * RISK_PER_TRADE_PCT * MATURITY_MULTIPLIER["adult"]
     assert decision["max_loss_dollars"] == pytest.approx(expected_risk, abs=0.01)

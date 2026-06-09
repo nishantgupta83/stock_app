@@ -66,7 +66,7 @@ STOP_PCT_MAX           = 0.20           # 20% — wider isn't a stop, it's a wis
 MATURITY_MULTIPLIER = {
     # v1 canonical tier names (2026-05-26 stage-gate plan).
     # Stricter gates than the legacy ones — see scripts/learning_snapshot.py:TIER_GATES.
-    "adult":        1.00,    # acc ≥ 0.90, n ≥ 30, PF > 1.5
+    "adult":        1.00,    # n ≥ 100, PF ≥ 2.0, mean_realized ≥ 0.5% (canonical, NO acc floor)
     "young_adult":  0.75,    # acc ≥ 0.80, n ≥ 30, PF > 1.2
     "teen":         0.50,    # acc ≥ 0.70, n ≥ 30, mean_realized > 0
     "child":        0.25,    # everything else
@@ -192,10 +192,14 @@ def maturity_tier(rule_cal: dict | None) -> str:
     the first EOD reconcile writes a tier value, and for any future schema
     that pushes a row without the tier column.
 
-    v1 gate definitions (must match scripts/learning_snapshot.py:TIER_GATES):
-      adult       : n ≥ 30  AND  acc ≥ 0.90  AND  profit_factor > 1.5
-      young_adult : n ≥ 30  AND  acc ≥ 0.80  AND  profit_factor > 1.2
-      teen        : n ≥ 30  AND  acc ≥ 0.70  AND  mean_realized_pct > 0
+    Fallback gates MUST match the canonical definitions in price_agent
+    (ADULT_MIN_N/PF/MEAN) — the adult tier is payoff-first with NO accuracy
+    floor (a high-accuracy / negative-expectancy rule must NOT size). Pre-
+    2026-06-09 this fallback used the OLD acc≥0.90/n≥30/PF>1.5 adult gate, a
+    3rd divergent copy that would have sized a rule the canonical gate rejects.
+      adult       : n ≥ 100  AND  PF ≥ 2.0   AND  mean_realized_pct ≥ 0.5%
+      young_adult : n ≥ 30   AND  acc ≥ 0.80  AND  profit_factor > 1.2
+      teen        : n ≥ 30   AND  acc ≥ 0.70  AND  mean_realized_pct > 0
       child       : everything else
     """
     if not rule_cal:
@@ -209,7 +213,8 @@ def maturity_tier(rule_cal: dict | None) -> str:
     mr_raw = rule_cal.get("mean_realized_pct")
     pf = float(pf_raw) if pf_raw is not None else None
     mr = float(mr_raw) if mr_raw is not None else None
-    if n >= 30 and acc >= 0.90 and pf is not None and pf > 1.5:
+    # adult: canonical payoff-first gate (price_agent ADULT_MIN_N/PF/MEAN), no acc floor
+    if n >= 100 and pf is not None and pf >= 2.0 and mr is not None and mr >= 0.005:
         return "adult"
     if n >= 30 and acc >= 0.80 and pf is not None and pf > 1.2:
         return "young_adult"
