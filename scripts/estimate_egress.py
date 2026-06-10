@@ -51,68 +51,78 @@ RUNS_PER_DAY = {
     "source_review_agent": 0.033,                                                              # monthly
 }
 
-# Per-table average bytes/row (estimate; --live samples a real row). Event rows
-# carry a payload JSON so they're large; reference rows are small.
+# Fallback per-table bytes (only used if a READ_MAP entry omits its own bytes).
+# Real reads vary 10x by select clause, so READ_MAP entries carry per-READ bytes.
 ROW_BYTES = {
-    "stock_normalized_events": 2000,
-    "stock_signals":           1200,
-    "stock_raw_prices":          90,
-    "stock_rule_calibration":   180,
-    "stock_agent_weights":       90,
-    "stock_watchlists":         120,
-    "stock_symbols":            150,
-    "stock_rule_sector_multiplier": 120,
+    "stock_normalized_events": 740, "stock_signals": 1200, "stock_raw_prices": 90,
+    "stock_rule_calibration": 80, "stock_agent_weights": 90, "stock_watchlists": 120,
+    "stock_symbols": 60, "stock_rule_sector_multiplier": 120,
 }
+# Byte profiles by select shape (measured/estimated): trimmed payload (11 fields)
+# ≈ base cols + small fields; full event ≈ 740B (live); id/dedup checks tiny.
+_B_EVENT_TRIMMED = 360   # base cols + the 11 payload->fields (post-trim)
+_B_EVENT_FULL    = 740   # full payload (live-measured)
+_B_EVENT_NOPAY   = 260   # base cols, no payload
+_B_ID            = 45    # select=id / dedupe_key existence check
+_B_SIG_FULL      = 1200  # signal row with score_breakdown + weight_at_time
+_B_SMALLCOLS     = 60    # a couple of short cols (ticker,name / rule_key,4 nums)
 
 # REFERENCE tables = cacheable into one blob. BUS = must stay live.
 REFERENCE_TABLES = {"stock_rule_calibration", "stock_agent_weights", "stock_watchlists",
                     "stock_symbols", "stock_rule_sector_multiplier"}
 
-# Curated read map: (agent, table, rows_per_read). Focuses on the SIGNIFICANT
-# reads that drive egress + every reference read. rows/read estimated from the
-# query patterns (limits/filters); --live can't auto-refine these, so they're
-# the main lever to challenge. Post-H1, trade_setup reads ~5 thesis rows.
+# Read map: (agent, table, rows_per_read, bytes_per_row). REBUILT 2026-06-09
+# from a direct audit of each agent's actual select clause (Codex-validated):
+# most "big table" reads are tiny selects or don't happen (flag-gated), so the
+# earlier per-table-bytes model overstated egress badly.
 READ_MAP = [
-    # --- BUS (freshness-critical, NOT cacheable) ---
-    # (read-map corrected per Codex 2026-06-09: filing reads stock_raw_filings
-    #  not events; truth_social/news read keyword_rules+raw tables not events;
-    #  thesis has a SECOND payload read — the 168h intelligence-layer window.)
-    ("thesis_agent",          "stock_normalized_events", 200),  # fetch_fresh_events (180min, payload)
-    ("thesis_agent",          "stock_normalized_events", 300),  # fetch_recent_events_window (168h, payload)
-    ("event_paper_agent",     "stock_normalized_events", 300),  # recent events for paper trades
-    ("intraday_alert_agent",  "stock_normalized_events", 50),
-    ("thesis_agent",          "stock_signals",            20),  # alerts_sent_today + dedupe
-    ("trade_setup_agent",     "stock_signals",             5),  # post-H1: thesis-lane filtered
-    ("site_generator",        "stock_signals",           500),  # EOD dashboard (1/day)
-    ("paper_trade_agent",     "stock_signals",            50),
-    ("price_agent",           "stock_raw_prices",        400),  # reconcile bars per open trade
-    ("market_scanner_agent",  "stock_raw_prices",       2000),
-    ("event_paper_agent",     "stock_raw_prices",        100),
-    # --- REFERENCE (cacheable into one blob) ---
-    ("thesis_agent",          "stock_watchlists",        200),
-    ("market_scanner_agent",  "stock_watchlists",        200),
-    ("news_agent",            "stock_symbols",           300),  # news reads symbols, not watchlists
-    ("thesis_agent",          "stock_rule_calibration",  100),
-    ("trade_setup_agent",     "stock_rule_calibration",   30),
-    ("event_paper_agent",     "stock_rule_calibration",  100),
-    ("price_agent",           "stock_rule_calibration",  100),
-    ("thesis_agent",          "stock_agent_weights",      25),
-    ("price_agent",           "stock_agent_weights",      25),
-    ("thesis_agent",          "stock_symbols",           300),
-    ("event_paper_agent",     "stock_symbols",           300),
-    ("thesis_agent",          "stock_rule_sector_multiplier", 80),
+    # --- BUS: stock_normalized_events (thesis reads now PAYLOAD-TRIMMED) ---
+    ("thesis_agent",         "stock_normalized_events", 80,  _B_EVENT_TRIMMED),  # fetch_fresh_events
+    ("thesis_agent",         "stock_normalized_events", 200, _B_EVENT_TRIMMED),  # fetch_recent_events_window
+    ("thesis_agent",         "stock_normalized_events", 10,  _B_EVENT_NOPAY),    # is_risk_off (no payload)
+    ("intraday_alert_agent", "stock_normalized_events", 50,  _B_EVENT_FULL),     # reads payload
+    ("activist_insider_agent","stock_normalized_events",50,  _B_EVENT_FULL),     # reads payload, 12/day
+    ("event_paper_agent",    "stock_normalized_events", 300, _B_EVENT_FULL),    # reads payload (Codex)
+    ("market_scanner_agent", "stock_normalized_events", 300, _B_EVENT_NOPAY),
+    # site_generator runs 161×/day (cron-job.org pinger, NOT EOD) — every read
+    # below is paid 161×/day. THIS cadence is the dominant egress lever.
+    ("site_generator",       "stock_normalized_events", 200, _B_EVENT_FULL),    # public_event reads payload
+    ("site_generator",       "stock_raw_prices",       1000, 90),               # per-ticker chart prices
+    # --- BUS: stock_signals (frequent reads are tiny dedup/id checks) ---
+    ("thesis_agent",         "stock_signals", 50, _B_ID),    # dedupe_key / id / alerts_sent_today
+    ("trade_setup_agent",    "stock_signals", 5,  _B_SIG_FULL),  # post-H1 thesis-lane
+    ("paper_trade_agent",    "stock_signals", 50, _B_SIG_FULL),
+    ("site_generator",       "stock_signals", 500,_B_SIG_FULL),  # 500 full rows × 161/day
+    # ingest agents: per-run "id&limit=1" existence check (tiny)
+    *[(a, "stock_signals", 1, _B_ID) for a in
+      ("consumer_health_agent","activist_insider_agent","defense_agent",
+       "biotech_agent","energy_transition_agent","macro_rates_agent")],
+    # --- BUS: stock_raw_prices ---
+    ("price_agent",          "stock_raw_prices", 400, 90),
+    ("market_scanner_agent", "stock_raw_prices", 2000, 90),
+    ("event_paper_agent",    "stock_raw_prices", 100, 90),
+    # --- REFERENCE (small selects; thesis symbols read is FLAG-GATED OFF) ---
+    ("news_agent",           "stock_symbols", 300, _B_SMALLCOLS),  # ticker,name */5
+    # thesis stock_symbols read OMITTED — gated behind SECTOR_CALIB_MULT_ENABLED (off)
+    ("thesis_agent",         "stock_rule_calibration", 100, _B_SMALLCOLS),  # 4 cols
+    ("trade_setup_agent",    "stock_rule_calibration", 30,  _B_SMALLCOLS),
+    ("event_paper_agent",    "stock_rule_calibration", 100, _B_SMALLCOLS),
+    ("price_agent",          "stock_rule_calibration", 100, _B_SMALLCOLS),
+    ("thesis_agent",         "stock_agent_weights", 25, _B_SMALLCOLS),
+    ("price_agent",          "stock_agent_weights", 25, _B_SMALLCOLS),
+    ("thesis_agent",         "stock_watchlists", 200, 120),
+    ("market_scanner_agent", "stock_watchlists", 200, 120),
 ]
 
 # site_generator runs EOD (~1/day) not on a listed cron here; pin it.
 RUNS_PER_DAY.setdefault("site_generator", 1)
 
 
-def simulate(runs_per_day: dict, row_bytes: dict, budget_gb: float) -> dict:
+def simulate(runs_per_day: dict, budget_gb: float) -> dict:
     per_table: dict[str, float] = {}
-    for agent, table, rows in READ_MAP:
+    for agent, table, rows, bpr in READ_MAP:
         rpd = runs_per_day.get(agent, 0)
-        b = row_bytes.get(table, 500)
-        per_table[table] = per_table.get(table, 0.0) + rpd * rows * b
+        per_table[table] = per_table.get(table, 0.0) + rpd * rows * bpr
     monthly = {t: v * 30 for t, v in per_table.items()}
     ref = sum(v for t, v in monthly.items() if t in REFERENCE_TABLES)
     bus = sum(v for t, v in monthly.items() if t not in REFERENCE_TABLES)
@@ -132,7 +142,6 @@ def main() -> int:
     args = ap.parse_args()
 
     runs = dict(RUNS_PER_DAY)
-    row_bytes = dict(ROW_BYTES)
     mode = "PURE-SIM (documented estimates)"
 
     if args.live:
@@ -143,7 +152,9 @@ def main() -> int:
             return 2
         import requests
         h = {"apikey": key, "Authorization": f"Bearer {key}"}
-        # runs/day from last 7d of stock_job_runs
+        # Refine runs/day from the last 7d of stock_job_runs (real cadence —
+        # GHA drops some crons). Per-READ bytes stay in READ_MAP (a per-table
+        # sample can't capture the differing select clauses).
         from datetime import datetime, timedelta, timezone
         since = (datetime.now(timezone.utc) - timedelta(days=7)).isoformat()
         for agent in list(runs):
@@ -156,17 +167,9 @@ def main() -> int:
                     runs[agent] = int(cr.split("/")[-1]) / 7.0
                 except ValueError:
                     pass
-        # bytes/row from a multi-row sample (avg of ~20 rows — 1 row is too weak;
-        # payload-bearing tables vary a lot row-to-row, Codex review).
-        for table in list(row_bytes):
-            r = requests.get(f"{url}/rest/v1/{table}", headers=h,
-                             params={"select": "*", "limit": "20"}, timeout=20)
-            if r.status_code == 200 and r.json():
-                rows = r.json()
-                row_bytes[table] = max(1, sum(len(str(x)) for x in rows) // len(rows))
-        mode = "LIVE (runs from stock_job_runs 7d, bytes = 20-row avg)"
+        mode = "LIVE (runs/day from stock_job_runs 7d; per-read bytes from audit)"
 
-    out = simulate(runs, row_bytes, args.budget_gb)
+    out = simulate(runs, args.budget_gb)
 
     print(f"\nMonthly Supabase READ-egress simulation — {mode}\n" + "─" * 64)
     print(f"{'table':<32} {'monthly':>10} {'layer':>11}")
