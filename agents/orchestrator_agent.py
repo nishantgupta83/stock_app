@@ -61,7 +61,7 @@ EXPECTED: list[AgentExpectation] = [
     AgentExpectation("thesis_agent",          "every 5 min, 24/7",     1.0,  False),
     AgentExpectation("truth_social_agent",    "every 5 min, 24/7",     1.0,  False),
     AgentExpectation("paper_trade_agent",     "every 15 min, 24/7",    2.0,  False),
-    AgentExpectation("site_generator",        "every 15 min, 24/7",    1.5,  False),
+    AgentExpectation("site_generator",        "every 6h via pinger, 24/7", 8.0, False),
     AgentExpectation("risk_agent",            "every 30 min, 24/7",    2.0,  False),
     AgentExpectation("trade_setup_agent",     "every 30 min, 24/7",    2.0,  False),
     AgentExpectation("event_paper_agent",     "hourly, 24/7",          4.0,  False),

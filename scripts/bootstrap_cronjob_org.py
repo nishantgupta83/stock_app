@@ -36,11 +36,20 @@ GHA_BRANCH = "main"
 WORKFLOWS = {
     "site_generator.yml": {
         "title": "stock_app:site_generator",
-        # GHA cron: */15 * * * *  -> pinger: 7,22,37,52 every hour, every day
+        # Workflow is EOD-only since c35405c (~95% egress cut). This pinger had
+        # NOT been updated — it still fired every 15min (~96/day), silently
+        # undoing that cut: site_generator was ~85% of all Supabase read egress
+        # (2026-06-10 audit; it re-reads 500 full signals + event payloads +
+        # chart prices each run). Reduced to every 6h (00:07,06:07,12:07,18:07
+        # UTC) = 4 pinger fires/day (~5/day incl the EOD workflow) — keeps a
+        # paper-review dashboard fresh within 6h at ~1/20th the prior pinger
+        # egress, dropping total egress ~4.7GB -> ~1.3GB/mo. NOTE: orchestrator_
+        # agent max_gap_hours + site_generator inventory expected_minutes were
+        # updated to match (else they false-alert at the new cadence).
         "schedule": {
             "timezone": "UTC",
-            "minutes": [7, 22, 37, 52],
-            "hours": [-1],
+            "minutes": [7],
+            "hours": [0, 6, 12, 18],
             "mdays": [-1],
             "months": [-1],
             "wdays": [-1],

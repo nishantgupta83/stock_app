@@ -58,7 +58,7 @@ AGENT_INVENTORY: dict[str, dict] = {
     "source_review":       {"job": "source_review_agent",       "expected_minutes": 43200},  # monthly
     "telegram_dispatcher": {"job": "telegram_dispatcher",       "expected_minutes": 60},     # workflow_run-driven
     "flows":               {"job": "flows_agent",               "expected_minutes": 10080},  # weekly Sun
-    "site_generator":      {"job": "site_generator",            "expected_minutes": 15},     # */15
+    "site_generator":      {"job": "site_generator",            "expected_minutes": 360},    # every 6h via pinger (egress cut 2026-06)
     "event_paper":         {"job": "event_paper_agent",         "expected_minutes": 60},     # `5 * * * *` (top of every hour)
     "market_scanner":      {"job": "market_scanner_agent",      "expected_minutes": 1440},   # weekday EOD
     "crypto_macro":        {"job": "crypto_macro_agent",        "expected_minutes": 1440},   # weekday EOD
