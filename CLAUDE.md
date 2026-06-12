@@ -221,6 +221,41 @@ Layer 6 — PRESENTATION (read-only)
 - One-shot cleanup: `scripts/close_stuck_paper_trades.py` resolved the
   existing 513-trade backlog on 2026-06-02.
 
+**9. Cadence config lives in FOUR places — keep them aligned (egress + false-alarm trap).**
+- An agent's run cadence is defined in (a) the GitHub Actions workflow `cron:`,
+  (b) the cron-job.org pinger in `scripts/bootstrap_cronjob_org.py`, (c) the
+  orchestrator watchdog `max_gap_hours` in `agents/orchestrator_agent.py`, and
+  (d) the dashboard `expected_minutes` in `site_generator.py` AGENT_INVENTORY.
+- Change one without the others → silent egress waste OR false staleness alarms.
+  2026-06 case: `site_generator` workflow was moved to EOD (`c35405c`) but the
+  PINGER kept firing every 15min (~96/day), each re-reading 500 full signals +
+  event payloads + chart prices = **~85% of all Supabase read egress**. Fixed by
+  aligning all four to 6h (pinger → 4/day; total egress ~4.7GB → ~1.3GB/mo).
+- After editing a pinger schedule, RE-RUN `scripts/bootstrap_cronjob_org.py`
+  (`CRONJOB_API_KEY` + `GH_DISPATCH_PAT`) — editing the file alone does NOT change
+  cron-job.org.
+
+## Performance & egress (Supabase free tier ~5GB/mo read egress)
+
+- **Measure, don't guess:** `scripts/estimate_egress.py [--live]` projects monthly
+  read egress per table (runs/day × rows/read × bytes/row), reference vs bus, vs
+  budget. READ_MAP is a per-read audit — keep it current when a heavy read changes.
+  A reference-cache "blob" was evaluated and REJECTED (~42KB/run break-even; the
+  freshness bus dominates) — the wins are trimming hot reads, not caching.
+- **Read the minimum, filter server-side** (shipped 2026-06):
+  - `thesis_agent` event fetches SELECT only the ~11 scoring `payload->field`s
+    (PostgREST projection + `_reassemble_payload`), not the full payload (~65% of
+    row bytes). The audited field list is fixed — re-audit if scoring reads a new
+    payload field.
+  - `trade_setup_agent` (L3) reads only the thesis lane + non-suppressed statuses
+    (`agents/_lanes.py`: `THESIS_MODEL_VERSION`, `L3_INPUT_STATUSES`), not the whole
+    `stock_signals` table — closes the cross-lane boundary leak AND cuts rows.
+- **`agents/_lanes.py`** = single source for Layer-2 lane identity; consumers of the
+  shared `stock_signals` table MUST filter by `model_version` + `status_v2` (note
+  #7's cross-lane class). **`agents/_metalabel_gate.py`** = the 2.b precision gate
+  (NOT yet live; walk-forward validation inconclusive on a <90d corpus — re-run
+  `scripts/validate_metalabel_gate.py` ~2026-07-06; see the metalabeling memory).
+
 **Feature flags (env vars):**
 - `SECTOR_CALIB_MULT_ENABLED` — toggles sector-aware scoring in `thesis_agent`.
   Default off. When on, score_evidence multiplies event-tied rule points by the
