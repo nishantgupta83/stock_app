@@ -40,16 +40,17 @@ WORKFLOWS = {
         # NOT been updated — it still fired every 15min (~96/day), silently
         # undoing that cut: site_generator was ~85% of all Supabase read egress
         # (2026-06-10 audit; it re-reads 500 full signals + event payloads +
-        # chart prices each run). Reduced to every 6h (00:07,06:07,12:07,18:07
-        # UTC) = 4 pinger fires/day (~5/day incl the EOD workflow) — keeps a
-        # paper-review dashboard fresh within 6h at ~1/20th the prior pinger
-        # egress, dropping total egress ~4.7GB -> ~1.3GB/mo. NOTE: orchestrator_
-        # agent max_gap_hours + site_generator inventory expected_minutes were
-        # updated to match (else they false-alert at the new cadence).
+        # chart prices each run). Reduced to ONCE DAILY at 23:07 UTC (after the
+        # ~22:00 price_agent EOD reconcile + learning_snapshot settle) — a
+        # paper-review board only needs EOD freshness (Telegram is the real-time
+        # path). 1 fire/day cuts site_generator from ~85% of Supabase egress to a
+        # few %. The complex per-detail-page logic is kept as-is (can revisit
+        # later). NOTE: orchestrator max_gap_hours (->30) + site_generator
+        # inventory expected_minutes (->1440) updated to match (else false-alert).
         "schedule": {
             "timezone": "UTC",
             "minutes": [7],
-            "hours": [0, 6, 12, 18],
+            "hours": [23],
             "mdays": [-1],
             "months": [-1],
             "wdays": [-1],
