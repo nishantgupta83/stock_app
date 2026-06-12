@@ -400,11 +400,15 @@ def main() -> int:
     md.append("- **Calibration columns** answer: of the rule_keys this agent's events "
               "feed into, how many have accumulated enough sample (n≥30) to be "
               "trusted? Tradeable adds the 'has edge' filter (PF>1, acc≥50%).")
-    md.append("- **Adult** is the canonical maturity gate (acc≥90%, n≥30, PF>1.5) "
-              "that unlocks BUY/SELL vocabulary in `thesis_agent`. Until anything "
-              "reaches Adult, the system stays in paper-tier (WATCH/RESEARCH/AVOID_CHASE) "
-              "regardless of how confident a signal looks. This is the CLEUF-loss "
-              "discipline.")
+    # Gate definition kept in sync with agents/price_agent.py ADULT_MIN_N/PF/MEAN
+    # (n>=100, PF>=2.0, mean_realized>=0.5%). The earlier "acc>=90%, n>=30, PF>1.5"
+    # string here was stale — it predated the 2026-06-04 payoff-first gate redefinition
+    # and contradicted the tier table this same script emits above.
+    md.append("- **Adult** is the canonical maturity gate (n≥100, PF≥2.0, "
+              "mean_realized≥0.5%) that unlocks BUY/SELL vocabulary in `thesis_agent`. "
+              "Until anything reaches Adult, the system stays in paper-tier "
+              "(WATCH/RESEARCH/AVOID_CHASE) regardless of how confident a signal looks. "
+              "This is the CLEUF-loss discipline.")
 
     with open(path, "w") as f:
         f.write("\n".join(md))
