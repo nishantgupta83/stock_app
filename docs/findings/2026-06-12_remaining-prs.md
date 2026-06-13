@@ -114,7 +114,18 @@ TDD → implement → live-validate.
   foreign-lane dispatch_failed row is not picked up).
 - **Risk:** LOW.
 
-### H4b — payoff-first maturity *display* redesign
+### H4b — payoff-first maturity *display* redesign  ✅ PUBLIC PART DONE
+- **✅ H4b-public DONE:** status.json now publishes the payoff-first gate
+  (effective-n>=100/PF>=2.0/mean>=0.5%, imported from `_maturity`), the
+  emission_status is dynamic from the adult-h1d set (fixes the false 'no rule
+  crossed 0.90'), and the superset data-note + stale comments are corrected.
+- **⬜ H4b-2 OPEN (internal progress-viz redesign, render-coupled, low-urgency):**
+  the accuracy-gap 'progress toward maturity' surfaces still use the old model —
+  site_generator §2 scorecard (`MATURE_ACC=0.90`/`gap_acc`, raw n) +
+  learning_snapshot near-threshold (200-260). Redesign to show gap toward the
+  payoff-first dims on effective-n. These are internal weekly-scorecard/snapshot
+  views (the public status.json + the stored is_mature data are already correct).
+- Original detail:
 - **Why:** the dangerous DB writers are fixed (H4, `2f28a72`), but three
   *accuracy-gap progress* surfaces still describe the OLD gate and are coupled
   (fixing one field leaves the dashboard internally inconsistent):

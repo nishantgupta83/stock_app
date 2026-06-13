@@ -21,6 +21,7 @@ import yfinance as yf
 from jinja2 import Environment, FileSystemLoader, select_autoescape
 
 from _lanes import THESIS_MODEL_VERSION  # Layer-2 lane identity (no cross-lane bleed)
+from _maturity import ADULT_MIN_N, ADULT_MIN_PF, ADULT_MIN_MEAN  # canonical adult gate (H4b)
 
 try:
     from curl_cffi import requests as cffi_requests
@@ -1250,17 +1251,15 @@ def derive_calibration_groups(forecasts: list[dict], limit: int = 20) -> list[di
 # Render
 # ============================================================
 
-# Two-tier maturity gates surfaced in status.json. The production gate
-# (0.90 accuracy, n>=30) is canonical and lives in price_agent.py; the
-# training gate is a parallel surface used by the digest routines and
-# dashboard so paper-mode rule progress is visible before production
-# graduation. Lowering the training gate does NOT change BUY/SELL emission
-# in thesis_agent — that stays gated on the production tier. Training-tier
-# rules are paper-only and slated for PROVISIONAL_LONG/SHORT emission in a
-# follow-up (see docs/next-phases-roadmap.md).
-MATURITY_PRODUCTION_ACC = 0.90
-MATURITY_TRAINING_ACC   = 0.70
-MATURITY_MIN_N          = 30
+# Two-tier maturity gates surfaced in status.json. Canonical gates live in
+# agents/_maturity.py; this dashboard imports them so it can never drift.
+# PRODUCTION (adult, unlocks BUY/SELL) is PAYOFF-FIRST (H4b — was wrongly
+# published as "0.90 accuracy"): effective_n >= ADULT_MIN_N AND PF >= ADULT_MIN_PF
+# AND mean_realized_pct >= ADULT_MIN_MEAN, gated on EFFECTIVE-n (H1, independent
+# ticker-days). TRAINING (teen, paper-only, slated for PROVISIONAL_LONG/SHORT)
+# is accuracy>=0.70. Lowering training does NOT change BUY/SELL emission.
+MATURITY_TRAINING_ACC   = 0.70   # teen gate (accuracy floor) — still acc-based
+MATURITY_MIN_N          = 30     # teen min sample
 
 
 PIPELINE_VERSION = "v1.1"   # bump whenever the cross-layer contract changes
@@ -1355,7 +1354,11 @@ def _emit_status_json(
 
     mature_production_keys = [r["rule_key"] for r in cal_rows
                               if r.get("is_mature") and r.get("rule_key")]
-    # Training-mature includes production-mature (production is a superset)
+    # H1/H4b: adult rules whose horizon is the emittable h1d (key ends ":h1d").
+    # Only an adult h1d cell can actually license a live BUY/SELL.
+    mature_production_h1d = [k for k in mature_production_keys if k.endswith(":h1d")]
+    # NOTE (H4b): payoff-first adult has NO accuracy floor, so adult does NOT
+    # imply teen (is_mature_70) — training is no longer a strict superset.
     mature_training_keys = [r["rule_key"] for r in cal_rows
                             if r.get("is_mature_70") and r.get("rule_key")]
 
@@ -1420,14 +1423,26 @@ def _emit_status_json(
                     "training_tier":    "planned (see docs/next-phases-roadmap.md) "
                                         "— rules can graduate at training gate today, "
                                         "but thesis_agent vocabulary wiring is pending",
-                    "production_tier":  "live but gated (no rule has crossed 0.90 yet)",
+                    "production_tier":  (
+                        f"LIVE — {len(mature_production_h1d)} adult rule(s) at the emittable h1d "
+                        f"horizon ({', '.join(sorted(mature_production_h1d))}) → BUY/SELL eligible"
+                        if mature_production_h1d else
+                        f"live but gated — {len(mature_production_keys)} rule(s) meet the adult gate "
+                        f"on effective-n ({', '.join(sorted(mature_production_keys))}) but none at the "
+                        f"emittable h1d horizon; no BUY/SELL"
+                        if mature_production_keys else
+                        "live but gated (no rule meets the payoff-first adult gate yet)"),
                 },
             },
             "maturity_gate": {
                 "production": {
-                    "min_observations": MATURITY_MIN_N,
-                    "min_accuracy":     MATURITY_PRODUCTION_ACC,
-                    "vocabulary":       ["BUY", "SELL"],
+                    # H4b: payoff-first, NO accuracy floor; gated on EFFECTIVE-n
+                    # (distinct ticker-days, H1) — was wrongly published as 0.90 acc.
+                    "min_effective_observations": ADULT_MIN_N,
+                    "min_profit_factor":          ADULT_MIN_PF,
+                    "min_mean_realized_pct":      ADULT_MIN_MEAN,
+                    "basis":                      "effective-n (distinct ticker-day clusters)",
+                    "vocabulary":                 ["BUY", "SELL"],
                     "purpose":          "Canonical maturity — unlocks BUY/SELL in Telegram alerts.",
                 },
                 "training": {
@@ -1444,7 +1459,9 @@ def _emit_status_json(
                 "Use created_at when filtering for recent activity.",
                 "4 paper trades emitted per event (horizons 1d/7d/15d/30d).",
                 "Staleness rule of thumb: minutes_since_last > 2 * expected_minutes.",
-                "Training tier is a superset of production tier (every prod-mature rule is also training-mature).",
+                "Production (adult) is payoff-first (effective-n>=100, PF>=2.0, mean>=0.5%, "
+                "NO accuracy floor) so it is NOT a subset of training (teen, accuracy>=0.70); "
+                "the two tiers can diverge.",
             ],
         },
         "agents": {
@@ -1759,7 +1776,9 @@ def render_all() -> int:
     ))
 
     # Calibration — per-rule paper-trade accuracy + open trades + mature rules.
-    # Maturity gate: rule needs ≥0.90 accuracy with n≥30 closed trades to unlock BUY/SELL.
+    # Maturity gate (payoff-first, H4b): a rule unlocks BUY/SELL only at
+    # effective_n≥100 AND PF≥2.0 AND mean_realized_pct≥0.5% (no accuracy floor;
+    # gated on effective-n / distinct ticker-days). Read from the stored tier.
     cal_rows = fetch_rule_calibration()
     open_paper = fetch_event_paper_trades(only_status="open", limit=500)
     closed_paper = fetch_event_paper_trades(only_status="closed", limit=200)
