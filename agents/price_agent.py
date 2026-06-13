@@ -299,8 +299,10 @@ def compute_outcome(signal: dict, bars: dict[date, dict[str, float]]) -> dict | 
 # Learning loop writes
 # ============================================================
 
-def write_forecast_audit(signal_id: int, signal: dict, outcome: dict) -> None:
-    sb_post("stock_forecast_audit", [{
+def write_forecast_audit(signal_id: int, signal: dict, outcome: dict) -> bool:
+    """Returns False if the audit row failed to persist (C3: the outcome would
+    otherwise be silently lost while the signal still closes)."""
+    return sb_post("stock_forecast_audit", [{
         "signal_id":       signal_id,
         "horizon_days":    int(signal.get("horizon_days") or 1),
         "realized_return": outcome["net_return"],
@@ -399,8 +401,10 @@ def update_agent_weights(agents: list[str], correct: bool) -> None:
     sb_upsert("stock_agent_weights", rows, on_conflict="agent,date")
 
 
-def close_signal(signal_id: int) -> None:
-    sb_patch(f"stock_signals?id=eq.{signal_id}", {"status_v2": "closed"})
+def close_signal(signal_id: int) -> bool:
+    """Returns False if the status PATCH failed (C3: a failed close leaves the
+    signal 'sent' to reprocess next run — self-healing, but worth surfacing)."""
+    return sb_patch(f"stock_signals?id=eq.{signal_id}", {"status_v2": "closed"})
 
 
 # ============================================================
@@ -1184,11 +1188,29 @@ def recompute_rule_brier_30d(rule_key: str) -> None:
 # Main
 # ============================================================
 
+def reconcile_run_status(reconcile_failed: bool, n_close_failed: int,
+                         n_signal_write_failed: int = 0) -> tuple[str, str | None]:
+    """C3: ('partial', err) when the learning loop lost work, else ('ok', None).
+    A caught reconcile exception previously fell through to status='ok' — the
+    EOD job looked healthy while calibration silently stopped updating. Soft
+    'data not ready' skips (no_bars/no_outcome) stay in meta for pulsecheck
+    thresholds; only hard losses flip the run status."""
+    if reconcile_failed:
+        return "partial", "paper-trade reconcile raised — calibration not updated this run"
+    if n_close_failed > 0:
+        return "partial", f"{n_close_failed} paper-trade close PATCH(es) failed"
+    if n_signal_write_failed > 0:
+        return "partial", f"{n_signal_write_failed} signal outcome write(s) failed"
+    return "ok", None
+
+
 def main() -> int:
     run_id   = job_run_start()
     rows_in  = 0
     rows_out = 0
 
+    n_sig_skipped_no_bars = n_sig_skipped_no_outcome = 0   # C3: signal-outcome losses
+    n_signal_write_failed = 0                              # C3: outcome persistence failures
     try:
         signals = fetch_mature_signals()
         rows_in = len(signals)
@@ -1214,21 +1236,29 @@ def main() -> int:
                 bars = fetch_bars(ticker, sig["_fired_date"], sig["_exit_date"])
                 if not bars:
                     print(f"  {ticker} signal {sig['id']}: no price data — skipping", file=sys.stderr)
+                    n_sig_skipped_no_bars += 1   # C3: was an uncounted silent loss
                     continue
 
                 outcome = compute_outcome(sig, bars)
                 if outcome is None:
                     print(f"  {ticker} signal {sig['id']}: price unavailable for window — skipping", file=sys.stderr)
+                    n_sig_skipped_no_outcome += 1   # C3: was an uncounted silent loss
                     continue
 
                 # Extract contributing agents from weight_at_time snapshot
                 wt     = sig.get("weight_at_time") or {}
                 agents = wt.get("agents", []) if isinstance(wt, dict) else []
 
-                write_forecast_audit(sig["id"], sig, outcome)
+                ok_audit = write_forecast_audit(sig["id"], sig, outcome)
                 close_paper_forecasts(sig["id"], sig, outcome)
                 update_agent_weights(agents, outcome["correct"])
-                close_signal(sig["id"])
+                ok_close = close_signal(sig["id"])
+                if not (ok_audit and ok_close):
+                    # C3: outcome computed but its persistence failed — was a
+                    # silent loss while rows_out still incremented below.
+                    n_signal_write_failed += 1
+                    print(f"  ⚠️  signal {sig['id']}: outcome write failed "
+                          f"(audit={ok_audit} close={ok_close})", file=sys.stderr)
 
                 icon = "✅" if outcome["correct"] else "❌"
                 print(f"  {icon} {ticker} signal {sig['id']}: entry={outcome['entry_price']} "
@@ -1247,6 +1277,8 @@ def main() -> int:
         # Always runs regardless of whether any signals were mature, so open
         # paper trades are reconciled even on low-signal days.
         reconcile_meta: dict = {}
+        reconcile_failed = False
+        n_close_failed = 0
         try:
             r_stats = reconcile_event_paper_trades()
             n_paper_closed   = r_stats["n_closed"]
@@ -1266,12 +1298,14 @@ def main() -> int:
                       f"(seen={r_stats['trades_seen']})",
                       file=sys.stderr)
             rows_out += n_paper_closed
+            n_close_failed = r_stats.get("n_skipped_close_failed", 0)
             reconcile_meta = {
                 "reconcile": {
                     "trades_seen":          r_stats["trades_seen"],
                     "n_closed":             n_paper_closed,
                     "n_skipped_no_bars":    r_stats["n_skipped_no_bars"],
                     "n_skipped_no_outcome": r_stats["n_skipped_no_outcome"],
+                    "n_skipped_close_failed": n_close_failed,
                     # Cap ticker list to keep payload bounded in pathological cases.
                     "skipped_tickers":      r_stats["skipped_tickers"][:40],
                     "skipped_tickers_count": len(r_stats["skipped_tickers"]),
@@ -1280,7 +1314,25 @@ def main() -> int:
         except Exception as e:  # noqa: BLE001 — never let learning loop crash the EOD job
             import traceback
             print(f"  paper-trade reconcile failed: {e}\n{traceback.format_exc()}", file=sys.stderr)
-        job_run_finish(run_id, "ok", rows_in, rows_out, meta=reconcile_meta or None)
+            reconcile_failed = True   # C3: surface as 'partial', not a silent 'ok'
+
+        # C3: signal-outcome losses are no longer invisible — record them in meta.
+        if n_sig_skipped_no_bars or n_sig_skipped_no_outcome or n_signal_write_failed:
+            print(f"⚠️  signal reconcile: no_bars={n_sig_skipped_no_bars} "
+                  f"no_outcome={n_sig_skipped_no_outcome} "
+                  f"write_failed={n_signal_write_failed}", file=sys.stderr)
+            reconcile_meta = {**reconcile_meta, "signal_reconcile": {
+                "n_skipped_no_bars": n_sig_skipped_no_bars,
+                "n_skipped_no_outcome": n_sig_skipped_no_outcome,
+                "n_write_failed": n_signal_write_failed,
+            }}
+
+        # C3: a crashed reconcile, failed close PATCH, or lost signal-outcome
+        # write flips the run to 'partial' (+ err) instead of a healthy 'ok'.
+        status, recon_err = reconcile_run_status(reconcile_failed, n_close_failed,
+                                                 n_signal_write_failed)
+        job_run_finish(run_id, status, rows_in, rows_out, err=recon_err,
+                       meta=reconcile_meta or None)
         return 0
 
     except Exception as e:

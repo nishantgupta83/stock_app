@@ -383,6 +383,16 @@ def compute_setup(signal: dict, cal: dict[str, dict],
     }
 
 
+def write_run_status(n_expected: int, n_written: int) -> tuple[str, str | None]:
+    """C3: ('partial', err) when some setup rows failed to persist, else
+    ('ok', None). Without this a chunk that fails to write still recorded
+    status='ok' rows_out<expected — a silent loss pulsecheck couldn't see."""
+    missing = n_expected - n_written
+    if missing > 0:
+        return "partial", f"{missing}/{n_expected} setup rows failed to write"
+    return "ok", None
+
+
 def write_setups(rows: list[dict]) -> int:
     if not rows:
         return 0
@@ -424,6 +434,13 @@ def main() -> int:
         existing = fetch_existing_setup_signal_ids([s["id"] for s in signals])
         signals = [s for s in signals if s["id"] not in existing]
         print(f"  {len(existing)} already have setups; {len(signals)} new to process")
+        if not signals:
+            # All in-window signals already have setups — no work to lose. Finish
+            # 'ok' before the tradeable fetch so a fetch hiccup can't false-flag
+            # 'partial' on a genuinely empty run (Codex C3).
+            job_run_finish(run_id, "ok", rows_in, 0,
+                           meta={"l3_input": dict(LAST_INPUT_STATS)})
+            return 0
 
         rule_keys = sorted({k for k in (derive_rule_key(s) for s in signals) if k})
         cal = fetch_calibration_for_rule_keys(rule_keys)
@@ -440,6 +457,10 @@ def main() -> int:
         if tradeable_tickers is None:
             print("⚠️  fetch_tradeable_tickers failed — skipping run (no setups written; "
                   "next run re-evaluates). Avoids persisting false reason_to_skip.")
+            # C3: record the skip loudly (was a silent return → dangling 'running' row).
+            job_run_finish(run_id, "partial", rows_in, 0,
+                           err="tradeable-instrument fetch failed — run skipped, no setups written",
+                           meta={"l3_input": dict(LAST_INPUT_STATS)})
             return 0
         print(f"  tradeable instruments (stock/etf): {len(tradeable_tickers)}")
 
@@ -455,7 +476,9 @@ def main() -> int:
 
         rows_out = write_setups(setups)
         print(f"DONE — wrote {rows_out} trade setups")
-        job_run_finish(run_id, "ok", rows_in, rows_out,
+        # C3: surface a partial write loss (was hardcoded 'ok' regardless).
+        status, write_err = write_run_status(len(setups), rows_out)
+        job_run_finish(run_id, status, rows_in, rows_out, err=write_err,
                        meta={"l3_input": dict(LAST_INPUT_STATS)})
         return 0
 

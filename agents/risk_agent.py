@@ -422,6 +422,16 @@ def _skip_decision(setup: dict, reason: str, rules_applied: list[dict],
     }
 
 
+def write_run_status(n_expected: int, n_written: int) -> tuple[str, str | None]:
+    """C3: ('partial', err) when some risk-decision rows failed to persist, else
+    ('ok', None). A failed chunk previously still recorded status='ok' with
+    rows_out<expected — a silent loss invisible to pulsecheck."""
+    missing = n_expected - n_written
+    if missing > 0:
+        return "partial", f"{missing}/{n_expected} risk-decision rows failed to write"
+    return "ok", None
+
+
 def write_decisions(rows: list[dict]) -> int:
     if not rows:
         return 0
@@ -482,7 +492,9 @@ def main() -> int:
 
         rows_out = write_decisions(decisions)
         print(f"DONE — wrote {rows_out} risk decisions")
-        job_run_finish(run_id, "ok", rows_in, rows_out)
+        # C3: surface a partial write loss (was hardcoded 'ok' regardless).
+        status, write_err = write_run_status(len(decisions), rows_out)
+        job_run_finish(run_id, status, rows_in, rows_out, err=write_err)
         return 0
 
     except Exception as exc:
