@@ -487,14 +487,16 @@ def job_run_finish(run_id: int | None, status: str, rows_in: int, rows_out: int,
 # sizing multipliers in risk_agent and eligibility in the realistic-paper
 # loop (sql/0032). These constants MUST mirror
 # scripts/learning_snapshot.py:TIER_GATES.
-MATURITY_ACCURACY     = 0.90    # legacy const; now used only by HIGH_CONVICTION flag
-MATURITY_MIN_N        = 30      # teen tier minimum sample
-TIER_GATE_TEEN_ACC    = 0.70
-TIER_GATE_YOUNG_ACC   = 0.80
-TIER_GATE_ADULT_ACC   = MATURITY_ACCURACY   # alias for clarity inside flag math
-TIER_GATE_TEEN_MR     = 0.0     # teen also requires mean_realized_pct > 0
-TIER_GATE_YOUNG_PF    = 1.2     # young_adult also requires profit_factor > 1.2
-TIER_GATE_ADULT_PF    = 1.5     # legacy adult PF gate (still used in HIGH_CONVICTION)
+# Maturity-gate constants + derive_maturity_flags now live in the env-free
+# shared module agents/_maturity.py so every writer (this agent, the backfill
+# script, the recompute script) uses ONE gate and cannot drift. Re-bound here
+# for the existing references (banners, flag math) below.
+from _maturity import (  # noqa: E402
+    MATURITY_ACCURACY, MATURITY_MIN_N, TIER_GATE_TEEN_ACC, TIER_GATE_YOUNG_ACC,
+    TIER_GATE_ADULT_ACC, TIER_GATE_TEEN_MR, TIER_GATE_YOUNG_PF, TIER_GATE_ADULT_PF,
+    ADULT_MIN_N, ADULT_MIN_PF, ADULT_MIN_MEAN, HIGH_CONV_MIN_N, HIGH_CONV_MIN_ACC,
+    HIGH_CONV_MIN_PF, HIGH_CONV_MIN_MEAN, derive_maturity_flags,
+)
 
 # Adult-tier redefinition (2026-06-04 after codex external review):
 # The old adult gate (acc>=0.90 + n>=30 + PF>1.5) only fires for direction-
@@ -516,13 +518,7 @@ TIER_GATE_ADULT_PF    = 1.5     # legacy adult PF gate (still used in HIGH_CONVI
 #
 # The old acc-extreme gate is kept as a separate `is_high_conviction` flag
 # (it's still useful for very-rare extreme rules, just not the BUY/SELL gate).
-ADULT_MIN_N      = 100
-ADULT_MIN_PF     = 2.0
-ADULT_MIN_MEAN   = 0.005  # 0.5% mean realized per closed trade (after slippage)
-HIGH_CONV_MIN_N  = MATURITY_MIN_N
-HIGH_CONV_MIN_ACC = MATURITY_ACCURACY
-HIGH_CONV_MIN_PF  = TIER_GATE_ADULT_PF
-HIGH_CONV_MIN_MEAN = 0.0    # high-conviction also requires non-negative mean
+# ADULT_MIN_*/HIGH_CONV_* values now come from the _maturity import above.
 
 
 def fetch_open_paper_trades_to_close() -> list[dict]:
@@ -663,65 +659,44 @@ def upsert_calibration(rule_key: str, current: dict | None,
     prev_pf = cur.get("profit_factor")
     pf_for_gate = float(prev_pf) if prev_pf is not None else None
 
-    # v1 tier flag computations
-    n_ok = n_obs >= MATURITY_MIN_N
-    is_mature_70 = bool(
-        n_ok and accuracy >= TIER_GATE_TEEN_ACC and mean_new > TIER_GATE_TEEN_MR
-    )
-    is_mature_80 = bool(
-        n_ok and accuracy >= TIER_GATE_YOUNG_ACC
-            and pf_for_gate is not None and pf_for_gate > TIER_GATE_YOUNG_PF
-    )
-    # NEW adult gate (2026-06-04): payoff-first, no accuracy floor.
-    # Requires statistical power (n>=100), favorable payoff (PF>=2.0), and
-    # positive expectancy (mean_realized_pct >= 0.5%). See module-level
-    # ADULT_* constants for rationale.
-    is_mature = bool(
-        n_obs >= ADULT_MIN_N
-            and pf_for_gate is not None and pf_for_gate >= ADULT_MIN_PF
-            and mean_new >= ADULT_MIN_MEAN
-    )
-    # Separate flag for the old acc-extreme gate (rare-but-extreme rules).
-    # Not currently consumed but persisted for future analysis.
-    is_high_conviction = bool(
-        n_obs >= HIGH_CONV_MIN_N
-            and accuracy >= HIGH_CONV_MIN_ACC
-            and pf_for_gate is not None and pf_for_gate > HIGH_CONV_MIN_PF
-            and mean_new >= HIGH_CONV_MIN_MEAN
-    )
-
+    # v1 tier flags. C2-pflag: the teen tier needs no profit_factor and is
+    # computed fresh here. The PF-gated tiers (young_adult / adult) are FROZEN
+    # to their previous value — upsert must NEVER promote on the stale
+    # (previous-batch) profit_factor. recompute_rule_payoff() runs right after
+    # this on the FRESH PF over the full closed population and is the
+    # authoritative writer of is_mature / is_mature_80 / matured_at /
+    # matured_80_at / tier. derive_maturity_flags is the shared gate.
+    #
+    # ACCEPTED RESIDUAL (Codex flagged): freezing (vs provisionally demoting)
+    # leaves a true-adult that SHOULD demote showing adult for the reconcile
+    # window (this loop → recompute loop). thesis (*/5) reading mid-window could
+    # still emit BUY/SELL for an h1d-tradeable adult. We accept it: the adult
+    # rules are robust (PF 2.5-4.2 over n≥120) so one close can't crater PF<2.0,
+    # and provisionally demoting every touched flag would ripple is_mature
+    # flicker to L3/pulsecheck/dashboards each run. This closes the false
+    # PROMOTION (the directive); the demotion lag is near-zero practical risk.
+    # To fully close it later: provisional fail-closed here, or inline recompute.
+    is_mature_70 = derive_maturity_flags(n_obs, pf_for_gate, mean_new, accuracy)["is_mature_70"]
     was_70 = bool(cur.get("is_mature_70"))
     was_80 = bool(cur.get("is_mature_80"))
     was_90 = bool(cur.get("is_mature"))
     just_matured_70 = is_mature_70 and not was_70
-    just_matured_80 = is_mature_80 and not was_80
-    just_matured_90 = is_mature    and not was_90
+    # 80 / 90 promotions are detected + logged by recompute_rule_payoff (fresh PF).
+    just_matured_80 = False
+    just_matured_90 = False
 
-    # Self-heal matured_*_at timestamps. If a row is flagged true but the
-    # timestamp is NULL (historical rows from before sql/0031, or a future
-    # regression in this code path), stamp it on this update.
     now_iso = datetime.now(timezone.utc).isoformat()
+    # Teen stamp self-heal only; the PF-gated stamps are owned by recompute.
+    matured_70_at_new = cur.get("matured_70_at")
+    if just_matured_70 or (is_mature_70 and not matured_70_at_new):
+        matured_70_at_new = now_iso
 
-    def _heal(flag_new: bool, just_crossed: bool, prev_stamp) -> str | None:
-        if just_crossed:
-            return now_iso
-        if flag_new and not prev_stamp:
-            return now_iso
-        return prev_stamp
-
-    matured_at_new    = _heal(is_mature,    just_matured_90, cur.get("matured_at"))
-    matured_70_at_new = _heal(is_mature_70, just_matured_70, cur.get("matured_70_at"))
-    matured_80_at_new = _heal(is_mature_80, just_matured_80, cur.get("matured_80_at"))
-
-    # Derive tier from flags — highest passed gate wins.
-    if is_mature:
-        tier = "adult"
-    elif is_mature_80:
-        tier = "young_adult"
-    elif is_mature_70:
-        tier = "teen"
-    else:
-        tier = "child"
+    # Provisional tier from the flags upsert owns (fresh teen + FROZEN 80/90),
+    # consistent with the row after this write. recompute overwrites on fresh PF.
+    if was_90:          tier = "adult"
+    elif was_80:        tier = "young_adult"
+    elif is_mature_70:  tier = "teen"
+    else:               tier = "child"
 
     payload = {
         "rule_key":          rule_key,
@@ -729,12 +704,8 @@ def upsert_calibration(rule_key: str, current: dict | None,
         "n_correct":         n_corr,
         "accuracy":          round(accuracy, 6),
         "mean_realized_pct": round(mean_new, 6),
-        "is_mature":         is_mature,
         "is_mature_70":      is_mature_70,
-        "is_mature_80":      is_mature_80,
-        "matured_at":        matured_at_new,
         "matured_70_at":     matured_70_at_new,
-        "matured_80_at":     matured_80_at_new,
         "tier":              tier,
         "last_updated":      now_iso,
     }
@@ -744,6 +715,14 @@ def upsert_calibration(rule_key: str, current: dict | None,
         "just_matured_70":  just_matured_70,
         "just_matured_80":  just_matured_80,
         "just_matured_90":  just_matured_90,
+        # fresh counters so the in-batch cache carries the updated streaming mean
+        # (otherwise a 2nd trade for the same rule in one batch rebuilds its mean
+        # from the stale pre-batch value — the stored mean would lose intermediate
+        # closes).
+        "n_observations":    n_obs,
+        "n_correct":         n_corr,
+        "accuracy":          round(accuracy, 6),
+        "mean_realized_pct": round(mean_new, 6),
     }
 
 
@@ -954,33 +933,36 @@ def reconcile_event_paper_trades() -> dict:
         just_matured_90 = result["just_matured_90"]
         just_matured_80 = result["just_matured_80"]
         just_matured_70 = result["just_matured_70"]
-        # Refresh in-memory cache so subsequent trades for the same rule see updated counts
+        # Refresh in-memory cache so a subsequent trade for the same rule in this
+        # batch builds its streaming mean/accuracy on the freshly-updated values
+        # (not the stale pre-batch ones). PF-gated flags stay frozen — recompute
+        # owns them. just_matured_80/90 are always False from upsert now.
         cal[rk] = {
             **(cal.get(rk) or {}),
-            "n_observations": int((cal.get(rk) or {}).get("n_observations") or 0) + 1,
-            "n_correct":      int((cal.get(rk) or {}).get("n_correct") or 0) + (1 if outcome["correct"] else 0),
-            "is_mature":      just_matured_90 or (cal.get(rk) or {}).get("is_mature"),
-            "is_mature_70":   just_matured_70 or (cal.get(rk) or {}).get("is_mature_70"),
-            "is_mature_80":   just_matured_80 or (cal.get(rk) or {}).get("is_mature_80"),
+            "n_observations":    result["n_observations"],
+            "n_correct":         result["n_correct"],
+            "accuracy":          result["accuracy"],
+            "mean_realized_pct": result["mean_realized_pct"],
+            "is_mature":         (cal.get(rk) or {}).get("is_mature"),
+            "is_mature_70":      just_matured_70 or (cal.get(rk) or {}).get("is_mature_70"),
+            "is_mature_80":      (cal.get(rk) or {}).get("is_mature_80"),
         }
         n_rules_updated += 1
-        if just_matured_90:
-            n_matured += 1
-            print(f"  🎓 rule '{rk}' matured to ADULT: acc≥{TIER_GATE_ADULT_ACC*100:.0f}% "
-                  f"with n≥{MATURITY_MIN_N} AND profit_factor>{TIER_GATE_ADULT_PF} — "
-                  f"BUY/SELL unlocked")
-        if just_matured_80:
-            print(f"  📈 rule '{rk}' promoted to YOUNG_ADULT: acc≥{TIER_GATE_YOUNG_ACC*100:.0f}% "
-                  f"with n≥{MATURITY_MIN_N} AND profit_factor>{TIER_GATE_YOUNG_PF}")
         if just_matured_70:
             print(f"  📊 rule '{rk}' promoted to TEEN: acc≥{TIER_GATE_TEEN_ACC*100:.0f}% "
                   f"with n≥{MATURITY_MIN_N} AND mean_realized_pct>{TIER_GATE_TEEN_MR}")
+        # ADULT / YOUNG_ADULT promotions are PF-gated → detected + logged by
+        # recompute_rule_payoff below on the FRESH profit_factor (C2-pflag).
 
-    # 3. Recompute per-rule payoff aggregates for every rule that saw an
-    # update this run. Cheap: pulls closed trades for the rule and reduces.
+    # 3. Recompute per-rule payoff aggregates + the authoritative PF-gated
+    # maturity flags for every rule that saw an update this run. recompute is
+    # the sole writer of is_mature/is_mature_80 (fresh PF), so n_matured is
+    # counted here, not from the stale-PF upsert path.
     rules_touched = {(t.get("rule_key") or t["event_type"]) for t in trades}
     for rk in rules_touched:
-        recompute_rule_payoff(rk)
+        payoff_result = recompute_rule_payoff(rk)
+        if payoff_result.get("just_matured_90"):
+            n_matured += 1
         recompute_rule_brier_30d(rk)
 
     return {
@@ -995,13 +977,19 @@ def reconcile_event_paper_trades() -> dict:
     }
 
 
-def recompute_rule_payoff(rule_key: str) -> None:
+def recompute_rule_payoff(rule_key: str) -> dict:
     """Pull all closed trades for a rule and recompute payoff aggregates.
 
     Adds to stock_rule_calibration: median_return_pct, avg_win_pct,
     avg_loss_pct, profit_factor, target_hit_rate, stop_hit_rate,
     mean_mfe_pct, mean_mae_pct. Skipped if the rule has < 5 closed trades
     (not enough sample to be meaningful).
+
+    C2-pflag: this is also the AUTHORITATIVE writer of the PF-gated maturity
+    flags (is_mature / is_mature_80 / tier + stamps), computed on the FRESH
+    profit_factor over the full closed population — so upsert_calibration never
+    promotes on a stale (previous-batch) PF. Returns {just_matured_80/90} for
+    the reconcile promotion counter ({} when skipped).
     """
     # PAGINATE over the FULL closed population (FIX-1B, 2026-06-05). The prior
     # single `limit=1000` with no order computed profit_factor over a
@@ -1024,43 +1012,110 @@ def recompute_rule_payoff(rule_key: str) -> None:
         if len(batch) < page:
             break
         offset += page
-    if not rows or len(rows) < 5:
-        return
+    # NOTE (retention invariant): "full closed population" holds only while no
+    # closed trade is archived/deleted (archive_agent is DRY_RUN, 0 archived_at).
+    # If archival is enabled, this active-only read undercounts and the recompute
+    # source must merge archived totals — same caveat as the C1 repair.
+    if not rows:
+        # No active closed trades. Demote any stale maturity still on the row
+        # (e.g. every trade archived) so it can't stay adult forever; nothing to
+        # do if it wasn't mature.
+        prev_rows = sb_get("stock_rule_calibration", {
+            "rule_key": f"eq.{rule_key}",
+            "select": "is_mature,is_mature_70,is_mature_80",
+        })
+        prev = prev_rows[0] if prev_rows else {}
+        if prev.get("is_mature") or prev.get("is_mature_70") or prev.get("is_mature_80"):
+            sb_upsert("stock_rule_calibration", [{
+                "rule_key": rule_key, "is_mature": False, "is_mature_70": False,
+                "is_mature_80": False, "tier": "child", "matured_at": None,
+                "matured_70_at": None, "matured_80_at": None,
+                "last_payoff_recomputed_at": datetime.now(timezone.utc).isoformat(),
+            }], on_conflict="rule_key")
+        return {"just_matured_80": False, "just_matured_90": False}
 
-    returns = [float(r.get("realized_return") or 0) for r in rows]
-    wins = [v for v in returns if v > 0]
-    losses = [v for v in returns if v <= 0]
-    sum_wins = sum(wins)
-    sum_losses = sum(losses)
+    # C2-pflag: maturity flags are ALWAYS reconciled (authoritative), even for
+    # thin rules, so a stale is_mature on a rule with <5 active closed trades is
+    # DEMOTED rather than frozen forever (it cannot be adult: n < ADULT_MIN_N).
+    # n / accuracy / mean use the non-null-outcome population (matches the
+    # n_observations definition upsert + the C1 repair maintain). Payoff
+    # AGGREGATES (PF, medians, hit rates) are only meaningful at n>=5.
+    outcome_rows = [r for r in rows
+                    if r.get("correct") is not None and r.get("realized_return") is not None]
+    n_mat = len(outcome_rows)
+    n_correct = sum(1 for r in outcome_rows if r.get("correct"))
+    accuracy = (n_correct / n_mat) if n_mat else 0.0
+    mean_realized = (sum(float(r["realized_return"]) for r in outcome_rows) / n_mat) if n_mat else 0.0
 
-    median_return = sorted(returns)[len(returns) // 2]
-    avg_win = (sum_wins / len(wins)) if wins else None
-    avg_loss = (sum_losses / len(losses)) if losses else None
-    profit_factor = (sum_wins / abs(sum_losses)) if sum_losses < 0 else None
+    payload: dict = {"rule_key": rule_key}
+    profit_factor = None
+    if len(rows) >= 5:
+        returns = [float(r.get("realized_return") or 0) for r in rows]
+        wins = [v for v in returns if v > 0]
+        losses = [v for v in returns if v <= 0]
+        sum_wins, sum_losses = sum(wins), sum(losses)
+        median_return = sorted(returns)[len(returns) // 2]
+        avg_win = (sum_wins / len(wins)) if wins else None
+        avg_loss = (sum_losses / len(losses)) if losses else None
+        profit_factor = (sum_wins / abs(sum_losses)) if sum_losses < 0 else None
+        target_hit_rate = sum(1 for r in rows if r.get("target_hit") is True) / len(rows)
+        stop_hit_rate = sum(1 for r in rows if r.get("stop_hit") is True) / len(rows)
+        mfe_values = [float(r.get("mfe_pct")) for r in rows if r.get("mfe_pct") is not None]
+        mae_values = [float(r.get("mae_pct")) for r in rows if r.get("mae_pct") is not None]
+        mean_mfe = (sum(mfe_values) / len(mfe_values)) if mfe_values else None
+        mean_mae = (sum(mae_values) / len(mae_values)) if mae_values else None
+        payload.update({
+            "median_return_pct": round(median_return, 6),
+            "avg_win_pct":       round(avg_win, 6) if avg_win is not None else None,
+            "avg_loss_pct":      round(avg_loss, 6) if avg_loss is not None else None,
+            "profit_factor":     round(profit_factor, 4) if profit_factor is not None else None,
+            "target_hit_rate":   round(target_hit_rate, 4),
+            "stop_hit_rate":     round(stop_hit_rate, 4),
+            "mean_mfe_pct":      round(mean_mfe, 6) if mean_mfe is not None else None,
+            "mean_mae_pct":      round(mean_mae, 6) if mean_mae is not None else None,
+        })
 
-    target_hits = [r for r in rows if r.get("target_hit") is True]
-    stop_hits = [r for r in rows if r.get("stop_hit") is True]
-    target_hit_rate = len(target_hits) / len(rows)
-    stop_hit_rate = len(stop_hits) / len(rows)
+    flags = derive_maturity_flags(n_mat, profit_factor, mean_realized, accuracy)
 
-    mfe_values = [float(r.get("mfe_pct")) for r in rows if r.get("mfe_pct") is not None]
-    mae_values = [float(r.get("mae_pct")) for r in rows if r.get("mae_pct") is not None]
-    mean_mfe = (sum(mfe_values) / len(mfe_values)) if mfe_values else None
-    mean_mae = (sum(mae_values) / len(mae_values)) if mae_values else None
+    prev_rows = sb_get("stock_rule_calibration", {
+        "rule_key": f"eq.{rule_key}",
+        "select": "is_mature,is_mature_70,is_mature_80,matured_at,matured_70_at,matured_80_at",
+    })
+    prev = prev_rows[0] if prev_rows else {}
+    was_70, was_80, was_90 = (bool(prev.get("is_mature_70")),
+                              bool(prev.get("is_mature_80")), bool(prev.get("is_mature")))
+    just_matured_80 = flags["is_mature_80"] and not was_80
+    just_matured_90 = flags["is_mature"] and not was_90
+    now_iso = datetime.now(timezone.utc).isoformat()
 
-    payload = {
-        "rule_key":                   rule_key,
-        "median_return_pct":          round(median_return, 6),
-        "avg_win_pct":                round(avg_win, 6) if avg_win is not None else None,
-        "avg_loss_pct":               round(avg_loss, 6) if avg_loss is not None else None,
-        "profit_factor":              round(profit_factor, 4) if profit_factor is not None else None,
-        "target_hit_rate":            round(target_hit_rate, 4),
-        "stop_hit_rate":              round(stop_hit_rate, 4),
-        "mean_mfe_pct":               round(mean_mfe, 6) if mean_mfe is not None else None,
-        "mean_mae_pct":               round(mean_mae, 6) if mean_mae is not None else None,
-        "last_payoff_recomputed_at":  datetime.now(timezone.utc).isoformat(),
-    }
+    def _stamp(flag_new: bool, was: bool, prev_stamp) -> str | None:
+        if flag_new and (not was or not prev_stamp):
+            return now_iso          # newly crossed, or self-heal a missing stamp
+        if not flag_new:
+            return None             # demoted → clear stale maturation timestamp
+        return prev_stamp
+
+    if just_matured_90:
+        print(f"  🎓 rule '{rule_key}' matured to ADULT: n={n_mat}≥{ADULT_MIN_N}, "
+              f"PF={profit_factor:.2f}≥{ADULT_MIN_PF}, mean={mean_realized:.4f}≥{ADULT_MIN_MEAN} "
+              f"— BUY/SELL unlocked")
+    elif just_matured_80:
+        print(f"  📈 rule '{rule_key}' promoted to YOUNG_ADULT (fresh PF={profit_factor:.2f})")
+
+    # Authoritative maturity flags (fresh PF) — always written; aggregates added
+    # above only when n>=5.
+    payload.update({
+        "is_mature":                  flags["is_mature"],
+        "is_mature_70":               flags["is_mature_70"],
+        "is_mature_80":               flags["is_mature_80"],
+        "tier":                       flags["tier"],
+        "matured_at":                 _stamp(flags["is_mature"],    was_90, prev.get("matured_at")),
+        "matured_70_at":              _stamp(flags["is_mature_70"], was_70, prev.get("matured_70_at")),
+        "matured_80_at":              _stamp(flags["is_mature_80"], was_80, prev.get("matured_80_at")),
+        "last_payoff_recomputed_at":  now_iso,
+    })
     sb_upsert("stock_rule_calibration", [payload], on_conflict="rule_key")
+    return {"just_matured_80": just_matured_80, "just_matured_90": just_matured_90}
 
 
 def compute_brier_30d(rule_accuracy: float, outcomes: list[bool]) -> float | None:

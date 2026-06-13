@@ -45,6 +45,7 @@ import requests
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "agents"))
 import _rule_key  # type: ignore
+from _maturity import derive_maturity_flags  # type: ignore  # single maturity gate
 from price_agent import (  # type: ignore  # reuse the live outcome computation
     fetch_bars,
     compute_paper_outcome,
@@ -315,23 +316,15 @@ def recompute_calibration(rule_keys: set[str]) -> int:
         stop_hit_rate   = sum(1 for x in rows if x.get("stop_hit")) / n
         profit_factor = (sum(wins) / abs(sum(losses))) if sum(losses) < 0 else None
 
-        # v1 tier gates — must match agents/price_agent.py.upsert_calibration().
-        # Backfill computes profit_factor on this same pass so there's no
-        # PF-lag issue here; all metrics are fresh for the gate evaluation.
-        n_ok = n >= MATURITY_MIN_N
-        is_mature_70 = bool(n_ok and accuracy >= TIER_GATE_TEEN_ACC and mean > TIER_GATE_TEEN_MR)
-        is_mature_80 = bool(n_ok and accuracy >= TIER_GATE_YOUNG_ACC
-                              and profit_factor is not None and profit_factor > TIER_GATE_YOUNG_PF)
-        is_mature    = bool(n_ok and accuracy >= MATURITY_ACCURACY
-                              and profit_factor is not None and profit_factor > TIER_GATE_ADULT_PF)
-        if is_mature:
-            tier = "adult"
-        elif is_mature_80:
-            tier = "young_adult"
-        elif is_mature_70:
-            tier = "teen"
-        else:
-            tier = "child"
+        # v1 tier gates via the shared _maturity gate (single source of truth —
+        # the inline copy here had DRIFTED to the old acc-extreme adult gate
+        # acc≥0.90 & PF>1.5, which would mark payoff-negative rules adult).
+        # Backfill computes profit_factor on this same pass so there's no PF-lag.
+        _flags = derive_maturity_flags(n, profit_factor, mean, accuracy)
+        is_mature    = _flags["is_mature"]
+        is_mature_70 = _flags["is_mature_70"]
+        is_mature_80 = _flags["is_mature_80"]
+        tier         = _flags["tier"]
 
         # Preserve existing matured_*_at timestamps (self-heal otherwise)
         existing = requests.get(

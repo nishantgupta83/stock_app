@@ -26,6 +26,9 @@ import urllib.parse
 import urllib.request
 from datetime import datetime, timezone
 
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "agents"))
+from _maturity import derive_maturity_flags  # type: ignore  # single maturity gate
+
 
 SUPABASE_URL = os.environ["SUPABASE_URL"]
 SUPABASE_SERVICE_KEY = os.environ["SUPABASE_SERVICE_KEY"]
@@ -35,16 +38,8 @@ HEADERS = {
     "Content-Type": "application/json",
 }
 
-# Mirror agents/price_agent.py module-level constants so a divergence is
-# caught at review time, not in production.
-MATURITY_MIN_N         = 30
-TIER_GATE_TEEN_ACC     = 0.70
-TIER_GATE_TEEN_MR      = 0.0
-TIER_GATE_YOUNG_ACC    = 0.80
-TIER_GATE_YOUNG_PF     = 1.2
-ADULT_MIN_N            = 100
-ADULT_MIN_PF           = 2.0
-ADULT_MIN_MEAN         = 0.005
+# Gate thresholds + logic come from the shared agents/_maturity module (single
+# source of truth — see derive_maturity_flags import above).
 
 
 def fetch_all_rules() -> list[dict]:
@@ -76,31 +71,16 @@ def fetch_all_rules() -> list[dict]:
 
 
 def evaluate(r: dict) -> dict:
-    """Apply the NEW gate logic; return desired flag values + tier."""
-    n   = int(r.get("n_observations") or 0)
-    acc = float(r.get("accuracy") or 0)
-    pf  = r.get("profit_factor")
-    pf  = float(pf) if pf is not None else None
-    mean = float(r.get("mean_realized_pct") or 0)
-
-    is_mature_70 = bool(n >= MATURITY_MIN_N and acc >= TIER_GATE_TEEN_ACC
-                        and mean > TIER_GATE_TEEN_MR)
-    is_mature_80 = bool(n >= MATURITY_MIN_N and acc >= TIER_GATE_YOUNG_ACC
-                        and pf is not None and pf > TIER_GATE_YOUNG_PF)
-    is_mature = bool(n >= ADULT_MIN_N and pf is not None
-                     and pf >= ADULT_MIN_PF and mean >= ADULT_MIN_MEAN)
-
-    if is_mature:        tier = "adult"
-    elif is_mature_80:   tier = "young_adult"
-    elif is_mature_70:   tier = "teen"
-    else:                tier = "child"
-
-    return {
-        "is_mature":    is_mature,
-        "is_mature_70": is_mature_70,
-        "is_mature_80": is_mature_80,
-        "tier":         tier,
-    }
+    """Apply the shared _maturity gate; return desired flag values + tier."""
+    pf = r.get("profit_factor")
+    f = derive_maturity_flags(
+        n=int(r.get("n_observations") or 0),
+        pf=float(pf) if pf is not None else None,
+        mean=float(r.get("mean_realized_pct") or 0),
+        accuracy=float(r.get("accuracy") or 0),
+    )
+    return {"is_mature": f["is_mature"], "is_mature_70": f["is_mature_70"],
+            "is_mature_80": f["is_mature_80"], "tier": f["tier"]}
 
 
 def needs_update(current: dict, desired: dict) -> dict | None:
