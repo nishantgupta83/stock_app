@@ -10,7 +10,8 @@ TDD → implement → live-validate.
 ## Recommended order
 
 1. ~~**H1** — effective-n gating~~ ✅ **DONE `aa4bd8b`** (see below)
-2. **H2** — after-hours entry anchor *(calibration correctness)* ← NEXT
+2. ~~**H2-core** — after-hours entry anchor (forward fix)~~ ✅ **DONE `559c753`**
+   → **H2b** (open re-anchor + closed cohort) open — see H2 below ← NEXT
 3. **H8** — daily-risk budget batch reuse *(risk correctness; small)*
 4. **H5** — `retry_dispatch_failed` lane-scope *(smallest; 1-line + test)*
 5. **H4b** — payoff-first maturity *display* redesign *(dashboard/report honesty)*
@@ -63,6 +64,25 @@ TDD → implement → live-validate.
   every adult/young rule before + after.
 
 ### H2 — after-hours entry leakage residual
+- **✅ H2-core DONE `559c753`:** `_entry_anchor_from_ts` bumps the anchor +1 day
+  when the event is at/after the 16:00 ET close (ET-converted before date; both
+  event_at + created_at floor). All FUTURE event paper-trades anchor correctly.
+  Verified: 76% of live 8-K events are after-close. 9 TDD edge tests.
+- **⬜ H2b OPEN (Codex HIGH — forward fix alone is insufficient):** still-OPEN
+  trades opened pre-fix will close later with leaked entries. Scope is SMALL
+  (measured: 27 of 32 open 8-K trades re-anchorable; total open after-hours
+  cohort ~tens, NOT the 7020 all-open count — trades age out in 1-30 days).
+  - **Open trades:** one-shot re-anchor `entry_at`/`entry_price` → next-session
+    close (needs stock_raw_prices lookup per (ticker, next-session); defer rows
+    whose next-session close hasn't landed). Gated dry-run→commit like the C1
+    repair. It IS a live entry_price mutation → own focused PR.
+  - **Closed trades:** their realized_return baked in the leaked entry →
+    calibration metrics tainted. Recommended: ACCEPT + age out (rewriting closed
+    history with hindsight is wrong; H1 already gates everything to non-adult, so
+    no BUY/SELL rides the tainted metrics — new clean data dominates over time).
+    Re-derive only if a cohort study needs it.
+  - Priority: LOW-urgency given H1's non-adult gating; do as a focused PR.
+- Original detail:
 - **Why:** events 16:00–19:59 ET anchor to that same day's 16:00 close (a
   pre-event price), crediting the overnight gap to the trade — flatters the
   8-K/earnings rules nearest the gate (`event_paper_agent.py:346-368`).
