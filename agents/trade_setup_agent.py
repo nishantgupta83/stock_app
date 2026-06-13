@@ -34,6 +34,7 @@ from typing import Optional
 
 import requests
 
+import _instruments   # shared tradeable-instrument source of truth (C2)
 import _rule_key   # agents/ on sys.path at runtime; canonical rule_key
 from _lanes import THESIS_MODEL_VERSION, L3_INPUT_STATUSES  # L3 input contract
 
@@ -291,11 +292,17 @@ def compute_target_and_stop(rule_cal: dict) -> tuple[float, float, str]:
     return round(target, 4), round(stop, 4), "calibrated"
 
 
-def compute_setup(signal: dict, cal: dict[str, dict]) -> dict:
+def compute_setup(signal: dict, cal: dict[str, dict],
+                  tradeable_tickers: set[str] | None = None) -> dict:
     """Translate one signal into a trade_setup row.
 
     Always returns a row (we record every signal's setup decision for audit).
     The reason_to_skip field determines whether the risk_agent acts on it.
+
+    tradeable_tickers: stock/etf set from the shared _instruments source of
+    truth. None disables the instrument guard (replay/tests). When provided, a
+    non-tradeable instrument (mutual fund / INST_* placeholder) is flagged
+    reason_to_skip so the leak C2 closed at L2 can't re-enter via an L3 setup.
     """
     pet = derive_primary_event_type(signal)
     setup_type = SETUP_TYPE_BY_EVENT.get(pet or "", DEFAULT_SETUP_TYPE)
@@ -323,8 +330,15 @@ def compute_setup(signal: dict, cal: dict[str, dict]) -> dict:
     # wins; subsequent checks are still informative for audit but don't
     # change the outcome.
     reason_to_skip: Optional[str] = None
+    # C2 (downstream): a non-tradeable instrument never becomes an actionable
+    # setup, regardless of score/maturity — highest-priority skip. Guard off
+    # when tradeable_tickers is None (replay/tests).
+    if tradeable_tickers is not None and not _instruments.is_tradeable(
+            signal.get("ticker"), tradeable_tickers):
+        reason_to_skip = f"{signal.get('ticker')} not a tradeable instrument (fund/placeholder)"
+
     valid_until = signal.get("valid_until")
-    if valid_until:
+    if valid_until and reason_to_skip is None:
         try:
             vu = datetime.fromisoformat(valid_until.replace("Z", "+00:00"))
             if vu < datetime.now(timezone.utc):
@@ -415,7 +429,21 @@ def main() -> int:
         cal = fetch_calibration_for_rule_keys(rule_keys)
         print(f"  loaded calibration for {len(cal)} rules")
 
-        setups = [compute_setup(s, cal) for s in signals]
+        # C2 (downstream): instrument guard. Setup rows are PERSISTENT and
+        # written with ignore-duplicates, and processed signals are filtered out
+        # of later runs — so a row written now is never revisited. We therefore
+        # must NOT write guard decisions made on uncertain data: on a tradeable
+        # fetch failure, ABORT this run (write nothing) so the next run
+        # re-evaluates with a good set, rather than persisting a false
+        # reason_to_skip on a legitimate ticker.
+        tradeable_tickers = _instruments.fetch_tradeable_tickers(SUPABASE_URL, HEADERS_SB)
+        if tradeable_tickers is None:
+            print("⚠️  fetch_tradeable_tickers failed — skipping run (no setups written; "
+                  "next run re-evaluates). Avoids persisting false reason_to_skip.")
+            return 0
+        print(f"  tradeable instruments (stock/etf): {len(tradeable_tickers)}")
+
+        setups = [compute_setup(s, cal, tradeable_tickers) for s in signals]
         actionable = [s for s in setups if s["reason_to_skip"] is None]
         skipped = [s for s in setups if s["reason_to_skip"] is not None]
         print(f"  {len(actionable)} actionable setups, {len(skipped)} flagged to skip")

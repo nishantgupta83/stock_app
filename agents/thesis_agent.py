@@ -34,6 +34,7 @@ from datetime import datetime, timedelta, timezone
 
 import requests
 
+import _instruments   # shared tradeable-instrument source of truth (C2)
 import _rule_key   # agents/ is on sys.path at runtime; canonical rule_key
 
 SUPABASE_URL = os.environ["SUPABASE_URL"].rstrip("/")
@@ -1274,7 +1275,8 @@ def decompose_score(breakdown: list[dict]) -> dict:
 
 
 def action_for(score: float, direction: str, has_mature_rule: bool = False,
-                risk_off: bool = False, catalyst_score: float = 0.0) -> str:
+                risk_off: bool = False, catalyst_score: float = 0.0,
+                tradeable: bool = True) -> str:
     """Map (score, direction, maturity, macro, catalyst_score) to action vocabulary.
 
     Maturity gate: when the cluster includes ≥1 rule whose paper-trade accuracy
@@ -1297,8 +1299,11 @@ def action_for(score: float, direction: str, has_mature_rule: bool = False,
     # Recall floor (RESEARCH tier) — temporary stopgap, see THESIS_RECALL_FLOOR.
     bull_res   = THESIS_RECALL_FLOOR + (10 if risk_off else 0)
 
-    # Maturity gate unchanged
-    if has_mature_rule:
+    # Maturity gate (C2): a matured rule licenses BUY/SELL only on a TRADEABLE
+    # instrument. Index mutual funds (VTSAX/VFIAX) and placeholder tickers
+    # (INST_*) are not tradeable vehicles — they fall through to the normal
+    # (non-directional) action bands below rather than emitting BUY/SELL.
+    if has_mature_rule and tradeable:
         if direction == "bearish" and score >= 50:
             return "SELL"
         if direction == "bullish" and score >= bull_buy:
@@ -1656,22 +1661,30 @@ def fetch_ticker_sectors() -> dict[str, str]:
         return {}
 
 
-def cluster_has_mature_rule(events: list[dict], calibration: dict[str, dict]) -> bool:
-    """True if any event in the cluster maps to an is_mature rule_key.
+def fetch_tradeable_tickers() -> set[str] | None:
+    """{tickers} with a tradeable kind (stock/etf) — the only vehicles a matured
+    rule may license BUY/SELL on. Delegates to the shared _instruments source of
+    truth so the L2 gate and the L3 guard cannot drift. None on fetch failure."""
+    return _instruments.fetch_tradeable_tickers(SUPABASE_URL, HEADERS_SB)
+
+
+def cluster_has_mature_rule(events: list[dict], calibration: dict[str, dict],
+                            horizon_days: int = 1) -> bool:
+    """True if any event in the cluster maps to an is_mature rule_key AT THE
+    EMITTED HORIZON.
+
+    C2 fix: the signal is graded at the emitted horizon (h1d live, per
+    horizon_for) but this previously checked maturity across ALL horizons
+    (1,7,15,30) — so an 8-K mature at h15d wrongly licensed an h1d BUY/SELL.
+    The maturity vocabulary must be earned at the horizon we actually trade.
 
     Uses the canonical _rule_key.derive — same format event_paper_agent writes
-    to stock_rule_calibration. The legacy multi-candidate fallback (which tried
-    subtype-less and unsuffixed variants) was a workaround for the inconsistent
-    keying that A2 eliminated.
+    to stock_rule_calibration.
     """
-    HORIZONS = (1, 7, 15, 30)
     for e in events:
-        et = e["event_type"]
-        sub = e.get("event_subtype")
-        for h in HORIZONS:
-            key = _rule_key.derive(et, sub, h)
-            if calibration.get(key, {}).get("is_mature"):
-                return True
+        key = _rule_key.derive(e["event_type"], e.get("event_subtype"), horizon_days)
+        if calibration.get(key, {}).get("is_mature"):
+            return True
     return False
 
 
@@ -1681,6 +1694,14 @@ def horizon_for(events: list[dict]) -> str:
     if any(e["event_type"].startswith("filing_") or e["event_type"] == "8k_material_event" for e in events):
         return "1d"
     return "1d"
+
+
+def emitted_horizon_days(events: list[dict]) -> int:
+    """Integer horizon the signal is graded at — parsed robustly from
+    horizon_for() so a future format change ("7d", "h15d") can't crash or drift
+    the C2 emitted-horizon maturity check. Defaults to 1."""
+    digits = "".join(ch for ch in horizon_for(events) if ch.isdigit())
+    return int(digits) if digits else 1
 
 
 def evidence_summary(events: list[dict]) -> str:
@@ -1974,6 +1995,7 @@ def score_cluster(
     wide_events: list[dict] | None = None,
     watchlist_map: dict | None = None,
     news_fetch=None,
+    tradeable_tickers: set[str] | None = None,
 ) -> dict:
     """Score ONE cluster of events into a `scored` dict — the Layer-2 scoring
     core shared by thesis_agent.main() (live) and the PR-B0 historical replay,
@@ -2019,7 +2041,21 @@ def score_cluster(
         breakdown.append({"rule": "power_scarcity_boost", "points": pb,
                           "event_id": None, "detail": pb_detail})
 
-    mature = cluster_has_mature_rule(events, rule_calibration)
+    # C2: maturity is earned at the EMITTED horizon only (horizon_for → h1d live).
+    emit_horizon = emitted_horizon_days(events)
+    mature = cluster_has_mature_rule(events, rule_calibration, emit_horizon)
+    # C2: BUY/SELL is licensed only on a tradeable instrument. tradeable_tickers
+    # is None for non-emitting callers (replay/tests) → guard disabled there;
+    # live main() passes the stock/etf set, so funds/INST_* fall through to the
+    # normal action bands. Fail-closed: a mature rule on a ticker missing from
+    # the set is logged and blocked from BUY/SELL.
+    if tradeable_tickers is None:
+        tradeable = True
+    else:
+        tradeable = _instruments.is_tradeable(ticker, tradeable_tickers)
+        if mature and not tradeable:
+            print(f"  [C2] mature rule on non-tradeable {ticker!r} — "
+                  f"BUY/SELL blocked, falling back to normal action", file=sys.stderr)
     sub_scores = decompose_score(breakdown)
 
     # PR1B race-window / classifier-gap safety net. Disabled when news_fetch is
@@ -2050,7 +2086,8 @@ def score_cluster(
 
     action = action_for(score, direction, has_mature_rule=mature,
                         risk_off=risk_off,
-                        catalyst_score=sub_scores["catalyst"])
+                        catalyst_score=sub_scores["catalyst"],
+                        tradeable=tradeable)
 
     # Score-based cluster_passes override (see main()/CLAUDE.md for rationale).
     if (not ok
@@ -2198,6 +2235,15 @@ def main() -> int:
         # Intelligence layer — cross-rule context for sector/hyperscaler/power signals
         watchlist_map = fetch_watchlist_map()
         wide_events = fetch_recent_events_window(hours=POWER_SCARCITY_LOOKBACK_HOURS)
+        # C2: tradeable-instrument guard for the BUY/SELL maturity gate. A fetch
+        # failure → empty set (fail-closed: suppress BUY/SELL this run) NOT None
+        # (None disables the guard, which is only correct for replay/tests).
+        tradeable_tickers = fetch_tradeable_tickers()
+        if tradeable_tickers is None:
+            print("⚠️  fetch_tradeable_tickers failed — BUY/SELL suppressed this run (fail-closed)")
+            tradeable_tickers = set()
+        else:
+            print(f"Tradeable instruments (stock/etf): {len(tradeable_tickers)}")
         risk_off = is_risk_off()
         if risk_off:
             print("⚠️  Macro risk-off active (VIX > 25) — bullish thresholds tightened +10")
@@ -2217,6 +2263,7 @@ def main() -> int:
             wide_events=wide_events,
             watchlist_map=watchlist_map,
             news_fetch=lambda t: fetch_recent_news(t, hours=48, limit=5),
+            tradeable_tickers=tradeable_tickers,
         )
         print(f"Distinct (ticker, 5-min) clusters: {len(scored)}")
 

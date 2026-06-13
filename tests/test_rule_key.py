@@ -115,13 +115,20 @@ def test_signal_with_no_weight_at_time_returns_none():
 
 def test_cluster_has_mature_rule_uses_canonical():
     """Regression: thesis_agent's maturity check must produce the same keys
-    event_paper_agent writes, otherwise mature rules never unlock vocabulary."""
+    event_paper_agent writes, otherwise mature rules never unlock vocabulary.
+
+    C2: maturity is checked at the EMITTED horizon only — so the h7d key is
+    matched when we ask for horizon_days=7, but NOT at the default emitted
+    horizon (h1d). See tests/test_c2_maturity_gate_scope.py for the scope fix.
+    """
     from thesis_agent import cluster_has_mature_rule
 
     events = [_event("earnings_release", "beat")]
     # Calibration row keyed exactly as event_paper_agent would have written it
     calibration = {"earnings_release:beat:h7d": {"is_mature": True}}
-    assert cluster_has_mature_rule(events, calibration) is True
+    assert cluster_has_mature_rule(events, calibration, horizon_days=7) is True
+    # C2: an h7d-only mature rule must NOT license the emitted h1d horizon.
+    assert cluster_has_mature_rule(events, calibration) is False
 
 
 def test_cluster_has_mature_rule_negative():
