@@ -311,29 +311,45 @@ def fetch_prior_snapshot(institution_cik: str, before_iso: str) -> dict[str, int
     """{ticker → shares} from the most recent snapshot strictly before
     `before_iso`. Tickers only — unmatched names are excluded; we can't
     compute a meaningful diff for them anyway."""
-    r = requests.get(
-        f"{SUPABASE_URL}/rest/v1/stock_institutional_holdings_snapshot",
-        headers=HEADERS_SB,
-        params=[
+    base = f"{SUPABASE_URL}/rest/v1/stock_institutional_holdings_snapshot"
+    # M6: find the latest filing strictly before before_iso, THEN page ALL of its
+    # holdings. The old single capped query (order filed_at.desc, limit 5000)
+    # could truncate a large filing's holdings — the missing tickers then looked
+    # like exited positions and current-only tickers like new ones, FABRICATING
+    # 13F diff events.
+    head = requests.get(base, headers=HEADERS_SB, params=[
+        ("institution_cik", f"eq.{institution_cik}"),
+        ("filed_at",        f"lt.{before_iso}"),
+        ("ticker",          "not.is.null"),
+        ("select",          "filed_at"),
+        ("order",           "filed_at.desc"),
+        ("limit",           "1"),
+    ], timeout=20)
+    if head.status_code != 200 or not head.json():
+        return {}
+    latest_filed = head.json()[0]["filed_at"]
+
+    out: dict[str, int] = {}
+    offset = 0
+    while True:
+        r = requests.get(base, headers=HEADERS_SB, params=[
             ("institution_cik", f"eq.{institution_cik}"),
-            ("filed_at",        f"lt.{before_iso}"),
+            ("filed_at",        f"eq.{latest_filed}"),
             ("ticker",          "not.is.null"),
-            ("select",          "ticker,shares,filed_at"),
-            ("order",           "filed_at.desc"),
-            ("limit",           "5000"),
-        ],
-        timeout=20,
-    )
-    if r.status_code != 200:
-        return {}
-    rows = r.json()
-    if not rows:
-        return {}
-    # Group to find the LATEST filing's holdings (rows are mixed across filings)
-    latest_filed = rows[0]["filed_at"]
-    return {row["ticker"]: int(row.get("shares") or 0)
-            for row in rows
-            if row["filed_at"] == latest_filed}
+            ("select",          "ticker,shares"),
+            ("order",           "ticker.asc"),
+            ("offset",          str(offset)),
+            ("limit",           "1000"),
+        ], timeout=20)
+        if r.status_code != 200:
+            break
+        batch = r.json()
+        for row in batch:
+            out[row["ticker"]] = int(row.get("shares") or 0)
+        if len(batch) < 1000:
+            break
+        offset += 1000
+    return out
 
 
 def diff_holdings(current: dict[str, int], prior: dict[str, int]) -> list[tuple[str, str, dict]]:

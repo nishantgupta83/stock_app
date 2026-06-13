@@ -709,6 +709,27 @@ def replay_day(day_start: datetime, day_end: datetime, all_events: list[dict],
 # Persist & summarize
 # ============================================================
 
+def _insert_signals_chunked(payload: list[dict], signals: list[dict], poster,
+                            chunk: int = 500) -> list[tuple]:
+    """Insert payload in chunks and return [(inserted_id, signal)] paired PER
+    CHUNK (M6). payload[i] must correspond to signals[i]. A chunk whose insert
+    returns a different row count than sent is SKIPPED (its audit rows dropped)
+    rather than shifting every subsequent (id, signal) pairing — the bug that
+    mislabelled backtest forecast_audit rows after any partial chunk."""
+    pairs: list[tuple] = []
+    for i in range(0, len(payload), chunk):
+        pc = payload[i:i + chunk]
+        sc = signals[i:i + chunk]
+        res = poster(pc)
+        if not res or len(res) != len(pc):
+            print(f"  [M6] signal chunk {i // chunk} insert "
+                  f"{len(res or [])}/{len(pc)} — dropping its audit rows "
+                  f"(no cross-chunk misalignment)", file=sys.stderr)
+            continue
+        pairs.extend(zip([r["id"] for r in res], sc))
+    return pairs
+
+
 def persist_signals(signals: list[dict]) -> None:
     """Bulk-insert signals + forecast_audit rows."""
     if not signals:
@@ -731,18 +752,19 @@ def persist_signals(signals: list[dict]) -> None:
         "status_v2":        "backtest",
     } for s in signals]
 
-    # Insert in batches of 500
-    inserted_ids = []
-    for i in range(0, len(payload), 500):
-        chunk = payload[i:i+500]
-        res = sb_post("stock_signals", chunk, return_repr=True)
-        if res:
-            inserted_ids.extend([r["id"] for r in res])
-    print(f"  inserted {len(inserted_ids)} backtest signals")
+    # Insert in batches of 500. M6: pair returned ids to their OWN chunk's
+    # signals — a chunk that returns fewer ids than sent (partial insert) used to
+    # shift `zip(inserted_ids, signals)` by that delta, mislabelling every later
+    # audit row with the WRONG signal's outcome. A short/mismatched chunk now
+    # drops only its own audit rows.
+    pairs = _insert_signals_chunked(
+        payload, signals,
+        lambda c: sb_post("stock_signals", c, return_repr=True))
+    print(f"  inserted {len(pairs)} backtest signals")
 
     # forecast_audit
     audit = []
-    for sig_id, s in zip(inserted_ids, signals):
+    for sig_id, s in pairs:
         o = s["outcome"]
         audit.append({
             "signal_id":       sig_id,
