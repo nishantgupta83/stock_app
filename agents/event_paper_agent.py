@@ -28,6 +28,7 @@ import sys
 import time
 from collections import Counter
 from datetime import datetime, timedelta, timezone
+from zoneinfo import ZoneInfo
 
 import requests
 import yfinance as yf
@@ -322,6 +323,35 @@ def _to_date(x) -> str | None:
         return None
 
 
+_ET = ZoneInfo("America/New_York")
+_MARKET_CLOSE_ET_HOUR = 16   # 16:00 ET regular-session close
+
+
+def _entry_anchor_from_ts(ts) -> str | None:
+    """Entry-anchor date (YYYY-MM-DD) for a timestamp, with the H2 after-hours
+    bump: an event at/after the 16:00 ET close enters at the NEXT calendar day's
+    close, not that same day's 16:00 (pre-event) close.
+
+    Convert to America/New_York BEFORE taking the date — a UTC timestamp just
+    after midnight is the PRIOR ET day, after-close (00:30Z → 20:30 ET prev day).
+    Naive timestamps are assumed UTC (never the local machine tz). zoneinfo
+    handles EDT/EST. pick_entry_close then rolls Sat/holiday anchors to the next
+    real session, so no market calendar is needed (early-close half-days are an
+    accepted residual — a 14:00 ET filing on a 13:00 close day still anchors
+    same-day; full half-day modelling is out of scope)."""
+    try:
+        dt = datetime.fromisoformat(str(ts).replace("Z", "+00:00"))
+    except (TypeError, ValueError):
+        return None
+    if dt.tzinfo is None:
+        dt = dt.replace(tzinfo=timezone.utc)
+    et = dt.astimezone(_ET)
+    d = et.date()
+    if et.hour >= _MARKET_CLOSE_ET_HOUR:
+        d = d + timedelta(days=1)
+    return d.isoformat()
+
+
 def _event_anchor_date(event: dict, floor_created_at: bool = False) -> str | None:
     """The date (YYYY-MM-DD) the entry close must be on/after.
 
@@ -332,12 +362,15 @@ def _event_anchor_date(event: dict, floor_created_at: bool = False) -> str | Non
     max(event_at, created_at): we cannot enter before we KNEW of the event, so a
     late-ingested live row (old event_at, recent created_at) won't fill at a
     backdated close that price_agent would then close with hindsight. For a
-    normal live event event_at ≈ created_at, so this is a no-op."""
-    ead = _to_date(event.get("event_at"))
+    normal live event event_at ≈ created_at, so this is a no-op.
+
+    H2: both dates get the after-16:00-ET bump (a row whose event OR ingest is
+    after the close must not fill at that day's pre-event/pre-ingest close)."""
+    ead = _entry_anchor_from_ts(event.get("event_at"))
     if ead is None:
         return None
     if floor_created_at:
-        cad = _to_date(event.get("created_at"))
+        cad = _entry_anchor_from_ts(event.get("created_at"))
         if cad:
             return max(ead, cad)
     return ead
@@ -350,10 +383,11 @@ def pick_entry_close(event: dict, closes_asc: list[dict],
     landed yet (intraday before EOD ingest), so the trade is retried next run
     rather than filled at a pre-event price.
 
-    NOTE (follow-up): comparison is date-level. An after-market-close event
-    (e.g. 16:30 ET 8-K) will still match the same calendar date's 16:00 close,
-    a <1-session lookahead. Correcting that needs market-hours logic
-    (agents/market calendar); deferred as a smaller, separate refinement."""
+    The anchor (_event_anchor_date → _entry_anchor_from_ts) already applies the
+    H2 after-16:00-ET bump, so an after-close event's anchor is the NEXT calendar
+    day and this date-level scan correctly skips the same-day (pre-event) 16:00
+    close. (Early-close half-days remain an accepted residual — see
+    _entry_anchor_from_ts.)"""
     anchor = _event_anchor_date(event, floor_created_at=floor_created_at)
     if anchor is None or not closes_asc:
         return None
