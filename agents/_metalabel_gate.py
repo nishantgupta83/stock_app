@@ -24,6 +24,8 @@ from __future__ import annotations
 
 from datetime import datetime
 
+from _market_calendar import next_trading_day
+
 # Defaults: a SUPPRESSIVE gate needs more confidence than the display tables.
 DEFAULT_PF_BAR = 1.5
 DEFAULT_MIN_N = 100
@@ -82,7 +84,14 @@ def walkforward_stats(trades: list[dict], rule_key: str, as_of: datetime) -> dic
         if t.get("rule_key") != rule_key:
             continue
         xa = _parse(t.get("exit_at"))
-        if xa is None or xa >= as_of:
+        if xa is None:
+            continue
+        # M3: exit_at is stamped MIDNIGHT UTC of the close date, but the outcome
+        # isn't reconciled until that day's EOD price_agent run (+ 2h-cadence
+        # latency). Require the close to be >= 1 trading day before as_of so the
+        # reconcile definitely ran — a raw `exit_at < as_of` leaks a same-day,
+        # not-yet-known outcome into the walk-forward window (optimistic).
+        if next_trading_day(xa.date()) >= as_of.date():
             continue
         ca = _parse(t.get("created_at"))
         if ca is not None and ca >= as_of:

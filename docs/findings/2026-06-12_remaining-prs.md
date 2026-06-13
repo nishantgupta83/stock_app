@@ -171,7 +171,7 @@ TDD → implement → live-validate.
 | # | Finding | Fix direction | Timing |
 |---|---------|---------------|--------|
 | **M2** | Archive deletion (once live) erodes metalabel corpus to 90d while gate reads cumulative calibration | validator merges archived JSONL | **before 7/06** |
-| **M3** | Walk-forward gate optimistic: `exit_at` midnight UTC + reconcile latency | require `exit_at + 1 trading day < as_of` | **before 7/06** |
+| ~~**M3**~~ ✅ DONE | Walk-forward gate counted same-day not-yet-reconciled outcomes | now requires next_trading_day(close) < as_of (TDD) | done |
 | **M1** | backtester upserts live `stock_agent_weights` unmarked | source column / date-guard | — |
 | **M4** | L1 ingest agents finish `ok` on bus-write failure; no volume pulse (same swallow class as C3, read side) | partial + bus-volume pulsecheck | — |
 | **M5** | realistic_loop mark non-atomic (mid-loop crash leaks cash); agent-path backfills untagged | recompute state from ledger each run; tag backfills | — |
