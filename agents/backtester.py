@@ -762,7 +762,23 @@ def persist_signals(signals: list[dict]) -> None:
 
 
 def persist_agent_weights(agent_state_history: list[tuple[date, dict]]) -> None:
-    """Write one row per (agent, date) showing the EMA evolution."""
+    """Write the backtest's per-(agent,date) EMA evolution.
+
+    M1 — LOOP ISOLATION: by default this does NOT touch the LIVE
+    stock_agent_weights table. thesis reads that table latest-date-blind and the
+    dashboard displays it; the upsert on_conflict=(agent,date) would overwrite
+    the live-LEARNED weight for any date inside the backtest window (there's no
+    source column to tell backtest from live apart). A backtester must not write
+    live learning state — same principle as realistic_loop not writing
+    calibration. Opt in only for a dedicated isolated run via
+    BACKTEST_WRITE_LIVE_WEIGHTS=true (see M1-2 for the proper separate-table fix).
+    """
+    if os.environ.get("BACKTEST_WRITE_LIVE_WEIGHTS", "false").strip().lower() != "true":
+        n = sum(len(state) for _, state in agent_state_history)
+        print(f"  [M1] skipping live agent_weights write ({n} rows) — backtester "
+              f"does not contaminate live learning state (set "
+              f"BACKTEST_WRITE_LIVE_WEIGHTS=true to override)")
+        return
     rows = []
     for d, state in agent_state_history:
         for agent, st in state.items():
