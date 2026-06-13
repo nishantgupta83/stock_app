@@ -170,7 +170,7 @@ TDD → implement → live-validate.
 
 | # | Finding | Fix direction | Timing |
 |---|---------|---------------|--------|
-| **M2** | Archive deletion (once live) erodes metalabel corpus to 90d while gate reads cumulative calibration | validator merges archived JSONL | **before 7/06** |
+| **M2** ✅ RESOLVED-BY-GUARD | Archive DELETION (not yet live) would erode the validator corpus | archive_agent is DRY_RUN (0 archived, verified) so the active corpus is COMPLETE → the 7/06 re-run is NOT underpowered. GUARD: keep archive deletion disabled through the 7/06 re-run. If deletion is ever enabled before then, the validator must fetch+merge the per-trade JSONL.gz archive (feasible — archive_agent serialises per-trade rows before delete). Not shipping speculative merge code against non-existent archived data. | done (guard) |
 | ~~**M3**~~ ✅ DONE | Walk-forward gate counted same-day not-yet-reconciled outcomes | now requires next_trading_day(close) < as_of (TDD) | done |
 | **M1** | backtester upserts live `stock_agent_weights` unmarked | source column / date-guard | — |
 | **M4** | L1 ingest agents finish `ok` on bus-write failure; no volume pulse (same swallow class as C3, read side) | partial + bus-volume pulsecheck | — |
