@@ -1947,18 +1947,25 @@ def mark_signal_status(signal_id: int, status_v2: str) -> None:
 
 
 def retry_dispatch_failed(cap_remaining: int) -> int:
-    """Retry previously inserted signals whose Telegram dispatch failed."""
+    """Retry previously inserted signals whose Telegram dispatch failed.
+
+    H5: lane-scoped to MODEL_VERSION. Without it this swept dispatch_failed rows
+    from ANY lane (e.g. intraday_alert_agent spikes), so a Telegram outage would
+    queue foreign-lane failures that thesis then dispatches + counts against its
+    own 5/day cap — the same cross-lane budget leak class as the 5/22-6/2
+    silence. Foreign lanes sweep their own dispatch_failed (their owner's job)."""
     if cap_remaining <= 0:
         return 0
     rows = requests.get(
         f"{SUPABASE_URL}/rest/v1/stock_signals",
         headers=HEADERS_SB,
         params={
-            "status_v2": "eq.dispatch_failed",
-            "action":    "in.(WATCH,AVOID_CHASE)",
-            "select":    "id,ticker,score,action",
-            "order":     "fired_at.asc",
-            "limit":     str(cap_remaining),
+            "status_v2":     "eq.dispatch_failed",
+            "model_version": f"eq.{MODEL_VERSION}",
+            "action":        "in.(WATCH,AVOID_CHASE)",
+            "select":        "id,ticker,score,action",
+            "order":         "fired_at.asc",
+            "limit":         str(cap_remaining),
         },
         timeout=15,
     )
