@@ -65,20 +65,24 @@ def main() -> int:
     print(f"{'rule_key':<46} {'raw_n':>6} {'eff_n':>6} {'cur_tier':>11} {'new_tier':>11}")
     print("-" * 86)
     changed = demoted = 0
+    rank = {"child": 0, "teen": 1, "young_adult": 2, "adult": 3}
     for c in sorted(cal, key=lambda x: -(int(x.get("n_observations") or 0))):
         rk = c["rule_key"]; cur = c.get("tier") or "child"
         eff, new = effective_tier(rk)
         if new != cur:
             changed += 1
-            rank = {"child": 0, "teen": 1, "young_adult": 2, "adult": 3}
             if rank.get(new, 0) < rank.get(cur, 0):
                 demoted += 1
             print(f"{rk:<46} {int(c.get('n_observations') or 0):>6} "
                   f"{eff['effective_n']:>6} {cur:>11} {new:>11}")
-            if args.commit:
-                price_agent.recompute_rule_payoff(rk)
+        # On --commit, recompute EVERY rule (not just tier changes) so the
+        # effective_* stats are persisted for all rows — the gate already
+        # demoted tiers, but the dashboard + recompute_maturity_flags need the
+        # effective_* columns populated.
+        if args.commit:
+            price_agent.recompute_rule_payoff(rk)
     print("-" * 86)
-    print(f"tier changes: {changed} ({demoted} demotions)")
+    print(f"tier changes: {changed} ({demoted} demotions); recomputed all {len(cal)} on commit")
     if not args.commit:
         print("\nDRY-RUN — nothing written. Re-run with --commit.")
     return 0

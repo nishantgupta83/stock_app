@@ -39,13 +39,10 @@ TDD → implement → live-validate.
   **adult is now exactly {`8k_material_event::h30d`}**, young_adult/teen pseudo
   rules → child. No h1d cell is adult ⇒ no BUY/SELL on honest evidence (the
   correct "honest maturity path"). C1 counters intact (0 inflated after).
-- **⚠️ HANDOFF:** gating is already correct live (tiers demoted via inline
-  effective gating), but **`sql/0041` is NOT yet applied** — so `effective_*`
-  columns aren't persisted (the guarded write skips + logs PGRST204). Apply
-  `sql/0041` (`supabase db push` / dashboard SQL editor), then re-run
-  `scripts/recompute_effective_all.py --commit` to populate `effective_*` for the
-  dashboard + `recompute_maturity_flags`. Until then those readers no-op on
-  effective (safe — they read the already-correct stored `tier`).
+- **✅ HANDOFF RESOLVED:** `sql/0041` applied via `supabase db query` (out-of-band,
+  same pattern as 0031-0040; avoids the migration-history hazard). `effective_*`
+  populated for all 118 rules via `recompute_effective_all.py --commit`. Verified:
+  8k::h30d effective_n=450/PF=2.12 (adult); 8k::h7d eff_n=487/PF=1.34 (child).
 - Original detail (for reference):
 - **Why:** 61–93% of closed rows are duplicated `(ticker, entry-day)` pairs; one
   market move fans into 8+ "observations." Every n-based gate (maturity tiers,
