@@ -23,6 +23,8 @@ from datetime import date, datetime, timedelta, timezone
 import requests
 import yfinance as yf
 
+from _lanes import THESIS_MODEL_VERSION  # M8: lane-scope the signal reconcile
+
 try:
     from curl_cffi import requests as cffi_requests
     _CF_SESSION = cffi_requests.Session(impersonate="chrome")
@@ -110,12 +112,21 @@ def sb_upsert(path: str, rows: list[dict], on_conflict: str) -> bool:
 # ============================================================
 
 def fetch_mature_signals() -> list[dict]:
-    """Return live signals whose horizon_days have fully elapsed (entry+horizon <= yesterday)."""
+    """Return live signals whose horizon_days have fully elapsed (entry+horizon <= yesterday).
+
+    M8: lane-scoped to the thesis lane (THESIS_MODEL_VERSION). This reconcile
+    grades signals via daily price bars; without the filter it also pulled
+    foreign-lane rows (macro/consumer on the placeholder "MACRO" ticker,
+    intraday spikes) that have NO bars and can never be graded here — they stuck
+    in status_v2='sent' indefinitely (since 5/12) and price_agent churned on them
+    every run. Foreign lanes are graded by their own owners (or are placeholder-
+    only and never gradeable by price)."""
     rows = sb_get("stock_signals", {
-        "status_v2": "in.(candidate,sent,suppressed)",
-        "select":    "id,ticker,fired_at,action,direction,horizon_days,score,weight_at_time",
-        "order":     "fired_at.asc",
-        "limit":     "500",
+        "status_v2":     "in.(candidate,sent,suppressed)",
+        "model_version": f"eq.{THESIS_MODEL_VERSION}",
+        "select":        "id,ticker,fired_at,action,direction,horizon_days,score,weight_at_time",
+        "order":         "fired_at.asc",
+        "limit":         "500",
     })
     yesterday = datetime.now(timezone.utc).date() - timedelta(days=1)
     mature = []

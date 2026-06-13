@@ -177,7 +177,7 @@ TDD → implement → live-validate.
 | **M5** | realistic_loop mark non-atomic (mid-loop crash leaks cash); agent-path backfills untagged | recompute state from ledger each run; tag backfills | — |
 | **M6** | backtester partial-insert zips audit→wrong signals; flows 13F truncation fabricates events; market_scanner NULL prior_event_id dupes | per-chunk zip; paginate; NULLS NOT DISTINCT | — |
 | **M7** | egress 78% of budget; estimator model stale; CLAUDE.md rule #6 "all cancel-in-progress" false for 7 pinged; bootstrap file ≠ provisioned state | fix docs + estimator; reconcile bootstrap before re-running | careful: console-check cron-job.org first |
-| **M8** | 3 MACRO signals stuck `sent` since 5/12 (lane-unscoped fetch); dead dispatcher inventory; `_lanes.py` says 2 producers (really 9); count_open_signals lane-unscoped; pulse alerts have no consumer | scoping fixes; register lanes; route pulse criticals to Telegram | — |
+| **M8** ✅ CORE DONE | lane-unscoped signal reads caused churn + dashboard conflation | ✅ fetch_mature_signals + count_open_signals now lane-scoped to THESIS_MODEL_VERSION (TDD). ⬜ M8-2: close the stale stuck 'sent' signals (3 MACRO foreign-lane + INST_* in-lane, hygiene); dead telegram_dispatcher inventory entry; _lanes.py 'two producers'→9; route pulse criticals to Telegram | core done |
 
 ---
 

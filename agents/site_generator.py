@@ -325,9 +325,13 @@ def count_alerts_today_split() -> tuple[int, int]:
 
 
 def count_open_signals() -> int:
+    # M8: lane-scoped to the thesis lane — without model_version this counted
+    # candidate rows from ALL producers (9 lanes write stock_signals), so the
+    # dashboard's "open signals" conflated intraday/macro/consumer with thesis.
     rows = sb_get("stock_signals", {
-        "status_v2": "eq.candidate",
-        "select":    "id",
+        "status_v2":     "eq.candidate",
+        "model_version": f"eq.{THESIS_MODEL_VERSION}",
+        "select":        "id",
     })
     return len(rows)
 
