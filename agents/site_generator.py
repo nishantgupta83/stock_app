@@ -53,7 +53,7 @@ AGENT_INVENTORY: dict[str, dict] = {
     "truth_social":        {"job": "truth_social_agent",        "expected_minutes": 5},      # */5
     "thesis":              {"job": "thesis_agent",              "expected_minutes": 5},      # */5
     "earnings":            {"job": "earnings_agent",            "expected_minutes": 10080},  # weekly Sun
-    "price":               {"job": "price_agent",               "expected_minutes": 1440},   # weekday EOD
+    "price":               {"job": "price_agent",               "expected_minutes": 120},    # every 2h weekday (0 */2 * * 1-5) — H7/#8
     "paper_trade":         {"job": "paper_trade_agent",         "expected_minutes": 15},     # */15
     "backtester":          {"job": "backtester",                "expected_minutes": None},   # manual
     "source_review":       {"job": "source_review_agent",       "expected_minutes": 43200},  # monthly

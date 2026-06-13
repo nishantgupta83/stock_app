@@ -79,7 +79,14 @@ EXPECTED: list[AgentExpectation] = [
     AgentExpectation("crypto_macro_agent",    "daily 21:35 UTC weekdays", 28.0, True),
     AgentExpectation("macro_rates_agent",     "daily 13:00 UTC weekdays", 28.0, True),
     AgentExpectation("market_scanner_agent",  "daily 21:30 UTC weekdays", 28.0, True),
-    AgentExpectation("price_agent",           "daily 21:30 UTC weekdays", 28.0, True),
+    # H7: price_agent was bumped to every-2h weekday (0 */2 * * 1-5, CLAUDE.md #8)
+    # but the watchdog still said daily/28h — a multi-hour stall (the 513-class
+    # stuck-trade incident) could hide for a day+. 5h covers the 2h cadence + a
+    # skipped run + GHA best-effort; trading_only adds weekend slack.
+    AgentExpectation("price_agent",           "every 2h weekday (0 */2 * * 1-5)", 5.0, True),
+    # H7: learning_snapshot had NO watchdog and already failed silently once
+    # (5/30-6/08). Weekday daily at 22:00 UTC (records as workflow_learning_snapshot).
+    AgentExpectation("learning_snapshot",     "weekdays 22:00 UTC",    28.0, True),
 
     # ----- weekly -----
     AgentExpectation("archive_agent",         "Sun 03:00 UTC",         8 * 24.0, False),

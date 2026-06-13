@@ -142,7 +142,18 @@ TDD → implement → live-validate.
 - **Risk:** LOW (display/report only) but needs a coherent redesign, not a swap.
 - Also fold in: backfill's unpaginated `limit:5000` read.
 
-### H7 — watchdog / dashboard false-stale cluster
+### H7 — watchdog / dashboard false-stale cluster  ✅ H7-core DONE
+- **✅ H7-core DONE:** the DANGEROUS gaps (real stalls hiding) — price_agent
+  watchdog tightened 28h→5h to match its every-2h-weekday cron (a 513-class
+  stall hid for a day+); dashboard expected_minutes 1440→120 (rule #9 4th place);
+  learning_snapshot added to the orchestrator EXPECTED list (had NO coverage,
+  failed silently 5/30-6/08). Verified live (Sat, trading_only slack → no false fire).
+- **⬜ H7-2 OPEN (false-alarm NOISE, needs new logic, low-urgency):** orchestrator
+  flags intraday stale every trading morning (2h budget vs overnight session gap)
+  — needs US-RTH session-awareness (`_market_calendar` has no market-hours by
+  design); and site_generator self-flags on status=running (the stock_agent_freshness
+  view treats a fresh 'running' as stale). Neither is dangerous (false positives).
+- Original detail:
 - **Why:** orchestrator flags intraday stale every trading morning (2h budget vs
   overnight gap); `status=running` counts as stale so site_generator always flags
   itself (`site_generator.py:1150`); price_agent watchdogs never tightened after
