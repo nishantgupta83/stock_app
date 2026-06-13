@@ -42,6 +42,14 @@ FTP_PASS = os.environ.get("HOSTINGER_FTP_PASS", "")
 
 DRY_RUN = os.environ.get("DRY_RUN", "false").strip().lower() == "true"
 
+# Schema version of archive/index.json. Bumped to 2 after the C1 (2026-06-12)
+# ratchet repair: pre-2 indexes had a rule_calibration section inflated 1.5-2.5x
+# by DRY_RUN re-merging undeleted rows every run. An UNVERSIONED index has its
+# poisoned rule_calibration DROPPED on load (never carried forward / re-stamped),
+# and price_agent ignores any index whose schema_version != this. Keep in sync
+# with price_agent.ARCHIVE_INDEX_SCHEMA (pinned equal by test).
+ARCHIVE_INDEX_SCHEMA = 2
+
 HEADERS_SB = {
     "apikey":        SUPABASE_KEY,
     "Authorization": f"Bearer {SUPABASE_KEY}",
@@ -249,14 +257,27 @@ def ftp_download_bytes(remote_path: str) -> bytes | None:
 # archive/index.json management
 # ============================================================
 
+def sanitize_index(index: dict) -> dict:
+    """Drop a pre-schema (poisoned) rule_calibration section so it can't be
+    carried forward or re-blessed (C1). An unversioned index's counters were
+    inflated by the DRY_RUN ratchet; reset them to {} and stamp the version so
+    rule_calibration rebuilds cleanly only from real (live-mode) archival.
+    Versioned indexes pass through untouched."""
+    if index.get("schema_version") != ARCHIVE_INDEX_SCHEMA:
+        index["rule_calibration"] = {}
+        index["schema_version"] = ARCHIVE_INDEX_SCHEMA
+    return index
+
+
 def load_index() -> dict:
     raw = ftp_download_bytes("archive/index.json")
     if raw:
         try:
-            return json.loads(raw.decode())
+            return sanitize_index(json.loads(raw.decode()))
         except json.JSONDecodeError:
             pass
-    return {"last_updated": "", "weeks": [], "rule_calibration": {}}
+    return {"last_updated": "", "weeks": [], "rule_calibration": {},
+            "schema_version": ARCHIVE_INDEX_SCHEMA}
 
 
 def merge_calibration(index: dict, paper_trade_rows: list[dict]) -> None:
@@ -284,6 +305,7 @@ def merge_calibration(index: dict, paper_trade_rows: list[dict]) -> None:
 
 def save_index(index: dict, week_label: str, now_iso: str) -> None:
     index["last_updated"] = now_iso
+    index["schema_version"] = ARCHIVE_INDEX_SCHEMA
     if week_label not in index.get("weeks", []):
         index.setdefault("weeks", []).insert(0, week_label)
     ftp_upload_bytes("archive/index.json",
@@ -422,14 +444,19 @@ def main() -> int:
         if result.get("_rows"):
             paper_trade_rows.extend(result["_rows"])
 
-    # Update the Hostinger index JSON.
-    try:
-        index = load_index()
-        merge_calibration(index, paper_trade_rows)
-        save_index(index, week_label, now_iso)
-        print(f"archive/index.json updated — {len(index.get('rule_calibration', {}))} rules")
-    except Exception as e:
-        print(f"  index update failed (non-fatal): {e}", file=sys.stderr)
+    # Update the Hostinger index JSON — only in LIVE mode. In DRY_RUN the rows
+    # are NOT deleted, so merging them would re-count the same >90d rows every
+    # run (the C1 ratchet). DRY_RUN must not mutate the calibration index.
+    if DRY_RUN:
+        print("  DRY_RUN: skipping calibration index merge/save (no rows deleted)")
+    else:
+        try:
+            index = load_index()
+            merge_calibration(index, paper_trade_rows)
+            save_index(index, week_label, now_iso)
+            print(f"archive/index.json updated — {len(index.get('rule_calibration', {}))} rules")
+        except Exception as e:
+            print(f"  index update failed (non-fatal): {e}", file=sys.stderr)
 
     total_bytes = sum(tr["bytes"] for tr in table_results)
     if table_results:

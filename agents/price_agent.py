@@ -44,6 +44,12 @@ HEADERS_SB = {
 EMA_ALPHA = 0.1   # same as backtester — consistent learning rate across live + replay
 SLIPPAGE_BPS = 5  # same as backtester: 0.05% per side, no commissions
 ARCHIVE_INDEX_URL = "https://hub4apps.com/stock_app/archive/index.json"
+# Schema version of archive/index.json. The archive floor in
+# enrich_cal_from_archive is applied ONLY for an index stamped with the current
+# schema. Older UNVERSIONED indexes were corrupted by a DRY_RUN merge ratchet
+# (C1, 2026-06-12) — they must never be trusted. Keep in sync with
+# archive_agent.ARCHIVE_INDEX_SCHEMA (pinned equal by test).
+ARCHIVE_INDEX_SCHEMA = 2
 
 
 # ============================================================
@@ -582,7 +588,14 @@ def enrich_cal_from_archive(cal: dict, archive_index: dict) -> None:
     all history. This merge acts as a floor: if archive shows more observations
     than the active table (e.g. after an accidental calibration reset), the
     archived count becomes the new base before today's delta is applied.
+
+    SAFETY (C1, 2026-06-12): apply the floor ONLY for an index stamped with the
+    current schema_version. Pre-C1 indexes were inflated 1.5-2.5x by a DRY_RUN
+    merge ratchet; trusting them re-corrupts live n. An unversioned/old index is
+    ignored (no-op) — the active table is then the sole source of truth.
     """
+    if archive_index.get("schema_version") != ARCHIVE_INDEX_SCHEMA:
+        return
     for rule_key, arc in archive_index.get("rule_calibration", {}).items():
         arc_n = int(arc.get("n_observations") or 0)
         arc_c = int(arc.get("n_correct") or 0)

@@ -112,13 +112,17 @@ def needs_update(current: dict, desired: dict) -> dict | None:
             cur_val = "child"
         if cur_val != desired[key]:
             patch[key] = desired[key]
-    # Stamp matured_at when crossing False -> True for the first time.
+    # Stamp matured_at when crossing False -> True; CLEAR it on True -> False
+    # (demotion) so a tier that was falsely matured on corrupted n doesn't keep
+    # a stale maturation timestamp after C1's counter repair.
     now = datetime.now(timezone.utc).isoformat()
     for flag, stamp in (("is_mature", "matured_at"),
                         ("is_mature_70", "matured_70_at"),
                         ("is_mature_80", "matured_80_at")):
         if desired[flag] and not current.get(flag) and not current.get(stamp):
             patch[stamp] = now
+        elif not desired[flag] and current.get(stamp) is not None:
+            patch[stamp] = None     # demoted -> clear stale maturation timestamp
     return patch or None
 
 
