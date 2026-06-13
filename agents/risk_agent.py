@@ -359,6 +359,24 @@ def compute_portfolio_state() -> dict:
     return state
 
 
+def evaluate_batch(setups: list[dict], cal: dict[str, dict], state: dict) -> list[dict]:
+    """Evaluate setups in order, ACCUMULATING each sized trade's risk into the
+    daily-budget in-flight (H8). Without this the budget was computed once and
+    reused, so N individually-sub-cap sizes in one run could collectively exceed
+    MAX_DAILY_RISK_PCT. First-come-first-served by setup order; once the running
+    in-flight reaches the cap, the remaining setups skip on `daily_risk_budget`.
+    Mutates state["daily_risk_in_flight_pct"] as it goes."""
+    decisions: list[dict] = []
+    for s in setups:
+        d = evaluate_setup(s, cal, state)
+        decisions.append(d)
+        if d.get("decision") == "size":
+            state["daily_risk_in_flight_pct"] = (
+                float(state.get("daily_risk_in_flight_pct") or 0)
+                + (float(d.get("max_loss_dollars") or 0) / PORTFOLIO_NAV_BASELINE))
+    return decisions
+
+
 def evaluate_setup(setup: dict, cal: dict[str, dict], state: dict) -> dict:
     """Apply hardcoded rules in order; return a stock_risk_decisions row dict.
 
@@ -392,17 +410,24 @@ def evaluate_setup(setup: dict, cal: dict[str, dict], state: dict) -> dict:
         return _skip_decision(setup, f"drawdown circuit breaker (30d max DD {dd:.4f} ≤ {-MAX_DRAWDOWN_PCT})",
                               rules_applied, state)
 
-    # 4. Daily risk budget
+    # 4. Daily risk budget — PROSPECTIVE: would adding THIS trade's risk exceed
+    # the cap? (Was `in_flight < cap`, which let one trade overshoot, e.g.
+    # 2.5% + 1% = 3.5%. H8.) The candidate risk == NAV × RISK_PER_TRADE_PCT ×
+    # maturity multiplier by construction, so it's known here.
+    rule_key = setup.get("rule_key") or ""
+    tier = maturity_tier(cal.get(rule_key))
+    mult = MATURITY_MULTIPLIER[tier]
     in_flight = float(state.get("daily_risk_in_flight_pct") or 0)
+    candidate_risk_pct = RISK_PER_TRADE_PCT * mult
     if not rule("daily_risk_budget",
-                in_flight < MAX_DAILY_RISK_PCT,
-                f"in_flight_pct={in_flight:.4f} vs cap={MAX_DAILY_RISK_PCT}"):
+                in_flight + candidate_risk_pct <= MAX_DAILY_RISK_PCT,
+                f"in_flight={in_flight:.4f} + candidate={candidate_risk_pct:.4f} vs cap={MAX_DAILY_RISK_PCT}"):
         return _skip_decision(setup,
-                              f"daily risk budget exhausted ({in_flight*100:.2f}% in flight ≥ {MAX_DAILY_RISK_PCT*100:.1f}%)",
+                              f"daily risk budget would exceed cap (in_flight {in_flight*100:.2f}% + "
+                              f"trade {candidate_risk_pct*100:.2f}% > {MAX_DAILY_RISK_PCT*100:.1f}%)",
                               rules_applied, state)
 
     # 5. Sector / rule concentration
-    rule_key = setup.get("rule_key") or ""
     open_count = int(state.get("open_per_rule", {}).get(rule_key, 0))
     if not rule("rule_concentration",
                 open_count < MAX_SAME_RULE_OPEN,
@@ -420,9 +445,7 @@ def evaluate_setup(setup: dict, cal: dict[str, dict], state: dict) -> dict:
                               f"stop_pct {stop_pct} outside sanity band",
                               rules_applied, state)
 
-    # All gates passed — size the position.
-    tier = maturity_tier(cal.get(rule_key))
-    mult = MATURITY_MULTIPLIER[tier]
+    # All gates passed — size the position (tier/mult computed at rule 4).
     rule("maturity_weight", True, f"tier={tier} → multiplier={mult}")
 
     risk_dollars = PORTFOLIO_NAV_BASELINE * RISK_PER_TRADE_PCT * mult
@@ -437,7 +460,9 @@ def evaluate_setup(setup: dict, cal: dict[str, dict], state: dict) -> dict:
         "max_loss_dollars":     round(risk_dollars, 2),
         "reason":               f"sized at {size_pct*100:.2f}% NAV with {tier} multiplier {mult}x",
         "rules_applied":        rules_applied,
-        "portfolio_state":      state,
+        # snapshot (shallow copy) so the audit row reflects state AT decision
+        # time — evaluate_batch mutates in_flight after this returns (H8).
+        "portfolio_state":      dict(state),
     }
 
 
@@ -451,7 +476,7 @@ def _skip_decision(setup: dict, reason: str, rules_applied: list[dict],
         "max_loss_dollars":     None,
         "reason":               reason,
         "rules_applied":        rules_applied,
-        "portfolio_state":      state,
+        "portfolio_state":      dict(state),   # snapshot at decision time (H8)
     }
 
 
@@ -513,7 +538,7 @@ def main() -> int:
               f"in_flight_pct={state['daily_risk_in_flight_pct']:.4f} "
               f"open_rules={len(state['open_per_rule'])}")
 
-        decisions = [evaluate_setup(s, cal, state) for s in setups]
+        decisions = evaluate_batch(setups, cal, state)
         sized = [d for d in decisions if d["decision"] == "size"]
         skipped = [d for d in decisions if d["decision"] == "skip"]
         print(f"  sized:   {len(sized)}")

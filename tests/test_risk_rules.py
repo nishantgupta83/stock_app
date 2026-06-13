@@ -110,9 +110,11 @@ def test_daily_budget_exhausted_skips():
 
 
 def test_daily_budget_under_cap_passes():
+    # H8: the check is now PROSPECTIVE (in_flight + this trade's risk <= cap), so
+    # "under cap" means there's room for the trade — 1% in flight leaves room.
     setup = _setup()
     decision = evaluate_setup(setup, cal={},
-                              state=_state(daily_risk_in_flight_pct=MAX_DAILY_RISK_PCT - 0.001))
+                              state=_state(daily_risk_in_flight_pct=0.01))
     assert decision["decision"] == "size"
 
 
