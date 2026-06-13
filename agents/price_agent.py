@@ -499,7 +499,7 @@ from _maturity import (  # noqa: E402
     MATURITY_ACCURACY, MATURITY_MIN_N, TIER_GATE_TEEN_ACC, TIER_GATE_YOUNG_ACC,
     TIER_GATE_ADULT_ACC, TIER_GATE_TEEN_MR, TIER_GATE_YOUNG_PF, TIER_GATE_ADULT_PF,
     ADULT_MIN_N, ADULT_MIN_PF, ADULT_MIN_MEAN, HIGH_CONV_MIN_N, HIGH_CONV_MIN_ACC,
-    HIGH_CONV_MIN_PF, HIGH_CONV_MIN_MEAN, derive_maturity_flags,
+    HIGH_CONV_MIN_PF, HIGH_CONV_MIN_MEAN, derive_maturity_flags, collapse_to_effective,
 )
 
 # Adult-tier redefinition (2026-06-04 after codex external review):
@@ -1007,7 +1007,7 @@ def recompute_rule_payoff(rule_key: str) -> dict:
         batch = sb_get("stock_event_paper_trades", {
             "rule_key": f"eq.{rule_key}",
             "status":   "eq.closed",
-            "select":   "realized_return,correct,mfe_pct,mae_pct,target_hit,stop_hit",
+            "select":   "ticker,entry_at,realized_return,correct,mfe_pct,mae_pct,target_hit,stop_hit",
             "order":    "id.asc",
             "offset":   str(offset),
             "limit":    str(page),
@@ -1079,7 +1079,14 @@ def recompute_rule_payoff(rule_key: str) -> dict:
             "mean_mae_pct":      round(mean_mae, 6) if mean_mae is not None else None,
         })
 
-    flags = derive_maturity_flags(n_mat, profit_factor, mean_realized, accuracy)
+    # H1: gate maturity on EFFECTIVE evidence — collapse the closed population to
+    # one observation per (ticker, entry-day) cluster (cluster return = mean of
+    # its trades). Raw n over-counts 2-4x (one market move fanned into many
+    # trades), so the BUY/SELL gate must run on independent ticker-days, not raw
+    # trade count. Raw payoff aggregates above stay for display/confidence.
+    eff = collapse_to_effective(outcome_rows)
+    flags = derive_maturity_flags(eff["effective_n"], eff["effective_profit_factor"],
+                                  eff["effective_mean_realized_pct"], eff["effective_accuracy"])
 
     prev_rows = sb_get("stock_rule_calibration", {
         "rule_key": f"eq.{rule_key}",
@@ -1099,15 +1106,17 @@ def recompute_rule_payoff(rule_key: str) -> dict:
             return None             # demoted → clear stale maturation timestamp
         return prev_stamp
 
+    eff_pf = eff["effective_profit_factor"]
     if just_matured_90:
-        print(f"  🎓 rule '{rule_key}' matured to ADULT: n={n_mat}≥{ADULT_MIN_N}, "
-              f"PF={profit_factor:.2f}≥{ADULT_MIN_PF}, mean={mean_realized:.4f}≥{ADULT_MIN_MEAN} "
-              f"— BUY/SELL unlocked")
+        print(f"  🎓 rule '{rule_key}' matured to ADULT: eff_n={eff['effective_n']}≥{ADULT_MIN_N} "
+              f"(raw {n_mat}), PF={eff_pf:.2f}≥{ADULT_MIN_PF}, "
+              f"mean={eff['effective_mean_realized_pct']:.4f}≥{ADULT_MIN_MEAN} — BUY/SELL unlocked")
     elif just_matured_80:
-        print(f"  📈 rule '{rule_key}' promoted to YOUNG_ADULT (fresh PF={profit_factor:.2f})")
+        print(f"  📈 rule '{rule_key}' promoted to YOUNG_ADULT (eff_n={eff['effective_n']}, "
+              f"eff_PF={eff_pf:.2f})")
 
-    # Authoritative maturity flags (fresh PF) — always written; aggregates added
-    # above only when n>=5.
+    # Authoritative maturity flags (gated on EFFECTIVE-n) — always written;
+    # raw payoff aggregates added above only when n>=5.
     payload.update({
         "is_mature":                  flags["is_mature"],
         "is_mature_70":               flags["is_mature_70"],
@@ -1119,7 +1128,32 @@ def recompute_rule_payoff(rule_key: str) -> dict:
         "last_payoff_recomputed_at":  now_iso,
     })
     sb_upsert("stock_rule_calibration", [payload], on_conflict="rule_key")
+
+    # Persist the effective-* stats in a GUARDED second write so the gate above
+    # stays correct even before sql/0041 is applied (the columns may not exist
+    # yet). Readers (recompute_maturity_flags, risk tier fallback, dashboard)
+    # consume these. Failure here is logged, never fatal.
+    _persist_effective_stats(rule_key, eff)
     return {"just_matured_80": just_matured_80, "just_matured_90": just_matured_90}
+
+
+def _persist_effective_stats(rule_key: str, eff: dict) -> None:
+    """Write H1 effective-* columns; tolerate their absence pre-migration."""
+    try:
+        ok = sb_upsert("stock_rule_calibration", [{
+            "rule_key":                    rule_key,
+            "effective_n":                 eff["effective_n"],
+            "effective_n_correct":         eff["effective_n_correct"],
+            "effective_accuracy":          round(eff["effective_accuracy"], 6),
+            "effective_mean_realized_pct": round(eff["effective_mean_realized_pct"], 6),
+            "effective_profit_factor":     (round(eff["effective_profit_factor"], 4)
+                                            if eff["effective_profit_factor"] is not None else None),
+        }], on_conflict="rule_key")
+        if not ok:
+            print(f"  effective-stats write skipped for {rule_key} "
+                  f"(sql/0041 applied?)", file=sys.stderr)
+    except Exception as e:  # noqa: BLE001
+        print(f"  effective-stats write error for {rule_key}: {e}", file=sys.stderr)
 
 
 def compute_brier_30d(rule_accuracy: float, outcomes: list[bool]) -> float | None:

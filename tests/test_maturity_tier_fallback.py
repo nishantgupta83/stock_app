@@ -1,9 +1,13 @@
-"""M1 — risk_agent.maturity_tier fallback must match the CANONICAL adult gate
-(price_agent ADULT_MIN_N/PF/MEAN), not the old acc≥0.90/n≥30/PF>1.5 copy.
+"""risk_agent.maturity_tier — stored-tier contract (H1).
 
-The fallback fires only when a calibration row lacks a stored `tier`. Pre-fix it
-would have sized a high-accuracy / low-n / negative-expectancy rule as adult —
-exactly the payoff-blind mistake the canonical gate was redefined to prevent.
+The stored `tier` column is now gated on EFFECTIVE-n by
+price_agent.recompute_rule_payoff (independent ticker-days, not raw trade
+count). maturity_tier therefore TRUSTS the stored tier and, when it is absent,
+FAILS TO CHILD — it must NOT recompute a tier from raw n_observations (which
+over-counts pseudo-replication 2-4x and would size a rule with no independent
+evidence). This pins that contract so a future edit can't reintroduce a raw-n
+fallback (the M1 fix had already corrected the gate values; H1 removes the
+raw-n path entirely).
 """
 from __future__ import annotations
 
@@ -12,40 +16,35 @@ import price_agent
 
 
 def _cal(**kw):
-    base = {"tier": None}  # force the fallback live-computation path
+    base = {"tier": None}  # no stored tier → fallback path
     base.update(kw)
     return base
 
 
-def test_fallback_adult_requires_canonical_n_and_payoff():
-    # Old gate (acc≥0.90, n≥30, PF>1.5) would call this adult; canonical (n≥100)
-    # must NOT — n is only 50.
-    assert maturity_tier(_cal(accuracy=0.95, n_observations=50,
-                              profit_factor=9.0, mean_realized_pct=0.10)) != "adult"
+def test_null_tier_fails_to_child_even_with_strong_raw_stats():
+    # Raw n=120/PF=2.5/positive mean would look adult on RAW stats, but raw n is
+    # pseudo-replicated — with no stored (effective-gated) tier, fail to child.
+    assert maturity_tier(_cal(accuracy=0.9, n_observations=120,
+                              profit_factor=2.5, mean_realized_pct=0.01)) == "child"
 
 
-def test_fallback_adult_has_no_accuracy_floor():
-    # Payoff-first: high n + PF + positive expectancy = adult even at low acc.
-    assert maturity_tier(_cal(accuracy=0.0, n_observations=120,
-                              profit_factor=2.5, mean_realized_pct=0.01)) == "adult"
+def test_null_tier_with_no_stats_is_child():
+    assert maturity_tier(_cal()) == "child"
+    assert maturity_tier(None) == "child"
 
 
-def test_fallback_adult_rejects_negative_expectancy():
-    # High acc + high PF but NEGATIVE mean realized → not adult (the exact
-    # acc-only trap the canonical gate closes).
-    assert maturity_tier(_cal(accuracy=0.91, n_observations=200,
-                              profit_factor=9.3, mean_realized_pct=-0.0012)) != "adult"
+def test_stored_tier_is_authoritative():
+    # price_agent writes the tier (gated on effective-n) — use it verbatim.
+    assert maturity_tier({"tier": "adult"}) == "adult"
+    assert maturity_tier({"tier": "young_adult"}) == "young_adult"
+    assert maturity_tier({"tier": "teen"}) == "teen"
+    # A stored 'child' wins even over (raw) stats that look mature.
+    assert maturity_tier({"tier": "child", "n_observations": 999,
+                          "profit_factor": 9, "mean_realized_pct": 1}) == "child"
 
 
-def test_fallback_boundary_matches_price_agent_constants():
-    # Pin the fallback's numbers to the canonical source so they can't drift.
+def test_canonical_adult_constants_unchanged():
+    # The canonical gate values still live in the shared source.
     assert price_agent.ADULT_MIN_N == 100
     assert price_agent.ADULT_MIN_PF == 2.0
     assert price_agent.ADULT_MIN_MEAN == 0.005
-
-
-def test_stored_tier_is_preferred_over_fallback():
-    # When price_agent has written a tier, use it verbatim (fallback is only a net).
-    assert maturity_tier({"tier": "adult"}) == "adult"
-    assert maturity_tier({"tier": "child", "n_observations": 999,
-                          "profit_factor": 9, "mean_realized_pct": 1}) == "child"

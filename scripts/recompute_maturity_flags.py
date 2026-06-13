@@ -49,6 +49,7 @@ def fetch_all_rules() -> list[dict]:
     while True:
         params = {
             "select": "rule_key,n_observations,accuracy,profit_factor,mean_realized_pct,"
+                      "effective_n,effective_accuracy,effective_mean_realized_pct,effective_profit_factor,"
                       "is_mature,is_mature_70,is_mature_80,matured_at,matured_70_at,matured_80_at,tier",
             "limit":  str(page),
             "offset": str(offset),
@@ -71,13 +72,24 @@ def fetch_all_rules() -> list[dict]:
 
 
 def evaluate(r: dict) -> dict:
-    """Apply the shared _maturity gate; return desired flag values + tier."""
-    pf = r.get("profit_factor")
+    """Apply the shared _maturity gate on EFFECTIVE-n (H1).
+
+    Gates on the stored effective_* columns (independent ticker-days), NOT raw
+    n_observations — gating on raw n would re-promote the pseudo-replicated rules
+    price_agent.recompute_rule_payoff just demoted. If effective_n is absent (row
+    not yet reconciled post-sql/0041), return the CURRENT flags so this script is
+    a no-op for that row — it must never gate on raw n.
+    """
+    eff_n = r.get("effective_n")
+    if eff_n is None:
+        return {"is_mature": bool(r.get("is_mature")), "is_mature_70": bool(r.get("is_mature_70")),
+                "is_mature_80": bool(r.get("is_mature_80")), "tier": r.get("tier") or "child"}
+    pf = r.get("effective_profit_factor")
     f = derive_maturity_flags(
-        n=int(r.get("n_observations") or 0),
+        n=int(eff_n),
         pf=float(pf) if pf is not None else None,
-        mean=float(r.get("mean_realized_pct") or 0),
-        accuracy=float(r.get("accuracy") or 0),
+        mean=float(r.get("effective_mean_realized_pct") or 0),
+        accuracy=float(r.get("effective_accuracy") or 0),
     )
     return {"is_mature": f["is_mature"], "is_mature_70": f["is_mature_70"],
             "is_mature_80": f["is_mature_80"], "tier": f["tier"]}

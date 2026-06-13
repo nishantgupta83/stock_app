@@ -207,19 +207,12 @@ def maturity_tier(rule_cal: dict | None) -> str:
     stored = rule_cal.get("tier")
     if stored in ("adult", "young_adult", "teen", "child"):
         return stored
-    acc = float(rule_cal.get("accuracy") or 0)
-    n = int(rule_cal.get("n_observations") or 0)
-    pf_raw = rule_cal.get("profit_factor")
-    mr_raw = rule_cal.get("mean_realized_pct")
-    pf = float(pf_raw) if pf_raw is not None else None
-    mr = float(mr_raw) if mr_raw is not None else None
-    # adult: canonical payoff-first gate (price_agent ADULT_MIN_N/PF/MEAN), no acc floor
-    if n >= 100 and pf is not None and pf >= 2.0 and mr is not None and mr >= 0.005:
-        return "adult"
-    if n >= 30 and acc >= 0.80 and pf is not None and pf > 1.2:
-        return "young_adult"
-    if n >= 30 and acc >= 0.70 and mr is not None and mr > 0:
-        return "teen"
+    # H1: the stored `tier` is now gated on EFFECTIVE-n by price_agent.recompute_
+    # rule_payoff (independent ticker-days, not raw trade count). A NULL tier
+    # means the rule has not been reconciled yet — it has no effective evidence,
+    # so FAIL TO CHILD rather than recomputing on raw n_observations (which
+    # over-counts 2-4x and would size a pseudo-replicated rule). The old raw-n
+    # fallback here was the 4th divergent gate copy.
     return "child"
 
 

@@ -167,10 +167,10 @@ def test_immature_rule_gets_immature_multiplier():
 
 def test_production_mature_rule_gets_full_multiplier():
     setup = _setup(rule_key="mature:foo:h7d")
-    # adult tier = CANONICAL payoff-first gate: n≥100 AND PF≥2.0 AND
-    # mean_realized_pct≥0.5% (NO accuracy floor). Supply all three.
-    cal = {"mature:foo:h7d": {"n_observations": 120, "profit_factor": 2.5,
-                              "mean_realized_pct": 0.01}}
+    # H1: risk reads the STORED tier (gated on effective-n by price_agent), not
+    # raw stats — so supply tier='adult'. (Raw stats kept for realism.)
+    cal = {"mature:foo:h7d": {"tier": "adult", "n_observations": 120,
+                              "profit_factor": 2.5, "mean_realized_pct": 0.01}}
     decision = evaluate_setup(setup, cal=cal, state=_state())
     expected_risk = PORTFOLIO_NAV_BASELINE * RISK_PER_TRADE_PCT * MATURITY_MULTIPLIER["adult"]
     assert decision["max_loss_dollars"] == pytest.approx(expected_risk, abs=0.01)
@@ -178,10 +178,9 @@ def test_production_mature_rule_gets_full_multiplier():
 
 def test_training_tier_gets_half_multiplier():
     setup = _setup(rule_key="training:foo:h7d")
-    # teen tier: n≥30 AND acc≥0.70 AND mean_realized_pct>0 (no PF requirement,
-    # but a positive realized return is required). 0.50× multiplier.
-    cal = {"training:foo:h7d": {"accuracy": 0.75, "n_observations": 32,
-                                "mean_realized_pct": 0.01}}
+    # H1: risk reads the STORED tier — supply tier='teen'. 0.50× multiplier.
+    cal = {"training:foo:h7d": {"tier": "teen", "accuracy": 0.75,
+                                "n_observations": 32, "mean_realized_pct": 0.01}}
     decision = evaluate_setup(setup, cal=cal, state=_state())
     expected_risk = PORTFOLIO_NAV_BASELINE * RISK_PER_TRADE_PCT * MATURITY_MULTIPLIER["teen"]
     assert decision["max_loss_dollars"] == pytest.approx(expected_risk, abs=0.01)

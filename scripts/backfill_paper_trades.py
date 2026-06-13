@@ -45,7 +45,7 @@ import requests
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "agents"))
 import _rule_key  # type: ignore
-from _maturity import derive_maturity_flags  # type: ignore  # single maturity gate
+from _maturity import derive_maturity_flags, collapse_to_effective  # type: ignore
 from price_agent import (  # type: ignore  # reuse the live outcome computation
     fetch_bars,
     compute_paper_outcome,
@@ -291,7 +291,7 @@ def recompute_calibration(rule_keys: set[str]) -> int:
             params={
                 "rule_key": f"eq.{rk}",
                 "status":   "eq.closed",
-                "select":   "realized_return,correct,mfe_pct,mae_pct,target_hit,stop_hit",
+                "select":   "ticker,entry_at,realized_return,correct,mfe_pct,mae_pct,target_hit,stop_hit",
                 "limit":    "5000",
             },
             timeout=30,
@@ -316,11 +316,12 @@ def recompute_calibration(rule_keys: set[str]) -> int:
         stop_hit_rate   = sum(1 for x in rows if x.get("stop_hit")) / n
         profit_factor = (sum(wins) / abs(sum(losses))) if sum(losses) < 0 else None
 
-        # v1 tier gates via the shared _maturity gate (single source of truth —
-        # the inline copy here had DRIFTED to the old acc-extreme adult gate
-        # acc≥0.90 & PF>1.5, which would mark payoff-negative rules adult).
-        # Backfill computes profit_factor on this same pass so there's no PF-lag.
-        _flags = derive_maturity_flags(n, profit_factor, mean, accuracy)
+        # H1: gate on EFFECTIVE-n (distinct ticker-day clusters), not raw n —
+        # raw n over-counts pseudo-replication 2-4x. Shared collapse + gate so
+        # backfill cannot re-promote a rule the live path demoted.
+        eff = collapse_to_effective(rows)
+        _flags = derive_maturity_flags(eff["effective_n"], eff["effective_profit_factor"],
+                                       eff["effective_mean_realized_pct"], eff["effective_accuracy"])
         is_mature    = _flags["is_mature"]
         is_mature_70 = _flags["is_mature_70"]
         is_mature_80 = _flags["is_mature_80"]
@@ -367,6 +368,13 @@ def recompute_calibration(rule_keys: set[str]) -> int:
             "stop_hit_rate":      round(stop_hit_rate, 4),
             "mean_mfe_pct":       round(sum(mfe_vals)/len(mfe_vals), 6) if mfe_vals else None,
             "mean_mae_pct":       round(sum(mae_vals)/len(mae_vals), 6) if mae_vals else None,
+            # H1 effective-n stats (the gate inputs) — persisted for readers.
+            "effective_n":                 eff["effective_n"],
+            "effective_n_correct":         eff["effective_n_correct"],
+            "effective_accuracy":          round(eff["effective_accuracy"], 6),
+            "effective_mean_realized_pct": round(eff["effective_mean_realized_pct"], 6),
+            "effective_profit_factor":     (round(eff["effective_profit_factor"], 4)
+                                            if eff["effective_profit_factor"] is not None else None),
             "last_updated":             now_iso,
             "last_payoff_recomputed_at": now_iso,
         }
