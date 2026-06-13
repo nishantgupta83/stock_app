@@ -9,8 +9,8 @@ TDD → implement → live-validate.
 
 ## Recommended order
 
-1. **H1** — effective-n gating *(highest payoff; design-heavy)*
-2. **H2** — after-hours entry anchor *(calibration correctness)*
+1. ~~**H1** — effective-n gating~~ ✅ **DONE `aa4bd8b`** (see below)
+2. **H2** — after-hours entry anchor *(calibration correctness)* ← NEXT
 3. **H8** — daily-risk budget batch reuse *(risk correctness; small)*
 4. **H5** — `retry_dispatch_failed` lane-scope *(smallest; 1-line + test)*
 5. **H4b** — payoff-first maturity *display* redesign *(dashboard/report honesty)*
@@ -29,7 +29,24 @@ TDD → implement → live-validate.
 
 ## HIGH
 
-### H1 — effective-n: calibration n is not independent evidence
+### H1 — effective-n: calibration n is not independent evidence ✅ DONE `aa4bd8b`
+- **Shipped:** `_maturity.collapse_to_effective` (one obs per (ticker,entry-day)
+  cluster; cluster return = mean; correct = mean>0; PF on cluster means).
+  `recompute_rule_payoff` + `recompute_maturity_flags` + `backfill` gate on
+  effective; `risk_agent.maturity_tier` NULL-fallback fails-to-child. sql/0041
+  adds `effective_*` columns; `scripts/recompute_effective_all.py` bulk-applied.
+- **Live result:** pseudo-replication inflated PF ~30-50%. 8 demotions —
+  **adult is now exactly {`8k_material_event::h30d`}**, young_adult/teen pseudo
+  rules → child. No h1d cell is adult ⇒ no BUY/SELL on honest evidence (the
+  correct "honest maturity path"). C1 counters intact (0 inflated after).
+- **⚠️ HANDOFF:** gating is already correct live (tiers demoted via inline
+  effective gating), but **`sql/0041` is NOT yet applied** — so `effective_*`
+  columns aren't persisted (the guarded write skips + logs PGRST204). Apply
+  `sql/0041` (`supabase db push` / dashboard SQL editor), then re-run
+  `scripts/recompute_effective_all.py --commit` to populate `effective_*` for the
+  dashboard + `recompute_maturity_flags`. Until then those readers no-op on
+  effective (safe — they read the already-correct stored `tier`).
+- Original detail (for reference):
 - **Why:** 61–93% of closed rows are duplicated `(ticker, entry-day)` pairs; one
   market move fans into 8+ "observations." Every n-based gate (maturity tiers,
   metalabel min-n, confidence) over-counts. This inflates the PF/DD figures H6
