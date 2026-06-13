@@ -265,6 +265,41 @@ def compute_equity_curve_drawdown(closed_trades: list[dict],
     }
 
 
+def _paginate(table: str, params: dict, *, page: int = 1000, cap: int = 50_000) -> list[dict]:
+    """Fetch ALL rows matching params, paging past PostgREST's silent 2000-row
+    single-page cap (H6 — the drawdown breaker + concentration cap were reading
+    the oldest ~2000 of 8k+ rows). Params MUST carry a stable 'order' and select
+    'id' so paging is deterministic and cross-page race-dupes collapse. Hard cap
+    guards runaway pagination. Only called on productive runs (after the empty-
+    setup early-returns), so the egress is bounded to runs that actually size."""
+    out: list[dict] = []
+    seen: set = set()
+    offset = 0
+    while True:
+        rows = sb_get(table, {**params, "limit": str(page), "offset": str(offset)})
+        if not rows:
+            break
+        for r in rows:
+            rid = r.get("id")
+            if rid is not None and rid in seen:
+                continue
+            if rid is not None:
+                seen.add(rid)
+            out.append(r)
+        if len(rows) < page:
+            break
+        offset += page
+        if offset >= cap:
+            # Fail CLOSED, loudly: silently returning a partial population would
+            # recreate the exact truncation bug H6 fixes, but for a risk breaker.
+            # main()'s except records status='failed' (Codex). cap is generous
+            # (50k vs ~8k live) so this only fires on a genuine anomaly.
+            raise RuntimeError(
+                f"_paginate({table}) hit {cap}-row cap — refusing to compute a "
+                f"risk breaker on a truncated population")
+    return out
+
+
 def compute_portfolio_state() -> dict:
     """Snapshot of risk-budget state used for sizing decisions.
 
@@ -287,12 +322,15 @@ def compute_portfolio_state() -> dict:
     # Equity-curve max drawdown over the last 30 days of closed trades.
     # Sorted ascending by exit_at so the curve is built in chronological order.
     cutoff_30 = (datetime.now(timezone.utc) - timedelta(days=30)).isoformat()
-    closed = sb_get("stock_event_paper_trades", {
+    # H6: paginate the FULL 30d window. exit_at is day-granular for event paper
+    # trades, so id.asc is the deterministic intra-day tiebreaker; the equity
+    # curve is order-sensitive, so a stable full read is required (the old
+    # exit_at.asc+cap silently read the OLDEST 2000, missing recent days).
+    closed = _paginate("stock_event_paper_trades", {
         "status":  "eq.closed",
         "exit_at": f"gte.{cutoff_30}",
-        "select":  "realized_return,exit_at",
-        "order":   "exit_at.asc",
-        "limit":   "5000",
+        "select":  "id,realized_return,exit_at",
+        "order":   "exit_at.asc,id.asc",
     })
     if closed:
         dd = compute_equity_curve_drawdown(closed)
@@ -310,11 +348,13 @@ def compute_portfolio_state() -> dict:
     in_flight = sum(float(d.get("max_loss_dollars") or 0) for d in today_decisions)
     state["daily_risk_in_flight_pct"] = round(in_flight / PORTFOLIO_NAV_BASELINE, 6)
 
-    # Open-per-rule concentration (using open paper trades as a proxy).
-    open_trades = sb_get("stock_event_paper_trades", {
+    # Open-per-rule concentration (using open paper trades as a proxy). H6:
+    # paginate the FULL open population (was capped at 2000 of 7k+, so the
+    # concentration cap saw ~28%).
+    open_trades = _paginate("stock_event_paper_trades", {
         "status": "eq.open",
-        "select": "rule_key",
-        "limit":  "2000",
+        "select": "id,rule_key",
+        "order":  "id.asc",
     })
     open_per_rule: dict[str, int] = {}
     for t in open_trades:
