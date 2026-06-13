@@ -100,6 +100,56 @@ def sb_patch(path: str, params: dict[str, str], body: dict) -> Any:
 # State
 # ---------------------------------------------------------------------------
 
+def recompute_state(positions: list[dict], capital_base: float) -> dict:
+    """Derive the loop state from the positions LEDGER (the source of truth) —
+    M5. The prior code mutated state incrementally (close positions in a loop,
+    then aggregate cash/pnl at the end); a crash mid-loop persisted the closes
+    but lost their cash/pnl forever. Recomputing is idempotent + crash-safe.
+
+    cash_available = capital_base - Σ(open notional)  (closed notional is freed;
+    capital_base is static, PnL tracked separately — sql/0033 semantics).
+    HWM / max_drawdown replay the closed-position equity path in close order.
+    """
+    open_notional = 0.0
+    n_open = 0
+    closed = []
+    for p in positions:
+        if p.get("status") == "open":
+            n_open += 1
+            open_notional += float(p.get("notional") or 0)
+        elif p.get("status") == "closed":
+            closed.append(p)
+    closed.sort(key=lambda p: (p.get("closed_at") or ""))
+    equity = hwm = maxdd = 0.0
+    for p in closed:
+        equity += float(p.get("realized_pnl") or 0)
+        hwm = max(hwm, equity)
+        maxdd = max(maxdd, hwm - equity)
+    return {
+        "cash_available":  round(capital_base - open_notional, 2),
+        "positions_open":  n_open,
+        "cumulative_pnl":  round(equity, 4),
+        "high_water_mark": round(hwm, 4),
+        "max_drawdown":    round(maxdd, 4),
+    }
+
+
+def fetch_all_positions() -> list[dict]:
+    """All positions for this loop (open + closed) — the ledger for recompute_state."""
+    rows, off = [], 0
+    while True:
+        batch = sb_get("stock_realistic_loop_positions", {
+            "loop_name": f"eq.{LOOP_NAME}",
+            "select":    "status,notional,realized_pnl,closed_at",
+            "order":     "id.asc",
+            "offset":    str(off), "limit": "1000",
+        })
+        rows += batch
+        if len(batch) < 1000:
+            return rows
+        off += 1000
+
+
 def get_state() -> dict:
     rows = sb_get(
         "stock_realistic_loop_state",
@@ -183,12 +233,16 @@ def fetch_candidate_setups(since: str | None) -> list[dict]:
 
 def open_positions(now: datetime) -> int:
     state = get_state()
-    capacity = state["max_concurrent"] - state["positions_open"]
+    # M5: gate capacity/cash on LEDGER-derived counts, not the persisted state —
+    # a prior open that inserted positions then crashed before its state update
+    # would leave stale (too-high) cash/capacity and admit too many positions.
+    derived = recompute_state(fetch_all_positions(), float(state["capital_base"]))
+    capacity = state["max_concurrent"] - derived["positions_open"]
     per_size = float(state["per_position_size"])
-    cash = float(state["cash_available"])
+    cash = derived["cash_available"]
 
     if capacity <= 0:
-        print(f"[open] at max concurrency ({state['positions_open']}/{state['max_concurrent']}); skipping")
+        print(f"[open] at max concurrency ({derived['positions_open']}/{state['max_concurrent']}); skipping")
         return 0
     if cash < per_size:
         print(f"[open] cash ${cash:.2f} < per-position ${per_size:.2f}; skipping")
@@ -278,13 +332,10 @@ def open_positions(now: datetime) -> int:
               f"target={target_price} stop={stop_price} horizon={horizon}d")
 
     if opened:
-        new_state = get_state()  # re-read in case of concurrent updates
-        update_state({
-            "cash_available":    round(float(new_state["cash_available"]) - sum(
-                                    1 for _ in range(opened)) * per_size, 2),
-            "positions_open":    new_state["positions_open"] + opened,
-            "last_open_scan_at": now.isoformat(),
-        })
+        # M5: recompute from the ledger (the inserted positions are the truth)
+        # rather than incrementally debiting cash — crash-safe + can't desync.
+        derived = recompute_state(fetch_all_positions(), float(get_state()["capital_base"]))
+        update_state({**derived, "last_open_scan_at": now.isoformat()})
     else:
         update_state({"last_open_scan_at": now.isoformat()})
     return opened
@@ -395,7 +446,10 @@ def mark_positions(now: datetime) -> int:
     )
     if not opens:
         print("[mark] no open positions")
-        update_state({"last_mark_at": now.isoformat()})
+        # M5: still recompute from the ledger — a prior crash may have left stale
+        # cash/positions_open/PnL that no open position would otherwise repair.
+        derived = recompute_state(fetch_all_positions(), float(get_state()["capital_base"]))
+        update_state({**derived, "last_mark_at": now.isoformat()})
         return 0
 
     print(f"[mark] checking {len(opens)} open positions")
@@ -417,21 +471,12 @@ def mark_positions(now: datetime) -> int:
         print(f"  [close] {pos['ticker']} {pos['direction']} -> {result['close_reason']} "
               f"@ {result['close_price']} pnl=${result['realized_pnl']:+.2f}")
 
-    if closed_count:
-        new_state = get_state()
-        new_pnl = float(new_state["cumulative_pnl"]) + pnl_added
-        hwm = max(float(new_state["high_water_mark"]), new_pnl)
-        drawdown = round(max(float(new_state["max_drawdown"]), hwm - new_pnl), 4)
-        update_state({
-            "cash_available":   round(float(new_state["cash_available"]) + cash_returned, 2),
-            "positions_open":   max(0, new_state["positions_open"] - closed_count),
-            "cumulative_pnl":   round(new_pnl, 4),
-            "high_water_mark":  round(hwm, 4),
-            "max_drawdown":     drawdown,
-            "last_mark_at":     now.isoformat(),
-        })
-    else:
-        update_state({"last_mark_at": now.isoformat()})
+    # M5: recompute the whole state from the positions ledger (crash-safe +
+    # idempotent) instead of incrementally aggregating cash/pnl — a crash
+    # between the per-position closes above and this update can no longer leak
+    # cash or desync positions_open. Runs whether or not anything closed.
+    derived = recompute_state(fetch_all_positions(), float(get_state()["capital_base"]))
+    update_state({**derived, "last_mark_at": now.isoformat()})
     return closed_count
 
 
