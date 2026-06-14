@@ -58,9 +58,10 @@ transparency and to unlock GitHub Actions free minutes. See [`README.md`](README
   `price_agent`, `pulsecheck`** (last four added 2026-06-02 after the
   NVDA-on-6/2 audit revealed event_paper_agent firing 1-2x/day instead
   of hourly, causing learning-corpus starvation).
-- All workflows have `concurrency: cancel-in-progress: true` so a
+- All pinged/cron workflows have `concurrency: cancel-in-progress: true` so a
   duplicate dispatch from GHA cron + pinger is harmless — one is cancelled within
-  ~1 second.
+  ~1 second. (The only exception is `site_generator_retry.yml`, which is
+  single-shot and not pinged, so it needs no cancel guard — verified 2026-06-14.)
 - **Activation:** new pinger entries require re-running
   `python scripts/bootstrap_cronjob_org.py` with `CRONJOB_API_KEY` +
   `GH_DISPATCH_PAT` env set. Idempotent — existing pingers get PATCHed,

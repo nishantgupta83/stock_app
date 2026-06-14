@@ -84,15 +84,22 @@ READ_MAP = [
     ("activist_insider_agent","stock_normalized_events",50,  _B_EVENT_FULL),     # reads payload, 12/day
     ("event_paper_agent",    "stock_normalized_events", 300, _B_EVENT_FULL),    # reads payload (Codex)
     ("market_scanner_agent", "stock_normalized_events", 300, _B_EVENT_NOPAY),
-    # site_generator runs 161×/day (cron-job.org pinger, NOT EOD) — every read
-    # below is paid 161×/day. THIS cadence is the dominant egress lever.
+    # site_generator runs EOD ~1/day (pinger moved to EOD; pinned below). The
+    # ~161×/day pinger cadence that once dominated egress is gone (the ~95% cut).
     ("site_generator",       "stock_normalized_events", 200, _B_EVENT_FULL),    # public_event reads payload
     ("site_generator",       "stock_raw_prices",       1000, 90),               # per-ticker chart prices
     # --- BUS: stock_signals (frequent reads are tiny dedup/id checks) ---
     ("thesis_agent",         "stock_signals", 50, _B_ID),    # dedupe_key / id / alerts_sent_today
     ("trade_setup_agent",    "stock_signals", 5,  _B_SIG_FULL),  # post-H1 thesis-lane
     ("paper_trade_agent",    "stock_signals", 50, _B_SIG_FULL),
-    ("site_generator",       "stock_signals", 500,_B_SIG_FULL),  # 500 full rows × 161/day
+    ("site_generator",       "stock_signals", 500,_B_SIG_FULL),  # 500 full rows × ~1/day (EOD)
+    # H6 (2026-06-13): risk_agent paginates the FULL closed-30d (~8k) + open (~7k)
+    # populations for portfolio-state — but ONLY on PRODUCTIVE runs (after the
+    # empty-setup early-returns, ~few/day), not all 48 cron runs. Deliberately
+    # OMITTED from this per-run model (rows×runs_per_day would overestimate by
+    # ~8x); --live cadence + the live total (risk not in the top tables) confirm
+    # the real impact is small. Re-add with a productive-run multiplier if risk
+    # sizing frequency rises.
     # ingest agents: per-run "id&limit=1" existence check (tiny)
     *[(a, "stock_signals", 1, _B_ID) for a in
       ("consumer_health_agent","activist_insider_agent","defense_agent",
@@ -184,10 +191,19 @@ def main() -> int:
     ref_pct = 100 * out["ref"] / out["total"] if out["total"] else 0
     print(f"\nVERDICT: reference layer is {ref_pct:.0f}% of total egress, "
           f"{_gb(out['ref'])}/mo.")
+    # M7: the blob was EVALUATED + REJECTED (CLAUDE.md / 2026-06-09: ~42KB/run
+    # break-even, the bus dominates). The pure-model reference estimate is
+    # conservative (static rows/read); --live calibrates it DOWN (measured 14%,
+    # NOT worth). So the verdict references the documented decision instead of
+    # flip-flopping per static guess — re-open only if --live reference egress
+    # materially grows.
     if ref_pct >= 20 or out["total"] > 0.7 * out["budget"]:
-        print("→ A reference-cache blob is WORTH building (material slice and/or near budget).")
+        print(f"→ reference layer looks material ({ref_pct:.0f}%) in the PURE model, but the "
+              f"blob was evaluated + REJECTED (CLAUDE.md; --live measured ~14%). Re-open ONLY "
+              f"if `--live` reference egress materially grows.")
     else:
-        print("→ A reference-cache blob saves little; the bus dominates. Likely NOT worth the new failure surface.")
+        print("→ A reference-cache blob saves little; the bus dominates. Matches CLAUDE.md's "
+              "rejection. NOT worth the new failure surface.")
     print("\n(Estimates. rows/read + bytes/row are the dominant uncertainty — "
           "run --live to calibrate against real cadence + row sizes.)")
     return 0
