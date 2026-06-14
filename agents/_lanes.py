@@ -25,4 +25,9 @@ THESIS_MODEL_VERSION = "rubric-v1.1"
 #               L2 emission the paper-learning loop should see.
 #   sent      = dispatched to the operator.
 # Excludes 'suppressed' (L2 explicitly chose NOT to emit) by construction.
+# TRADE-OFF (documented Low): L3 reads these statuses within its LOOKBACK_HOURS
+# window. A signal that was dispatch-retried and aged past that window falls out
+# of L3's view and never becomes a setup. Accepted: such a stale signal's
+# valid_until has almost always expired anyway (it would be skipped at L3), and
+# widening the window costs egress. Revisit if retry latency grows.
 L3_INPUT_STATUSES = ("candidate", "sent")

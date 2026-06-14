@@ -87,6 +87,10 @@ def derive_maturity_flags(n: int, pf: float | None, mean: float,
                         and pf is not None and pf > TIER_GATE_YOUNG_PF)
     is_mature = bool(n >= ADULT_MIN_N and pf is not None
                      and pf >= ADULT_MIN_PF and mean >= ADULT_MIN_MEAN)
+    # is_high_conviction is RETURNED for callers/analysis but NOT persisted to a
+    # column today (Low — documented). It's the old acc-extreme gate kept for
+    # future use; no writer stores it and no gate consumes it. Harmless; remove
+    # the key if a future cleanup confirms zero consumers.
     is_high_conviction = bool(n >= HIGH_CONV_MIN_N and accuracy >= HIGH_CONV_MIN_ACC
                               and pf is not None and pf > HIGH_CONV_MIN_PF
                               and mean >= HIGH_CONV_MIN_MEAN)

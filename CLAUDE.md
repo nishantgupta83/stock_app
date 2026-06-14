@@ -15,7 +15,7 @@ transparency and to unlock GitHub Actions free minutes. See [`README.md`](README
 **1. `event_at` ≠ `created_at` in freshness queries.**
 - `event_at` = real-world event date (SEC filing time, post time, earnings date) — can be days/weeks old
 - `created_at` = when the row landed in our DB
-- For "what landed recently" queries (event_paper_agent, intraday_alert_agent context), filter by `created_at`. We hit this bug twice in May 2026.
+- For "what landed recently" queries (e.g. event_paper_agent's `fetch_recent_events`), filter by `created_at`. We hit this bug twice in May 2026. (NOT intraday_alert_agent — it intentionally filters by `event_at`, the real-time spike time; see its line-127 comment.)
 
 **2. PostgREST `?on_conflict=` fails on partial unique indexes (error 42P10).**
 - Three migrations in this repo exist to fix this exact pattern (`sql/0013`, `sql/0015`).

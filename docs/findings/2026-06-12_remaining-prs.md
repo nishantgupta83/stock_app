@@ -181,7 +181,10 @@ TDD → implement → live-validate.
 
 ---
 
-## LOW (batch into one cleanup PR)
+## LOW  ✅ batched DONE `(this commit)`
+
+Done: CLAUDE.md rule #1 intraday parenthetical corrected (intraday uses event_at); actions v6 bump for the 4 lagging workflows (pulsecheck/thesis/realistic_loop/learning_snapshot); PF=inf metalabel behaviour documented (n-gated+fail-open, left visible); L3_INPUT_STATUSES >24h trade-off documented; is_high_conviction computed-not-persisted noted. Left as harmless history: the 42P10 folklore comments (the review itself verified no live 42P10 risk — every on_conflict maps to a non-partial index). Deferred from C3: the broad sb_get read-failure→[] collapse (its own PR).
+ (batch into one cleanup PR)
 
 - Stale 42P10/index folklore in comments (`filing_agent:314`,
   `telegram_dispatcher:106`, `event_paper:233`).

@@ -44,6 +44,11 @@ def expectancy_stats(returns: list[float], correct: list[bool]) -> dict:
     losses = [x for x in returns if x < 0]
     gross_win = sum(wins)
     gross_loss = abs(sum(losses))
+    # PF=inf when there are wins but ZERO losses. It passes the pf_bar gate, but
+    # only alongside the n>=min_n floor (Codex/Low) — an all-wins rule with n>=100
+    # is genuinely strong, not a thin-sample artifact; and the gate fail-opens to
+    # WATCH anyway. Left as inf (not clamped) so the signal "no losses observed"
+    # is visible in the stats; document, don't suppress.
     pf = (gross_win / gross_loss) if gross_loss > 0 else float("inf") if gross_win > 0 else 0.0
     win_rate = (sum(1 for c in correct if c) / n) if n else 0.0
     expectancy = (sum(returns) / n) if n else 0.0
