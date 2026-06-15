@@ -28,12 +28,21 @@ SKIP = {
     "_pycache_",
 }
 
+# Shared `_`-prefixed modules that the live agents import — smoke them too so an
+# import break in a gate/contract is caught in CI, not at 04:00 UTC.
+SHARED_OK = {"_rule_key", "_maturity", "_instruments", "_lanes",
+             "_metalabel_gate", "_market_calendar"}
+
 
 def _agent_modules() -> list[str]:
     """List every agents/*.py module name (without extension)."""
     names = []
     for p in sorted(AGENTS_DIR.glob("*.py")):
-        if p.stem.startswith("_") and p.stem != "_rule_key":
+        # Include the SHARED gate/helper modules (_rule_key + the contracts built
+        # 2026-06: _maturity, _instruments, _lanes, _metalabel_gate,
+        # _market_calendar). They're imported by the live agents, so an import
+        # break in them takes the pipeline down — smoke them too.
+        if p.stem.startswith("_") and p.stem not in SHARED_OK:
             continue
         if p.stem in SKIP:
             continue
