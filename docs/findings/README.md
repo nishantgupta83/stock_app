@@ -32,3 +32,4 @@ Each finding doc should answer:
 
 This format lets a future reviewer (or the orchestrator) decide whether
 the precondition is now satisfied without re-deriving the observation.
+| [`2026-06-13_historical-rerun-analysis.md`](2026-06-13_historical-rerun-analysis.md) | 2026-06-13 | **Analysis — no full re-run** | Do we re-run history after all the fixes? NO full re-run: C1+H1 already applied; H2 has 9.3% historical entry-leak but the BUY/SELL gate is invariant (only adult rule 8k::h30d ~0% exposed). Codex-validated: taint DOES feed L3/realistic_loop paper decisions (not display-only) → run a leak-exclusion sensitivity before the 7/06 funnel; raise H2b open-trade re-anchor priority. |
