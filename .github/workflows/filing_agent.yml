@@ -7,7 +7,7 @@ name: filing_agent
 
 on:
   schedule:
-    - cron: "*/5 * * * *"   # GitHub Actions cron minimum interval = 5 min
+    - cron: "*/15 * * * *"  # 2026-06-16: */5→*/15 to cut Supabase egress (hot chain; cascades to trade_setup/risk). Paper-trade forward data unaffected (event_paper reads normalized_events directly).
   workflow_dispatch:
 
 concurrency:

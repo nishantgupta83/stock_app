@@ -88,7 +88,7 @@ WORKFLOWS = {
         "title": "stock_app:filing_agent",
         "schedule": {
             "timezone": "UTC",
-            "minutes": [2, 7, 12, 17, 22, 27, 32, 37, 42, 47, 52, 57],
+            "minutes": [7, 22, 37, 52],  # 2026-06-16: */5→*/15 egress cut (backstops the */15 GHA cron)
             "hours": [-1],
             "mdays": [-1],
             "months": [-1],
@@ -99,7 +99,7 @@ WORKFLOWS = {
         "title": "stock_app:news_agent",
         "schedule": {
             "timezone": "UTC",
-            "minutes": [2, 7, 12, 17, 22, 27, 32, 37, 42, 47, 52, 57],
+            "minutes": [7, 22, 37, 52],  # 2026-06-16: */5→*/15 egress cut (backstops the */15 GHA cron)
             "hours": [-1],
             "mdays": [-1],
             "months": [-1],
@@ -110,7 +110,7 @@ WORKFLOWS = {
         "title": "stock_app:thesis_agent",
         "schedule": {
             "timezone": "UTC",
-            "minutes": [2, 7, 12, 17, 22, 27, 32, 37, 42, 47, 52, 57],
+            "minutes": [7, 22, 37, 52],  # 2026-06-16: */5→*/15 egress cut (backstops the */15 GHA cron)
             "hours": [-1],
             "mdays": [-1],
             "months": [-1],
@@ -121,7 +121,7 @@ WORKFLOWS = {
         "title": "stock_app:truth_social_agent",
         "schedule": {
             "timezone": "UTC",
-            "minutes": [2, 7, 12, 17, 22, 27, 32, 37, 42, 47, 52, 57],
+            "minutes": [7, 22, 37, 52],  # 2026-06-16: */5→*/15 egress cut (backstops the */15 GHA cron)
             "hours": [-1],
             "mdays": [-1],
             "months": [-1],

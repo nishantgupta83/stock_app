@@ -48,10 +48,10 @@ SB_ERRORS: list[str] = []
 # expected_minutes = wall clock between consecutive successful runs;
 # anything past 2x that is considered stale. Set to None for manual-only.
 AGENT_INVENTORY: dict[str, dict] = {
-    "filing":              {"job": "filing_agent",              "expected_minutes": 5},      # */5 * * * *
-    "news":                {"job": "news_agent",                "expected_minutes": 5},      # */5
-    "truth_social":        {"job": "truth_social_agent",        "expected_minutes": 5},      # */5
-    "thesis":              {"job": "thesis_agent",              "expected_minutes": 5},      # */5
+    "filing":              {"job": "filing_agent",              "expected_minutes": 15},     # */15 (2026-06-16 egress cut)
+    "news":                {"job": "news_agent",                "expected_minutes": 15},     # */15
+    "truth_social":        {"job": "truth_social_agent",        "expected_minutes": 15},     # */15
+    "thesis":              {"job": "thesis_agent",              "expected_minutes": 15},     # */15
     "earnings":            {"job": "earnings_agent",            "expected_minutes": 10080},  # weekly Sun
     "price":               {"job": "price_agent",               "expected_minutes": 120},    # every 2h weekday (0 */2 * * 1-5) — H7/#8
     "paper_trade":         {"job": "paper_trade_agent",         "expected_minutes": 15},     # */15

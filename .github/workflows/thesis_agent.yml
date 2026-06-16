@@ -6,7 +6,7 @@ name: thesis_agent
 
 on:
   schedule:
-    - cron: "*/5 * * * *"
+    - cron: "*/15 * * * *"  # 2026-06-16: */5→*/15 to cut Supabase egress (drives trade_setup/risk via workflow_run)
   workflow_dispatch:
 
 concurrency:

@@ -32,11 +32,21 @@ import sys
 # Supabase free tier egress budget (GB/month). Configurable via --budget-gb.
 FREE_TIER_EGRESS_GB = 5.0
 
+# This per-table READ_MAP is a CURATED model of the heaviest reads. It OMITS many
+# small-but-frequent reads (ingest raw-table reads, risk_agent's trade_setups read
+# at ~400/day, wrapper/pulsecheck/orchestrator reads), so it is a LOWER BOUND, not
+# the true total. Measured against the Supabase dashboard 2026-06-16: ~10.4 GB used
+# (~300 MB/day) vs ~3.9 GB modeled → real ≈ 2.6× this model. Trust the dashboard for
+# budget decisions; use the table ranking to decide WHICH reads to cut.
+MEASURED_DASHBOARD_GB = 10.4         # 2026-06-16, pre-*/15 cadence cut
+MEASURED_DASHBOARD_AS_OF = "2026-06-16"
+MODEL_UNDERCOUNT_FACTOR = 2.6        # dashboard / model, measured
+
 # runs/day per agent, computed from the GitHub-Actions crons (weekday-only and
 # market-hours crons are scaled by 5/7 and hours/24). Override per-agent from
 # stock_job_runs in --live mode.
 RUNS_PER_DAY = {
-    "filing_agent": 288, "news_agent": 288, "thesis_agent": 288, "truth_social_agent": 288,  # */5
+    "filing_agent": 96, "news_agent": 96, "thesis_agent": 96, "truth_social_agent": 96,  # */15 (2026-06-16 egress cut, was */5)
     "paper_trade_agent": 96,                                                                   # */15
     "intraday_alert_agent": 25.7,            # */15 within 13-21 UTC, weekdays
     "risk_agent": 48, "trade_setup_agent": 48,                                                 # */30
@@ -188,6 +198,10 @@ def main() -> int:
     print(f"{'REFERENCE (cacheable→blob)':<32} {_gb(out['ref']):>10}")
     print(f"{'TOTAL':<32} {_gb(out['total']):>10}   "
           f"({100*out['total']/out['budget']:.0f}% of {args.budget_gb:.0f}GB budget)")
+    print(f"\n⚠ CURATED LOWER BOUND — measured dashboard egress {MEASURED_DASHBOARD_GB:.1f} GB "
+          f"({MEASURED_DASHBOARD_AS_OF}) ≈ {MODEL_UNDERCOUNT_FACTOR:.1f}× this model (it omits\n"
+          f"  many small/frequent reads). Trust the dashboard for budget; use the table ranking "
+          f"to target cuts.")
     ref_pct = 100 * out["ref"] / out["total"] if out["total"] else 0
     print(f"\nVERDICT: reference layer is {ref_pct:.0f}% of total egress, "
           f"{_gb(out['ref'])}/mo.")
