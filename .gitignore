@@ -19,3 +19,7 @@ supabase/
 
 # One-off generated audit / review documents that aren't part of the operational stack.
 security_best_practices_report.md
+
+# Local offline-regrade snapshots (closed trades + price bars) — see
+# scripts/snapshot_paper_trades.py. Re-fetchable; do not commit the data.
+regrade_data*/

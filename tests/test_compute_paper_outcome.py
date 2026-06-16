@@ -62,10 +62,15 @@ def test_long_realized_return_positive_on_up_close():
 
 def test_short_realized_return_positive_on_down_close():
     """Same underlying move (+5%) for a short trade is a LOSS (-5% gross),
-    made slightly worse by the round-trip slippage."""
+    made slightly worse by the round-trip slippage.
+
+    Pinned to exit_policy='hold' to test the pure close-to-close return math:
+    under the default 'stop_only' this short's +3% stop (103) is breached by the
+    105 high, which is exercised by test_stop_only_short_exits_at_stop instead."""
     d0 = date(2026, 5, 1)
     bars = _bars(d0, path=[(105.0, 99.0, 105.0)])
-    out = compute_paper_outcome(_trade("short", entry_d=d0, horizon_days=1), bars)
+    out = compute_paper_outcome(_trade("short", entry_d=d0, horizon_days=1), bars,
+                                exit_policy="hold")
     assert out["realized_return"] == pytest.approx(-0.05 - SLIP_ROUND_TRIP)
     assert out["correct"] is False
 

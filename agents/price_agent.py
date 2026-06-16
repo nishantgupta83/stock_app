@@ -45,6 +45,13 @@ HEADERS_SB = {
 
 EMA_ALPHA = 0.1   # same as backtester — consistent learning rate across live + replay
 SLIPPAGE_BPS = 5  # same as backtester: 0.05% per side, no commissions
+EXIT_POLICY = os.environ.get("EXIT_POLICY", "stop_only")  # how paper trades exit:
+#   "stop_only" — cut losers at the declared stop (gap-fill at the open when the
+#                 bar gaps through it), let winners ride to the horizon close (no
+#                 take-profit). The executable, risk-managed strategy the system
+#                 actually intends (Layer 4 sizes off stops). Default.
+#   "hold"      — legacy naked close-to-close at the horizon, stop ignored. Kept
+#                 for signal-research / regression only; NOT valid for live gating.
 ARCHIVE_INDEX_URL = "https://hub4apps.com/stock_app/archive/index.json"
 # Schema version of archive/index.json. The archive floor in
 # enrich_cal_from_archive is applied ONLY for an index stamped with the current
@@ -558,8 +565,12 @@ def fetch_open_paper_trades_to_close() -> list[dict]:
         rows = sb_get("stock_event_paper_trades", {
             "status":   "eq.open",
             "entry_at": f"lte.{cutoff}T23:59:59+00:00",
+            # target_pct/stop_pct are REQUIRED by compute_paper_outcome's stop_only
+            # exit policy — without them the live reconcile would grade every trade
+            # with a zero stop (i.e. silently fall back to hold-to-horizon).
             "select":   "id,event_id,event_type,event_subtype,ticker,direction,"
-                        "entry_at,entry_price,horizon_days,rule_key,vehicle_type",
+                        "entry_at,entry_price,horizon_days,target_pct,stop_pct,"
+                        "rule_key,vehicle_type",
             "order":    "entry_at.asc",
             "limit":    str(page),
             "offset":   str(offset),
@@ -741,43 +752,44 @@ def upsert_calibration(rule_key: str, current: dict | None,
     }
 
 
-def compute_paper_outcome(trade: dict, bars: dict[date, dict[str, float]]) -> dict | None:
-    """Direction-aware close-to-close return + MFE/MAE + stop/target hit audit.
+def compute_paper_outcome(trade: dict, bars: dict[date, dict[str, float]],
+                          exit_policy: str | None = None) -> dict | None:
+    """Direction-aware exit + return + MFE/MAE + stop/target audit.
 
-    realized_return is close-to-close net of SLIPPAGE_BPS per side
-    (matches backtester convention — paper-trade calibration was
-    previously frictionless while the audit path applied 5 bps each
-    side, so the two grading paths disagreed on the same move). 10 bps
-    round-trip applied uniformly to long and short.
+    exit_policy (defaults to the module EXIT_POLICY):
+      "stop_only" — exit at the declared stop the FIRST day it is breached,
+                    GAP-FILLING AT THE OPEN when the bar gaps through the stop
+                    (fill no better than the open); otherwise ride to the horizon
+                    close. Winners are NOT capped (there is no take-profit). This
+                    is the executable, risk-managed strategy the system intends.
+      "hold"      — legacy naked close-to-close at the horizon, stop ignored.
 
-    MFE/MAE remain GROSS (informational about the underlying path, not
-    your fills). target_hit / stop_hit also use raw daily H/L because
-    they describe what the bar did, not what you realized.
+    realized_return is net of SLIPPAGE_BPS per side (10 bps round-trip), matching
+    the backtester. MFE/MAE are GROSS path info; target_hit/stop_hit audit what
+    the bars did up to the realized exit. `exit_reason` records the cause
+    ("stop" | "horizon").
     """
-    entry_date = datetime.fromisoformat(trade["entry_at"].replace("Z", "+00:00")).date()
-    horizon = int(trade.get("horizon_days") or 1)
-    exit_target = entry_date + timedelta(days=horizon)
-    exit_pair = close_on_or_after(bars, exit_target)
-    if not exit_pair:
-        return None
-    exit_date, exit_price = exit_pair
+    policy = exit_policy or EXIT_POLICY
     try:
         entry_price = float(trade["entry_price"])
     except (TypeError, ValueError):
         return None
     if entry_price <= 0:
         return None
-    raw_return = (exit_price - entry_price) / entry_price
-    direction = trade.get("direction") or "long"
-    direction_mult = 1.0 if direction == "long" else -1.0
-    realized_gross = raw_return * direction_mult
-    # Match backtester convention: 5 bps per side, no commissions
-    realized = realized_gross - 2 * (SLIPPAGE_BPS / 10000)
+    entry_date = datetime.fromisoformat(trade["entry_at"].replace("Z", "+00:00")).date()
+    horizon = int(trade.get("horizon_days") or 1)
+    # horizon_date may be None — under stop_only a trade can close at its stop
+    # BEFORE the horizon bar exists (don't make a stopped trade linger open until
+    # the horizon, then backdate exit_at into a stale window — Codex).
+    horizon_pair = close_on_or_after(bars, entry_date + timedelta(days=horizon))
+    horizon_date = horizon_pair[0] if horizon_pair else None
 
-    # MFE/MAE + stop/target audit over the holding period.
+    direction = trade.get("direction") or "long"
+    long = direction == "long"
+    direction_mult = 1.0 if long else -1.0
     target_pct = float(trade.get("target_pct") or 0)
     stop_pct = float(trade.get("stop_pct") or 0)
-    if direction == "long":
+    if long:
         target_px = entry_price * (1 + target_pct) if target_pct else None
         stop_px = entry_price * (1 - stop_pct) if stop_pct else None
     else:
@@ -788,33 +800,55 @@ def compute_paper_outcome(trade: dict, bars: dict[date, dict[str, float]]) -> di
     mae_pct = 0.0
     target_hit = False
     stop_hit = False
+    stopped = False
+    exit_date = exit_price = None
+    exit_reason = "horizon"
+
     for d in sorted(bars):
-        if d <= entry_date or d > exit_date:
+        if d <= entry_date:
             continue
+        if horizon_date is not None and d > horizon_date:
+            break
         bar = bars[d]
         hi = bar.get("high")
         lo = bar.get("low")
         if hi is None or lo is None:
             continue
-        # Excursions, direction-aware
-        if direction == "long":
-            up_excursion = (hi - entry_price) / entry_price
-            down_excursion = (lo - entry_price) / entry_price
-            mfe_pct = max(mfe_pct, up_excursion)
-            mae_pct = min(mae_pct, down_excursion)
+        op = bar.get("open")
+        # Excursions + audit flags, direction-aware (gross, path-descriptive).
+        if long:
+            mfe_pct = max(mfe_pct, (hi - entry_price) / entry_price)
+            mae_pct = min(mae_pct, (lo - entry_price) / entry_price)
+            stop_today = stop_px is not None and lo <= stop_px
             if target_px is not None and hi >= target_px:
                 target_hit = True
-            if stop_px is not None and lo <= stop_px:
-                stop_hit = True
         else:
-            up_excursion = (entry_price - lo) / entry_price
-            down_excursion = (entry_price - hi) / entry_price
-            mfe_pct = max(mfe_pct, up_excursion)
-            mae_pct = min(mae_pct, down_excursion)
+            mfe_pct = max(mfe_pct, (entry_price - lo) / entry_price)
+            mae_pct = min(mae_pct, (entry_price - hi) / entry_price)
+            stop_today = stop_px is not None and hi >= stop_px
             if target_px is not None and lo <= target_px:
                 target_hit = True
-            if stop_px is not None and hi >= stop_px:
-                stop_hit = True
+        if stop_today:
+            stop_hit = True
+        # STOP-ONLY: exit at the stop the first day it is breached. Gap-fill at the
+        # open when the bar gaps through the stop (fill no better than the open).
+        if policy == "stop_only" and stop_today:
+            if long:
+                exit_price = stop_px if (op is None or op > stop_px) else op
+            else:
+                exit_price = stop_px if (op is None or op < stop_px) else op
+            exit_date, exit_reason = d, "stop"
+            stopped = True
+            break
+
+    if not stopped:
+        # No stop: close at the horizon, or stay open if the horizon hasn't matured.
+        if horizon_pair is None:
+            return None
+        exit_date, exit_price, exit_reason = horizon_date, horizon_pair[1], "horizon"
+
+    realized = (exit_price - entry_price) / entry_price * direction_mult \
+        - 2 * (SLIPPAGE_BPS / 10000)
 
     return {
         "exit_at":         exit_date.isoformat() + "T00:00:00+00:00",
@@ -825,6 +859,7 @@ def compute_paper_outcome(trade: dict, bars: dict[date, dict[str, float]]) -> di
         "mae_pct":         round(mae_pct, 6),
         "target_hit":      target_hit,
         "stop_hit":        stop_hit,
+        "exit_reason":     exit_reason,
     }
 
 
