@@ -119,7 +119,7 @@ def render(conn, loop_name: str, capital_base: float, max_concurrent: int) -> st
    <span class="badge">PAPER — no real capital</span> · generated {gen}</div>
  <div class="stats">
    {_stat("Equity", f"${equity:,.0f}", _pnl_color(pnl))}
-   {_stat("Cumulative P&amp;L", f"${pnl:+,.0f}", _pnl_color(pnl))}
+   {_stat("Cumulative P&L", f"${pnl:+,.0f}", _pnl_color(pnl))}
    {_stat("Cash", f"${state['cash_available']:,.0f}")}
    {_stat("Open", f"{state['positions_open']}/{max_concurrent}", SKY)}
    {_stat("Closed", str(len(closedp)))}

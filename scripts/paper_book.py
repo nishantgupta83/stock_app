@@ -179,8 +179,10 @@ def print_state(conn) -> dict:
 
 def dashboard(conn) -> Path:
     from paper_book_dashboard import render
-    out = DB_PATH.parent / "dashboard.html"
-    out.write_text(render(conn, LOOP, CAPITAL, MAX_CONC))
+    html = render(conn, LOOP, CAPITAL, MAX_CONC)
+    out = DB_PATH.parent / "index.html"          # index.html so a local server root serves it
+    out.write_text(html)
+    (DB_PATH.parent / "dashboard.html").write_text(html)
     print(f"[dash] {out}")
     return out
 
