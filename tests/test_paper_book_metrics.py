@@ -43,3 +43,35 @@ def test_top_cohort_excess_share():
         {"status": "closed", "opened_at": "2026-06-22T00:00:00+00:00", "realized_pnl": 100},
     ]
     assert m.top_cohort_excess_share(pos) == round(300 / 400, 4)
+
+
+def test_classify_tier_withholds_on_sync_failure():
+    out = m.classify_tier({"n_independent_cohorts": 99, "weeks": 99, "cumulative_excess": 999,
+                           "max_drawdown": 0.0, "top_cohort_excess_share": 0.1}, sync_ok=False)
+    assert out["status"] == "inconclusive" and out["reason"] == "sync_failed"
+
+
+def test_classify_tier_insufficient_then_fail_then_alive():
+    base = {"max_drawdown": 0.0, "top_cohort_excess_share": 0.1, "profit_factor": 2.0,
+            "subperiods_positive": 2}
+    thin = dict(base, n_independent_cohorts=5, weeks=2, cumulative_excess=10.0)
+    assert m.classify_tier(thin)["status"] == "inconclusive"
+    bad = dict(base, n_independent_cohorts=40, weeks=10, cumulative_excess=-50.0)
+    assert m.classify_tier(bad)["status"] == "fail"
+    ok = dict(base, n_independent_cohorts=40, weeks=10, cumulative_excess=25.0)
+    assert m.classify_tier(ok)["status"] in ("alive", "edge")
+
+
+def test_compute_metrics_splits_forward_and_replay():
+    pos = [
+        {"opened_at": "2026-06-10T00:00:00+00:00", "closed_at": "2026-06-12T00:00:00+00:00",
+         "status": "closed", "notional": 1000.0, "realized_pnl": 50.0},   # replay (pre-epoch)
+        {"opened_at": "2026-06-21T00:00:00+00:00", "closed_at": "2026-06-23T00:00:00+00:00",
+         "status": "closed", "notional": 1000.0, "realized_pnl": -20.0},  # forward
+    ]
+    qqq = {D("2026-06-10"): 100.0, D("2026-06-12"): 101.0, D("2026-06-21"): 102.0,
+           D("2026-06-23"): 103.0}
+    out = m.compute_metrics(pos, qqq, forward_epoch="2026-06-19", capital=5000.0, sync_ok=True)
+    assert out["replay"]["n_raw_trades"] == 1
+    assert out["forward"]["n_raw_trades"] == 1
+    assert out["tier"]["status"] == "inconclusive"   # only 1 forward cohort
