@@ -7,6 +7,8 @@ Pastel palette (teal/coral/amber/sage/sky), no purple.
 from __future__ import annotations
 
 import html
+import json
+import pathlib
 from datetime import datetime, timezone
 
 import _paper_book as eng
@@ -51,6 +53,38 @@ def _stat(label: str, value: str, color: str = INK) -> str:
             f'<div class="stat-l">{html.escape(label)}</div></div>')
 
 
+def render_metrics_block(metrics: dict) -> str:
+    """Render a forward-edge tier + book-vs-QQQ summary block.
+
+    Consumes the shape produced by paper_book_metrics.compute_metrics:
+      {"forward": {"book_equity_end", "qqq_buy_hold_end", "cumulative_excess",
+                   "n_independent_cohorts", "weeks", ...},
+       "tier": {"status", "reason"}}
+    Safe with partial / empty dicts — all keys guarded via .get().
+    Colors: coral/amber/sage/teal/slate palette — NO purple.
+    """
+    f = metrics.get("forward", {})
+    t = metrics.get("tier", {})
+    status = t.get("status", "n/a")
+    colors = {
+        "fail": "#e07a5f",          # coral
+        "inconclusive": "#e9c46a",  # amber
+        "alive": "#81b29a",         # sage
+        "edge": "#2a9d8f",          # teal
+        "conviction": "#264653",    # slate
+    }
+    chip = colors.get(status, "#8d99ae")  # fallback: muted blue-grey (no purple)
+    return (
+        f'<div class="tier" style="border-left:6px solid {chip};padding:10px;margin:12px 0">'
+        f'<b>Forward tier:</b> {html.escape(str(status))} '
+        f'<span style="color:#666">({html.escape(str(t.get("reason","")))})</span><br>'
+        f'Book ${f.get("book_equity_end","?")} vs QQQ ${f.get("qqq_buy_hold_end","?")} '
+        f'&nbsp;|&nbsp; excess ${f.get("cumulative_excess","?")} '
+        f'&nbsp;|&nbsp; cohorts {f.get("n_independent_cohorts","?")} '
+        f'&nbsp;|&nbsp; {f.get("weeks","?")}w</div>'
+    )
+
+
 def _row_open(p: dict) -> str:
     arrow = "▲ BUY" if p["direction"] == "long" else "▼ SELL"
     col = SAGE if p["direction"] == "long" else CORAL
@@ -76,6 +110,14 @@ def _row_closed(p: dict) -> str:
 
 
 def render(conn, loop_name: str, capital_base: float, max_concurrent: int) -> str:
+    _mpath = pathlib.Path(__file__).resolve().parent.parent / "paper_book" / "metrics.json"
+    metrics_html = ""
+    if _mpath.exists():
+        try:
+            metrics_html = render_metrics_block(json.loads(_mpath.read_text()))
+        except Exception:
+            metrics_html = ""
+
     positions = store.all_positions(conn)
     state = eng.recompute_state(positions, capital_base)
     cfg = store.config(conn, loop_name)
@@ -115,6 +157,7 @@ def render(conn, loop_name: str, capital_base: float, max_concurrent: int) -> st
            padding:2px 10px; font-size:11px; font-weight:600; }}
 </style></head><body>
  <h1>📓 Paper Book — {html.escape(loop_name)}</h1>
+ {metrics_html}
  <div class="sub">${capital_base:,.0f} bankroll · {max_concurrent} concurrent · $1,000/position · stop_only exit ·
    <span class="badge">PAPER — no real capital</span> · generated {gen}</div>
  <div class="stats">
