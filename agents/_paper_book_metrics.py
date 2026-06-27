@@ -48,7 +48,7 @@ def book_equity_curve(positions, days, capital, rf_annual) -> dict:
 
 
 def qqq_buy_hold_curve(qqq_daily, days, capital, epoch) -> dict:
-    base = qqq_daily.get(epoch) if epoch in qqq_daily else None
+    base = qqq_daily.get(epoch)
     if base is None:
         base = next((qqq_daily[d] for d in days if d in qqq_daily), None)
     if not base:
@@ -92,4 +92,4 @@ def top_cohort_excess_share(positions) -> float:
     total = sum(by_day.values())
     if not by_day or abs(total) < 1e-9:
         return 0.0
-    return round(max(by_day.values(), key=abs) / total, 4)
+    return round(max(by_day.values()) / total, 4)

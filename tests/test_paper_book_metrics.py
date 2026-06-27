@@ -28,3 +28,18 @@ def test_book_equity_and_excess():
 def test_max_drawdown():
     curve = {D("2026-06-21"): 100.0, D("2026-06-22"): 120.0, D("2026-06-23"): 90.0}
     assert m.max_drawdown(curve) == 0.25       # (120-90)/120
+
+
+def test_profit_factor():
+    closed = [{"realized_pnl": 200}, {"realized_pnl": -100}, {"realized_pnl": 0}]
+    assert m.profit_factor(closed) == 2.0
+    assert m.profit_factor([{"realized_pnl": 50}]) == float("inf")
+    assert m.profit_factor([]) == 0.0
+
+
+def test_top_cohort_excess_share():
+    pos = [
+        {"status": "closed", "opened_at": "2026-06-21T00:00:00+00:00", "realized_pnl": 300},
+        {"status": "closed", "opened_at": "2026-06-22T00:00:00+00:00", "realized_pnl": 100},
+    ]
+    assert m.top_cohort_excess_share(pos) == round(300 / 400, 4)
