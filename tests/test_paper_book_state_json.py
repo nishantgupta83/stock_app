@@ -1,5 +1,6 @@
-import sys, pathlib
+import sys, pathlib, json, importlib
 sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent.parent / "agents"))
+sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent.parent / "scripts"))
 import _paper_book_store as store
 
 
@@ -32,3 +33,19 @@ def test_export_import_roundtrip_and_freeze(tmp_path):
     closed = [p for p in store.all_positions(b) if p["status"] == "closed"]
     assert closed[0]["realized_pnl"] == 99.5
     assert store.closed_setup_ids(b) == {1}
+
+
+def test_ci_state_json_roundtrip(tmp_path, monkeypatch):
+    monkeypatch.setenv("PAPER_BOOK_DB", str(tmp_path / "book.db"))
+    state_json = tmp_path / "book_state.json"
+    monkeypatch.setenv("PAPER_BOOK_STATE_JSON", str(state_json))
+    import paper_book as pb  # scripts/ is on sys.path via conftest or insert below
+    importlib.reload(pb)
+    conn = pb.store.connect(tmp_path / "book.db")
+    pb.store.init_state(conn, loop_name=pb.LOOP, capital_base=pb.CAPITAL,
+                        max_concurrent=pb.MAX_CONC, per_size=pb.PER_SIZE)
+    pb.store.set_forward_epoch(conn, pb.LOOP, "2026-06-19")
+    pb.dump_state_json(conn)
+    assert state_json.exists()
+    blob = json.loads(state_json.read_text())
+    assert blob["book_state"]["forward_epoch"] == "2026-06-19"

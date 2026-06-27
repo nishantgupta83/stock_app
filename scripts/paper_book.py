@@ -37,6 +37,20 @@ LOOP = os.environ.get("PAPER_BOOK_NAME", "paper_book_5k")
 DB_PATH = Path(os.environ.get("PAPER_BOOK_DB", ROOT / "paper_book" / "book.db"))
 COLD_START_HOURS = int(os.environ.get("PAPER_BOOK_COLD_START_HOURS", "24"))
 CAPITAL, MAX_CONC, PER_SIZE = 5000.0, 5, 1000.0
+STATE_JSON = os.environ.get("PAPER_BOOK_STATE_JSON")     # set in CI; unset locally
+RF_ANNUAL = float(os.environ.get("PAPER_BOOK_RF_ANNUAL", "0.05"))
+BENCH = os.environ.get("PAPER_BOOK_BENCH", "QQQ")
+
+
+def load_state_json(conn) -> None:
+    if STATE_JSON and Path(STATE_JSON).exists():
+        store.import_state(conn, json.loads(Path(STATE_JSON).read_text()))
+
+
+def dump_state_json(conn) -> None:
+    if STATE_JSON:
+        Path(STATE_JSON).parent.mkdir(parents=True, exist_ok=True)
+        Path(STATE_JSON).write_text(json.dumps(store.export_state(conn, LOOP), indent=0, default=str))
 
 
 # --- sync: pull setups from the pipeline (minimal incremental read) -------------
@@ -115,9 +129,12 @@ def _next_session(bars: dict[dt.date, dict], on_or_after: dt.date):
 def replay(conn) -> None:
     from price_agent import compute_paper_outcome  # reuse the pipeline's stop_only grader
     setups = store.all_setups(conn)
+    frozen = store.closed_setup_ids(conn)            # never re-grade a frozen close
     today = dt.datetime.now(dt.timezone.utc).date()
     candidates: list[dict] = []
     for s in setups:
+        if s["setup_id"] in frozen:                  # skip: already closed in committed ledger
+            continue
         created = dt.date.fromisoformat(s["created_at"][:10])
         # enter the NEXT session on/after the setup (a trader acting the next morning)
         bars = bars_for(s["ticker"], created, today)
@@ -187,22 +204,51 @@ def dashboard(conn) -> Path:
     return out
 
 
+def write_metrics(conn, sync_ok: bool) -> Path | None:
+    import _paper_book_metrics as met
+    cfg = store.config(conn, LOOP)
+    epoch = cfg.get("forward_epoch")
+    positions = store.all_positions(conn)
+    qqq = bars_for(BENCH, dt.date(2026, 1, 1), dt.datetime.now(dt.timezone.utc).date())
+    qqq_daily = {d: bar["close"] for d, bar in qqq.items()}
+    metrics = met.compute_metrics(positions, qqq_daily, epoch, CAPITAL,
+                                  sync_ok=sync_ok, rf_annual=RF_ANNUAL)
+    out = DB_PATH.parent / "metrics.json"
+    out.write_text(json.dumps(metrics, indent=2, default=str))
+    print(f"[metrics] tier={metrics['tier']['status']} -> {out}")
+    return out
+
+
 def main() -> int:
     ap = argparse.ArgumentParser(description=__doc__)
     ap.add_argument("mode", nargs="?", default="run",
                     choices=["sync", "replay", "state", "dash", "run"])
     args = ap.parse_args()
     conn = store.connect(DB_PATH)
+    load_state_json(conn)                                       # hydrate from committed JSON
     store.init_state(conn, loop_name=LOOP, capital_base=CAPITAL,
                      max_concurrent=MAX_CONC, per_size=PER_SIZE)
+    if STATE_JSON and not store.config(conn, LOOP).get("forward_epoch"):
+        store.set_forward_epoch(conn, LOOP,
+                                dt.datetime.now(dt.timezone.utc).date().isoformat())
+    sync_ok = True
     if args.mode in ("sync", "run"):
-        sync(conn)
+        try:
+            sync(conn)
+        except Exception as e:                                  # noqa: BLE001
+            sync_ok = False
+            print(f"[sync] FAILED (non-fatal in CI): {e}", file=sys.stderr)
+            if not STATE_JSON:                                  # local: fail loudly
+                raise
     if args.mode in ("replay", "run"):
         replay(conn)
     if args.mode in ("state", "run"):
         print_state(conn)
+    if args.mode in ("run",):
+        write_metrics(conn, sync_ok)
     if args.mode in ("dash", "run"):
         dashboard(conn)
+    dump_state_json(conn)                                       # persist frozen ledger
     return 0
 
 
