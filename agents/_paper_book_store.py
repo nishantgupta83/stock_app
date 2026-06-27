@@ -176,7 +176,9 @@ def closed_setup_ids(conn) -> set[int]:
 
 
 def set_forward_epoch(conn, loop_name, epoch) -> None:
-    conn.execute("UPDATE book_state SET forward_epoch=? WHERE loop_name=?", (epoch, loop_name))
+    cur = conn.execute("UPDATE book_state SET forward_epoch=? WHERE loop_name=?", (epoch, loop_name))
+    if cur.rowcount == 0:
+        raise ValueError(f"set_forward_epoch: loop_name {loop_name!r} not found in book_state")
     conn.commit()
 
 
@@ -205,13 +207,13 @@ def import_state(conn, state: dict) -> None:
              bs.get("per_position_size"), bs.get("last_open_scan_at"), bs.get("last_mark_at"),
              bs.get("setup_cursor"), bs.get("forward_epoch")))
     for s in state.get("book_setups", []):
-        store_raw = s.get("raw")
+        raw_val = s.get("raw")
         conn.execute(
             "INSERT OR IGNORE INTO book_setups (setup_id, signal_id, ticker, direction, "
             "created_at, target_pct, stop_pct, horizon_days, valid_until, raw) VALUES (?,?,?,?,?,?,?,?,?,?)",
             (s["setup_id"], s.get("signal_id"), s.get("ticker"), s.get("direction"),
              s.get("created_at"), s.get("target_pct"), s.get("stop_pct"),
-             s.get("horizon_days"), s.get("valid_until"), store_raw))
+             s.get("horizon_days"), s.get("valid_until"), raw_val))
     for p in state.get("book_positions_closed", []):
         conn.execute(
             f"INSERT OR IGNORE INTO book_positions ({','.join(_POS_COLS)}) "
