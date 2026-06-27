@@ -1,0 +1,72 @@
+# .github/workflows/paper_book.yml
+name: paper_book
+
+# Runs the local paper book unattended: hydrate committed JSON state -> sync new
+# trade setups -> replay (freeze closed fills) -> compute forward-vs-QQQ metrics ->
+# commit book_state.json + metrics.json + dashboard.html back to the repo.
+
+on:
+  schedule:
+    - cron: "30 22 * * 1-5"
+  workflow_dispatch:
+
+concurrency:
+  group: paper_book
+  cancel-in-progress: false
+
+permissions:
+  contents: write
+
+jobs:
+  paper_book:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          fetch-depth: 1
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Record workflow start
+        env:
+          SUPABASE_URL:         ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
+        run: python agents/ops_recorder.py --phase start --agent workflow_paper_book
+
+      - uses: actions/setup-python@v6
+        with:
+          python-version: "3.12"
+          cache: pip
+
+      - name: Install deps
+        run: pip install yfinance
+
+      - name: Run paper book
+        env:
+          SUPABASE_URL:           ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_KEY:   ${{ secrets.SUPABASE_SERVICE_KEY }}
+          PAPER_BOOK_STATE_JSON:  paper_book/book_state.json
+        run: python scripts/paper_book.py run
+
+      - name: Commit and push
+        run: |
+          set -e
+          git config user.name  "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          if [ -z "$(git status --porcelain paper_book/)" ]; then
+            echo "No paper-book changes."
+            exit 0
+          fi
+          git add paper_book/book_state.json paper_book/metrics.json paper_book/dashboard.html
+          today=$(date -u +%Y-%m-%d)
+          git pull --rebase --autostash || true
+          git commit -m "chore(paper-book): auto forward mark ${today}"
+          git push || (git pull --rebase --autostash && git push)
+
+      - name: Record workflow finish
+        if: always()
+        env:
+          SUPABASE_URL:         ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
+          WORKFLOW_STATUS:      ${{ job.status }}
+        run: python agents/ops_recorder.py --phase finish --agent workflow_paper_book --status "$WORKFLOW_STATUS"

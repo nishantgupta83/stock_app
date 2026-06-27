@@ -25,4 +25,11 @@ security_best_practices_report.md
 regrade_data*/
 
 # Local Paper Book ledger + dashboard (SQLite + HTML) — local-only, off-Supabase.
-paper_book/
+# Ignore the whole directory contents but re-include the three files that the
+# paper_book workflow commits back (book_state.json, metrics.json, dashboard.html).
+# Must use paper_book/* (contents form), NOT paper_book/ (dir form), because git
+# refuses to un-ignore files inside a directory-ignored path.
+paper_book/*
+!paper_book/book_state.json
+!paper_book/metrics.json
+!paper_book/dashboard.html
