@@ -209,7 +209,8 @@ def write_metrics(conn, sync_ok: bool) -> Path | None:
     cfg = store.config(conn, LOOP)
     epoch = cfg.get("forward_epoch")
     positions = store.all_positions(conn)
-    qqq = bars_for(BENCH, dt.date(2026, 1, 1), dt.datetime.now(dt.timezone.utc).date())
+    start = dt.date.fromisoformat(epoch) if epoch else dt.date.today().replace(month=1, day=1)
+    qqq = bars_for(BENCH, start, dt.datetime.now(dt.timezone.utc).date())
     qqq_daily = {d: bar["close"] for d, bar in qqq.items()}
     metrics = met.compute_metrics(positions, qqq_daily, epoch, CAPITAL,
                                   sync_ok=sync_ok, rf_annual=RF_ANNUAL)
@@ -237,7 +238,8 @@ def main() -> int:
             sync(conn)
         except Exception as e:                                  # noqa: BLE001
             sync_ok = False
-            print(f"[sync] FAILED (non-fatal in CI): {e}", file=sys.stderr)
+            label = "non-fatal in CI" if STATE_JSON else "fatal locally"
+            print(f"[sync] FAILED ({label}): {e}", file=sys.stderr)
             if not STATE_JSON:                                  # local: fail loudly
                 raise
     if args.mode in ("replay", "run"):

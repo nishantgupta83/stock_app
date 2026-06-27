@@ -75,3 +75,11 @@ def test_compute_metrics_splits_forward_and_replay():
     assert out["replay"]["n_raw_trades"] == 1
     assert out["forward"]["n_raw_trades"] == 1
     assert out["tier"]["status"] == "inconclusive"   # only 1 forward cohort
+
+
+def test_compute_metrics_withholds_when_benchmark_unavailable():
+    pos = [{"opened_at": "2026-06-21T00:00:00+00:00", "closed_at": "2026-06-23T00:00:00+00:00",
+            "status": "closed", "notional": 1000.0, "realized_pnl": 50.0}]
+    out = m.compute_metrics(pos, {}, forward_epoch="2026-06-19", capital=5000.0, sync_ok=True)
+    assert out["tier"]["status"] == "inconclusive"
+    assert out["tier"]["reason"] == "benchmark_unavailable"

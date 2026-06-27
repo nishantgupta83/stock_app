@@ -194,5 +194,8 @@ def compute_metrics(positions, qqq_daily, forward_epoch, capital,
                           capital, rf_annual, sync_ok),
         "captured_at": dt.datetime.now(dt.timezone.utc).isoformat(),
     }
-    out["tier"] = classify_tier(out["forward"], tiers, sync_ok)
+    if not qqq_daily:
+        out["tier"] = {"status": "inconclusive", "reason": "benchmark_unavailable"}
+    else:
+        out["tier"] = classify_tier(out["forward"], tiers, sync_ok)
     return out
