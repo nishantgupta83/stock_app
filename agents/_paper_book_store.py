@@ -67,7 +67,15 @@ def connect(db_path) -> sqlite3.Connection:
     conn = sqlite3.connect(str(db_path))
     conn.row_factory = sqlite3.Row
     conn.executescript(_SCHEMA)
+    _ensure_columns(conn)
     return conn
+
+
+def _ensure_columns(conn) -> None:
+    cols = {r[1] for r in conn.execute("PRAGMA table_info(book_state)")}
+    if "forward_epoch" not in cols:
+        conn.execute("ALTER TABLE book_state ADD COLUMN forward_epoch TEXT")
+        conn.commit()
 
 
 def init_state(conn, *, loop_name, capital_base, max_concurrent, per_size) -> None:
@@ -158,3 +166,55 @@ def set_marks(conn, loop_name, *, last_open_scan_at=None, last_mark_at=None,
         vals.append(loop_name)
         conn.execute(f"UPDATE book_state SET {', '.join(sets)} WHERE loop_name=?", vals)
         conn.commit()
+
+
+# --- frozen-ledger state (export/import) ---
+
+def closed_setup_ids(conn) -> set[int]:
+    return {r["setup_id"] for r in conn.execute(
+        "SELECT setup_id FROM book_positions WHERE status='closed' AND setup_id IS NOT NULL")}
+
+
+def set_forward_epoch(conn, loop_name, epoch) -> None:
+    conn.execute("UPDATE book_state SET forward_epoch=? WHERE loop_name=?", (epoch, loop_name))
+    conn.commit()
+
+
+def export_state(conn, loop_name) -> dict:
+    closed = [dict(r) for r in conn.execute(
+        "SELECT * FROM book_positions WHERE status='closed' ORDER BY id")]
+    return {"book_state": config(conn, loop_name),
+            "book_setups": all_setups(conn),
+            "book_positions_closed": closed}
+
+
+_POS_COLS = ("setup_id", "signal_id", "ticker", "direction", "opened_at", "open_price",
+             "notional", "target_price", "stop_price", "target_pct", "stop_pct",
+             "horizon_days", "exit_target_date", "valid_until", "status", "closed_at",
+             "close_price", "close_reason", "realized_pct", "realized_pnl", "mfe_pct", "mae_pct")
+
+
+def import_state(conn, state: dict) -> None:
+    bs = state.get("book_state") or {}
+    if bs:
+        conn.execute(
+            "INSERT OR REPLACE INTO book_state (loop_name, capital_base, max_concurrent, "
+            "per_position_size, last_open_scan_at, last_mark_at, setup_cursor, forward_epoch) "
+            "VALUES (?,?,?,?,?,?,?,?)",
+            (bs.get("loop_name"), bs.get("capital_base"), bs.get("max_concurrent"),
+             bs.get("per_position_size"), bs.get("last_open_scan_at"), bs.get("last_mark_at"),
+             bs.get("setup_cursor"), bs.get("forward_epoch")))
+    for s in state.get("book_setups", []):
+        store_raw = s.get("raw")
+        conn.execute(
+            "INSERT OR IGNORE INTO book_setups (setup_id, signal_id, ticker, direction, "
+            "created_at, target_pct, stop_pct, horizon_days, valid_until, raw) VALUES (?,?,?,?,?,?,?,?,?,?)",
+            (s["setup_id"], s.get("signal_id"), s.get("ticker"), s.get("direction"),
+             s.get("created_at"), s.get("target_pct"), s.get("stop_pct"),
+             s.get("horizon_days"), s.get("valid_until"), store_raw))
+    for p in state.get("book_positions_closed", []):
+        conn.execute(
+            f"INSERT OR IGNORE INTO book_positions ({','.join(_POS_COLS)}) "
+            f"VALUES ({','.join('?' * len(_POS_COLS))})",
+            tuple(p.get(c) for c in _POS_COLS))
+    conn.commit()
