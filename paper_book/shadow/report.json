@@ -1,0 +1,90 @@
+{
+  "captured_at": "2026-06-28T14:22:28.251913+00:00",
+  "sync_ok": true,
+  "by_category": {
+    "payoff": {
+      "n_setups": 12,
+      "n_resolved": 12,
+      "mean_return_pct": -0.0061,
+      "mean_excess_vs_qqq_pct": -0.0024,
+      "win_rate": 0.3333,
+      "median_excess_pct": -0.005,
+      "status": "ok"
+    },
+    "vocabulary": {
+      "n_setups": 223,
+      "n_resolved": 223,
+      "mean_return_pct": 0.0328,
+      "mean_excess_vs_qqq_pct": 0.039,
+      "win_rate": 0.6592,
+      "median_excess_pct": 0.0359,
+      "status": "ok"
+    },
+    "instrument": {
+      "n_setups": 7,
+      "n_resolved": 4,
+      "mean_return_pct": 0.003,
+      "mean_excess_vs_qqq_pct": -0.0091,
+      "win_rate": 0.25,
+      "median_excess_pct": -0.0127,
+      "status": "ok"
+    },
+    "other": {
+      "n_setups": 8,
+      "n_resolved": 7,
+      "mean_return_pct": -0.0069,
+      "mean_excess_vs_qqq_pct": -0.0031,
+      "win_rate": 0.5714,
+      "median_excess_pct": 0.0115,
+      "status": "ok"
+    },
+    "overall_priceable": {
+      "n_setups": 246,
+      "n_resolved": 246,
+      "mean_return_pct": 0.0293,
+      "mean_excess_vs_qqq_pct": 0.035,
+      "win_rate": 0.6341,
+      "median_excess_pct": 0.0289,
+      "status": "ok"
+    }
+  },
+  "anomalies": [
+    {
+      "ticker": "VTSAX",
+      "reason_to_skip": "VTSAX not a tradeable instrument (fund/placeholder)",
+      "return_pct": 0.0162,
+      "excess_pct": -0.015214
+    },
+    {
+      "ticker": "VFIAX",
+      "reason_to_skip": "VFIAX not a tradeable instrument (fund/placeholder)",
+      "return_pct": 0.01676,
+      "excess_pct": -0.014654
+    },
+    {
+      "ticker": "CVX",
+      "reason_to_skip": "CVX not a tradeable instrument (fund/placeholder)",
+      "return_pct": -0.005822,
+      "excess_pct": 0.004248
+    },
+    {
+      "ticker": "CVX",
+      "reason_to_skip": "CVX not a tradeable instrument (fund/placeholder)",
+      "return_pct": -0.015,
+      "excess_pct": -0.010754
+    }
+  ],
+  "reason_distribution": {
+    "intelligence flagged AVOID_CHASE": 223,
+    "neutral or unknown signal direction": 8,
+    "rule 8k_material_event::h1d profit_factor 0.67 < 1.0 (no payoff edge)": 4,
+    "rule truth_social_post:kwd0037_sector_energy_dom:h1d profit_factor 0.00 < 1.0 (no payoff edge)": 3,
+    "INST_BLK not a tradeable instrument (fund/placeholder)": 2,
+    "rule 8k_material_event::h1d profit_factor 0.74 < 1.0 (no payoff edge)": 3,
+    "VTSAX not a tradeable instrument (fund/placeholder)": 1,
+    "VFIAX not a tradeable instrument (fund/placeholder)": 1,
+    "INST_VG not a tradeable instrument (fund/placeholder)": 1,
+    "CVX not a tradeable instrument (fund/placeholder)": 2,
+    "rule truth_social_post:kwd0037_sector_energy_dom:h1d profit_factor 0.15 < 1.0 (no payoff edge)": 2
+  }
+}
