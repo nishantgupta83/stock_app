@@ -167,13 +167,18 @@ def grade(conn) -> None:
     from price_agent import compute_paper_outcome  # deferred; avoids heavy import at test time
 
     today = dt.datetime.now(dt.timezone.utc).date()
+    setups = store.all_setups(conn)
     resolved = store.resolved_setup_ids(conn)
+    unresolved = [s for s in setups if s["setup_id"] not in resolved]
 
-    for s in store.all_setups(conn):
+    # Pre-warm the QQQ cache over the FULL window so per-setup matched-QQQ lookups
+    # (bars_for caches by ticker) don't lock to the first narrow range fetched.
+    if unresolved:
+        earliest = min(dt.date.fromisoformat(s["created_at"][:10]) for s in unresolved)
+        bars_for(BENCH, earliest, today)   # one wide fetch populates _BARS[BENCH]
+
+    for s in unresolved:
         sid = s["setup_id"]
-        if sid in resolved:
-            continue
-
         ticker = s["ticker"]
         created_date = dt.date.fromisoformat(s["created_at"][:10])
         direction = s.get("direction") or "long"
@@ -213,6 +218,7 @@ def grade(conn) -> None:
         exit_date = dt.date.fromisoformat(o["exit_at"][:10])
         exit_px = o["exit_price"]
         dir_mult = 1 if direction == "long" else -1
+        # gross return (slippage excluded) — the EXCESS vs gross QQQ is the diagnostic signal
         setup_ret = (exit_px - entry_open) / entry_open * dir_mult
 
         # Matched QQQ window return (gross, always long on QQQ).
@@ -257,6 +263,7 @@ def grade(conn) -> None:
 # ---------------------------------------------------------------------------
 
 def build_report(conn, sync_ok: bool) -> dict:
+    # n_setups counts OUTCOME rows (resolved+unpriceable); setups not yet graded are excluded until resolved
     rows = store.all_outcomes(conn)
     report = {
         "captured_at": dt.datetime.now(dt.timezone.utc).isoformat(),
