@@ -1,0 +1,70 @@
+# .github/workflows/paper_book_shadow.yml
+name: paper_book_shadow
+
+# Runs the shadow-skipped audit unattended: reads open paper-book positions that were
+# skipped, prices them forward, grades them, and commits state.json + report.json back.
+
+on:
+  schedule:
+    - cron: "45 22 * * 1-5"
+  workflow_dispatch:
+
+concurrency:
+  group: paper_book_shadow
+  cancel-in-progress: false
+
+permissions:
+  contents: write
+
+jobs:
+  paper_book_shadow:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          fetch-depth: 1
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Record workflow start
+        env:
+          SUPABASE_URL:         ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
+        run: python agents/ops_recorder.py --phase start --agent workflow_shadow_skipped
+
+      - uses: actions/setup-python@v6
+        with:
+          python-version: "3.12"
+          cache: pip
+
+      - name: Install deps
+        run: pip install -r requirements.txt
+
+      - name: Run shadow skipped audit
+        env:
+          SUPABASE_URL:         ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
+        run: python scripts/shadow_skipped.py
+
+      - name: Commit and push
+        run: |
+          set -e
+          git config user.name  "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          if [ -z "$(git status --porcelain paper_book/shadow/)" ]; then
+            echo "No shadow changes."
+            exit 0
+          fi
+          git add paper_book/shadow/state.json paper_book/shadow/report.json
+          today=$(date -u +%Y-%m-%d)
+          git pull --rebase --autostash || true
+          git commit -m "chore(shadow): forward-skip audit ${today}"
+          git push || (git pull --rebase --autostash && git push)
+
+      - name: Record workflow finish
+        if: always()
+        env:
+          SUPABASE_URL:         ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
+          WORKFLOW_STATUS:      ${{ job.status }}
+        run: python agents/ops_recorder.py --phase finish --agent workflow_shadow_skipped --status "$WORKFLOW_STATUS"

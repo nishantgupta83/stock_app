@@ -35,3 +35,7 @@ paper_book/*
 !paper_book/book_state.json
 !paper_book/metrics.json
 !paper_book/dashboard.html
+!paper_book/shadow/
+paper_book/shadow/*
+!paper_book/shadow/state.json
+!paper_book/shadow/report.json
