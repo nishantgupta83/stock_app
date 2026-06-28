@@ -66,11 +66,15 @@ def _seed(conn) -> None:
 
 def test_build_report_shape_and_anomaly(tmp_path, monkeypatch):
     monkeypatch.setenv("SHADOW_DB", str(tmp_path / "s.db"))
+    monkeypatch.setattr(orch, "REPORT", tmp_path / "report.json")
 
     conn = store.connect(tmp_path / "s.db")
     _seed(conn)
 
     report = orch.build_report(conn, sync_ok=True)
+
+    # report.json must land in tmp_path, NOT in the tracked working-tree path
+    assert (tmp_path / "report.json").exists()
 
     # Top-level keys present
     assert "by_category" in report

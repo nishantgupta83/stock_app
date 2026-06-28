@@ -44,6 +44,7 @@ jobs:
         env:
           SUPABASE_URL:         ${{ secrets.SUPABASE_URL }}
           SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
+          SHADOW_STATE_JSON:    paper_book/shadow/state.json
         run: python scripts/shadow_skipped.py
 
       - name: Commit and push
