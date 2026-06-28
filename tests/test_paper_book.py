@@ -88,6 +88,36 @@ def test_admit_same_day_exit_and_entry_frees_slot():
     assert len(admit_positions(cands, max_concurrent=1)) == 2
 
 
+def test_admit_frozen_occupants_block_live_over_capacity():
+    """Frozen closed trades must hold their historical capacity slots.
+
+    MAX_CONC=1. A frozen trade occupies 06-01..06-10. A live candidate in the same
+    window (06-02..06-09) must be BLOCKED because the slot is taken by the frozen
+    trade. A second live candidate starting after the frozen closes (06-11..) must
+    be ADMITTED because the slot is free by then.
+
+    This is the Fix 1 regression lock: on the OLD code (frozen skipped before
+    appending), both live candidates would have been admitted; on the NEW code
+    (frozen-as-capacity-occupant), only the post-freeze live candidate is admitted.
+    """
+    candidates = [
+        # frozen occupant: already in the ledger — carries only what admit_positions needs
+        {"setup_id": "F1", "frozen": True,
+         "entry_at": "2026-06-01", "exit_at": "2026-06-10"},
+        # live candidate inside the frozen window -> must be BLOCKED
+        {"setup_id": "L1", "frozen": False,
+         "entry_at": "2026-06-02", "exit_at": "2026-06-09"},
+        # live candidate starting after frozen closes -> must be ADMITTED
+        {"setup_id": "L2", "frozen": False,
+         "entry_at": "2026-06-11", "exit_at": "2026-06-20"},
+    ]
+    admitted = admit_positions(candidates, max_concurrent=1)
+    admitted_ids = {c["setup_id"] for c in admitted}
+    assert "F1" in admitted_ids, "frozen occupant must be admitted (counts for capacity)"
+    assert "L1" not in admitted_ids, "live candidate inside frozen window must be BLOCKED"
+    assert "L2" in admitted_ids, "live candidate after frozen closes must be admitted"
+
+
 def test_recompute_state_drawdown_replays_closed_equity_in_order():
     positions = [
         {"status": "closed", "notional": 1000.0, "realized_pnl": 100.0, "closed_at": "2026-06-01"},

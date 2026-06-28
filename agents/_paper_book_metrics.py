@@ -36,13 +36,15 @@ def _open_notional_on(positions, day) -> float:
 
 def book_equity_curve(positions, days, capital, rf_annual) -> dict:
     rf_daily = rf_annual / TRADING_DAYS
-    curve, interest = {}, 0.0
-    for day in days:
-        idle = max(0.0, capital - _open_notional_on(positions, day))
-        interest += idle * rf_daily
+    curve = {}
+    interest = 0.0
+    for i, day in enumerate(sorted(days)):
         realized = sum(float(p.get("realized_pnl") or 0) for p in positions
                        if p.get("status") == "closed" and p.get("closed_at")
                        and _d(p["closed_at"]) <= day)
+        if i > 0:  # no interest on the baseline day; idle cash includes realized PnL
+            idle = max(0.0, capital + realized - _open_notional_on(positions, day))
+            interest += idle * rf_daily
         curve[day] = round(capital + realized + interest, 2)
     return curve
 
@@ -165,7 +167,7 @@ def _block(sub, qqq_daily, days, capital, rf_annual, sync_ok) -> dict:
     qcurve = qqq_buy_hold_curve(qqq_daily, days, capital, days[0] if days else None)
     return {
         "n_raw_trades": len(closed),
-        "n_independent_cohorts": independent_cohorts(sub),
+        "n_independent_cohorts": independent_cohorts([p for p in sub if p.get("status") == "closed"]),
         "weeks": weeks_span(sub),
         "book_equity_end": bcurve[max(bcurve)] if bcurve else capital,
         "qqq_buy_hold_end": qcurve[max(qcurve)] if qcurve else capital,

@@ -45,6 +45,15 @@ def test_top_cohort_excess_share():
     assert m.top_cohort_excess_share(pos) == round(300 / 400, 4)
 
 
+def test_top_cohort_excess_share_mixed_sign():
+    # signed max is the WINNER (+300); abs-max would wrongly pick the loss (-500)
+    pos = [
+        {"status": "closed", "opened_at": "2026-06-21T00:00:00+00:00", "realized_pnl": -500},
+        {"status": "closed", "opened_at": "2026-06-22T00:00:00+00:00", "realized_pnl": 300},
+    ]
+    assert m.top_cohort_excess_share(pos) == round(300 / -200, 4)  # 300/(-500+300)
+
+
 def test_classify_tier_withholds_on_sync_failure():
     out = m.classify_tier({"n_independent_cohorts": 99, "weeks": 99, "cumulative_excess": 999,
                            "max_drawdown": 0.0, "top_cohort_excess_share": 0.1}, sync_ok=False)

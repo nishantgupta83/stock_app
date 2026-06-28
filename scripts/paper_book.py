@@ -129,11 +129,22 @@ def _next_session(bars: dict[dt.date, dict], on_or_after: dt.date):
 def replay(conn) -> None:
     from price_agent import compute_paper_outcome  # reuse the pipeline's stop_only grader
     setups = store.all_setups(conn)
-    frozen = store.closed_setup_ids(conn)            # never re-grade a frozen close
+    # frozen: closed trades in the committed ledger — they must OCCUPY their historical
+    # capacity slots so a competing live candidate in the same window is correctly blocked.
+    # Use the stored opened_at/closed_at (NO bar fetch, NO re-grade).
+    closed_by_setup = {p["setup_id"]: p for p in store.all_positions(conn)
+                       if p.get("status") == "closed"}
     today = dt.datetime.now(dt.timezone.utc).date()
     candidates: list[dict] = []
     for s in setups:
-        if s["setup_id"] in frozen:                  # skip: already closed in committed ledger
+        sid = s["setup_id"]
+        if sid in closed_by_setup:                   # frozen: hold capacity slot, do NOT re-open
+            p = closed_by_setup[sid]
+            candidates.append({
+                "setup_id": sid, "frozen": True,
+                "entry_at": p["opened_at"][:10],
+                "exit_at": (p["closed_at"][:10] if p.get("closed_at") else None),
+            })
             continue
         created = dt.date.fromisoformat(s["created_at"][:10])
         # enter the NEXT session on/after the setup (a trader acting the next morning)
@@ -158,10 +169,13 @@ def replay(conn) -> None:
             "valid_until": s.get("valid_until"),
             "exit_at": (outcome["exit_at"][:10] if outcome else None),
             "outcome": outcome,
+            "frozen": False,
         })
     admitted = eng.admit_positions(candidates, MAX_CONC)
     opened = closed = 0
     for c in admitted:
+        if c.get("frozen"):
+            continue   # already in the ledger; counted for capacity only
         if store.open_position(conn, setup_id=c["setup_id"], signal_id=c["signal_id"],
                                ticker=c["ticker"], direction=c["direction"],
                                opened_at=c["entry_at"] + "T00:00:00+00:00",
@@ -209,7 +223,11 @@ def write_metrics(conn, sync_ok: bool) -> Path | None:
     cfg = store.config(conn, LOOP)
     epoch = cfg.get("forward_epoch")
     positions = store.all_positions(conn)
-    start = dt.date.fromisoformat(epoch) if epoch else dt.date.today().replace(month=1, day=1)
+    # Start QQQ from the earliest position so the replay block has a real benchmark.
+    # Falling back to epoch (then YTD) only when there are no positions yet.
+    _opened = [p["opened_at"][:10] for p in positions if p.get("opened_at")]
+    start = dt.date.fromisoformat(min(_opened)) if _opened else \
+            (dt.date.fromisoformat(epoch) if epoch else dt.date.today().replace(month=1, day=1))
     qqq = bars_for(BENCH, start, dt.datetime.now(dt.timezone.utc).date())
     qqq_daily = {d: bar["close"] for d, bar in qqq.items()}
     metrics = met.compute_metrics(positions, qqq_daily, epoch, CAPITAL,
