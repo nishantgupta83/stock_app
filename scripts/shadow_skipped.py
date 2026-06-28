@@ -178,84 +178,90 @@ def grade(conn) -> None:
         bars_for(BENCH, earliest, today)   # one wide fetch populates _BARS[BENCH]
 
     for s in unresolved:
-        sid = s["setup_id"]
-        ticker = s["ticker"]
-        created_date = dt.date.fromisoformat(s["created_at"][:10])
-        direction = s.get("direction") or "long"
+        try:
+            sid = s["setup_id"]
+            ticker = s["ticker"]
+            created_date = dt.date.fromisoformat(s["created_at"][:10])
+            direction = s.get("direction") or "long"
 
-        bars = bars_for(ticker, created_date, today)
-        if not bars:
-            # Unpriceable — quarantine but do not crash.
+            bars = bars_for(ticker, created_date, today)
+            if not bars:
+                # Unpriceable — quarantine but do not crash.
+                store.freeze_outcome(
+                    conn, setup_id=sid, ticker=ticker,
+                    skip_category=s.get("skip_category"),
+                    reason_to_skip=s.get("reason_to_skip"),
+                    priceable=False, status="unpriceable",
+                    entry_date=None, entry_px=None,
+                    exit_date=None, exit_px=None,
+                    return_pct=None, qqq_return_pct=None, excess_pct=None)
+                continue
+
+            # Entry: first session on/after created_at + 1 day (act the next morning).
+            entry = _next_session(bars, created_date + dt.timedelta(days=1))
+            if not entry:
+                continue  # too fresh; no session yet — revisit next run
+
+            entry_date, entry_bar = entry
+            entry_open = entry_bar["open"]
+            trade = {
+                "entry_at": entry_date.isoformat() + "T00:00:00+00:00",
+                "entry_price": entry_open,
+                "direction": direction,
+                "horizon_days": int(s.get("horizon_days") or 30),
+                "target_pct": s.get("target_pct"),
+                "stop_pct": s.get("stop_pct"),
+            }
+            o = compute_paper_outcome(trade, bars, exit_policy="stop_only")
+            if o is None:
+                continue  # too fresh; bars don't cover the horizon yet — revisit next run
+
+            exit_date = dt.date.fromisoformat(o["exit_at"][:10])
+            if exit_date >= today:
+                continue   # exit not on a completed session yet — re-grade once today's bar is final
+
+            exit_px = o["exit_price"]
+            dir_mult = 1 if direction == "long" else -1
+            # gross return (slippage excluded) — the EXCESS vs gross QQQ is the diagnostic signal
+            setup_ret = (exit_px - entry_open) / entry_open * dir_mult
+
+            # Matched QQQ window return (gross, always long on QQQ).
+            qbars = bars_for(BENCH, entry_date, exit_date)
+            q_entry_px = q_exit_px = None
+            if qbars:
+                # Exact date preferred; fall back to nearest on/after.
+                if entry_date in qbars:
+                    q_entry_px = qbars[entry_date]["close"]
+                else:
+                    for d in sorted(qbars):
+                        if d >= entry_date:
+                            q_entry_px = qbars[d]["close"]
+                            break
+                if exit_date in qbars:
+                    q_exit_px = qbars[exit_date]["close"]
+                else:
+                    for d in sorted(qbars):
+                        if d >= exit_date:
+                            q_exit_px = qbars[d]["close"]
+                            break
+            if q_entry_px is None or q_exit_px is None:
+                continue   # benchmark missing — leave UNRESOLVED, retry next run (don't freeze a bogus excess)
+            qqq_ret = (q_exit_px - q_entry_px) / q_entry_px
+
             store.freeze_outcome(
                 conn, setup_id=sid, ticker=ticker,
                 skip_category=s.get("skip_category"),
                 reason_to_skip=s.get("reason_to_skip"),
-                priceable=False, status="unpriceable",
-                entry_date=None, entry_px=None,
-                exit_date=None, exit_px=None,
-                return_pct=None, qqq_return_pct=None, excess_pct=None)
-            continue
-
-        # Entry: first session on/after created_at + 1 day (act the next morning).
-        entry = _next_session(bars, created_date + dt.timedelta(days=1))
-        if not entry:
-            continue  # too fresh; no session yet — revisit next run
-
-        entry_date, entry_bar = entry
-        entry_open = entry_bar["open"]
-        trade = {
-            "entry_at": entry_date.isoformat() + "T00:00:00+00:00",
-            "entry_price": entry_open,
-            "direction": direction,
-            "horizon_days": int(s.get("horizon_days") or 30),
-            "target_pct": s.get("target_pct"),
-            "stop_pct": s.get("stop_pct"),
-        }
-        o = compute_paper_outcome(trade, bars, exit_policy="stop_only")
-        if o is None:
-            continue  # too fresh; bars don't cover the horizon yet — revisit next run
-
-        exit_date = dt.date.fromisoformat(o["exit_at"][:10])
-        exit_px = o["exit_price"]
-        dir_mult = 1 if direction == "long" else -1
-        # gross return (slippage excluded) — the EXCESS vs gross QQQ is the diagnostic signal
-        setup_ret = (exit_px - entry_open) / entry_open * dir_mult
-
-        # Matched QQQ window return (gross, always long on QQQ).
-        qbars = bars_for(BENCH, entry_date, exit_date)
-        q_entry_px = q_exit_px = None
-        if qbars:
-            # Exact date preferred; fall back to nearest on/after.
-            if entry_date in qbars:
-                q_entry_px = qbars[entry_date]["close"]
-            else:
-                for d in sorted(qbars):
-                    if d >= entry_date:
-                        q_entry_px = qbars[d]["close"]
-                        break
-            if exit_date in qbars:
-                q_exit_px = qbars[exit_date]["close"]
-            else:
-                for d in sorted(qbars):
-                    if d >= exit_date:
-                        q_exit_px = qbars[d]["close"]
-                        break
-        qqq_ret = (
-            (q_exit_px - q_entry_px) / q_entry_px
-            if q_entry_px and q_exit_px else 0.0)
-
-        store.freeze_outcome(
-            conn, setup_id=sid, ticker=ticker,
-            skip_category=s.get("skip_category"),
-            reason_to_skip=s.get("reason_to_skip"),
-            priceable=True, status="resolved",
-            entry_date=entry_date.isoformat(),
-            entry_px=round(entry_open, 4),
-            exit_date=exit_date.isoformat(),
-            exit_px=round(exit_px, 4),
-            return_pct=round(setup_ret, 6),
-            qqq_return_pct=round(qqq_ret, 6),
-            excess_pct=round(setup_ret - qqq_ret, 6))
+                priceable=True, status="resolved",
+                entry_date=entry_date.isoformat(),
+                entry_px=round(entry_open, 4),
+                exit_date=exit_date.isoformat(),
+                exit_px=round(exit_px, 4),
+                return_pct=round(setup_ret, 6),
+                qqq_return_pct=round(qqq_ret, 6),
+                excess_pct=round(setup_ret - qqq_ret, 6))
+        except Exception as e:  # noqa: BLE001
+            print(f"  shadow grade skipped setup {s.get('setup_id')}: {e}", file=sys.stderr)
 
 
 # ---------------------------------------------------------------------------
