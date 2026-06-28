@@ -1,0 +1,78 @@
+// stock_app architecture — render: dot -Tpng docs/architecture.dot -o docs/architecture.png
+// Six-layer pipeline + the learn->act feedback loop + forward-edge validation.
+// Palette: sky-blue / sage / coral / amber / slate — no purple (project UI rule).
+digraph stock_app {
+  rankdir=TB;
+  bgcolor="white";
+  labelloc="t";
+  fontname="Helvetica"; fontsize=18;
+  label="stock_app — market-intelligence pipeline (learn → reason → act)";
+  node [fontname="Helvetica", fontsize=11, style="filled,rounded", shape=box, color="#444444"];
+  edge [fontname="Helvetica", fontsize=9, color="#555555"];
+  graph [fontname="Helvetica", fontsize=12, labeljust="l"];
+
+  ext [label="External sources\nEDGAR · RSS · Truth Social · 13F · yfinance · FRED / FDA", shape=note, fillcolor="#ededed"];
+
+  subgraph cluster_l1 {
+    label="Layer 1 · INGEST"; style="filled,rounded"; fillcolor="#e6f3f7"; color="#9cc3d5";
+    l1 [label="filing · news · truth_social · earnings\ncrypto_macro · flows · intraday_alert · market_scanner", fillcolor="#cfe8f0"];
+  }
+  ev [label="stock_normalized_events", shape=cylinder, fillcolor="#fdf0d5"];
+
+  subgraph cluster_l2 {
+    label="Layer 2 · INTELLIGENCE   (\"reasoning\" = §17.7 100-pt rubric + bonuses)";
+    style="filled,rounded"; fillcolor="#eaf4ea"; color="#a9cca9";
+    l2 [label="thesis_agent\ncluster + rubric + intelligence bonuses", fillcolor="#d6ead6"];
+  }
+  sig [label="stock_signals", shape=cylinder, fillcolor="#fdf0d5"];
+
+  subgraph cluster_l3 {
+    label="Layer 3 · TRADE CONSTRUCTION"; style="filled,rounded"; fillcolor="#fdeee8"; color="#e6b8a2";
+    l3 [label="trade_setup_agent\nsetup   OR   reason_to_skip", fillcolor="#f7d9cb"];
+  }
+  setups [label="stock_trade_setups", shape=cylinder, fillcolor="#fdf0d5"];
+
+  subgraph cluster_l4 {
+    label="Layer 4 · RISK / SIZING"; style="filled,rounded"; fillcolor="#fdeee8"; color="#e6b8a2";
+    l4 [label="risk_agent\nVan Tharp sizing · drawdown breaker · daily budget", fillcolor="#f7d9cb"];
+  }
+
+  subgraph cluster_l5 {
+    label="Layer 5 · LEARNING   (the loop)"; style="filled,rounded"; fillcolor="#eaf4ea"; color="#a9cca9";
+    l5 [label="event_paper_agent (hourly) → paper trades\nprice_agent (2h) → grade outcomes", fillcolor="#d6ead6"];
+  }
+  cal [label="stock_rule_calibration\nper-rule   PF · accuracy · n", shape=cylinder, fillcolor="#ffe1a8"];
+
+  subgraph cluster_fv {
+    label="Layer 5.5 · FORWARD-EDGE VALIDATION   (isolated · read-only · committed JSON, off-Supabase)";
+    style="filled,rounded"; fillcolor="#eef2f7"; color="#b9c6d8";
+    pb [label="paper_book\ngrade TRADEABLE setups vs $5k QQQ → tier", fillcolor="#dde7f0"];
+    sh [label="paper_book_shadow\ngrade SKIPPED setups by reason → which gate over-filters?", fillcolor="#dde7f0"];
+  }
+
+  subgraph cluster_l6 {
+    label="Layer 6 · PRESENTATION"; style="filled,rounded"; fillcolor="#e6f3f7"; color="#9cc3d5";
+    l6 [label="site_generator → dashboard · Telegram", fillcolor="#cfe8f0"];
+  }
+
+  gate  [label="rule matured?\nn ≥ 30 · PF ≥ bar · forward-held", shape=diamond, fillcolor="#ffe1a8"];
+  watch [label="WATCH / RESEARCH / AVOID_CHASE\n(paper only — today: ALL signals)", fillcolor="#f7d9cb"];
+  buy   [label="BUY / SELL\n(real conviction — today: NONE; 0 mature)", fillcolor="#d6ead6"];
+
+  // primary data flow (each layer writes only its own output table)
+  ext -> l1 -> ev -> l2 -> sig -> l3 -> setups -> l4;
+  sig -> l5; setups -> l5; l5 -> cal;
+  l4 -> l6; cal -> l6;
+
+  // forward validators read Layer 3 (read-only)
+  setups -> pb; setups -> sh;
+
+  // the learn -> act feedback loop (calibration gates the layers above)
+  cal -> l2 [style=dashed, penwidth=1.6, color="#2a9d8f", fontcolor="#1f7a6e", label="learn → act:\ngate scoring", constraint=false];
+  cal -> l3 [style=dashed, penwidth=1.6, color="#2a9d8f", fontcolor="#1f7a6e", label="skip if PF < 1.0", constraint=false];
+
+  // maturity gate: paper until a rule earns BUY/SELL on honest, forward-held evidence
+  cal -> gate;
+  gate -> watch [label="no"];
+  gate -> buy   [label="yes"];
+}

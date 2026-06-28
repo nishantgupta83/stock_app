@@ -158,6 +158,21 @@ Layer 6 — PRESENTATION (read-only)
   in:  everything
   out: hub4apps.com/stock_app/{dashboard, status.json}, Telegram alerts
   agents: site_generator, telegram_dispatcher
+
+Layer 5.5 — FORWARD-EDGE VALIDATION (added 2026-06; isolated, read-only, off-Supabase)
+  in:  stock_trade_setups (Layer 3) + yfinance bars
+  out: committed JSON in the repo (paper_book/*, paper_book/shadow/*) — NOT Supabase
+  agents:
+    paper_book        — auto forward loop: grades the TRADEABLE setups vs a $5k QQQ
+                        buy-and-hold (staggered tier continue/inconclusive/fail);
+                        immutable frozen ledger. Currently starved (0 tradeable setups).
+    paper_book_shadow — grades the SKIPPED setups (per-setup, capacity-free) stratified
+                        by skip-reason (payoff/vocabulary/instrument) → which gate
+                        over-filters + instrument-gate anomalies (e.g. CVX/Chevron).
+  why: the maturity gate stays shut (0 mature rules on HONEST evidence after the
+       2026-06 effective-n + stop_only-grading fixes); these accrue the forward
+       evidence to answer "does an edge exist FORWARD" without faking it.
+       Design: docs/design/2026-06-2{6,7}-*.md. Diagram: docs/architecture.md.
 ```
 
 **Key tables:**

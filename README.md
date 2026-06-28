@@ -111,7 +111,11 @@ The current technical diagram and operational runbook live in
 - core table responsibilities and forecast modes
 - current verification snapshot from the Phase 6B rollout
 
-## Pipeline (25 GitHub Actions jobs across 6 layers)
+A one-page **visual** of the full pipeline — the six layers, the learn→act feedback
+loop, and the forward-edge validation harness — is in
+[`docs/architecture.md`](docs/architecture.md).
+
+## Pipeline (35 GitHub Actions jobs across 6 layers + forward-edge validation)
 
 `ls .github/workflows/*.yml | wc -l` for the live count. Layers are isolated:
 ingest → intelligence → trade construction → risk → learning → presentation.
@@ -142,6 +146,8 @@ adapter is explicitly NOT in this cycle.
 | `backtester`          | manual only       | 180-day replay → precision/calibration metrics. OOS chronological 70/30 split emits `OVERFIT_RISK_HIGH` when out-of-sample underperforms in-sample. |
 | `site_generator`      | `*/15 * * * *` + workflow_run on 7 upstream agents | Supabase → Jinja2 HTML → FTPS auto-deploy to Hostinger. Post-deploy smoke verifies every tab carries the same `git_sha` meta tag (fix D5 — catches partial FTPS uploads). Emits `status.json` v1.1 with `git_sha`, `pipeline_version`, `agents.inventory_count`, and per-layer counts. Surfaces Layer 3 (Setups) and Layer 4 (Risk) tabs on the dashboard. |
 | `source_review_agent` | `0 13 1 * *`      | Monthly health check on every external feed → Telegram digest |
+| `paper_book`          | `30 22 * * 1-5`   | **Forward-edge validation (Layer 5.5).** Grades the TRADEABLE `stock_trade_setups` forward as a $5k paper book vs a $5k QQQ buy-and-hold; immutable frozen ledger; staggered tier (continue/inconclusive/fail → edge → conviction). Reads Layer 3 + yfinance only; commits JSON to `paper_book/`. Currently starved (0 tradeable setups → honest `inconclusive`). Design: `docs/design/2026-06-26-paper-book-forward-edge.md`. |
+| `paper_book_shadow`   | `45 22 * * 1-5`   | **Skip-gate audit (Layer 5.5).** Grades the SKIPPED setups (per-setup, capacity-free) stratified by skip-reason (payoff / vocabulary / instrument) → which gate over-filters real edge + instrument-gate anomalies (e.g. CVX/Chevron). Fully isolated, read-only; commits JSON to `paper_book/shadow/`. Design: `docs/design/2026-06-27-paper-book-shadow-skipped.md`. |
 
 ### One-time helper
 
