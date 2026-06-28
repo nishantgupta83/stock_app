@@ -18,7 +18,7 @@
 - Closed fills are **frozen** once recorded — never re-derived from (mutable) yfinance bars.
 - Tier ① output is `continue | inconclusive | fail` (small-n honesty); `fail` only on clear negative excess or >20% drawdown.
 - Tier classification is **withheld** (`inconclusive: sync_failed`) when `sync_ok=false`.
-- Local run (`PAPER_BOOK_STATE_JSON` unset) behavior must be **byte-identical** to today.
+- Local run stays **non-regressing**: the SQLite workflow and the `sync`/`replay`/`state`/`dash` outputs are unchanged, and the JSON state round-trip (`book_state.json` hydrate/dump) is **CI-only** (gated on `PAPER_BOOK_STATE_JSON`). `run` mode additionally writes `metrics.json` both locally and in CI (additive — the local dashboard needs it for the tier).
 - Per-PR: send each task's diff to Codex (read-only, neutral prompt) before commit, per repo CLAUDE.md.
 
 ## File Structure
