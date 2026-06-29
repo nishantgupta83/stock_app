@@ -42,6 +42,7 @@ digraph stock_app {
     l5 [label="event_paper_agent (hourly) → paper trades\nprice_agent (2h) → grade outcomes", fillcolor="#d6ead6"];
   }
   cal [label="stock_rule_calibration\nper-rule   PF · accuracy · n", shape=cylinder, fillcolor="#ffe1a8"];
+  riskd [label="stock_risk_decisions", shape=cylinder, fillcolor="#fdf0d5"];
 
   subgraph cluster_fv {
     label="Layer 5.5 · FORWARD-EDGE VALIDATION   (isolated · read-only · committed JSON, off-Supabase)";
@@ -62,7 +63,7 @@ digraph stock_app {
   // primary data flow (each layer writes only its own output table)
   ext -> l1 -> ev -> l2 -> sig -> l3 -> setups -> l4;
   sig -> l5; setups -> l5; l5 -> cal;
-  l4 -> l6; cal -> l6;
+  l4 -> riskd -> l6; cal -> l6;
 
   // forward validators read Layer 3 (read-only)
   setups -> pb; setups -> sh;

@@ -21,7 +21,7 @@ bug in one layer cannot corrupt the layers above.
 | **2 · Intelligence** | `thesis_agent` clusters events + scores them with the §17.7 100-point rubric + intelligence bonuses. *(This is the "reasoning" today — structured scoring, not an LLM.)* | `stock_signals` |
 | **3 · Trade construction** | `trade_setup_agent` turns each signal into a tradable setup **or** records a `reason_to_skip` | `stock_trade_setups` |
 | **4 · Risk / sizing** | `risk_agent` — Van Tharp sizing, drawdown circuit-breaker, daily budget (paper only) | `stock_risk_decisions` |
-| **5 · Learning** | `event_paper_agent` opens paper trades hourly; `price_agent` grades outcomes every 2h → updates per-rule profit-factor / accuracy / n | `stock_rule_calibration` |
+| **5 · Learning** | `event_paper_agent` opens paper trades hourly into `stock_event_paper_trades`; `price_agent` grades outcomes every 2h → updates per-rule profit-factor / accuracy / n | `stock_event_paper_trades`, `stock_rule_calibration` |
 | **6 · Presentation** | `site_generator` → dashboard + Telegram | hub4apps.com |
 
 ## The learn → act loop (the dashed teal edges)
@@ -37,16 +37,30 @@ This is what makes it a *learning* system rather than a static scorer:
 So the system doesn't just record — it *changes its behavior from realized outcomes*.
 The clearest proof: in June 2026 the grader was made honest (count the declared stop
 instead of holding naked to the horizon), and the one rule that looked mature
-(`8k_material_event::h30d`) **demoted itself** — PF 2.45 → 2.02, mature → not-mature —
-and the pipeline stopped proposing it. It talked itself *down* rather than trade a fake edge.
+(`8k_material_event::h30d`) **lost its maturity** — its profit-factor fell from 2.45 to
+~2.0 and the new effective-`n` gate dropped it below the **maturity bar** (the strict
+graduation bar — *not* the `PF < 1.0` skip bar below; the two thresholds are distinct), so
+it reverted to paper and the pipeline stopped proposing it. It talked itself *down* rather
+than trade a fake edge.
 
 ## The maturity gate (paper → conviction)
 
-The bottom of the diagram. The pipeline emits **WATCH / RESEARCH / AVOID_CHASE** (paper
-only) until a rule's calibration crosses the gate (n ≥ 30, PF ≥ bar) **and holds
-forward** — only then does it graduate to **BUY / SELL**. As of 2026-06, **0 rules are
-mature** on honest evidence, so everything is paper. That is by design: the gate refuses
-to license conviction it hasn't earned.
+The bottom of the diagram. **Two different thresholds matter — do not blur them:**
+
+- **Layer 3 tradeable bar (`PF < 1.0` → skip):** if a rule's calibrated profit-factor is
+  below 1.0, `trade_setup_agent` refuses to build a setup at all (`reason_to_skip = "no
+  payoff edge"`). This is why there are currently **0 tradeable setups**.
+- **Maturity bar (graduate to BUY/SELL):** a *far* stricter, payoff-aware gate — effective
+  sample size **n ≥ 30** (collapsed so correlated same-day trades can't inflate it) **and**
+  profit-factor at/above the maturity bar (well above 1.0 — ~2.0 in practice) **and** the
+  edge must **hold forward**. "Holds forward" today means a human reading the
+  forward-validation reports (`paper_book` / `paper_book_shadow`) — it is **not yet an
+  automated edge** wired into the gate.
+
+The pipeline emits **WATCH / RESEARCH / AVOID_CHASE** (paper only) until a rule clears the
+maturity bar; only then does it graduate to **BUY / SELL**. As of 2026-06, **0 rules are
+mature** on honest evidence, so everything is paper — by design: the gate refuses to
+license conviction it hasn't earned.
 
 ## Layer 5.5 · Forward-edge validation (added 2026-06)
 
