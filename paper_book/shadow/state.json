@@ -1,5 +1,5 @@
 {
-"cursor": "2026-06-25T12:23:17.45296+00:00",
+"cursor": "2026-06-29T21:21:21.911425+00:00",
 "setups": [
 {
 "setup_id": 315,
@@ -3514,6 +3514,20 @@
 "reason_to_skip": "rule 8k_material_event::h1d profit_factor 0.76 < 1.0 (no payoff edge)",
 "skip_category": "payoff",
 "raw": "{\"id\": 601, \"signal_id\": 8518, \"ticker\": \"JPM\", \"direction\": \"short\", \"created_at\": \"2026-06-25T12:23:17.45296+00:00\", \"target_pct\": 0.02, \"stop_pct\": 0.015, \"horizon_days\": 1, \"valid_until\": \"2026-06-30T12:22:45.508542+00:00\", \"reason_to_skip\": \"rule 8k_material_event::h1d profit_factor 0.76 < 1.0 (no payoff edge)\"}"
+},
+{
+"setup_id": 602,
+"signal_id": 8714,
+"ticker": "NVDA",
+"direction": "long",
+"created_at": "2026-06-29T21:21:21.911425+00:00",
+"target_pct": 0.05,
+"stop_pct": 0.03,
+"horizon_days": 1,
+"valid_until": "2026-07-06T21:20:57.111115+00:00",
+"reason_to_skip": "neutral or unknown signal direction",
+"skip_category": "other",
+"raw": "{\"id\": 602, \"signal_id\": 8714, \"ticker\": \"NVDA\", \"direction\": \"long\", \"created_at\": \"2026-06-29T21:21:21.911425+00:00\", \"target_pct\": 0.05, \"stop_pct\": 0.03, \"horizon_days\": 1, \"valid_until\": \"2026-07-06T21:20:57.111115+00:00\", \"reason_to_skip\": \"neutral or unknown signal direction\"}"
 }
 ],
 "outcomes": [
