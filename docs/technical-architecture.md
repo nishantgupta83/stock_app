@@ -52,6 +52,15 @@ Layer 5 — LEARNING (empirical calibration, NOT trained ML — see ml-roadmap.m
         on prob_win), NOT a trained classifier. See `docs/ml-roadmap.md`
         for the four gate criteria that would justify adding real ML.
 
+Layer 5.5 — FORWARD-EDGE VALIDATION (added 2026-06; isolated, read-only, off-Supabase)
+  in:  stock_trade_setups + yfinance bars
+  out: committed JSON in the repo (paper_book/*, paper_book/shadow/*), NOT Supabase
+  agents: paper_book (grade TRADEABLE setups vs $5k QQQ → staggered tier),
+          paper_book_shadow (grade SKIPPED setups by skip-reason → which gate over-filters)
+  note: answers "does an edge exist FORWARD" while the maturity gate stays shut
+        (0 mature rules on honest evidence after the 2026-06 stop_only/effective-n fixes).
+        See docs/architecture.md and RUNBOOK.md §5b.
+
 Layer 6 — PRESENTATION
   in:  everything (read-only)
   out: hub4apps.com/stock_app/{dashboard tabs, status.json}, Telegram
@@ -72,6 +81,12 @@ external `cron-job.org` pingers re-dispatch the seven tightest-cadence
 workflows when GHA-native cron drifts more than 7 minutes
 (see [`RUNBOOK.md`](RUNBOOK.md) §8). `concurrency: cancel-in-progress`
 on each workflow makes the double-dispatch harmless.
+
+The two **forward-edge validators** (`paper_book`, `paper_book_shadow` — Layer 5.5, added
+2026-06) sit intentionally OUTSIDE `AGENT_INVENTORY`: they are isolated, read-only, and
+commit JSON to the repo rather than writing Supabase, so the dashboard / `status.json` do
+not track them. They are not pinged (GHA cron only) and add negligible read egress.
+See [`RUNBOOK.md`](RUNBOOK.md) §5b and [`architecture.md`](architecture.md).
 
 ## Runtime Topology
 

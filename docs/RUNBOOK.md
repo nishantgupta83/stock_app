@@ -35,6 +35,8 @@ external infrastructure, and what to do when something breaks.
 | `30 21 * * 1-5` | `price_agent`, `market_scanner_agent` | **EOD: close paper trades + update calibration** |
 | `30 22 * * 1-5` | `defense_agent` | After-close DoD contract scan |
 | `35 21 * * 1-5` | `crypto_macro_agent` | After-close BTC/ETH probe |
+| `30 22 * * 1-5` | `paper_book` | **Forward-edge validation (Layer 5.5)** — grade tradeable setups vs $5k QQQ; commits `paper_book/` |
+| `45 22 * * 1-5` | `paper_book_shadow` | **Skip-gate audit (Layer 5.5)** — grade SKIPPED setups by reason; commits `paper_book/shadow/` |
 | `0 4 * * *` | `audit_agent` | **Daily integrity check** — five cross-table invariants, Telegrams on failure |
 
 **The critical learning step is `price_agent` at 21:30 UTC weekdays.** This is where matured
@@ -174,6 +176,39 @@ intervention the loop needs is data: as new tickers, agents, or watchlists are a
 calibration starts at zero for them.
 
 ---
+
+## 5b. Forward-edge validation (`paper_book` + `paper_book_shadow`)
+
+Two isolated, read-only validators (Layer 5.5, added 2026-06) that answer the binding
+question — *does an edge exist forward?* — without touching Supabase or the tradeable
+pipeline. They read Layer 3 (`stock_trade_setups`) + yfinance bars and **commit JSON to the
+repo**, not Supabase.
+
+| Workflow | Cadence (UTC) | What it grades | Artifacts (committed) |
+|---|---|---|---|
+| `paper_book` | `30 22 * * 1-5` | the **tradeable** setups, as a $5k book vs a $5k QQQ buy-and-hold → staggered tier | `paper_book/{book_state,metrics,dashboard}.*` |
+| `paper_book_shadow` | `45 22 * * 1-5` | the **skipped** setups, per-setup, by skip-reason → which gate over-filters | `paper_book/shadow/{state,report}.json` |
+
+**Operate them:**
+
+```bash
+# trigger a run on demand (validates + commits a fresh report)
+gh workflow run paper_book.yml         --repo nishantgupta83/stock_app
+gh workflow run paper_book_shadow.yml  --repo nishantgupta83/stock_app
+
+# read the results (the workflow commits them back to the repo)
+git pull
+python3 -c "import json; print(json.load(open('paper_book/metrics.json'))['tier'])"               # tradeable-book tier
+python3 -c "import json; print(json.load(open('paper_book/shadow/report.json'))['by_category'])"  # skip-gate diagnostic
+```
+
+**Egress:** minimal + bounded — incremental cursor (`created_at > cursor`), narrow `select`,
+no `count=exact`, and **not** in the `cron-job.org` pinger set, so they cannot fall into the
+§8 egress trap. ~<2 MB/mo Supabase read; yfinance does the grading (off-Supabase).
+
+**Honest caveat:** the first run cold-starts 30 days back, so its numbers are a *replay*, not
+forward data — regime-correlated. Trust the trend only as genuinely-forward setups accrue.
+Design: `docs/design/2026-06-2{6,7}-*.md`; visual: `docs/architecture.md`.
 
 ## 6. Manual triggers (if you ever need them)
 
