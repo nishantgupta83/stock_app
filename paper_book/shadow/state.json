@@ -7280,6 +7280,21 @@
 "return_pct": 0.017644,
 "qqq_return_pct": -0.013764,
 "excess_pct": 0.031407
+},
+{
+"setup_id": 601,
+"ticker": "JPM",
+"skip_category": "payoff",
+"reason_to_skip": "rule 8k_material_event::h1d profit_factor 0.76 < 1.0 (no payoff edge)",
+"priceable": 1,
+"status": "resolved",
+"entry_date": "2026-06-26",
+"entry_px": 336.0,
+"exit_date": "2026-06-29",
+"exit_px": 329.39,
+"return_pct": 0.019673,
+"qqq_return_pct": 0.024854,
+"excess_pct": -0.005182
 }
 ]
 }
