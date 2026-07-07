@@ -1,5 +1,5 @@
 {
-  "captured_at": "2026-07-06T23:45:07.571624+00:00",
+  "captured_at": "2026-07-07T23:36:46.300215+00:00",
   "sync_ok": true,
   "by_category": {
     "payoff": {
@@ -12,12 +12,12 @@
       "status": "ok"
     },
     "vocabulary": {
-      "n_setups": 223,
-      "n_resolved": 223,
-      "mean_return_pct": 0.0328,
-      "mean_excess_vs_qqq_pct": 0.039,
-      "win_rate": 0.6592,
-      "median_excess_pct": 0.0359,
+      "n_setups": 224,
+      "n_resolved": 224,
+      "mean_return_pct": 0.0327,
+      "mean_excess_vs_qqq_pct": 0.0388,
+      "win_rate": 0.6562,
+      "median_excess_pct": 0.0353,
       "status": "ok"
     },
     "instrument": {
@@ -39,12 +39,12 @@
       "status": "ok"
     },
     "overall_priceable": {
-      "n_setups": 248,
-      "n_resolved": 248,
-      "mean_return_pct": 0.0292,
-      "mean_excess_vs_qqq_pct": 0.0348,
-      "win_rate": 0.6331,
-      "median_excess_pct": 0.0266,
+      "n_setups": 249,
+      "n_resolved": 249,
+      "mean_return_pct": 0.0291,
+      "mean_excess_vs_qqq_pct": 0.0346,
+      "win_rate": 0.6305,
+      "median_excess_pct": 0.0264,
       "status": "ok"
     }
   },
@@ -75,7 +75,7 @@
     }
   ],
   "reason_distribution": {
-    "intelligence flagged AVOID_CHASE": 223,
+    "intelligence flagged AVOID_CHASE": 224,
     "neutral or unknown signal direction": 9,
     "rule 8k_material_event::h1d profit_factor 0.67 < 1.0 (no payoff edge)": 4,
     "rule truth_social_post:kwd0037_sector_energy_dom:h1d profit_factor 0.00 < 1.0 (no payoff edge)": 3,

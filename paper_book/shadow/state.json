@@ -7352,6 +7352,21 @@
 "return_pct": 0.001724,
 "qqq_return_pct": -0.01525,
 "excess_pct": 0.016974
+},
+{
+"setup_id": 603,
+"ticker": "XOM",
+"skip_category": "vocabulary",
+"reason_to_skip": "intelligence flagged AVOID_CHASE",
+"priceable": 1,
+"status": "resolved",
+"entry_date": "2026-07-02",
+"entry_px": 137.15,
+"exit_date": "2026-07-06",
+"exit_px": 136.44,
+"return_pct": 0.005177,
+"qqq_return_pct": 0.014342,
+"excess_pct": -0.009165
 }
 ]
 }
