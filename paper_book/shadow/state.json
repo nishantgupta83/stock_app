@@ -7367,6 +7367,36 @@
 "return_pct": 0.005177,
 "qqq_return_pct": 0.014342,
 "excess_pct": -0.009165
+},
+{
+"setup_id": 604,
+"ticker": "WMT",
+"skip_category": "other",
+"reason_to_skip": "neutral or unknown signal direction",
+"priceable": 1,
+"status": "resolved",
+"entry_date": "2026-07-06",
+"entry_px": 111.4,
+"exit_date": "2026-07-07",
+"exit_px": 111.54,
+"return_pct": 0.001257,
+"qqq_return_pct": -0.018525,
+"excess_pct": 0.019781
+},
+{
+"setup_id": 605,
+"ticker": "NFLX",
+"skip_category": "other",
+"reason_to_skip": "neutral or unknown signal direction",
+"priceable": 1,
+"status": "resolved",
+"entry_date": "2026-07-06",
+"entry_px": 77.08,
+"exit_date": "2026-07-07",
+"exit_px": 76.18,
+"return_pct": -0.011676,
+"qqq_return_pct": -0.018525,
+"excess_pct": 0.006848
 }
 ]
 }
