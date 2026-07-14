@@ -40,7 +40,23 @@ Project name: **`hub4apps-stock`** (matches existing account naming). **Rule: NE
 - Extend the post-deploy git_sha smoke check (the existing D5 pattern) to ALSO verify `https://hub4apps-stock.pages.dev/` (root path — NOT /stock_app/).
 - `gh workflow run site_generator.yml` → both targets green, same git_sha.
 
-### Phase 4 — Real auth: Cloudflare Access (~20 min, dashboard)
+### Phase 4 — Real auth (REVISED 2026-07-14: Zero Trust DECLINED — payment-method requirement)
+
+**Decision:** Zero Trust Free activation demands a payment method + a standing "charge this
+card for usage that exceeds free limits" authorization (verified at checkout). The user's
+cost circuit breaker is structural and non-negotiable: **no payment instrument on the
+account, ever** — a cardless account cannot be billed; Cloudflare's cardless free tiers are
+hard-capped and FAIL CLOSED (over-limit → errors, not charges). So Access is out.
+
+**Replacement (shipped): `_worker.js` HTTP Basic Auth** emitted by site_generator into
+dist/ — an advanced-mode Pages worker gating EVERY asset server-side (401 without the
+password; nothing served — strictly stronger than the client-side PIN). Password =
+`DASH_PASSWORD` Pages project secret (fail-open until set, so no lockout); username fixed
+`stock`; timing-safe compare via SHA-256 + `crypto.subtle.timingSafeEqual`. CI smoke sends
+`-u "$DASH_BASIC_AUTH"` (GH secret, format `stock:<password>`). Uses Workers free allowance
+(100k req/day vs <1k actual); cardless → over-limit fails closed, $0 by construction.
+
+### ~~Phase 4 (original) — Cloudflare Access~~ (kept for reference; NOT executed)
 - Zero Trust (free ≤50 users) → Access application for `hub4apps-stock.pages.dev` (+ `*.hub4apps-stock.pages.dev` for previews): policy = allow **nishugupta@gmail.com** via One-time PIN (no IdP setup).
 - This upgrades the client-side PIN theater (hash embedded in page source, content present pre-unlock) to real edge auth. Keep the PIN gate as a harmless inner layer.
 - **Automation access (Codex's riskiest-assumption flag):** Access gates EVERYTHING — the CI git_sha smoke, the 3 Claude digests, any monitor reading `/status.json`. Resolution: create an **Access service token** (free) and (a) add a policy allowing that service token on the app, (b) send `CF-Access-Client-Id/Secret` headers from the CI smoke + digest fetchers. Enable Access ONLY after the smoke passes with the token (order inside Phase 4). Set session duration long (e.g. 1 month) so daily human use isn't OTP-per-visit inbox friction.

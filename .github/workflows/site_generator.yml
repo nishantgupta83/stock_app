@@ -154,20 +154,20 @@ jobs:
       - name: Post-deploy smoke test — Cloudflare Pages (D5, fatal)
         env:
           EXPECTED_SHA: ${{ github.sha }}
-          # Access service token (Phase 4): once Cloudflare Access gates the
-          # pages.dev hostname, the smoke authenticates with these headers.
-          # Empty until the secrets exist — headers are then omitted, which is
-          # correct pre-Access.
-          CF_ACCESS_CLIENT_ID:     ${{ secrets.CF_ACCESS_CLIENT_ID }}
-          CF_ACCESS_CLIENT_SECRET: ${{ secrets.CF_ACCESS_CLIENT_SECRET }}
+          # Basic-auth for the _worker.js gate (format "stock:<password>").
+          # Zero Trust/Access was deliberately NOT used — its activation
+          # requires a payment method on file; the _worker.js gate stays in
+          # the cardless free tier. Empty until the secret exists — the gate
+          # is fail-open pre-configuration, so omitting is correct.
+          DASH_BASIC_AUTH: ${{ secrets.DASH_BASIC_AUTH }}
         run: |
           set -eo pipefail
           BASE="https://hub4apps-stock.pages.dev"
           EXPECTED="${EXPECTED_SHA:0:12}"
           HDRS=()
-          if [ -n "$CF_ACCESS_CLIENT_ID" ]; then
-            HDRS=(-H "CF-Access-Client-Id: $CF_ACCESS_CLIENT_ID" -H "CF-Access-Client-Secret: $CF_ACCESS_CLIENT_SECRET")
-            echo "(authenticating smoke via Access service token)"
+          if [ -n "$DASH_BASIC_AUTH" ]; then
+            HDRS=(-u "$DASH_BASIC_AUTH")
+            echo "(authenticating smoke via basic auth)"
           fi
           # Pages deploys are atomic at the origin, but colo caches converge
           # over ~seconds-minutes (observed: 2/10 tabs stale 30s post-deploy).

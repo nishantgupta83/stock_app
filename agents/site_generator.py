@@ -1697,6 +1697,42 @@ def render_all() -> int:
         f"  Content-Security-Policy: {csp}\n"
     )
 
+    # _worker.js: advanced-mode Pages worker = HTTP Basic Auth gate in front
+    # of EVERY asset (real server-side auth — nothing is served without the
+    # password, unlike the client-side PIN which ships content in source).
+    # Chosen over Cloudflare Access deliberately: Zero Trust activation
+    # requires a payment method on file; this stays inside the cardless
+    # Workers free tier (hard-capped, fail-closed, cannot bill).
+    # Password = DASH_PASSWORD project secret (wrangler pages secret put);
+    # FAIL-OPEN while the secret is unset so a fresh project can't lock
+    # itself out before configuration. Username is fixed: "stock".
+    # Inert on Hostinger (FTPS uploads it; Apache serves nothing for it...
+    # it is just an unlinked .js file there).
+    (DIST_DIR / "_worker.js").write_text(
+        "// HTTP Basic Auth gate for the hub4apps-stock Pages project.\n"
+        "async function match(a, b) {\n"
+        "  const enc = new TextEncoder();\n"
+        "  const da = await crypto.subtle.digest('SHA-256', enc.encode(a));\n"
+        "  const db = await crypto.subtle.digest('SHA-256', enc.encode(b));\n"
+        "  return crypto.subtle.timingSafeEqual(da, db);\n"
+        "}\n"
+        "export default {\n"
+        "  async fetch(request, env) {\n"
+        "    if (env.DASH_PASSWORD) {\n"
+        "      const expected = 'Basic ' + btoa('stock:' + env.DASH_PASSWORD);\n"
+        "      const got = request.headers.get('Authorization') || '';\n"
+        "      if (!(await match(got, expected))) {\n"
+        "        return new Response('Authentication required', {\n"
+        "          status: 401,\n"
+        "          headers: { 'WWW-Authenticate': 'Basic realm=\"hub4apps stock terminal\"' },\n"
+        "        });\n"
+        "      }\n"
+        "    }\n"
+        "    return env.ASSETS.fetch(request);\n"
+        "  },\n"
+        "};\n"
+    )
+
     # 404.html: Cloudflare Pages serves this for unmatched paths (Hostinger
     # falls back to its platform default; harmless there).
     (DIST_DIR / "404.html").write_text(
