@@ -158,23 +158,31 @@ jobs:
           set -eo pipefail
           BASE="https://hub4apps-stock.pages.dev"
           EXPECTED="${EXPECTED_SHA:0:12}"
+          # Pages deploys are atomic at the origin, but colo caches converge
+          # over ~seconds-minutes (observed: 2/10 tabs stale 30s post-deploy).
+          # Retry until convergence instead of failing on the race; a REAL
+          # broken deploy (wrong project/account) never converges and still
+          # fails after the budget.
           echo "Expecting git_sha=$EXPECTED on every tab at $BASE"
-          fail=0
-          for tab in index signals events trade_setups risk_decisions agents backtest paper_trades calibration learning; do
-            html=$(curl -fsSL --max-time 30 "$BASE/$tab.html" || echo "")
-            got=$(printf "%s" "$html" | grep -oE 'name="git_sha" content="[^"]*"' | head -1 | grep -oE 'content="[^"]*"' | sed 's/content="//; s/"//' || true)
-            if [ "$got" != "$EXPECTED" ]; then
-              echo "  X $tab.html - got '$got' expected '$EXPECTED'"
-              fail=$((fail + 1))
-            else
-              echo "  ok $tab.html"
+          for attempt in 1 2 3 4 5; do
+            fail=0
+            for tab in index signals events trade_setups risk_decisions agents backtest paper_trades calibration learning; do
+              html=$(curl -fsSL --max-time 30 -H 'Cache-Control: no-cache' "$BASE/$tab.html" || echo "")
+              got=$(printf "%s" "$html" | grep -oE 'name="git_sha" content="[^"]*"' | head -1 | grep -oE 'content="[^"]*"' | sed 's/content="//; s/"//' || true)
+              if [ "$got" != "$EXPECTED" ]; then
+                echo "  X $tab.html - got '$got' expected '$EXPECTED' (attempt $attempt)"
+                fail=$((fail + 1))
+              fi
+            done
+            if [ "$fail" -eq 0 ]; then
+              echo "All tabs match expected git_sha on Pages (attempt $attempt) - primary deploy verified."
+              exit 0
             fi
+            echo "  $fail tab(s) not converged on attempt $attempt; retrying in 25s..."
+            sleep 25
           done
-          if [ "$fail" -gt 0 ]; then
-            echo "$fail tabs failed git_sha check on Pages - deploy broken"
-            exit 1
-          fi
-          echo "All tabs match expected git_sha on Pages - primary deploy verified."
+          echo "$fail tabs still stale after 5 attempts (~2 min) - deploy broken"
+          exit 1
 
       # D5 smoke against the FALLBACK target (Hostinger) — INFORMATIONAL.
       # Partial FTPS uploads still get surfaced in the log, but no longer fail
