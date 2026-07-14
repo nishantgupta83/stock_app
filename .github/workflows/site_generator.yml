@@ -40,7 +40,7 @@ concurrency:
 jobs:
   build-and-publish:
     runs-on: ubuntu-latest
-    timeout-minutes: 8
+    timeout-minutes: 15   # wrangler install + Pages upload on top of worst-case FTPS
     permissions:
       contents: read
     steps:
@@ -71,6 +71,21 @@ jobs:
       # fire each attempt when the prior one failed; on first-try success the
       # later steps no-op via `if: failure()`. Worst-case 3*120s = 6 min still
       # under the workflow's timeout-minutes: 8 budget.
+      # PRIMARY publish target: Cloudflare Pages (atomic, versioned, instant
+      # rollback). Fatal on failure — the dashboard's home is pages.dev now.
+      # Account pinned: the CI token is scoped to the Nishugupta account only.
+      - name: Deploy to Cloudflare Pages (primary)
+        env:
+          CLOUDFLARE_API_TOKEN:  ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+        run: npx wrangler@4 pages deploy dist/ --project-name=hub4apps-stock --branch=main
+
+      # FALLBACK publish target: Hostinger via FTPS (kept during the
+      # observation window; decommission gate = >=5 green dual-publish days).
+      # All three attempts are now non-fatal — a Hostinger flake must not fail
+      # a run whose primary (Pages) deploy succeeded. Consequence: the
+      # site_generator_retry.yml no longer fires on FTPS flakes; Hostinger is
+      # best-effort and self-heals on the next scheduled run.
       - name: Deploy to Hostinger via FTPS (attempt 1)
         id: deploy1
         uses: SamKirkland/FTP-Deploy-Action@v4.4.0
@@ -106,9 +121,12 @@ jobs:
           dangerous-clean-slate: false
 
       - name: Deploy to Hostinger via FTPS (attempt 3 — only if 1 and 2 failed)
+        id: deploy3
         if: steps.deploy1.outcome == 'failure' && steps.deploy2.outcome == 'failure'
         uses: SamKirkland/FTP-Deploy-Action@v4.4.0
-        # NO continue-on-error — third failure should fail the workflow
+        # non-fatal since Pages became the primary target (2026-07-14):
+        # Hostinger is fallback-only; its flake must not fail a good Pages run.
+        continue-on-error: true
         with:
           server:          ftp.hub4apps.com
           username:        ${{ secrets.HOSTINGER_FTP_USER }}
@@ -128,14 +146,19 @@ jobs:
       #
       # Only $EXPECTED_SHA (from secrets-free github.sha) reaches the shell —
       # never untrusted user inputs.
-      - name: Post-deploy smoke test (D5)
+      # D5 smoke against the PRIMARY target (Cloudflare Pages) — FATAL.
+      # Pages deploys are atomic so partial-upload risk is ~nil, but this also
+      # catches a deploy that silently landed on the wrong project/account.
+      # Note: Pages serves dist/ at the ROOT (no /stock_app prefix) and
+      # normalizes /tab.html -> /tab via 308; curl -L follows it.
+      - name: Post-deploy smoke test — Cloudflare Pages (D5, fatal)
         env:
           EXPECTED_SHA: ${{ github.sha }}
         run: |
           set -eo pipefail
-          BASE="https://hub4apps.com/stock_app"
+          BASE="https://hub4apps-stock.pages.dev"
           EXPECTED="${EXPECTED_SHA:0:12}"
-          echo "Expecting git_sha=$EXPECTED on every tab"
+          echo "Expecting git_sha=$EXPECTED on every tab at $BASE"
           fail=0
           for tab in index signals events trade_setups risk_decisions agents backtest paper_trades calibration learning; do
             html=$(curl -fsSL --max-time 30 "$BASE/$tab.html" || echo "")
@@ -148,10 +171,39 @@ jobs:
             fi
           done
           if [ "$fail" -gt 0 ]; then
-            echo "$fail tabs failed git_sha check - partial deploy detected"
+            echo "$fail tabs failed git_sha check on Pages - deploy broken"
             exit 1
           fi
-          echo "All tabs match expected git_sha - deploy verified."
+          echo "All tabs match expected git_sha on Pages - primary deploy verified."
+
+      # D5 smoke against the FALLBACK target (Hostinger) — INFORMATIONAL.
+      # Partial FTPS uploads still get surfaced in the log, but no longer fail
+      # the run (Pages is primary; Hostinger self-heals next scheduled run).
+      - name: Post-deploy smoke test — Hostinger (informational)
+        continue-on-error: true
+        env:
+          EXPECTED_SHA: ${{ github.sha }}
+        run: |
+          set -eo pipefail
+          BASE="https://hub4apps.com/stock_app"
+          EXPECTED="${EXPECTED_SHA:0:12}"
+          echo "Expecting git_sha=$EXPECTED on every tab at $BASE"
+          fail=0
+          for tab in index signals events trade_setups risk_decisions agents backtest paper_trades calibration learning; do
+            html=$(curl -fsSL --max-time 30 "$BASE/$tab.html" || echo "")
+            got=$(printf "%s" "$html" | grep -oE 'name="git_sha" content="[^"]*"' | head -1 | grep -oE 'content="[^"]*"' | sed 's/content="//; s/"//' || true)
+            if [ "$got" != "$EXPECTED" ]; then
+              echo "  X $tab.html - got '$got' expected '$EXPECTED'"
+              fail=$((fail + 1))
+            else
+              echo "  ok $tab.html"
+            fi
+          done
+          if [ "$fail" -gt 0 ]; then
+            echo "$fail tabs stale on Hostinger (fallback) - will self-heal next run"
+            exit 1
+          fi
+          echo "Hostinger fallback matches too."
 
       - name: Record workflow finish
         if: always()
