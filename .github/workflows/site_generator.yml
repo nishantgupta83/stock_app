@@ -181,7 +181,8 @@ jobs:
               html=$(curl -fsSL --max-time 30 -H 'Cache-Control: no-cache' "${HDRS[@]}" "$BASE/$tab.html" || echo "")
               got=$(printf "%s" "$html" | grep -oE 'name="git_sha" content="[^"]*"' | head -1 | grep -oE 'content="[^"]*"' | sed 's/content="//; s/"//' || true)
               if [ "$got" != "$EXPECTED" ]; then
-                echo "  X $tab.html - got '$got' expected '$EXPECTED' (attempt $attempt)"
+                code=$(curl -sL -o /dev/null -w '%{http_code}' --max-time 30 "${HDRS[@]}" "$BASE/$tab.html" || echo "curlfail")
+                echo "  X $tab.html - got '$got' expected '$EXPECTED' (http $code, attempt $attempt)"
                 fail=$((fail + 1))
               fi
             done
