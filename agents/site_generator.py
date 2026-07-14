@@ -1663,18 +1663,13 @@ def render_all() -> int:
             if f.is_file():
                 shutil.copy(f, vendor_dst / f.name)
 
-    # .htaccess: Hostinger LiteSpeed defaults to a strict CSP that blocks BOTH
-    # external scripts AND inline <script> blocks. Vendoring chart.js fixes the
-    # first; this header override fixes the second. We restrict to 'self' and
-    # 'unsafe-inline' for scripts (no external CDN trust). connect-src stays
-    # 'self' so Supabase/external POSTs from the browser would be blocked
-    # (we never make any from the rendered HTML — all data is pre-baked).
-    (DIST_DIR / ".htaccess").write_text(
-        "<IfModule mod_headers.c>\n"
-        "    # Override the platform-default Content-Security-Policy. The dashboard\n"
-        "    # is fully pre-rendered and uses inline scripts to bind data to\n"
-        "    # Chart.js; without 'unsafe-inline' those blocks are dropped silently.\n"
-        "    Header always set Content-Security-Policy \"default-src 'self'; "
+    # One CSP string, two publish targets. The dashboard is fully pre-rendered
+    # and uses inline scripts to bind data to Chart.js; without 'unsafe-inline'
+    # those blocks are dropped silently. connect-src stays 'self' so
+    # Supabase/external POSTs from the browser would be blocked (we never make
+    # any from the rendered HTML — all data is pre-baked).
+    csp = (
+        "default-src 'self'; "
         "script-src 'self' 'unsafe-inline'; "
         "style-src 'self' 'unsafe-inline'; "
         "img-src 'self' data:; "
@@ -1682,8 +1677,40 @@ def render_all() -> int:
         "connect-src 'self'; "
         "frame-ancestors 'self'; "
         "base-uri 'self'; "
-        "form-action 'self';\"\n"
+        "form-action 'self';"
+    )
+
+    # .htaccess: Hostinger LiteSpeed defaults to a strict CSP that blocks BOTH
+    # external scripts AND inline <script> blocks. Vendoring chart.js fixes the
+    # first; this header override fixes the second. Inert on Cloudflare Pages.
+    (DIST_DIR / ".htaccess").write_text(
+        "<IfModule mod_headers.c>\n"
+        "    # Override the platform-default Content-Security-Policy.\n"
+        f"    Header always set Content-Security-Policy \"{csp}\"\n"
         "</IfModule>\n"
+    )
+
+    # _headers: same CSP for Cloudflare Pages (which ignores .htaccess).
+    # Pages format: a path matcher line, then indented header lines.
+    (DIST_DIR / "_headers").write_text(
+        "/*\n"
+        f"  Content-Security-Policy: {csp}\n"
+    )
+
+    # 404.html: Cloudflare Pages serves this for unmatched paths (Hostinger
+    # falls back to its platform default; harmless there).
+    (DIST_DIR / "404.html").write_text(
+        "<!doctype html><html><head><meta charset='utf-8'>"
+        "<title>Not found</title>"
+        "<style>body{font-family:-apple-system,system-ui,sans-serif;"
+        "background:#f6f8f7;color:#264653;display:flex;align-items:center;"
+        "justify-content:center;min-height:90vh;margin:0}"
+        ".card{background:#fff;border-left:6px solid #e9c46a;border-radius:10px;"
+        "padding:28px 36px;box-shadow:0 2px 10px rgba(38,70,83,.08)}"
+        "a{color:#2a9d8f}</style></head><body>"
+        "<div class='card'><h1>404 — not found</h1>"
+        "<p>That page isn't part of the dashboard. "
+        "<a href='/'>Back to the terminal</a></p></div></body></html>\n"
     )
 
     # Dashboard
