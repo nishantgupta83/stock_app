@@ -1,5 +1,5 @@
 {
-"cursor": "2026-07-02T21:23:24.057306+00:00",
+"cursor": "2026-07-16T20:38:16.386616+00:00",
 "setups": [
 {
 "setup_id": 315,
@@ -3570,6 +3570,20 @@
 "reason_to_skip": "neutral or unknown signal direction",
 "skip_category": "other",
 "raw": "{\"id\": 605, \"signal_id\": 8886, \"ticker\": \"NFLX\", \"direction\": \"long\", \"created_at\": \"2026-07-02T21:23:24.057306+00:00\", \"target_pct\": 0.05, \"stop_pct\": 0.03, \"horizon_days\": 1, \"valid_until\": \"2026-07-09T21:22:51.373558+00:00\", \"reason_to_skip\": \"neutral or unknown signal direction\"}"
+},
+{
+"setup_id": 606,
+"signal_id": 9370,
+"ticker": "JPM",
+"direction": "long",
+"created_at": "2026-07-16T20:38:16.386616+00:00",
+"target_pct": 0.02,
+"stop_pct": 0.015,
+"horizon_days": 1,
+"valid_until": "2026-07-23T20:37:46.437978+00:00",
+"reason_to_skip": "neutral or unknown signal direction",
+"skip_category": "other",
+"raw": "{\"id\": 606, \"signal_id\": 9370, \"ticker\": \"JPM\", \"direction\": \"long\", \"created_at\": \"2026-07-16T20:38:16.386616+00:00\", \"target_pct\": 0.02, \"stop_pct\": 0.015, \"horizon_days\": 1, \"valid_until\": \"2026-07-23T20:37:46.437978+00:00\", \"reason_to_skip\": \"neutral or unknown signal direction\"}"
 }
 ],
 "outcomes": [
