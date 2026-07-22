@@ -1,5 +1,5 @@
 {
-"cursor": "2026-07-16T20:38:16.386616+00:00",
+"cursor": "2026-07-22T20:43:24.40932+00:00",
 "setups": [
 {
 "setup_id": 315,
@@ -3584,6 +3584,48 @@
 "reason_to_skip": "neutral or unknown signal direction",
 "skip_category": "other",
 "raw": "{\"id\": 606, \"signal_id\": 9370, \"ticker\": \"JPM\", \"direction\": \"long\", \"created_at\": \"2026-07-16T20:38:16.386616+00:00\", \"target_pct\": 0.02, \"stop_pct\": 0.015, \"horizon_days\": 1, \"valid_until\": \"2026-07-23T20:37:46.437978+00:00\", \"reason_to_skip\": \"neutral or unknown signal direction\"}"
+},
+{
+"setup_id": 607,
+"signal_id": 9574,
+"ticker": "JPM",
+"direction": "long",
+"created_at": "2026-07-22T17:53:28.149011+00:00",
+"target_pct": 0.02,
+"stop_pct": 0.015,
+"horizon_days": 1,
+"valid_until": "2026-07-29T17:52:48.65518+00:00",
+"reason_to_skip": "neutral or unknown signal direction",
+"skip_category": "other",
+"raw": "{\"id\": 607, \"signal_id\": 9574, \"ticker\": \"JPM\", \"direction\": \"long\", \"created_at\": \"2026-07-22T17:53:28.149011+00:00\", \"target_pct\": 0.02, \"stop_pct\": 0.015, \"horizon_days\": 1, \"valid_until\": \"2026-07-29T17:52:48.65518+00:00\", \"reason_to_skip\": \"neutral or unknown signal direction\"}"
+},
+{
+"setup_id": 608,
+"signal_id": 9593,
+"ticker": "GOOG",
+"direction": "short",
+"created_at": "2026-07-22T20:20:45.321121+00:00",
+"target_pct": 0.02,
+"stop_pct": 0.015,
+"horizon_days": 1,
+"valid_until": "2026-07-27T20:20:19.613706+00:00",
+"reason_to_skip": "intelligence flagged AVOID_CHASE",
+"skip_category": "vocabulary",
+"raw": "{\"id\": 608, \"signal_id\": 9593, \"ticker\": \"GOOG\", \"direction\": \"short\", \"created_at\": \"2026-07-22T20:20:45.321121+00:00\", \"target_pct\": 0.02, \"stop_pct\": 0.015, \"horizon_days\": 1, \"valid_until\": \"2026-07-27T20:20:19.613706+00:00\", \"reason_to_skip\": \"intelligence flagged AVOID_CHASE\"}"
+},
+{
+"setup_id": 609,
+"signal_id": 9595,
+"ticker": "TSLA",
+"direction": "short",
+"created_at": "2026-07-22T20:43:24.40932+00:00",
+"target_pct": 0.02,
+"stop_pct": 0.015,
+"horizon_days": 1,
+"valid_until": "2026-07-27T20:37:47.628427+00:00",
+"reason_to_skip": "intelligence flagged AVOID_CHASE",
+"skip_category": "vocabulary",
+"raw": "{\"id\": 609, \"signal_id\": 9595, \"ticker\": \"TSLA\", \"direction\": \"short\", \"created_at\": \"2026-07-22T20:43:24.40932+00:00\", \"target_pct\": 0.02, \"stop_pct\": 0.015, \"horizon_days\": 1, \"valid_until\": \"2026-07-27T20:37:47.628427+00:00\", \"reason_to_skip\": \"intelligence flagged AVOID_CHASE\"}"
 }
 ],
 "outcomes": [
