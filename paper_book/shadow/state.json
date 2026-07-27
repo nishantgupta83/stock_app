@@ -1,5 +1,5 @@
 {
-"cursor": "2026-07-23T20:38:09.043027+00:00",
+"cursor": "2026-07-27T16:38:38.399732+00:00",
 "setups": [
 {
 "setup_id": 315,
@@ -3640,6 +3640,34 @@
 "reason_to_skip": "intelligence flagged AVOID_CHASE",
 "skip_category": "vocabulary",
 "raw": "{\"id\": 610, \"signal_id\": 9660, \"ticker\": \"JPM\", \"direction\": \"short\", \"created_at\": \"2026-07-23T20:38:09.043027+00:00\", \"target_pct\": 0.02, \"stop_pct\": 0.015, \"horizon_days\": 1, \"valid_until\": \"2026-07-28T20:37:40.157018+00:00\", \"reason_to_skip\": \"intelligence flagged AVOID_CHASE\"}"
+},
+{
+"setup_id": 611,
+"signal_id": 9780,
+"ticker": "JPM",
+"direction": "long",
+"created_at": "2026-07-27T15:38:17.304515+00:00",
+"target_pct": 0.02,
+"stop_pct": 0.015,
+"horizon_days": 1,
+"valid_until": "2026-08-03T15:37:48.406236+00:00",
+"reason_to_skip": "neutral or unknown signal direction",
+"skip_category": "other",
+"raw": "{\"id\": 611, \"signal_id\": 9780, \"ticker\": \"JPM\", \"direction\": \"long\", \"created_at\": \"2026-07-27T15:38:17.304515+00:00\", \"target_pct\": 0.02, \"stop_pct\": 0.015, \"horizon_days\": 1, \"valid_until\": \"2026-08-03T15:37:48.406236+00:00\", \"reason_to_skip\": \"neutral or unknown signal direction\"}"
+},
+{
+"setup_id": 612,
+"signal_id": 9783,
+"ticker": "JPM",
+"direction": "long",
+"created_at": "2026-07-27T16:38:38.399732+00:00",
+"target_pct": 0.02,
+"stop_pct": 0.015,
+"horizon_days": 1,
+"valid_until": "2026-08-03T16:38:04.736133+00:00",
+"reason_to_skip": "neutral or unknown signal direction",
+"skip_category": "other",
+"raw": "{\"id\": 612, \"signal_id\": 9783, \"ticker\": \"JPM\", \"direction\": \"long\", \"created_at\": \"2026-07-27T16:38:38.399732+00:00\", \"target_pct\": 0.02, \"stop_pct\": 0.015, \"horizon_days\": 1, \"valid_until\": \"2026-08-03T16:38:04.736133+00:00\", \"reason_to_skip\": \"neutral or unknown signal direction\"}"
 }
 ],
 "outcomes": [
