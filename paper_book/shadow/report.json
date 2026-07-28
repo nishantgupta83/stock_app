@@ -1,5 +1,5 @@
 {
-  "captured_at": "2026-07-27T23:45:16.324784+00:00",
+  "captured_at": "2026-07-28T23:40:53.413678+00:00",
   "sync_ok": true,
   "by_category": {
     "payoff": {
@@ -12,12 +12,12 @@
       "status": "ok"
     },
     "vocabulary": {
-      "n_setups": 224,
-      "n_resolved": 224,
-      "mean_return_pct": 0.0327,
-      "mean_excess_vs_qqq_pct": 0.0388,
-      "win_rate": 0.6562,
-      "median_excess_pct": 0.0353,
+      "n_setups": 227,
+      "n_resolved": 227,
+      "mean_return_pct": 0.0326,
+      "mean_excess_vs_qqq_pct": 0.0387,
+      "win_rate": 0.6564,
+      "median_excess_pct": 0.0346,
       "status": "ok"
     },
     "instrument": {
@@ -30,20 +30,20 @@
       "status": "ok"
     },
     "other": {
-      "n_setups": 12,
-      "n_resolved": 11,
-      "mean_return_pct": -0.0052,
-      "mean_excess_vs_qqq_pct": 0.0019,
-      "win_rate": 0.6364,
-      "median_excess_pct": 0.0115,
+      "n_setups": 13,
+      "n_resolved": 12,
+      "mean_return_pct": -0.0032,
+      "mean_excess_vs_qqq_pct": 0.0042,
+      "win_rate": 0.6667,
+      "median_excess_pct": 0.0132,
       "status": "ok"
     },
     "overall_priceable": {
-      "n_setups": 252,
-      "n_resolved": 252,
-      "mean_return_pct": 0.0287,
-      "mean_excess_vs_qqq_pct": 0.0343,
-      "win_rate": 0.631,
+      "n_setups": 256,
+      "n_resolved": 256,
+      "mean_return_pct": 0.0286,
+      "mean_excess_vs_qqq_pct": 0.0342,
+      "win_rate": 0.6328,
       "median_excess_pct": 0.0246,
       "status": "ok"
     }
@@ -75,8 +75,8 @@
     }
   ],
   "reason_distribution": {
-    "intelligence flagged AVOID_CHASE": 224,
-    "neutral or unknown signal direction": 12,
+    "intelligence flagged AVOID_CHASE": 227,
+    "neutral or unknown signal direction": 13,
     "rule 8k_material_event::h1d profit_factor 0.67 < 1.0 (no payoff edge)": 4,
     "rule truth_social_post:kwd0037_sector_energy_dom:h1d profit_factor 0.00 < 1.0 (no payoff edge)": 3,
     "INST_BLK not a tradeable instrument (fund/placeholder)": 2,

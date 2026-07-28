@@ -1,5 +1,5 @@
 {
-"cursor": "2026-07-27T16:38:38.399732+00:00",
+"cursor": "2026-07-28T20:38:07.233373+00:00",
 "setups": [
 {
 "setup_id": 315,
@@ -3668,6 +3668,48 @@
 "reason_to_skip": "neutral or unknown signal direction",
 "skip_category": "other",
 "raw": "{\"id\": 612, \"signal_id\": 9783, \"ticker\": \"JPM\", \"direction\": \"long\", \"created_at\": \"2026-07-27T16:38:38.399732+00:00\", \"target_pct\": 0.02, \"stop_pct\": 0.015, \"horizon_days\": 1, \"valid_until\": \"2026-08-03T16:38:04.736133+00:00\", \"reason_to_skip\": \"neutral or unknown signal direction\"}"
+},
+{
+"setup_id": 613,
+"signal_id": 9832,
+"ticker": "JNJ",
+"direction": "short",
+"created_at": "2026-07-28T10:23:16.149768+00:00",
+"target_pct": 0.02,
+"stop_pct": 0.015,
+"horizon_days": 1,
+"valid_until": "2026-08-02T10:22:47.587043+00:00",
+"reason_to_skip": "intelligence flagged AVOID_CHASE",
+"skip_category": "vocabulary",
+"raw": "{\"id\": 613, \"signal_id\": 9832, \"ticker\": \"JNJ\", \"direction\": \"short\", \"created_at\": \"2026-07-28T10:23:16.149768+00:00\", \"target_pct\": 0.02, \"stop_pct\": 0.015, \"horizon_days\": 1, \"valid_until\": \"2026-08-02T10:22:47.587043+00:00\", \"reason_to_skip\": \"intelligence flagged AVOID_CHASE\"}"
+},
+{
+"setup_id": 614,
+"signal_id": 9931,
+"ticker": "V",
+"direction": "short",
+"created_at": "2026-07-28T20:23:23.407716+00:00",
+"target_pct": 0.02,
+"stop_pct": 0.015,
+"horizon_days": 1,
+"valid_until": "2026-08-02T20:22:48.351024+00:00",
+"reason_to_skip": "intelligence flagged AVOID_CHASE",
+"skip_category": "vocabulary",
+"raw": "{\"id\": 614, \"signal_id\": 9931, \"ticker\": \"V\", \"direction\": \"short\", \"created_at\": \"2026-07-28T20:23:23.407716+00:00\", \"target_pct\": 0.02, \"stop_pct\": 0.015, \"horizon_days\": 1, \"valid_until\": \"2026-08-02T20:22:48.351024+00:00\", \"reason_to_skip\": \"intelligence flagged AVOID_CHASE\"}"
+},
+{
+"setup_id": 615,
+"signal_id": 9932,
+"ticker": "DJT",
+"direction": "short",
+"created_at": "2026-07-28T20:38:07.233373+00:00",
+"target_pct": 0.02,
+"stop_pct": 0.015,
+"horizon_days": 1,
+"valid_until": "2026-08-02T20:37:39.137568+00:00",
+"reason_to_skip": "intelligence flagged AVOID_CHASE",
+"skip_category": "vocabulary",
+"raw": "{\"id\": 615, \"signal_id\": 9932, \"ticker\": \"DJT\", \"direction\": \"short\", \"created_at\": \"2026-07-28T20:38:07.233373+00:00\", \"target_pct\": 0.02, \"stop_pct\": 0.015, \"horizon_days\": 1, \"valid_until\": \"2026-08-02T20:37:39.137568+00:00\", \"reason_to_skip\": \"intelligence flagged AVOID_CHASE\"}"
 }
 ],
 "outcomes": [
@@ -7510,6 +7552,66 @@
 "return_pct": -0.000472,
 "qqq_return_pct": 0.00105,
 "excess_pct": -0.001522
+},
+{
+"setup_id": 607,
+"ticker": "JPM",
+"skip_category": "other",
+"reason_to_skip": "neutral or unknown signal direction",
+"priceable": 1,
+"status": "resolved",
+"entry_date": "2026-07-23",
+"entry_px": 346.58,
+"exit_date": "2026-07-24",
+"exit_px": 353.21,
+"return_pct": 0.01913,
+"qqq_return_pct": -0.011171,
+"excess_pct": 0.030301
+},
+{
+"setup_id": 608,
+"ticker": "GOOG",
+"skip_category": "vocabulary",
+"reason_to_skip": "intelligence flagged AVOID_CHASE",
+"priceable": 1,
+"status": "resolved",
+"entry_date": "2026-07-23",
+"entry_px": 321.63,
+"exit_date": "2026-07-24",
+"exit_px": 319.09,
+"return_pct": 0.007897,
+"qqq_return_pct": -0.011171,
+"excess_pct": 0.019069
+},
+{
+"setup_id": 609,
+"ticker": "TSLA",
+"skip_category": "vocabulary",
+"reason_to_skip": "intelligence flagged AVOID_CHASE",
+"priceable": 1,
+"status": "resolved",
+"entry_date": "2026-07-23",
+"entry_px": 341.0,
+"exit_date": "2026-07-24",
+"exit_px": 313.03,
+"return_pct": 0.082023,
+"qqq_return_pct": -0.011171,
+"excess_pct": 0.093195
+},
+{
+"setup_id": 610,
+"ticker": "JPM",
+"skip_category": "vocabulary",
+"reason_to_skip": "intelligence flagged AVOID_CHASE",
+"priceable": 1,
+"status": "resolved",
+"entry_date": "2026-07-24",
+"entry_px": 350.64,
+"exit_date": "2026-07-27",
+"exit_px": 357.89,
+"return_pct": -0.020676,
+"qqq_return_pct": -0.003084,
+"excess_pct": -0.017593
 }
 ]
 }
