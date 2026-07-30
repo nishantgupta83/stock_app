@@ -1,5 +1,5 @@
 {
-  "captured_at": "2026-07-29T23:42:10.714468+00:00",
+  "captured_at": "2026-07-30T23:42:13.583558+00:00",
   "sync_ok": true,
   "by_category": {
     "payoff": {
@@ -30,21 +30,21 @@
       "status": "ok"
     },
     "other": {
-      "n_setups": 13,
-      "n_resolved": 12,
-      "mean_return_pct": -0.0032,
-      "mean_excess_vs_qqq_pct": 0.0042,
-      "win_rate": 0.6667,
-      "median_excess_pct": 0.0132,
+      "n_setups": 15,
+      "n_resolved": 14,
+      "mean_return_pct": -0.0049,
+      "mean_excess_vs_qqq_pct": 0.0044,
+      "win_rate": 0.7143,
+      "median_excess_pct": 0.0092,
       "status": "ok"
     },
     "overall_priceable": {
-      "n_setups": 256,
-      "n_resolved": 256,
-      "mean_return_pct": 0.0286,
-      "mean_excess_vs_qqq_pct": 0.0342,
-      "win_rate": 0.6328,
-      "median_excess_pct": 0.0246,
+      "n_setups": 258,
+      "n_resolved": 258,
+      "mean_return_pct": 0.0282,
+      "mean_excess_vs_qqq_pct": 0.034,
+      "win_rate": 0.6357,
+      "median_excess_pct": 0.0223,
       "status": "ok"
     }
   },
@@ -76,7 +76,7 @@
   ],
   "reason_distribution": {
     "intelligence flagged AVOID_CHASE": 227,
-    "neutral or unknown signal direction": 13,
+    "neutral or unknown signal direction": 15,
     "rule 8k_material_event::h1d profit_factor 0.67 < 1.0 (no payoff edge)": 4,
     "rule truth_social_post:kwd0037_sector_energy_dom:h1d profit_factor 0.00 < 1.0 (no payoff edge)": 3,
     "INST_BLK not a tradeable instrument (fund/placeholder)": 2,

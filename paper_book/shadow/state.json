@@ -1,5 +1,5 @@
 {
-"cursor": "2026-07-28T20:38:07.233373+00:00",
+"cursor": "2026-07-30T20:23:34.230113+00:00",
 "setups": [
 {
 "setup_id": 315,
@@ -3710,6 +3710,20 @@
 "reason_to_skip": "intelligence flagged AVOID_CHASE",
 "skip_category": "vocabulary",
 "raw": "{\"id\": 615, \"signal_id\": 9932, \"ticker\": \"DJT\", \"direction\": \"short\", \"created_at\": \"2026-07-28T20:38:07.233373+00:00\", \"target_pct\": 0.02, \"stop_pct\": 0.015, \"horizon_days\": 1, \"valid_until\": \"2026-08-02T20:37:39.137568+00:00\", \"reason_to_skip\": \"intelligence flagged AVOID_CHASE\"}"
+},
+{
+"setup_id": 616,
+"signal_id": 10109,
+"ticker": "NFLX",
+"direction": "short",
+"created_at": "2026-07-30T20:23:34.230113+00:00",
+"target_pct": 0.02,
+"stop_pct": 0.015,
+"horizon_days": 1,
+"valid_until": "2026-08-04T20:22:55.459505+00:00",
+"reason_to_skip": "rule 8k_material_event::h1d profit_factor 0.76 < 1.0 (no payoff edge)",
+"skip_category": "payoff",
+"raw": "{\"id\": 616, \"signal_id\": 10109, \"ticker\": \"NFLX\", \"direction\": \"short\", \"created_at\": \"2026-07-30T20:23:34.230113+00:00\", \"target_pct\": 0.02, \"stop_pct\": 0.015, \"horizon_days\": 1, \"valid_until\": \"2026-08-04T20:22:55.459505+00:00\", \"reason_to_skip\": \"rule 8k_material_event::h1d profit_factor 0.76 < 1.0 (no payoff edge)\"}"
 }
 ],
 "outcomes": [
@@ -7612,6 +7626,36 @@
 "return_pct": -0.020676,
 "qqq_return_pct": -0.003084,
 "excess_pct": -0.017593
+},
+{
+"setup_id": 611,
+"ticker": "JPM",
+"skip_category": "other",
+"reason_to_skip": "neutral or unknown signal direction",
+"priceable": 1,
+"status": "resolved",
+"entry_date": "2026-07-28",
+"entry_px": 357.3,
+"exit_date": "2026-07-29",
+"exit_px": 351.9405,
+"return_pct": -0.015,
+"qqq_return_pct": -0.02037,
+"excess_pct": 0.00537
+},
+{
+"setup_id": 612,
+"ticker": "JPM",
+"skip_category": "other",
+"reason_to_skip": "neutral or unknown signal direction",
+"priceable": 1,
+"status": "resolved",
+"entry_date": "2026-07-28",
+"entry_px": 357.3,
+"exit_date": "2026-07-29",
+"exit_px": 351.9405,
+"return_pct": -0.015,
+"qqq_return_pct": -0.02037,
+"excess_pct": 0.00537
 }
 ]
 }
