@@ -7656,6 +7656,51 @@
 "return_pct": -0.015,
 "qqq_return_pct": -0.02037,
 "excess_pct": 0.00537
+},
+{
+"setup_id": 613,
+"ticker": "JNJ",
+"skip_category": "vocabulary",
+"reason_to_skip": "intelligence flagged AVOID_CHASE",
+"priceable": 1,
+"status": "resolved",
+"entry_date": "2026-07-29",
+"entry_px": 268.5,
+"exit_date": "2026-07-30",
+"exit_px": 255.82,
+"return_pct": 0.047225,
+"qqq_return_pct": 0.032974,
+"excess_pct": 0.014251
+},
+{
+"setup_id": 614,
+"ticker": "V",
+"skip_category": "vocabulary",
+"reason_to_skip": "intelligence flagged AVOID_CHASE",
+"priceable": 1,
+"status": "resolved",
+"entry_date": "2026-07-29",
+"entry_px": 357.0,
+"exit_date": "2026-07-30",
+"exit_px": 365.0,
+"return_pct": -0.022409,
+"qqq_return_pct": 0.032974,
+"excess_pct": -0.055383
+},
+{
+"setup_id": 615,
+"ticker": "DJT",
+"skip_category": "vocabulary",
+"reason_to_skip": "intelligence flagged AVOID_CHASE",
+"priceable": 1,
+"status": "resolved",
+"entry_date": "2026-07-29",
+"entry_px": 9.85,
+"exit_date": "2026-07-30",
+"exit_px": 9.9978,
+"return_pct": -0.015005,
+"qqq_return_pct": 0.032974,
+"excess_pct": -0.047979
 }
 ]
 }
