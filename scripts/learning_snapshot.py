@@ -11,8 +11,9 @@ Captures three learning tables:
   - stock_agent_weights     (per-agent EMA weights, latest date only)
   - closed paper-trade stats (rollup of stock_event_paper_trades where status='closed')
 
-The diff calls extract_meaningful_changes() — that's where the user defines
-what "learning happened this week" actually means. See the TODO at the bottom.
+The diff calls extract_meaningful_changes() — that's where "learning happened
+this week" is defined: tier crossings + closest-to-adult + payoff-sanity, all
+read from runtime-truth maturity (stored tier / is_mature flags + effective_* stats).
 """
 from __future__ import annotations
 
@@ -27,6 +28,18 @@ SUPABASE_URL = os.environ["SUPABASE_URL"]
 SUPABASE_KEY = os.environ["SUPABASE_SERVICE_KEY"]
 SNAPSHOT_DIR = Path(__file__).resolve().parent.parent / "snapshots"
 
+# Maturity tiers come from the shared, env-free gate module — the SAME code the
+# runtime writer (agents/price_agent.py) uses — so this report can never drift
+# from what actually licenses BUY/SELL. Pre-fix this file hardcoded an obsolete
+# `acc≥0.90 / n≥30` adult gate on RAW n; runtime is payoff-first on EFFECTIVE
+# (independent ticker-entry-day) evidence. See agents/_maturity.py + sql/0041.
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "agents"))
+from _maturity import (  # type: ignore  # noqa: E402
+    derive_maturity_flags,
+    MATURITY_MIN_N, ADULT_MIN_N, ADULT_MIN_PF, ADULT_MIN_MEAN,
+    TIER_GATE_YOUNG_ACC, TIER_GATE_YOUNG_PF,
+)
+
 
 def _get(path: str) -> list[dict]:
     req = urllib.request.Request(
@@ -40,8 +53,10 @@ def _get(path: str) -> list[dict]:
 def capture() -> Path:
     calibration = _get(
         "stock_rule_calibration?select=rule_key,n_observations,n_correct,accuracy,"
-        "is_mature,profit_factor,target_hit_rate,stop_hit_rate,mean_mfe_pct,mean_mae_pct,"
-        "avg_win_pct,avg_loss_pct,mean_realized_pct,accuracy_30d,brier_30d,n_closed_30d,last_updated"
+        "is_mature,is_mature_70,is_mature_80,tier,profit_factor,target_hit_rate,stop_hit_rate,"
+        "mean_mfe_pct,mean_mae_pct,avg_win_pct,avg_loss_pct,mean_realized_pct,"
+        "effective_n,effective_n_correct,effective_accuracy,effective_mean_realized_pct,"
+        "effective_profit_factor,accuracy_30d,brier_30d,n_closed_30d,last_updated"
     )
 
     weights_all = _get("stock_agent_weights?select=agent,date,accuracy_ema,weight,n_signals&order=date.desc")
@@ -103,163 +118,152 @@ def diff(date1: str, date2: str) -> None:
         print(line)
 
 
-# ---------------------------------------------------------------------------
-# Tier promotion gates — v1 (2026-05-26, accuracy + payoff sanity).
-# These mirror the gates that will land in stock_rule_calibration in Phase 3
-# of the stage-gate plan. Keeping them here lets the snapshot diff surface
-# tier crossings BEFORE the schema migration is applied — so we can validate
-# the math against real data first.
-# ---------------------------------------------------------------------------
-TIER_GATES = (
-    # (tier_name, min_n, min_accuracy, payoff_field, payoff_min)
-    ("teen",        30, 0.70, "mean_realized_pct", 0.0),
-    ("young_adult", 30, 0.80, "profit_factor",     1.2),
-    ("adult",       30, 0.90, "profit_factor",     1.5),
-)
-
-# How close (in accuracy points) counts as "near the threshold" for the
-# closest-to-crossing surface — useful when nothing actually crossed this week.
-NEAR_THRESHOLD_PTS = 0.02
+# "Closest to adult" = effective_n within this fraction of the production floor.
+NEAR_N_FRAC = 0.85
 
 
-def _passes_gate(rule: dict, min_n: int, min_acc: float,
-                  payoff_field: str, payoff_min: float) -> bool:
-    n = int(rule.get("n_observations") or 0)
-    acc = float(rule.get("accuracy") or 0)
-    payoff = rule.get(payoff_field)
-    if n < min_n or acc < min_acc:
-        return False
-    # Payoff field may be NULL for rules with too few closed trades to compute
-    # PF / mean_realized — treat NULL as failing payoff to be conservative.
-    if payoff is None:
-        return False
-    return float(payoff) >= payoff_min
+def _has_effective(rule: dict) -> bool:
+    """Whether this snapshot carries effective_* stats (captured after sql/0041).
+    Older snapshots on disk have ONLY raw columns + the stored is_mature* flags —
+    and raw n over-counts 2-4x, so it must never reach the effective adult gate."""
+    return rule.get("effective_n") is not None
 
 
-def _tier_for(rule: dict) -> str:
-    """Highest tier this rule qualifies for under v1 gates. 'child' if none."""
-    for tier, n, acc, field, pmin in reversed(TIER_GATES):   # check adult first
-        if _passes_gate(rule, n, acc, field, pmin):
-            return tier
+def _tier_for(rule: dict | None) -> str:
+    """Runtime-truth tier for a rule — WITHOUT ever recomputing the adult gate on
+    raw n (which over-counts 2-4x vs the effective floor; sql/0041).
+
+    Priority:
+      1. stored `tier` (exact runtime truth, sql/0031);
+      2. recompute via the shared gate on effective_* stats, when present;
+      3. pre-effective snapshot → trust the stored is_mature* booleans (they
+         already encode the effective-evidence decision and are False for the
+         over-counted-but-inaccurate rules the raw fallback used to mis-promote).
+         Sub-adult tiers collapse to 'child' when is_mature_70/80 weren't captured.
+    'child' when unknown."""
+    if not rule:
+        return "child"
+    if rule.get("tier"):
+        return rule["tier"]
+    if _has_effective(rule):
+        return derive_maturity_flags(
+            int(rule["effective_n"] or 0),
+            rule.get("effective_profit_factor"),
+            float(rule.get("effective_mean_realized_pct") or 0),
+            float(rule.get("effective_accuracy") or 0),
+        )["tier"]
+    if rule.get("is_mature"):
+        return "adult"
+    if rule.get("is_mature_80"):
+        return "young_adult"
+    if rule.get("is_mature_70"):
+        return "teen"
     return "child"
 
 
-def extract_meaningful_changes(s1: dict, s2: dict) -> list[str]:
-    """Three surfaces, in priority order:
+def _adult_shortfall(rule: dict) -> list[str] | None:
+    """Which adult-gate criteria a not-yet-adult rule fails, using EFFECTIVE stats
+    ONLY (adult = effective_n≥100 AND PF≥2.0 AND mean_realized≥0.5%, no accuracy
+    floor — agents/_maturity.py). Returns None when already adult OR when the
+    snapshot has no effective_* stats (we refuse to assess the production BUY/SELL
+    gate on raw n)."""
+    if _tier_for(rule) == "adult" or not _has_effective(rule):
+        return None
+    n = int(rule["effective_n"] or 0)
+    pf = rule.get("effective_profit_factor")
+    mean = rule.get("effective_mean_realized_pct")
+    unmet: list[str] = []
+    if n < ADULT_MIN_N:
+        unmet.append(f"eff_n={n} (need {ADULT_MIN_N})")
+    if pf is None or float(pf) < ADULT_MIN_PF:
+        unmet.append(f"PF={'n/a' if pf is None else format(float(pf), '.2f')} (need {ADULT_MIN_PF})")
+    if mean is None or float(mean) < ADULT_MIN_MEAN:
+        unmet.append(f"mean={'n/a' if mean is None else format(float(mean), '.4f')} (need {ADULT_MIN_MEAN})")
+    return unmet
 
-    1. Tier crossings — rules that promoted between snapshots (the user's
-       "option #1" — most actionable signal of weekly learning).
-    2. Closest to crossing — rules within NEAR_THRESHOLD_PTS of the next
-       tier, sorted by how close. Useful when nothing actually crossed.
-    3. Payoff sanity flags — rules whose accuracy meets a tier but whose
-       payoff (profit_factor / mean_realized_pct) fails it. The bot's
-       "accurate but money-losing" rules.
+
+def extract_meaningful_changes(s1: dict, s2: dict) -> list[str]:
+    """Three surfaces, all driven by RUNTIME-TRUTH tiers + effective stats:
+
+    1. Tier crossings — rules that promoted/demoted between snapshots (stored
+       `tier`, the same value that licenses BUY/SELL), the most actionable
+       weekly-learning signal.
+    2. Closest to ADULT — not-yet-adult rules with effective_n within
+       NEAR_N_FRAC of the production floor, showing which adult criteria remain
+       unmet (adult is payoff-first: eff_n/PF/mean, no accuracy floor).
+    3. Payoff sanity — rules accurate enough for young_adult (acc≥0.80) whose
+       effective payoff (PF) still fails — "accurate but unprofitable."
     """
     out: list[str] = []
     by_key_s1 = {r["rule_key"]: r for r in s1.get("calibration", [])}
     by_key_s2 = {r["rule_key"]: r for r in s2.get("calibration", [])}
 
-    # --- Surface 1: tier crossings ------------------------------------------
-    crossings: list[tuple[str, str, str, dict]] = []   # (rule_key, from, to, row)
-    for rk, r2 in by_key_s2.items():
-        r1 = by_key_s1.get(rk)
-        tier_now = _tier_for(r2)
-        tier_then = _tier_for(r1) if r1 else "child"
-        if tier_now != tier_then:
-            crossings.append((rk, tier_then, tier_now, r2))
+    def _fmt_row(rk: str, frm: str, to: str, r: dict) -> str:
+        # Label the count honestly: eff_n only when the effective stat is present,
+        # else raw n (never dress raw n up as effective).
+        if r.get("effective_n") is not None:
+            n_str, pf = f"eff_n={int(r['effective_n'] or 0)}", r.get("effective_profit_factor")
+        else:
+            n_str, pf = f"n={int(r.get('n_observations') or 0)}", r.get("profit_factor")
+        pf_str = f"PF={float(pf):.2f}" if pf is not None else "PF=n/a"
+        return f"  {rk}: {frm} → {to}  ({n_str}, {pf_str})"
 
-    promotions = [c for c in crossings if _tier_rank(c[2]) > _tier_rank(c[1])]
-    demotions = [c for c in crossings if _tier_rank(c[2]) < _tier_rank(c[1])]
+    # --- Surface 1: tier crossings ------------------------------------------
+    promotions, demotions = [], []
+    for rk, r2 in by_key_s2.items():
+        tier_now = _tier_for(r2)
+        tier_then = _tier_for(by_key_s1.get(rk))
+        if tier_now == tier_then:
+            continue
+        bucket = promotions if _tier_rank(tier_now) > _tier_rank(tier_then) else demotions
+        bucket.append((rk, tier_then, tier_now, r2))
 
     if promotions:
         out.append("=== TIER PROMOTIONS ===")
-        for rk, frm, to, r in sorted(promotions, key=lambda c: -_tier_rank(c[2])):
-            acc = float(r.get("accuracy") or 0)
-            n = int(r.get("n_observations") or 0)
-            pf = r.get("profit_factor")
-            pf_str = f"PF={pf:.2f}" if pf is not None else "PF=n/a"
-            out.append(f"  {rk}: {frm} → {to}  (acc={acc:.1%}, n={n}, {pf_str})")
+        for c in sorted(promotions, key=lambda c: -_tier_rank(c[2])):
+            out.append(_fmt_row(*c))
     if demotions:
         out.append("=== TIER DEMOTIONS (rule degraded — investigate) ===")
-        for rk, frm, to, r in sorted(demotions, key=lambda c: _tier_rank(c[2])):
-            acc = float(r.get("accuracy") or 0)
-            n = int(r.get("n_observations") or 0)
-            pf = r.get("profit_factor")
-            pf_str = f"PF={pf:.2f}" if pf is not None else "PF=n/a"
-            out.append(f"  {rk}: {frm} → {to}  (acc={acc:.1%}, n={n}, {pf_str})")
+        for c in sorted(demotions, key=lambda c: _tier_rank(c[2])):
+            out.append(_fmt_row(*c))
 
-    # --- Surface 2: closest to crossing -------------------------------------
-    out.append("=== CLOSEST TO PROMOTION (current snapshot) ===")
-    near: dict[str, list[tuple[float, str]]] = {"teen": [], "young_adult": [], "adult": []}
+    # --- Surface 2: closest to ADULT (production BUY/SELL gate) --------------
+    # _adult_shortfall returns None for pre-effective snapshots, so old snapshots
+    # are simply not assessed here (never mis-surfaced as near-adult on raw n).
+    out.append("=== CLOSEST TO ADULT (production BUY/SELL gate) ===")
+    near: list[tuple[int, str]] = []
     for rk, r in by_key_s2.items():
-        current_tier = _tier_for(r)
-        for tier_name, min_n, min_acc, field, pmin in TIER_GATES:
-            if _tier_rank(tier_name) <= _tier_rank(current_tier):
-                continue   # already at or above this tier
-            acc = float(r.get("accuracy") or 0)
-            n = int(r.get("n_observations") or 0)
-            gap = min_acc - acc
-            # Want strictly below threshold but within window AND with enough n
-            if 0 < gap <= NEAR_THRESHOLD_PTS and n >= min_n:
-                payoff = r.get(field)
-                payoff_str = (
-                    f"{field}={payoff:.2f}" if isinstance(payoff, (int, float))
-                    else f"{field}=n/a"
-                )
-                near[tier_name].append((
-                    gap,
-                    f"  {rk}: acc={acc:.1%} (need {min_acc:.0%}, gap {gap*100:.1f}pts), "
-                    f"n={n}, {payoff_str}",
-                ))
-                break   # only show the next tier up
-    any_near = False
-    for tier_name in ("adult", "young_adult", "teen"):
-        rows = sorted(near[tier_name])[:5]
-        if rows:
-            any_near = True
-            out.append(f"  → {tier_name}:")
-            for _, line in rows:
-                out.append(line)
-    if not any_near:
-        out.append("  (no rules within 2 accuracy points of next tier with enough n)")
+        unmet = _adult_shortfall(r)     # None if adult OR no effective stats
+        if not unmet:
+            continue
+        n = int(r["effective_n"] or 0)  # guaranteed present when unmet is non-None
+        if n < int(ADULT_MIN_N * NEAR_N_FRAC):
+            continue   # not close on sample yet — don't surface noise
+        near.append((ADULT_MIN_N - n, f"  {rk}: {', '.join(unmet)}"))
+    if near:
+        for _, line in sorted(near)[:8]:
+            out.append(line)
+    else:
+        out.append(f"  (no rule with effective evidence within {int(NEAR_N_FRAC * 100)}% of the floor)")
 
-    # --- Surface 3: payoff sanity flags -------------------------------------
-    # For each rule with n≥30, find the HIGHEST tier its accuracy qualifies
-    # for. If that tier's payoff field is populated AND fails the threshold,
-    # flag it: "accurate but not profitable enough." NULL payoff is treated
-    # as 'no data to assess' (separate problem), not as a failure.
+    # --- Surface 3: payoff sanity (accurate but unprofitable) ---------------
+    # Effective stats only — a soft diagnostic, but still never computed on raw.
     sanity_flags: list[str] = []
-    missing_payoff: list[str] = []
     for rk, r in by_key_s2.items():
-        n = int(r.get("n_observations") or 0)
-        if n < 30:
+        if not _has_effective(r) or int(r["effective_n"] or 0) < MATURITY_MIN_N:
             continue
-        acc = float(r.get("accuracy") or 0)
-        # Walk tiers highest-to-lowest; first accuracy-qualified one is the target
-        target_tier = None
-        for tier_name, _, min_acc, field, pmin in reversed(TIER_GATES):
-            if acc >= min_acc:
-                target_tier = (tier_name, field, pmin)
-                break
-        if target_tier is None:
+        acc = r.get("effective_accuracy")
+        if acc is None or float(acc) < TIER_GATE_YOUNG_ACC:
             continue
-        tier_name, field, pmin = target_tier
-        payoff = r.get(field)
-        if payoff is None:
-            missing_payoff.append(
-                f"  {rk}: acc={acc:.1%} qualifies for {tier_name} but {field} not computed (n_closed_30d may be too low)"
-            )
-        elif float(payoff) < pmin:
+        pf = r.get("effective_profit_factor")
+        if pf is not None and float(pf) < TIER_GATE_YOUNG_PF:
             sanity_flags.append(
-                f"  {rk}: acc={acc:.1%} qualifies for {tier_name} but "
-                f"{field}={float(payoff):.2f} (need ≥{pmin}) — accurate but unprofitable"
+                f"  {rk}: acc={float(acc):.1%} but PF={float(pf):.2f} "
+                f"(need ≥{TIER_GATE_YOUNG_PF}) — accurate but unprofitable"
             )
     if sanity_flags:
         out.append("=== PAYOFF SANITY FAILURES (accurate but unprofitable) ===")
         out.extend(sanity_flags[:10])
-    if missing_payoff:
-        out.append("=== PAYOFF METRICS MISSING (recompute needed) ===")
-        out.extend(missing_payoff[:10])
 
     return out
 

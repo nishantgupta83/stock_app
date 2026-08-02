@@ -14,8 +14,8 @@
 --
 -- Why payoff on top of accuracy: a rule can be 82% accurate and still lose
 -- money if the 18% wrong are large losses. Accuracy alone overstates trust.
--- The v1 gate names sit in scripts/learning_snapshot.py:TIER_GATES so the
--- Phase 3 application code can import the same constants.
+-- The canonical gate now lives in agents/_maturity.py (derive_maturity_flags);
+-- every writer imports it so tiers cannot drift between code paths.
 --
 -- This migration is purely additive: new columns default to safe values,
 -- backfill UPDATE runs once in the same transaction, no existing column

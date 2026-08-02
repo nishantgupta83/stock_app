@@ -1279,10 +1279,12 @@ def action_for(score: float, direction: str, has_mature_rule: bool = False,
                 tradeable: bool = True) -> str:
     """Map (score, direction, maturity, macro, catalyst_score) to action vocabulary.
 
-    Maturity gate: when the cluster includes ≥1 rule whose paper-trade accuracy
-    has crossed 0.90 with n≥30 (per stock_rule_calibration.is_mature), the
-    bot is allowed to use BUY / SELL — the system has earned the directional
-    vocabulary on that rule.
+    Maturity gate: when the cluster includes ≥1 rule whose paper-trade payoff
+    has crossed the production adult gate (per stock_rule_calibration.is_mature,
+    derived by agents/_maturity.py on EFFECTIVE independent ticker-entry-day
+    evidence: effective_n≥100 AND profit_factor≥2.0 AND mean_realized≥0.5% —
+    NO accuracy floor), the bot is allowed to use BUY / SELL — the system has
+    earned the directional vocabulary on that rule.
 
     Catalyst gate (added 2026-05-22 per causal-attribution audit): when
     catalyst_score == 0, the bullish tiers degrade from CATALYST_WATCH /

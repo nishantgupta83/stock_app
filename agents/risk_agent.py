@@ -65,7 +65,7 @@ STOP_PCT_MAX           = 0.20           # 20% — wider isn't a stop, it's a wis
 
 MATURITY_MULTIPLIER = {
     # v1 canonical tier names (2026-05-26 stage-gate plan).
-    # Stricter gates than the legacy ones — see scripts/learning_snapshot.py:TIER_GATES.
+    # Stricter gates than the legacy ones — canonical thresholds in agents/_maturity.py.
     "adult":        1.00,    # n ≥ 100, PF ≥ 2.0, mean_realized ≥ 0.5% (canonical, NO acc floor)
     "young_adult":  0.75,    # acc ≥ 0.80, n ≥ 30, PF > 1.2
     "teen":         0.50,    # acc ≥ 0.70, n ≥ 30, mean_realized > 0
