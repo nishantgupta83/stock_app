@@ -33,18 +33,17 @@ transparency and to unlock GitHub Actions free minutes. See [`README.md`](README
 - BSD sed: `sed -i ''` (with empty string).
 - See `~/.claude/CLAUDE.md` for the full list.
 
-**5. Hostinger FTPS (`ftp.hub4apps.com`) has intermittent control-socket timeouts.**
-- The `site_generator` workflow runs 3 in-line FTPS retries, but all 3 sit inside the
-  same ~10-min window, so a Hostinger outage longer than that burns every attempt.
-- Mitigation: `.github/workflows/site_generator_retry.yml` listens for `site_generator`
-  failures triggered by `schedule` or `workflow_run`, sleeps 5 min (gives the FTP server
-  time to recover), and re-dispatches `site_generator` via `workflow_dispatch`.
-- The retry is single-shot: failures originating from `workflow_dispatch` are NOT
-  retried, so a still-broken Hostinger surfaces as a hard failure after one attempt
-  instead of cascading.
-- External backup beyond that: `cron-job.org` pingers (see RUNBOOK §8) hit
-  `site_generator` every 15 min staggered off the GHA cron, so even a busted retry
-  will be picked up within ~7 min by the next external dispatch.
+**5. Hostinger FTPS (`ftp.hub4apps.com`) is a NON-FATAL fallback — Cloudflare Pages is primary (since 2026-07-14).**
+- Primary publish is Cloudflare Pages (`wrangler pages deploy`), atomic + versioned, with a
+  FATAL post-deploy smoke test. Hostinger FTPS runs after it as a fallback (3 attempts, all
+  `continue-on-error`) and also hosts the `archive/` tiered storage that `price_agent` /
+  `site_generator` read — so Hostinger stays even though it no longer gates a run.
+- Because a Hostinger flake no longer fails a run, `site_generator_retry.yml` NO LONGER fires
+  on FTPS flakes (only on a genuine `site_generator` failure). Its intermittent control-socket
+  timeouts are now a stale-fallback-mirror nuisance, not an outage.
+- Decommissioning Hostinger entirely is gated — Phase 6, ≥5 green dual-publish days — see
+  `docs/design/2026-07-14-cloudflare-pages-migration.md`. Until then it stays as fallback + archive host.
+- `cron-job.org` pingers (see RUNBOOK §8) still re-dispatch `site_generator` on GHA cron drift.
 
 **6. GitHub Actions cron is best-effort, not a guarantee.**
 - Documented behavior: `schedule:` triggers can be delayed or dropped under runner-pool

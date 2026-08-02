@@ -1,8 +1,10 @@
 name: site_generator
 
 # Generates static HTML dashboard from Supabase data.
-# Auto-deploys generated dist/ to Hostinger via FTPS.
-# Requires secrets: HOSTINGER_FTP_USER, HOSTINGER_FTP_PASS
+# Publishes dist/ to Cloudflare Pages (PRIMARY — atomic, versioned) with Hostinger
+# FTPS as a non-fatal fallback + archive host (2026-07-14 migration).
+# Requires secrets: CLOUDFLARE_API_TOKEN + CLOUDFLARE_ACCOUNT_ID (primary);
+#                   HOSTINGER_FTP_USER + HOSTINGER_FTP_PASS (fallback).
 # Safety: no untrusted PR/issue inputs are interpolated into shell.
 
 on:
