@@ -84,7 +84,8 @@ written digests. The dashboard, Telegram alerts, and `status.json` continue.
 |---|---|---|---|
 | GitHub Actions | Cron-scheduled workflows | Unlimited for public repos | Pipeline halts. Severe. |
 | Supabase | Postgres + PostgREST | Free tier (500 MB, 50k MAU) | Pipeline halts. Severe. |
-| Hostinger | FTPS static hosting | Already paid | Dashboard stale but DB still has truth. Has intermittent control-socket timeouts — see §3 + §8. |
+| Cloudflare Pages | Static dashboard hosting (PRIMARY publish — atomic, versioned) | Free | Dashboard stale but DB still has truth; instant rollback via Pages deployment history. |
+| Hostinger | FTPS static hosting (FALLBACK publish + `archive/` tiered-storage host) | Already paid | Non-fatal since 2026-07-14 (Pages is primary) — a flake no longer fails a run; `archive/` reads still depend on it. Intermittent control-socket timeouts — see §3 + §8. |
 | cron-job.org | External cron backup pinger for 7 tight-cadence workflows | Free (50 jobs / 60s min) | GHA cron drift increases (still functional); no data loss. |
 | Telegram Bot API | Alert delivery | Free | Alerts stop; pipeline still learns |
 | yfinance (Yahoo) | Price bars (`event_paper_agent`, `price_agent`, `activist_insider_agent`) | Rate-limited but generous | EOD reconciliation may skip a day; auto-recovers next run |
@@ -107,7 +108,7 @@ periodically.
 | `event_paper_agent` throws `offset-naive vs offset-aware` | Supabase returns timestamps without tz suffix in some rows | Fixed in `6e1c88f` — force tz-aware parsing in stale-price gate |
 | `biotech_agent` crashed on first run | Missing `timedelta` import | Fixed in `1460788` |
 | Dashboard shows inflated "X / Y healthy" | freshness view contains BOTH agent + workflow_agent rows | Fixed in `2ec0905` (dedupe) and `0e90534` (threshold formula) |
-| Dashboard frozen >30 min despite GHA cron firing | Hostinger FTPS control-socket timeout — all 3 in-job retries failed within same outage window | Mitigated 2026-05-18 by `site_generator_retry.yml` (5-min delayed re-dispatch); see §8. |
+| Dashboard frozen >30 min despite GHA cron firing | Cloudflare Pages publish failed (primary) — check the fatal Pages smoke step. Hostinger FTPS flakes are now non-fatal fallback and no longer trigger `site_generator_retry.yml`. | Re-run `site_generator`; inspect the Pages deploy + smoke logs. |
 | GHA cron silently dropped 5+ consecutive `*/15` firings overnight | GitHub Actions runner-pool best-effort scheduling | Mitigated 2026-05-18 by cron-job.org pingers on 7 tight-cadence workflows; see §8. |
 
 When you encounter something not on this list, the diagnostic sequence is:
@@ -236,7 +237,7 @@ supabase db push --linked
    counts (ingest / intelligence / trade_construction / risk / learning / presentation),
    platform vocabulary, maturity gates, agent freshness, recent failures, calibration summary.
    The `git_sha` field is the single source of truth for what's deployed — compare it against
-   `git rev-parse HEAD` to confirm the FTPS upload completed.
+   `git rev-parse HEAD` to confirm the Cloudflare Pages publish (primary) completed.
 2. **Dashboard** — `https://hub4apps.com/stock_app/agents.html` for per-agent health view.
    `trade_setups.html` and `risk_decisions.html` surface Layer 3 + 4 state.
 3. **`audit_agent` Telegram** — daily at 04:00 UTC; alerts on five integrity invariants
@@ -246,7 +247,7 @@ supabase db push --linked
 5. **`stock_dead_letter_events`** — agents that hit unrecoverable errors record here.
 6. **GitHub Actions runs** — `gh run list --repo nishantgupta83/stock_app --limit 30`.
 
-If `status.json` itself is 404, the FTPS deploy or site_generator is the problem — start there.
+If `status.json` itself is 404, the Cloudflare Pages publish (primary) or site_generator is the problem — start there.
 
 ---
 

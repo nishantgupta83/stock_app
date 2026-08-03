@@ -100,7 +100,8 @@ those three constraints in code:
 | Compute | GitHub Actions (public repo, unlimited minutes) | $0 |
 | DB + auth | Supabase Free | $0 |
 | Push notifications | Telegram Bot API | $0 |
-| Static frontend | Hostinger shared hosting (FTPS auto-deploy) | already paid |
+| Static frontend (primary) | Cloudflare Pages (atomic, versioned, edge Basic-Auth) | $0 |
+| Static frontend (fallback + `archive/` host) | Hostinger shared hosting (FTPS) | already paid |
 | Domain | hub4apps.com | already paid |
 
 ## Architecture
@@ -108,7 +109,7 @@ those three constraints in code:
 The current technical diagram and operational runbook live in
 [`docs/technical-architecture.md`](docs/technical-architecture.md). It covers:
 
-- runtime topology across GitHub Actions, Supabase, Telegram, and Hostinger
+- runtime topology across GitHub Actions, Supabase, Telegram, Cloudflare Pages (primary publish), and Hostinger (fallback + archive host)
 - live signal and paper forecast sequence
 - historical backfill, backtest, and `shadow_backtest` replay path
 - core table responsibilities and forecast modes
@@ -147,7 +148,7 @@ adapter is explicitly NOT in this cycle.
 | `risk_agent`          | `*/30 * * * *` + workflow_run on `trade_setup_agent` | **Layer 4 — capital allocation / survival.** Reads `stock_trade_setups` where `valid_until > now()` (full alpha window, not last 24h — fix B2). Applies HARDCODED rules: Van Tharp sizing; drawdown breaker at -10% on the 30-day **equity-curve max drawdown** (peak-to-trough on cumulative realized return — fix A1); daily risk budget at 3% NAV; concentration cap at 3 open per rule_key; stop sanity at [0.5%, 20%]. Writes `stock_risk_decisions` with `decision in ('size','skip')`, `size_pct_portfolio`, `max_loss_dollars`, and a `rules_applied` JSONB audit trail. Paper-only / advisory; broker adapter not connected. |
 | `audit_agent`         | `0 4 * * *`       | **Operations.** Daily 04:00 UTC read-only integrity check across 5 invariants: every sent signal has a dispatch_log row; every sized decision references a live (valid_until > now) setup; calibration `n_observations` equals `n_correct + n_incorrect`; no open paper trade past `horizon_days + 5`; 24h event ingest not collapsed vs same-DOW last week. Telegrams on any failure. |
 | `backtester`          | manual only       | 180-day replay → precision/calibration metrics. OOS chronological 70/30 split emits `OVERFIT_RISK_HIGH` when out-of-sample underperforms in-sample. |
-| `site_generator`      | `*/15 * * * *` + workflow_run on 7 upstream agents | Supabase → Jinja2 HTML → FTPS auto-deploy to Hostinger. Post-deploy smoke verifies every tab carries the same `git_sha` meta tag (fix D5 — catches partial FTPS uploads). Emits `status.json` v1.1 with `git_sha`, `pipeline_version`, `agents.inventory_count`, and per-layer counts. Surfaces Layer 3 (Setups) and Layer 4 (Risk) tabs on the dashboard. |
+| `site_generator`      | `*/15 * * * *` + workflow_run on 7 upstream agents | Supabase → Jinja2 HTML → Cloudflare Pages publish (primary; Hostinger FTPS fallback). Post-deploy smoke verifies every tab carries the same `git_sha` meta tag (fix D5 — catches partial/stale publishes). Emits `status.json` v1.1 with `git_sha`, `pipeline_version`, `agents.inventory_count`, and per-layer counts. Surfaces Layer 3 (Setups) and Layer 4 (Risk) tabs on the dashboard. |
 | `source_review_agent` | `0 13 1 * *`      | Monthly health check on every external feed → Telegram digest |
 | `paper_book`          | `30 22 * * 1-5`   | **Forward-edge validation (Layer 5.5).** Grades the TRADEABLE `stock_trade_setups` forward as a $5k paper book vs a $5k QQQ buy-and-hold; immutable frozen ledger; staggered tier (continue/inconclusive/fail → edge → conviction). Reads Layer 3 + yfinance only; commits JSON to `paper_book/`. Currently starved (0 tradeable setups → honest `inconclusive`). Design: `docs/design/2026-06-26-paper-book-forward-edge.md`. |
 | `paper_book_shadow`   | `45 22 * * 1-5`   | **Skip-gate audit (Layer 5.5).** Grades the SKIPPED setups (per-setup, capacity-free) stratified by skip-reason (payoff / vocabulary / instrument) → which gate over-filters real edge + instrument-gate anomalies (e.g. CVX/Chevron). Fully isolated, read-only; commits JSON to `paper_book/shadow/`. Design: `docs/design/2026-06-27-paper-book-shadow-skipped.md`. |
