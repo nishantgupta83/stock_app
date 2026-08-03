@@ -1,5 +1,5 @@
 {
-"cursor": "2026-07-30T20:23:34.230113+00:00",
+"cursor": "2026-08-03T22:38:26.94308+00:00",
 "setups": [
 {
 "setup_id": 315,
@@ -3724,6 +3724,20 @@
 "reason_to_skip": "rule 8k_material_event::h1d profit_factor 0.76 < 1.0 (no payoff edge)",
 "skip_category": "payoff",
 "raw": "{\"id\": 616, \"signal_id\": 10109, \"ticker\": \"NFLX\", \"direction\": \"short\", \"created_at\": \"2026-07-30T20:23:34.230113+00:00\", \"target_pct\": 0.02, \"stop_pct\": 0.015, \"horizon_days\": 1, \"valid_until\": \"2026-08-04T20:22:55.459505+00:00\", \"reason_to_skip\": \"rule 8k_material_event::h1d profit_factor 0.76 < 1.0 (no payoff edge)\"}"
+},
+{
+"setup_id": 617,
+"signal_id": 10375,
+"ticker": "CVX",
+"direction": "long",
+"created_at": "2026-08-03T22:38:26.94308+00:00",
+"target_pct": 0.02,
+"stop_pct": 0.015,
+"horizon_days": 1,
+"valid_until": "2026-08-04T04:37:51.950864+00:00",
+"reason_to_skip": "CVX not a tradeable instrument (fund/placeholder)",
+"skip_category": "instrument",
+"raw": "{\"id\": 617, \"signal_id\": 10375, \"ticker\": \"CVX\", \"direction\": \"long\", \"created_at\": \"2026-08-03T22:38:26.94308+00:00\", \"target_pct\": 0.02, \"stop_pct\": 0.015, \"horizon_days\": 1, \"valid_until\": \"2026-08-04T04:37:51.950864+00:00\", \"reason_to_skip\": \"CVX not a tradeable instrument (fund/placeholder)\"}"
 }
 ],
 "outcomes": [
