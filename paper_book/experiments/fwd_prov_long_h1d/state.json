@@ -1,0 +1,174 @@
+{
+"experiment_id": "fwd_prov_long_h1d",
+"cursor": "2026-08-03T23:07:57.494697+00:00",
+"forward_epoch": "2026-08-03",
+"config_hash": "f1b6a019435833a8a180b7609cacb0bb88f94948ae54ed6bd9d36175e615b9cc",
+"candidates": [
+{
+"experiment_id": "fwd_prov_long_h1d",
+"candidate_id": 218,
+"created_at": "2026-08-03T11:07:49.713191+00:00",
+"ticker": "FXI",
+"direction": "bullish",
+"score": 30.762,
+"rule_keys": "[\"news_article:positive:h15d\", \"news_article:positive:h1d\", \"news_article:positive:h30d\", \"news_article:positive:h7d\"]",
+"source_agents": "[\"news\"]",
+"raw": "{\"id\": 218, \"created_at\": \"2026-08-03T11:07:49.713191+00:00\", \"ticker\": \"FXI\", \"direction\": \"bullish\", \"score\": 30.762, \"recall_floor\": 30.0, \"rule_keys\": [\"news_article:positive:h15d\", \"news_article:positive:h1d\", \"news_article:positive:h30d\", \"news_article:positive:h7d\"], \"source_agents\": [\"news\"]}"
+},
+{
+"experiment_id": "fwd_prov_long_h1d",
+"candidate_id": 219,
+"created_at": "2026-08-03T11:07:49.713191+00:00",
+"ticker": "FXI",
+"direction": "bullish",
+"score": 30.762,
+"rule_keys": "[\"news_article:positive:h15d\", \"news_article:positive:h1d\", \"news_article:positive:h30d\", \"news_article:positive:h7d\"]",
+"source_agents": "[\"news\"]",
+"raw": "{\"id\": 219, \"created_at\": \"2026-08-03T11:07:49.713191+00:00\", \"ticker\": \"FXI\", \"direction\": \"bullish\", \"score\": 30.762, \"recall_floor\": 30.0, \"rule_keys\": [\"news_article:positive:h15d\", \"news_article:positive:h1d\", \"news_article:positive:h30d\", \"news_article:positive:h7d\"], \"source_agents\": [\"news\"]}"
+},
+{
+"experiment_id": "fwd_prov_long_h1d",
+"candidate_id": 220,
+"created_at": "2026-08-03T12:52:51.624673+00:00",
+"ticker": "GLW",
+"direction": "bullish",
+"score": 30.254,
+"rule_keys": "[\"news_article:positive:h15d\", \"news_article:positive:h1d\", \"news_article:positive:h30d\", \"news_article:positive:h7d\"]",
+"source_agents": "[\"news\"]",
+"raw": "{\"id\": 220, \"created_at\": \"2026-08-03T12:52:51.624673+00:00\", \"ticker\": \"GLW\", \"direction\": \"bullish\", \"score\": 30.254, \"recall_floor\": 30.0, \"rule_keys\": [\"news_article:positive:h15d\", \"news_article:positive:h1d\", \"news_article:positive:h30d\", \"news_article:positive:h7d\"], \"source_agents\": [\"news\"]}"
+},
+{
+"experiment_id": "fwd_prov_long_h1d",
+"candidate_id": 221,
+"created_at": "2026-08-03T14:26:37.365275+00:00",
+"ticker": "GDX",
+"direction": "bullish",
+"score": 41.016,
+"rule_keys": "[\"news_article:positive:h15d\", \"news_article:positive:h1d\", \"news_article:positive:h30d\", \"news_article:positive:h7d\"]",
+"source_agents": "[\"news\"]",
+"raw": "{\"id\": 221, \"created_at\": \"2026-08-03T14:26:37.365275+00:00\", \"ticker\": \"GDX\", \"direction\": \"bullish\", \"score\": 41.016, \"recall_floor\": 30.0, \"rule_keys\": [\"news_article:positive:h15d\", \"news_article:positive:h1d\", \"news_article:positive:h30d\", \"news_article:positive:h7d\"], \"source_agents\": [\"news\"]}"
+},
+{
+"experiment_id": "fwd_prov_long_h1d",
+"candidate_id": 222,
+"created_at": "2026-08-03T15:07:50.769106+00:00",
+"ticker": "GDX",
+"direction": "bullish",
+"score": 30.762,
+"rule_keys": "[\"news_article:positive:h15d\", \"news_article:positive:h1d\", \"news_article:positive:h30d\", \"news_article:positive:h7d\"]",
+"source_agents": "[\"news\"]",
+"raw": "{\"id\": 222, \"created_at\": \"2026-08-03T15:07:50.769106+00:00\", \"ticker\": \"GDX\", \"direction\": \"bullish\", \"score\": 30.762, \"recall_floor\": 30.0, \"rule_keys\": [\"news_article:positive:h15d\", \"news_article:positive:h1d\", \"news_article:positive:h30d\", \"news_article:positive:h7d\"], \"source_agents\": [\"news\"]}"
+},
+{
+"experiment_id": "fwd_prov_long_h1d",
+"candidate_id": 223,
+"created_at": "2026-08-03T16:56:08.530902+00:00",
+"ticker": "QQQ",
+"direction": "bullish",
+"score": 30.762,
+"rule_keys": "[\"news_article:positive:h15d\", \"news_article:positive:h1d\", \"news_article:positive:h30d\", \"news_article:positive:h7d\"]",
+"source_agents": "[\"news\"]",
+"raw": "{\"id\": 223, \"created_at\": \"2026-08-03T16:56:08.530902+00:00\", \"ticker\": \"QQQ\", \"direction\": \"bullish\", \"score\": 30.762, \"recall_floor\": 30.0, \"rule_keys\": [\"news_article:positive:h15d\", \"news_article:positive:h1d\", \"news_article:positive:h30d\", \"news_article:positive:h7d\"], \"source_agents\": [\"news\"]}"
+},
+{
+"experiment_id": "fwd_prov_long_h1d",
+"candidate_id": 225,
+"created_at": "2026-08-03T20:37:59.598156+00:00",
+"ticker": "CRWD",
+"direction": "bullish",
+"score": 30.254,
+"rule_keys": "[\"news_article:positive:h15d\", \"news_article:positive:h1d\", \"news_article:positive:h30d\", \"news_article:positive:h7d\"]",
+"source_agents": "[\"news\"]",
+"raw": "{\"id\": 225, \"created_at\": \"2026-08-03T20:37:59.598156+00:00\", \"ticker\": \"CRWD\", \"direction\": \"bullish\", \"score\": 30.254, \"recall_floor\": 30.0, \"rule_keys\": [\"news_article:positive:h15d\", \"news_article:positive:h1d\", \"news_article:positive:h30d\", \"news_article:positive:h7d\"], \"source_agents\": [\"news\"]}"
+},
+{
+"experiment_id": "fwd_prov_long_h1d",
+"candidate_id": 226,
+"created_at": "2026-08-03T21:07:48.657229+00:00",
+"ticker": "NVT",
+"direction": "bullish",
+"score": 33.33,
+"rule_keys": "[\"news_article:positive:h15d\", \"news_article:positive:h1d\", \"news_article:positive:h30d\", \"news_article:positive:h7d\"]",
+"source_agents": "[\"news\"]",
+"raw": "{\"id\": 226, \"created_at\": \"2026-08-03T21:07:48.657229+00:00\", \"ticker\": \"NVT\", \"direction\": \"bullish\", \"score\": 33.33, \"recall_floor\": 30.0, \"rule_keys\": [\"news_article:positive:h15d\", \"news_article:positive:h1d\", \"news_article:positive:h30d\", \"news_article:positive:h7d\"], \"source_agents\": [\"news\"]}"
+},
+{
+"experiment_id": "fwd_prov_long_h1d",
+"candidate_id": 227,
+"created_at": "2026-08-03T22:37:55.616186+00:00",
+"ticker": "XLE",
+"direction": "bullish",
+"score": 333.672,
+"rule_keys": "[\"truth_social_post:kwd0037_sector_energy_dom:h15d\", \"truth_social_post:kwd0037_sector_energy_dom:h1d\", \"truth_social_post:kwd0037_sector_energy_dom:h30d\", \"truth_social_post:kwd0037_sector_energy_dom:h7d\"]",
+"source_agents": "[\"truth_social\"]",
+"raw": "{\"id\": 227, \"created_at\": \"2026-08-03T22:37:55.616186+00:00\", \"ticker\": \"XLE\", \"direction\": \"bullish\", \"score\": 333.672, \"recall_floor\": 30.0, \"rule_keys\": [\"truth_social_post:kwd0037_sector_energy_dom:h15d\", \"truth_social_post:kwd0037_sector_energy_dom:h1d\", \"truth_social_post:kwd0037_sector_energy_dom:h30d\", \"truth_social_post:kwd0037_sector_energy_dom:h7d\"], \"source_agents\": [\"truth_social\"]}"
+},
+{
+"experiment_id": "fwd_prov_long_h1d",
+"candidate_id": 228,
+"created_at": "2026-08-03T22:37:55.616186+00:00",
+"ticker": "XOM",
+"direction": "bullish",
+"score": 333.672,
+"rule_keys": "[\"truth_social_post:kwd0037_sector_energy_dom:h15d\", \"truth_social_post:kwd0037_sector_energy_dom:h1d\", \"truth_social_post:kwd0037_sector_energy_dom:h30d\", \"truth_social_post:kwd0037_sector_energy_dom:h7d\"]",
+"source_agents": "[\"truth_social\"]",
+"raw": "{\"id\": 228, \"created_at\": \"2026-08-03T22:37:55.616186+00:00\", \"ticker\": \"XOM\", \"direction\": \"bullish\", \"score\": 333.672, \"recall_floor\": 30.0, \"rule_keys\": [\"truth_social_post:kwd0037_sector_energy_dom:h15d\", \"truth_social_post:kwd0037_sector_energy_dom:h1d\", \"truth_social_post:kwd0037_sector_energy_dom:h30d\", \"truth_social_post:kwd0037_sector_energy_dom:h7d\"], \"source_agents\": [\"truth_social\"]}"
+},
+{
+"experiment_id": "fwd_prov_long_h1d",
+"candidate_id": 230,
+"created_at": "2026-08-03T22:37:55.616186+00:00",
+"ticker": "LMT",
+"direction": "bullish",
+"score": 62.564,
+"rule_keys": "[\"truth_social_post:kwd0037_sector_defense:h15d\", \"truth_social_post:kwd0037_sector_defense:h1d\", \"truth_social_post:kwd0037_sector_defense:h30d\", \"truth_social_post:kwd0037_sector_defense:h7d\"]",
+"source_agents": "[\"truth_social\"]",
+"raw": "{\"id\": 230, \"created_at\": \"2026-08-03T22:37:55.616186+00:00\", \"ticker\": \"LMT\", \"direction\": \"bullish\", \"score\": 62.564, \"recall_floor\": 30.0, \"rule_keys\": [\"truth_social_post:kwd0037_sector_defense:h15d\", \"truth_social_post:kwd0037_sector_defense:h1d\", \"truth_social_post:kwd0037_sector_defense:h30d\", \"truth_social_post:kwd0037_sector_defense:h7d\"], \"source_agents\": [\"truth_social\"]}"
+},
+{
+"experiment_id": "fwd_prov_long_h1d",
+"candidate_id": 231,
+"created_at": "2026-08-03T22:37:55.616186+00:00",
+"ticker": "RTX",
+"direction": "bullish",
+"score": 62.564,
+"rule_keys": "[\"truth_social_post:kwd0037_sector_defense:h15d\", \"truth_social_post:kwd0037_sector_defense:h1d\", \"truth_social_post:kwd0037_sector_defense:h30d\", \"truth_social_post:kwd0037_sector_defense:h7d\"]",
+"source_agents": "[\"truth_social\"]",
+"raw": "{\"id\": 231, \"created_at\": \"2026-08-03T22:37:55.616186+00:00\", \"ticker\": \"RTX\", \"direction\": \"bullish\", \"score\": 62.564, \"recall_floor\": 30.0, \"rule_keys\": [\"truth_social_post:kwd0037_sector_defense:h15d\", \"truth_social_post:kwd0037_sector_defense:h1d\", \"truth_social_post:kwd0037_sector_defense:h30d\", \"truth_social_post:kwd0037_sector_defense:h7d\"], \"source_agents\": [\"truth_social\"]}"
+},
+{
+"experiment_id": "fwd_prov_long_h1d",
+"candidate_id": 232,
+"created_at": "2026-08-03T22:37:55.616186+00:00",
+"ticker": "NOC",
+"direction": "bullish",
+"score": 62.564,
+"rule_keys": "[\"truth_social_post:kwd0037_sector_defense:h15d\", \"truth_social_post:kwd0037_sector_defense:h1d\", \"truth_social_post:kwd0037_sector_defense:h30d\", \"truth_social_post:kwd0037_sector_defense:h7d\"]",
+"source_agents": "[\"truth_social\"]",
+"raw": "{\"id\": 232, \"created_at\": \"2026-08-03T22:37:55.616186+00:00\", \"ticker\": \"NOC\", \"direction\": \"bullish\", \"score\": 62.564, \"recall_floor\": 30.0, \"rule_keys\": [\"truth_social_post:kwd0037_sector_defense:h15d\", \"truth_social_post:kwd0037_sector_defense:h1d\", \"truth_social_post:kwd0037_sector_defense:h30d\", \"truth_social_post:kwd0037_sector_defense:h7d\"], \"source_agents\": [\"truth_social\"]}"
+},
+{
+"experiment_id": "fwd_prov_long_h1d",
+"candidate_id": 233,
+"created_at": "2026-08-03T23:07:57.494697+00:00",
+"ticker": "XLE",
+"direction": "bullish",
+"score": 41.709,
+"rule_keys": "[\"truth_social_post:kwd0037_sector_energy_dom:h15d\", \"truth_social_post:kwd0037_sector_energy_dom:h1d\", \"truth_social_post:kwd0037_sector_energy_dom:h30d\", \"truth_social_post:kwd0037_sector_energy_dom:h7d\"]",
+"source_agents": "[\"truth_social\"]",
+"raw": "{\"id\": 233, \"created_at\": \"2026-08-03T23:07:57.494697+00:00\", \"ticker\": \"XLE\", \"direction\": \"bullish\", \"score\": 41.709, \"recall_floor\": 30.0, \"rule_keys\": [\"truth_social_post:kwd0037_sector_energy_dom:h15d\", \"truth_social_post:kwd0037_sector_energy_dom:h1d\", \"truth_social_post:kwd0037_sector_energy_dom:h30d\", \"truth_social_post:kwd0037_sector_energy_dom:h7d\"], \"source_agents\": [\"truth_social\"]}"
+},
+{
+"experiment_id": "fwd_prov_long_h1d",
+"candidate_id": 234,
+"created_at": "2026-08-03T23:07:57.494697+00:00",
+"ticker": "XOM",
+"direction": "bullish",
+"score": 41.709,
+"rule_keys": "[\"truth_social_post:kwd0037_sector_energy_dom:h15d\", \"truth_social_post:kwd0037_sector_energy_dom:h1d\", \"truth_social_post:kwd0037_sector_energy_dom:h30d\", \"truth_social_post:kwd0037_sector_energy_dom:h7d\"]",
+"source_agents": "[\"truth_social\"]",
+"raw": "{\"id\": 234, \"created_at\": \"2026-08-03T23:07:57.494697+00:00\", \"ticker\": \"XOM\", \"direction\": \"bullish\", \"score\": 41.709, \"recall_floor\": 30.0, \"rule_keys\": [\"truth_social_post:kwd0037_sector_energy_dom:h15d\", \"truth_social_post:kwd0037_sector_energy_dom:h1d\", \"truth_social_post:kwd0037_sector_energy_dom:h30d\", \"truth_social_post:kwd0037_sector_energy_dom:h7d\"], \"source_agents\": [\"truth_social\"]}"
+}
+],
+"positions": []
+}
