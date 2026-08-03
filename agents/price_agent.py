@@ -507,8 +507,8 @@ def job_run_finish(run_id: int | None, status: str, rows_in: int, rows_out: int,
 # accuracy + payoff sanity. Only the adult tier (canonical is_mature flag)
 # unlocks BUY/SELL vocabulary in thesis_agent; the lower tiers control
 # sizing multipliers in risk_agent and eligibility in the realistic-paper
-# loop (sql/0032). These constants MUST mirror
-# scripts/learning_snapshot.py:TIER_GATES.
+# loop (sql/0032). The canonical gate lives in agents/_maturity.py (imported
+# below); learning_snapshot.py reports the stored tier/is_mature flags, not a copy.
 # Maturity-gate constants + derive_maturity_flags now live in the env-free
 # shared module agents/_maturity.py so every writer (this agent, the backfill
 # script, the recompute script) uses ONE gate and cannot drift. Re-bound here

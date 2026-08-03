@@ -15,10 +15,13 @@ weights + per-rule payoff calibration.
 documents every stage shipped 2026-05-12 through 2026-05-18 with commit hashes.
 
 > **Paper-trading vocabulary only.** The bot says **WATCH / RESEARCH / AVOID_CHASE / CHASE_RISK** —
-> never "BUY" or "SELL" — until a rule's calibration crosses the **production maturity gate**
-> (`accuracy ≥ 0.90 AND n_observations ≥ 30`). A **training tier** at `accuracy ≥ 0.70` exists as
-> a parallel surface for visibility but does not unlock BUY/SELL emission. Educational use only;
-> not financial advice.
+> never "BUY" or "SELL" — until a rule's calibration crosses the **production maturity gate**.
+> That gate is **payoff-first, computed on effective (independent ticker-entry-day) evidence**:
+> `effective_n ≥ 100 AND profit_factor ≥ 2.0 AND mean_realized ≥ 0.5%` — there is **no accuracy
+> floor** (single source of truth: [`agents/_maturity.py`](agents/_maturity.py)). A **training
+> tier** (`effective_n ≥ 30 AND accuracy ≥ 0.70 AND mean_realized > 0`) exists as a parallel
+> surface for visibility but does **not** unlock BUY/SELL emission. Educational use only; not
+> financial advice.
 
 ## Project scope
 
