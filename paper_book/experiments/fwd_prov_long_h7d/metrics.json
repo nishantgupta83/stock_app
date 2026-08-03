@@ -1,0 +1,42 @@
+{
+  "experiment_id": "fwd_prov_long_h7d",
+  "config_hash": "47eb4eb5fda8223568f21fae0301f48c6fe0da43261e959002d84a8c3fd72d35",
+  "forward_epoch": "2026-08-03",
+  "captured_at": "2026-08-03T23:54:57.408645+00:00",
+  "sync_ok": true,
+  "n_admitted": 0,
+  "n_open": 0,
+  "n_cohorts_forward": 0,
+  "forward": {
+    "n_cohorts": 0,
+    "n_positions": 0,
+    "weeks": 0.0,
+    "mean_cohort_excess": 0.0,
+    "mean_cohort_net": 0.0,
+    "profit_factor": 0.0,
+    "top_cohort_excess_share": 0.0,
+    "max_drawdown": 0.0,
+    "subperiods_positive": 0,
+    "cohorts": {}
+  },
+  "replay": {
+    "n_cohorts": 0,
+    "n_positions": 0,
+    "weeks": 0.0,
+    "mean_cohort_excess": 0.0,
+    "mean_cohort_net": 0.0,
+    "profit_factor": 0.0,
+    "top_cohort_excess_share": 0.0,
+    "max_drawdown": 0.0,
+    "subperiods_positive": 0,
+    "cohorts": {}
+  },
+  "tier": {
+    "status": "inconclusive",
+    "reason": "insufficient_sample",
+    "have_cohorts": 0,
+    "need_cohorts": 30,
+    "have_weeks": 0.0,
+    "need_weeks": 8
+  }
+}
