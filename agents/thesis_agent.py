@@ -1449,7 +1449,7 @@ def _record_candidates(thesis_run_id: int | None, scored: list[dict]) -> int:
     """
     cands = [s for s in scored if float(s.get("score") or 0) >= THESIS_RECALL_FLOOR]
     if not cands:
-        return
+        return 0
     # Cap the per-run work (highest-score first) so a pathological market-open
     # run can't spend unbounded time on the ledger side-write.
     cands.sort(key=lambda s: float(s.get("score") or 0), reverse=True)
@@ -1458,7 +1458,7 @@ def _record_candidates(thesis_run_id: int | None, scored: list[dict]) -> int:
     if existing is None:
         # Prefilter failed → fail closed (skip writes) rather than risk dup bloat.
         print("  candidate ledger: prefilter failed, skipping writes this run", file=sys.stderr)
-        return
+        return 0
     rows = []
     for s in cands:
         dk = s.get("dedupe_key")
