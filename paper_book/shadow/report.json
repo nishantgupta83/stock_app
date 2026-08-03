@@ -1,5 +1,5 @@
 {
-  "captured_at": "2026-07-13T23:36:23.538135+00:00",
+  "captured_at": "2026-07-31T23:42:19.336210+00:00",
   "sync_ok": true,
   "by_category": {
     "payoff": {
@@ -12,12 +12,12 @@
       "status": "ok"
     },
     "vocabulary": {
-      "n_setups": 224,
-      "n_resolved": 224,
-      "mean_return_pct": 0.0327,
-      "mean_excess_vs_qqq_pct": 0.0388,
-      "win_rate": 0.6562,
-      "median_excess_pct": 0.0353,
+      "n_setups": 230,
+      "n_resolved": 230,
+      "mean_return_pct": 0.0322,
+      "mean_excess_vs_qqq_pct": 0.0378,
+      "win_rate": 0.6522,
+      "median_excess_pct": 0.0336,
       "status": "ok"
     },
     "instrument": {
@@ -30,21 +30,21 @@
       "status": "ok"
     },
     "other": {
-      "n_setups": 11,
-      "n_resolved": 10,
-      "mean_return_pct": -0.0057,
-      "mean_excess_vs_qqq_pct": 0.0022,
-      "win_rate": 0.7,
-      "median_excess_pct": 0.0132,
+      "n_setups": 15,
+      "n_resolved": 14,
+      "mean_return_pct": -0.0049,
+      "mean_excess_vs_qqq_pct": 0.0044,
+      "win_rate": 0.7143,
+      "median_excess_pct": 0.0092,
       "status": "ok"
     },
     "overall_priceable": {
-      "n_setups": 251,
-      "n_resolved": 251,
-      "mean_return_pct": 0.0288,
-      "mean_excess_vs_qqq_pct": 0.0344,
-      "win_rate": 0.6335,
-      "median_excess_pct": 0.0263,
+      "n_setups": 261,
+      "n_resolved": 261,
+      "mean_return_pct": 0.028,
+      "mean_excess_vs_qqq_pct": 0.0333,
+      "win_rate": 0.6322,
+      "median_excess_pct": 0.0217,
       "status": "ok"
     }
   },
@@ -75,8 +75,8 @@
     }
   ],
   "reason_distribution": {
-    "intelligence flagged AVOID_CHASE": 224,
-    "neutral or unknown signal direction": 11,
+    "intelligence flagged AVOID_CHASE": 230,
+    "neutral or unknown signal direction": 15,
     "rule 8k_material_event::h1d profit_factor 0.67 < 1.0 (no payoff edge)": 4,
     "rule truth_social_post:kwd0037_sector_energy_dom:h1d profit_factor 0.00 < 1.0 (no payoff edge)": 3,
     "INST_BLK not a tradeable instrument (fund/placeholder)": 2,
