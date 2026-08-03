@@ -1439,7 +1439,7 @@ def _existing_candidate_keys(dedup_keys: list[str], hours: int = 6) -> set[str] 
     return found
 
 
-def _record_candidates(thesis_run_id: int | None, scored: list[dict]) -> None:
+def _record_candidates(thesis_run_id: int | None, scored: list[dict]) -> int:
     """Layer 2.a output: one row per cluster clearing the loose recall floor.
 
     This is the seam that makes 2.a inspectable and feeds the PR-B0 cluster-
@@ -1506,18 +1506,33 @@ def _record_candidates(thesis_run_id: int | None, scored: list[dict]) -> None:
             "breakdown":        breakdown_sample,
         })
     if not rows:
-        return
+        return 0
     chunk = 100
+    n_failed = 0
     for i in range(0, len(rows), chunk):
+        batch = rows[i:i + chunk]
         try:
-            requests.post(
+            r = requests.post(
                 f"{SUPABASE_URL}/rest/v1/stock_signal_candidates",
                 headers={**HEADERS_SB, "Prefer": "return=minimal"},
-                json=rows[i:i + chunk],
+                json=batch,
                 timeout=20,
             )
+            # Observable, not best-effort: a non-2xx (rejected schema/CHECK, etc.)
+            # is otherwise SILENT — requests doesn't raise on 4xx — and 2.a would
+            # lose evidence with no trace. 2.a is the seam the whole funnel + the
+            # paper go/no-go depend on, so surface any failure loudly.
+            if r.status_code not in (200, 201, 204):
+                n_failed += len(batch)
+                print(f"  candidate batch {i} REJECTED {r.status_code}: {r.text[:200]}",
+                      file=sys.stderr)
         except Exception as e:  # noqa: BLE001
-            print(f"  candidate batch {i}: {e}", file=sys.stderr)
+            n_failed += len(batch)
+            print(f"  candidate batch {i} error: {e}", file=sys.stderr)
+    if n_failed:
+        print(f"  ⚠ candidate ledger: {n_failed}/{len(rows)} rows failed to write "
+              f"(Layer 2.a evidence loss)", file=sys.stderr)
+    return n_failed
 
 
 def fetch_rule_calibration() -> dict[str, dict]:
