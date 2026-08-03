@@ -587,6 +587,20 @@ def job_run_start() -> int | None:
     return None
 
 
+# stock_job_runs.status CHECK allows only ('running','ok','failed','partial')
+# (sql/0004_ops_tables.sql:16). orchestrator used to write 'warning'/'error' — NOT
+# in that set — so the PATCH was rejected and job_run_finish swallowed it, orphaning
+# every run as 'running' → reaped presumed_killed (verified live 2026-08-02: 0
+# 'warning'/'error' rows ever). Map the watchdog's outcome onto the allowed set (we
+# use 'ok'/'failed'); the nuance (stale count, escalations, remediations) is
+# preserved in rows_out + meta + Telegram.
+def finish_status(errored: bool) -> str:
+    """DB-allowed stock_job_runs.status for the orchestrator's OWN run. It ran ⇒
+    'ok' (staleness/escalations concern OTHER agents, surfaced elsewhere);
+    'failed' only if the watchdog itself crashed."""
+    return "failed" if errored else "ok"
+
+
 def job_run_finish(run_id: int | None, status: str, rows_in: int, rows_out: int,
                    err: str | None = None, meta: dict | None = None) -> None:
     if run_id is None:
@@ -601,12 +615,17 @@ def job_run_finish(run_id: int | None, status: str, rows_in: int, rows_out: int,
     if meta is not None:
         payload["meta"] = meta
     try:
-        requests.patch(
+        r = requests.patch(
             f"{SUPABASE_URL}/rest/v1/stock_job_runs?id=eq.{run_id}",
             headers=HEADERS_SB, json=payload, timeout=10,
         )
-    except Exception:
-        pass
+        # Never swallow the finish silently (LESSONS-CORE #7): a rejected PATCH
+        # (e.g. a status the CHECK constraint disallows) would otherwise leave the
+        # row stuck 'running' forever with no trace.
+        if r.status_code not in (200, 204):
+            print(f"  job_run_finish PATCH {r.status_code}: {r.text[:200]}", file=sys.stderr)
+    except Exception as exc:  # noqa: BLE001
+        print(f"  job_run_finish PATCH error: {exc}", file=sys.stderr)
 
 
 def alert_telegram(text: str) -> None:
@@ -703,7 +722,7 @@ def main() -> int:
         elapsed = time.time() - started
         job_run_finish(
             run_id,
-            "ok" if not stale and not escalations else "warning",
+            finish_status(errored=False),
             len(EXPECTED), len(stale),
             meta={"remediations": attempts} if attempts else None,
         )
@@ -713,7 +732,7 @@ def main() -> int:
     except Exception as exc:  # noqa: BLE001
         import traceback
         traceback.print_exc()
-        job_run_finish(run_id, "error", 0, 0, str(exc)[:500])
+        job_run_finish(run_id, finish_status(errored=True), 0, 0, str(exc)[:500])
         return 1
 
 

@@ -12,6 +12,7 @@ import os
 import re
 import shutil
 import sys
+import time
 from collections import Counter, defaultdict
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
@@ -82,12 +83,47 @@ KNOWN_AGENTS = list(AGENT_INVENTORY.keys()) + [
 _JOB_NAME = {k: v["job"] for k, v in AGENT_INVENTORY.items()}
 
 
+# Transient statuses worth retrying (rate-limit + upstream/gateway/timeouts).
+_SB_TRANSIENT = {429, 500, 502, 503, 504}
+
+
+def _sb_request(path: str, headers: dict, params, ok_codes: set[int]):
+    """GET with bounded retry on transient (429/5xx/connection) failures.
+
+    A single flaky read must not trip site_generator's "refuse to publish"
+    fail-safe and fail the whole run — the view is usually healthy on retry
+    (root cause of the recurring stock_agent_freshness read failures). Up to 3
+    attempts, linear backoff; only a persistent/non-transient failure is
+    reported (fail-safe still holds — a truly-down Supabase won't publish stale).
+    Returns (response, error_msg): error_msg is "" on success; response is None
+    only when a connection error exhausts retries.
+    """
+    last_err = ""
+    for attempt in range(3):
+        try:
+            r = requests.get(f"{SUPABASE_URL}/rest/v1/{path}",
+                             headers=headers, params=params or {}, timeout=20)
+        except requests.RequestException as exc:
+            last_err = f"SB {path} conn-error: {exc}"
+            if attempt < 2:
+                time.sleep(1.5 * (attempt + 1))
+                continue
+            return None, last_err
+        if r.status_code in ok_codes:
+            return r, ""
+        last_err = f"SB {path} {r.status_code}: {r.text[:200]}"
+        if r.status_code in _SB_TRANSIENT and attempt < 2:
+            time.sleep(1.5 * (attempt + 1))
+            continue
+        return r, last_err
+    return None, last_err
+
+
 def sb_get(path: str, params: dict | list[tuple[str, str]] | None = None) -> list[dict]:
-    r = requests.get(f"{SUPABASE_URL}/rest/v1/{path}", headers=HEADERS_SB, params=params or {}, timeout=20)
-    if r.status_code != 200:
-        msg = f"SB {path} {r.status_code}: {r.text[:200]}"
-        SB_ERRORS.append(msg)
-        print(f"  {msg}", file=sys.stderr)
+    r, err = _sb_request(path, HEADERS_SB, params, {200})
+    if err:
+        SB_ERRORS.append(err)
+        print(f"  {err}", file=sys.stderr)
         return []
     return r.json()
 
@@ -99,9 +135,9 @@ def sb_count(path: str, params: dict | None = None) -> int:
     `len(sb_get(...))`. Returns 0 on error rather than raising, matching sb_get.
     """
     headers = {**HEADERS_SB, "Prefer": "count=exact", "Range-Unit": "items", "Range": "0-0"}
-    r = requests.get(f"{SUPABASE_URL}/rest/v1/{path}", headers=headers, params=params or {}, timeout=20)
-    if r.status_code not in (200, 206):
-        SB_ERRORS.append(f"SB count {path} {r.status_code}: {r.text[:200]}")
+    r, err = _sb_request(path, headers, params, {200, 206})
+    if err:
+        SB_ERRORS.append(err)
         return 0
     cr = r.headers.get("content-range") or r.headers.get("Content-Range") or ""
     if "/" in cr:
