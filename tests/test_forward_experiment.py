@@ -35,29 +35,29 @@ import _experiment_store as store        # noqa: E402
 # ---------------------------------------------------------------------------
 
 def test_config_hash_deterministic():
-    assert fx.config_hash(1, "::h1d") == fx.config_hash(1, "::h1d")
-    assert fx.config_hash(7, "::h7d") == fx.config_hash(7, "::h7d")
+    assert fx.config_hash(1, "h1d") == fx.config_hash(1, "h1d")
+    assert fx.config_hash(7, "h7d") == fx.config_hash(7, "h7d")
 
 
 def test_config_hash_changes_with_cost():
-    base = fx.config_hash(1, "::h1d")
-    assert fx.config_hash(1, "::h1d", slippage_per_side=0.002) != base
+    base = fx.config_hash(1, "h1d")
+    assert fx.config_hash(1, "h1d", slippage_per_side=0.002) != base
 
 
 def test_config_hash_changes_with_stop_or_target():
-    base = fx.config_hash(1, "::h1d")
-    assert fx.config_hash(1, "::h1d", stop_pct=0.05) != base
-    assert fx.config_hash(1, "::h1d", target_pct=0.10) != base
+    base = fx.config_hash(1, "h1d")
+    assert fx.config_hash(1, "h1d", stop_pct=0.05) != base
+    assert fx.config_hash(1, "h1d", target_pct=0.10) != base
 
 
 def test_config_hash_distinct_per_experiment():
-    assert fx.config_hash(1, "::h1d") != fx.config_hash(7, "::h7d")
+    assert fx.config_hash(1, "h1d") != fx.config_hash(7, "h7d")
 
 
 def test_config_hash_excludes_timestamp():
     # Two calls straddling wall-clock time must be identical (no now() in the hash).
-    a = fx.config_hash(1, "::h1d")
-    b = fx.config_hash(1, "::h1d")
+    a = fx.config_hash(1, "h1d")
+    b = fx.config_hash(1, "h1d")
     assert a == b and len(a) == 64
 
 
@@ -82,48 +82,65 @@ def _cand(**kw):
 
 
 def test_admit_bullish_horizon_tradeable():
-    assert fx.is_admitted(_cand(), horizon_tag="::h1d",
+    assert fx.is_admitted(_cand(), horizon_tag="h1d",
                           tradeable_tickers=TRADEABLE, forward_epoch=EPOCH) is True
 
 
 def test_reject_bearish():
-    assert fx.is_admitted(_cand(direction="bearish"), horizon_tag="::h1d",
+    assert fx.is_admitted(_cand(direction="bearish"), horizon_tag="h1d",
                           tradeable_tickers=TRADEABLE, forward_epoch=EPOCH) is False
 
 
 def test_reject_inst_placeholder():
-    assert fx.is_admitted(_cand(ticker="INST_BLACKROCK"), horizon_tag="::h1d",
+    assert fx.is_admitted(_cand(ticker="INST_BLACKROCK"), horizon_tag="h1d",
                           tradeable_tickers=TRADEABLE, forward_epoch=EPOCH) is False
 
 
 def test_reject_non_tradeable_fund():
     # VTSAX is not in the tradeable set -> excluded (funds price on NAV).
-    assert fx.is_admitted(_cand(ticker="VTSAX"), horizon_tag="::h1d",
+    assert fx.is_admitted(_cand(ticker="VTSAX"), horizon_tag="h1d",
                           tradeable_tickers=TRADEABLE, forward_epoch=EPOCH) is False
 
 
 def test_reject_wrong_horizon_tag():
     # Candidate carries only ::h7d; the h1d experiment must reject it.
     c = _cand(rule_keys=["8k::h7d", "insider::h7d"])
-    assert fx.is_admitted(c, horizon_tag="::h1d",
+    assert fx.is_admitted(c, horizon_tag="h1d",
                           tradeable_tickers=TRADEABLE, forward_epoch=EPOCH) is False
 
 
 def test_h7d_admits_h7d_tag():
     c = _cand(rule_keys=["8k::h7d"])
-    assert fx.is_admitted(c, horizon_tag="::h7d",
+    assert fx.is_admitted(c, horizon_tag="h7d",
                           tradeable_tickers=TRADEABLE, forward_epoch=EPOCH) is True
+
+
+def test_admit_real_single_colon_rule_key_format():
+    # REGRESSION (2026-08-02): LIVE candidates use `type:subtype:h1d` (SINGLE colon),
+    # e.g. `news_article:positive:h1d`. The original `endswith("::h1d")` match hit
+    # ONLY empty-subtype keys and missed all of these -> the experiment would have
+    # been silently starved. Matching the last colon-segment admits both forms.
+    real = _cand(rule_keys=["news_article:positive:h1d", "news_article:positive:h7d",
+                            "news_article:positive:h15d", "news_article:positive:h30d"])
+    assert fx.is_admitted(real, horizon_tag="h1d",
+                          tradeable_tickers=TRADEABLE, forward_epoch=EPOCH) is True
+    assert fx.is_admitted(real, horizon_tag="h7d",
+                          tradeable_tickers=TRADEABLE, forward_epoch=EPOCH) is True
+    # 'h1d' must NOT substring-match 'h15d' (== on the segment, not endswith/contains).
+    h15_only = _cand(rule_keys=["news_article:positive:h15d"])
+    assert fx.is_admitted(h15_only, horizon_tag="h1d",
+                          tradeable_tickers=TRADEABLE, forward_epoch=EPOCH) is False
 
 
 def test_reject_before_forward_epoch():
     c = _cand(created_at="2026-07-15T10:00:00+00:00")
-    assert fx.is_admitted(c, horizon_tag="::h1d",
+    assert fx.is_admitted(c, horizon_tag="h1d",
                           tradeable_tickers=TRADEABLE, forward_epoch=EPOCH) is False
 
 
 def test_no_epoch_disables_forward_gate():
     c = _cand(created_at="2020-01-01T00:00:00+00:00")
-    assert fx.is_admitted(c, horizon_tag="::h1d",
+    assert fx.is_admitted(c, horizon_tag="h1d",
                           tradeable_tickers=TRADEABLE, forward_epoch=None) is True
 
 

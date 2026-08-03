@@ -5,8 +5,8 @@ Pre-registration: docs/experiments/2026-08-02-preregistration-forward-provisiona
 Every frozen parameter (admission, entry/exit, costs, tiers, isolation) lives there
 and is bound into `config_hash`. Two horizon experiments run independently:
 
-  EXPERIMENT_ID=fwd_prov_long_h1d   1 trading-day horizon, rule-key tag '::h1d'
-  EXPERIMENT_ID=fwd_prov_long_h7d   7 trading-day horizon, rule-key tag '::h7d'
+  EXPERIMENT_ID=fwd_prov_long_h1d   1 trading-day horizon, rule-key horizon segment 'h1d'
+  EXPERIMENT_ID=fwd_prov_long_h7d   7 trading-day horizon, rule-key horizon segment 'h7d'
 
 Each has its OWN db + state JSON + forward_epoch + config_hash; they never share a
 cohort. Source is the LIVE candidate ledger `stock_signal_candidates` (sql/0039),
@@ -58,8 +58,13 @@ from _instruments import fetch_tradeable_tickers, is_tradeable  # noqa: E402
 # ---------------------------------------------------------------------------
 
 EXPERIMENTS = {
-    "fwd_prov_long_h1d": {"horizon_days": 1, "horizon_tag": "::h1d"},
-    "fwd_prov_long_h7d": {"horizon_days": 7, "horizon_tag": "::h7d"},
+    # horizon_tag = the horizon LABEL = the LAST colon-segment of a rule_key.
+    # Candidate rule_keys are `event_type:subtype:h1d` (single colon); empty-subtype
+    # keys are `event_type::h1d` (double). BOTH end in the segment `h1d`, so we match
+    # the last segment — NEVER `endswith("::h1d")`, which misses every non-empty-
+    # subtype key (verified live 2026-08-02: candidates are `news_article:positive:h1d`).
+    "fwd_prov_long_h1d": {"horizon_days": 1, "horizon_tag": "h1d"},
+    "fwd_prov_long_h7d": {"horizon_days": 7, "horizon_tag": "h7d"},
 }
 
 # Frozen entry/exit/cost params (single locus — mirror the pre-registration).
@@ -144,14 +149,16 @@ def is_admitted(candidate: dict, *, horizon_tag: str,
     """Pre-registration admission rule (§Admission). Pure — no I/O.
 
     1. direction == 'bullish'
-    2. rule_keys contains >=1 key ending in the horizon tag (::h1d / ::h7d)
+    2. rule_keys has >=1 key whose LAST colon-segment is the horizon label
+       (h1d / h7d). Candidate keys are `type:subtype:h1d` (single colon); empty-
+       subtype keys are `type::h1d` — both end in the segment `h1d`.
     3. tradeable single-name/ETF (excludes INST_* and non-tradeable funds)
     4. created_at >= forward_epoch (forward only; never backfilled)
     """
     if (candidate.get("direction") or "").strip().lower() != DIRECTION:
         return False
     rule_keys = candidate.get("rule_keys") or []
-    if not any(str(k).endswith(horizon_tag) for k in rule_keys):
+    if not any(str(k).rsplit(":", 1)[-1] == horizon_tag for k in rule_keys):
         return False
     if not is_tradeable(candidate.get("ticker"), tradeable_tickers):
         return False

@@ -41,7 +41,11 @@ grade forward. Candidates lack target/stop/horizon shape, so we **supply fixed e
 
 1. `direction = 'bullish'` (this is the LONG experiment; bearish/AVOID_CHASE is a **separate,
    deferred** short experiment — it needs borrow costs — and is explicitly NOT included here).
-2. `rule_keys` contains ≥1 key ending in the horizon tag: `::h1d` (1a) or `::h7d` (1b).
+2. `rule_keys` has ≥1 key whose **last colon-segment** is the horizon label: `h1d`
+   (1a) or `h7d` (1b). Live candidate keys are `type:subtype:h1d` (single colon),
+   e.g. `news_article:positive:h1d`; empty-subtype keys are `type::h1d`. Both end in
+   the segment `h1d`, so we match the last segment (verified 2026-08-02 — an
+   `endswith("::h1d")` match would silently miss the single-colon majority).
 3. **Tradeable single-name/ETF ticker:** exclude any ticker starting `INST_` (institutional
    placeholders) and any non-tradeable fund (VTSAX/FXAIX/VFIAX/… per `agents/_instruments`).
 4. `created_at >= forward_epoch` — **forward only**; earlier candidates are excluded and
