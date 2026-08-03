@@ -1,8 +1,11 @@
 -- 0039 — Layer 2.a candidate ledger  (meta-labeling funnel, PR-A.1)
 --
--- ⚠️ DRAFT — NOT YET APPLIED. Gated on:
---   (1) the Layer 2→5 foundation correctness audit coming back clean, and
---   (2) two independent Codex reviews (schema + idempotency) being folded in.
+-- STATUS: APPLIED + LIVE (verified 2026-08-02 — 217 rows, latest 2026-08-01, 2.a
+-- generation populating). The earlier "DRAFT — NOT YET APPLIED" header was STALE;
+-- the table exists in the live DB via out-of-band apply (Management API / psql),
+-- not the CLI track. gate_decision + emitted_signal_id are still NULL on every row
+-- because 2.b (_metalabel_gate) and the orchestrator are not live yet.
+-- Evidence + track reconciliation: docs/findings/2026-08-02_schema-reconciliation.md.
 -- See docs/design/layer2-metalabeling-funnel.md §7 (PR-A.1).
 --
 -- Why this exists:
