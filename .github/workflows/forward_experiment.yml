@@ -1,0 +1,87 @@
+# .github/workflows/forward_experiment.yml
+name: forward_experiment
+
+# Runs the ISOLATED forward provisional-long edge experiments unattended: pulls
+# bullish candidates from stock_signal_candidates, grades each vs a matched-window
+# QQQ (fixed 5% target / 3% stop, stop_only), and commits state.json + metrics.json.
+# Two independent horizons (h1d, h7d) run as a matrix — never sharing a cohort.
+# Pre-registration: docs/experiments/2026-08-02-preregistration-forward-provisional-long.md
+
+on:
+  schedule:
+    - cron: "50 22 * * 1-5"
+  workflow_dispatch:
+
+# One shared concurrency group; the matrix legs are serialized so their commit-backs
+# to the same branch do not race. cancel-in-progress:false keeps a running pair intact.
+concurrency:
+  group: forward_experiment
+  cancel-in-progress: false
+
+permissions:
+  contents: write
+
+jobs:
+  forward_experiment:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    strategy:
+      max-parallel: 1          # serialize commit-backs to the same branch
+      fail-fast: false
+      matrix:
+        experiment_id:
+          - fwd_prov_long_h1d
+          - fwd_prov_long_h7d
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          fetch-depth: 1
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Record workflow start
+        env:
+          SUPABASE_URL:         ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
+        run: python agents/ops_recorder.py --phase start --agent workflow_forward_experiment
+
+      - uses: actions/setup-python@v6
+        with:
+          python-version: "3.12"
+          cache: pip
+
+      - name: Install deps
+        run: pip install -r requirements.txt
+
+      - name: Run forward experiment (${{ matrix.experiment_id }})
+        env:
+          SUPABASE_URL:         ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
+          EXPERIMENT_ID:        ${{ matrix.experiment_id }}
+          EXP_STATE_JSON:       paper_book/experiments/${{ matrix.experiment_id }}/state.json
+        run: python scripts/forward_experiment.py
+
+      - name: Commit and push
+        env:
+          EXP_ID: ${{ matrix.experiment_id }}
+        run: |
+          set -e
+          git config user.name  "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          dir="paper_book/experiments/${EXP_ID}"
+          if [ -z "$(git status --porcelain "${dir}/")" ]; then
+            echo "No forward-experiment changes for ${EXP_ID}."
+            exit 0
+          fi
+          git add "${dir}/state.json" "${dir}/metrics.json"
+          today=$(date -u +%Y-%m-%d)
+          git pull --rebase --autostash || true
+          git commit -m "chore(forward-exp): ${EXP_ID} ${today}"
+          git push || (git pull --rebase --autostash && git push)
+
+      - name: Record workflow finish
+        if: always()
+        env:
+          SUPABASE_URL:         ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
+          WORKFLOW_STATUS:      ${{ job.status }}
+        run: python agents/ops_recorder.py --phase finish --agent workflow_forward_experiment --status "$WORKFLOW_STATUS"

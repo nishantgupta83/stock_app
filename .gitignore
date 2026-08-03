@@ -39,3 +39,11 @@ paper_book/*
 paper_book/shadow/*
 !paper_book/shadow/state.json
 !paper_book/shadow/report.json
+# Isolated forward-experiment ledgers (SQLite local-only; commit state + metrics).
+# Track state.json + metrics.json per experiment; the *.db stays local/gitignored.
+!paper_book/experiments/
+paper_book/experiments/*
+!paper_book/experiments/*/
+paper_book/experiments/*/*
+!paper_book/experiments/*/state.json
+!paper_book/experiments/*/metrics.json
