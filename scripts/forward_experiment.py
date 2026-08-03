@@ -78,7 +78,10 @@ BENCH = "QQQ"
 COLD_START_HOURS = int(os.environ.get("EXP_COLD_START_HOURS", "168"))  # 7d; epoch gates anyway
 
 # Tier thresholds (pre-registration go/no-go).
-TIER1 = {"min_cohorts": 30, "min_weeks": 8, "max_dd": 0.20}
+TIER1 = {"min_cohorts": 30, "min_weeks": 8, "max_dd": 0.20, "fail_margin": 0.005}
+# fail_margin (0.5% net mean cohort excess): the pre-registration kills only on a
+# CLEAR negative. A mean excess in [-fail_margin, 0) is noise at n≈30 → inconclusive
+# (keep running), not fail.
 TIER2 = {"min_cohorts": 50, "min_weeks": 13, "min_pf": 1.4, "min_subperiods_pos": 2}
 
 
@@ -530,9 +533,17 @@ def classify_tier(fwd: dict, sync_ok: bool = True) -> dict:
         return {"status": "inconclusive", "reason": "insufficient_sample",
                 "have_cohorts": n, "need_cohorts": TIER1["min_cohorts"],
                 "have_weeks": weeks, "need_weeks": TIER1["min_weeks"]}
-    if excess < 0 or dd > TIER1["max_dd"]:
-        return {"status": "fail", "reason": "negative_excess_or_drawdown",
-                "mean_cohort_excess": excess, "max_drawdown": dd}
+    if dd > TIER1["max_dd"]:
+        return {"status": "fail", "reason": "max_drawdown_breach",
+                "max_drawdown": dd, "limit": TIER1["max_dd"]}
+    if excess < -TIER1["fail_margin"]:
+        # CLEAR negative excess (beyond the noise band) → kill (pre-registration).
+        return {"status": "fail", "reason": "clear_negative_excess",
+                "mean_cohort_excess": excess, "fail_below": -TIER1["fail_margin"]}
+    if excess < 0:
+        # Marginally negative — within noise at this n; keep running, do NOT kill.
+        return {"status": "inconclusive", "reason": "marginal_negative_excess",
+                "mean_cohort_excess": excess}
     if top >= 1.0:
         return {"status": "inconclusive", "reason": "single_cohort_dominates",
                 "top_cohort_excess_share": top}

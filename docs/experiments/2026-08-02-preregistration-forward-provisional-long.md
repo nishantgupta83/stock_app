@@ -60,7 +60,10 @@ candidate already cleared to be written (empirical finding: payoff tracks horizo
 
 - **Entry:** the OPEN of the next trading session **strictly after** `candidate.created_at`
   (anti-lookahead — we only enter after we knew of the candidate; never a backdated fill).
-- **Horizon exit:** close at the close of `entry_session + H` trading days (H = 1 or 7).
+- **Horizon exit:** close at the horizon bar `H` days after entry (H = 1 or 7),
+  following the pipeline's own `HORIZONS=(1,7,15,30)` convention — `compute_paper_outcome`
+  advances `entry_date + H` days (calendar), so h7d ≈ 5 trading days. QQQ shares the exact
+  same exit bar, so the excess stays apples-to-apples.
 - **Stop:** −3.0% from entry (`stop_pct = 0.03`).
 - **Target:** +5.0% from entry (`target_pct = 0.05`).
 - **Exit policy:** `price_agent.compute_paper_outcome(trade, bars, exit_policy="stop_only")` —
@@ -84,8 +87,10 @@ Per-cohort matched excess = `candidate_net_return − qqq_same_window_return` (m
 - **n** = independent entry-date cohorts.
 - **Tier ① (kill switch):** ≥30 cohorts AND ≥8 weeks AND mean cohort excess ≥ 0 (net) AND no
   single cohort accounts for all the excess AND max cohort-equity drawdown ≤ 20%.
-  Returns **continue / inconclusive / fail** (`fail` only on clear negative excess after the
-  minimum sample; small-n → `inconclusive`, keep running — do not bless or kill on noise).
+  Returns **continue / inconclusive / fail**. `fail` only on a **clear** negative excess —
+  mean cohort excess < **−0.5% net** (`fail_margin`) — OR a max-drawdown breach; a mean in
+  `[−0.5%, 0)` is noise at n≈30 → `inconclusive` (keep running). small-n → `inconclusive`
+  too — do not bless or kill on noise.
 - **Tier ② (scale PAPER):** ≥50 cohorts AND ≥13 weeks AND mean excess clearly positive AND
   profit_factor > 1.4 AND positive in ≥2 sub-periods.
 - **Kill rule:** clear negative mean excess after the minimum sample → shelve; diagnose, do

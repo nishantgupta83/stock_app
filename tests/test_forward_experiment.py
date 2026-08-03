@@ -333,3 +333,59 @@ def test_state_roundtrip(tmp_path):
     assert store.get_state(conn2, exp)["config_hash"] == "hash_A"
     assert len(store.all_candidates(conn2, exp)) == 1
     assert store.get_position(conn2, exp, 1)["status"] == "closed"
+
+
+# ---------------------------------------------------------------------------
+# classify_tier — the go/no-go verdict (was zero-covered)
+# ---------------------------------------------------------------------------
+
+def _fwd(**kw):
+    base = dict(n_cohorts=40, weeks=10.0, mean_cohort_excess=0.01, max_drawdown=0.05,
+                top_cohort_excess_share=0.3, profit_factor=1.6, subperiods_positive=2)
+    base.update(kw)
+    return base
+
+
+def test_tier_sync_failed_withholds():
+    assert fx.classify_tier(_fwd(), sync_ok=False)["status"] == "inconclusive"
+
+
+def test_tier_insufficient_sample_inconclusive():
+    assert fx.classify_tier(_fwd(n_cohorts=10))["status"] == "inconclusive"
+    assert fx.classify_tier(_fwd(weeks=3.0))["status"] == "inconclusive"
+
+
+def test_tier_drawdown_breach_fails():
+    r = fx.classify_tier(_fwd(max_drawdown=0.25))
+    assert r["status"] == "fail" and "drawdown" in r["reason"]
+
+
+def test_tier_clear_negative_excess_fails():
+    r = fx.classify_tier(_fwd(mean_cohort_excess=-0.02))   # -2% << -0.5% margin
+    assert r["status"] == "fail" and r["reason"] == "clear_negative_excess"
+
+
+def test_tier_marginal_negative_is_inconclusive_not_fail():
+    # -0.1% is inside the noise band → keep running, do NOT kill on noise.
+    r = fx.classify_tier(_fwd(mean_cohort_excess=-0.001))
+    assert r["status"] == "inconclusive" and r["reason"] == "marginal_negative_excess"
+
+
+def test_tier_single_cohort_dominates_inconclusive():
+    assert fx.classify_tier(_fwd(top_cohort_excess_share=1.0))["status"] == "inconclusive"
+
+
+def test_tier_positive_sufficient_continues():
+    assert fx.classify_tier(_fwd())["status"] == "continue"
+
+
+def test_tier_scale_paper_when_tier2_met():
+    r = fx.classify_tier(_fwd(n_cohorts=60, weeks=14.0, mean_cohort_excess=0.02,
+                              profit_factor=1.6, subperiods_positive=2))
+    assert r["status"] == "scale_paper"
+
+
+def test_tier_scale_blocked_by_low_pf():
+    # Tier-② sample met but PF below 1.4 → stays 'continue', not 'scale_paper'.
+    r = fx.classify_tier(_fwd(n_cohorts=60, weeks=14.0, profit_factor=1.1))
+    assert r["status"] == "continue"
