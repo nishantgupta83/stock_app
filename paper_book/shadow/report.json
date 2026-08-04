@@ -1,14 +1,14 @@
 {
-  "captured_at": "2026-08-03T23:48:27.534717+00:00",
+  "captured_at": "2026-08-04T23:42:23.906683+00:00",
   "sync_ok": true,
   "by_category": {
     "payoff": {
-      "n_setups": 13,
-      "n_resolved": 13,
-      "mean_return_pct": -0.0041,
-      "mean_excess_vs_qqq_pct": -0.0026,
-      "win_rate": 0.3077,
-      "median_excess_pct": -0.0052,
+      "n_setups": 14,
+      "n_resolved": 14,
+      "mean_return_pct": -0.0049,
+      "mean_excess_vs_qqq_pct": -0.0047,
+      "win_rate": 0.2857,
+      "median_excess_pct": -0.0058,
       "status": "ok"
     },
     "vocabulary": {
@@ -39,12 +39,12 @@
       "status": "ok"
     },
     "overall_priceable": {
-      "n_setups": 261,
-      "n_resolved": 261,
-      "mean_return_pct": 0.028,
-      "mean_excess_vs_qqq_pct": 0.0333,
-      "win_rate": 0.6322,
-      "median_excess_pct": 0.0217,
+      "n_setups": 262,
+      "n_resolved": 262,
+      "mean_return_pct": 0.0278,
+      "mean_excess_vs_qqq_pct": 0.033,
+      "win_rate": 0.6298,
+      "median_excess_pct": 0.0209,
       "status": "ok"
     }
   },
@@ -86,6 +86,6 @@
     "INST_VG not a tradeable instrument (fund/placeholder)": 1,
     "CVX not a tradeable instrument (fund/placeholder)": 2,
     "rule truth_social_post:kwd0037_sector_energy_dom:h1d profit_factor 0.15 < 1.0 (no payoff edge)": 2,
-    "rule 8k_material_event::h1d profit_factor 0.76 < 1.0 (no payoff edge)": 1
+    "rule 8k_material_event::h1d profit_factor 0.76 < 1.0 (no payoff edge)": 2
   }
 }

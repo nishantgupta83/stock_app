@@ -1,5 +1,5 @@
 {
-"cursor": "2026-08-03T22:38:26.94308+00:00",
+"cursor": "2026-08-04T21:38:21.595116+00:00",
 "setups": [
 {
 "setup_id": 315,
@@ -3738,6 +3738,34 @@
 "reason_to_skip": "CVX not a tradeable instrument (fund/placeholder)",
 "skip_category": "instrument",
 "raw": "{\"id\": 617, \"signal_id\": 10375, \"ticker\": \"CVX\", \"direction\": \"long\", \"created_at\": \"2026-08-03T22:38:26.94308+00:00\", \"target_pct\": 0.02, \"stop_pct\": 0.015, \"horizon_days\": 1, \"valid_until\": \"2026-08-04T04:37:51.950864+00:00\", \"reason_to_skip\": \"CVX not a tradeable instrument (fund/placeholder)\"}"
+},
+{
+"setup_id": 620,
+"signal_id": 10500,
+"ticker": "JNJ",
+"direction": "short",
+"created_at": "2026-08-04T13:08:21.00067+00:00",
+"target_pct": 0.02,
+"stop_pct": 0.015,
+"horizon_days": 1,
+"valid_until": "2026-08-09T13:07:43.93195+00:00",
+"reason_to_skip": "rule 8k_material_event::h1d profit_factor 0.78 < 1.0 (no payoff edge)",
+"skip_category": "payoff",
+"raw": "{\"id\": 620, \"signal_id\": 10500, \"ticker\": \"JNJ\", \"direction\": \"short\", \"created_at\": \"2026-08-04T13:08:21.00067+00:00\", \"target_pct\": 0.02, \"stop_pct\": 0.015, \"horizon_days\": 1, \"valid_until\": \"2026-08-09T13:07:43.93195+00:00\", \"reason_to_skip\": \"rule 8k_material_event::h1d profit_factor 0.78 < 1.0 (no payoff edge)\"}"
+},
+{
+"setup_id": 621,
+"signal_id": 10575,
+"ticker": "NFLX",
+"direction": "long",
+"created_at": "2026-08-04T21:38:21.595116+00:00",
+"target_pct": 0.05,
+"stop_pct": 0.03,
+"horizon_days": 1,
+"valid_until": "2026-08-11T21:37:47.313242+00:00",
+"reason_to_skip": "neutral or unknown signal direction",
+"skip_category": "other",
+"raw": "{\"id\": 621, \"signal_id\": 10575, \"ticker\": \"NFLX\", \"direction\": \"long\", \"created_at\": \"2026-08-04T21:38:21.595116+00:00\", \"target_pct\": 0.05, \"stop_pct\": 0.03, \"horizon_days\": 1, \"valid_until\": \"2026-08-11T21:37:47.313242+00:00\", \"reason_to_skip\": \"neutral or unknown signal direction\"}"
 }
 ],
 "outcomes": [
@@ -7715,6 +7743,21 @@
 "return_pct": -0.015005,
 "qqq_return_pct": 0.032974,
 "excess_pct": -0.047979
+},
+{
+"setup_id": 616,
+"ticker": "NFLX",
+"skip_category": "payoff",
+"reason_to_skip": "rule 8k_material_event::h1d profit_factor 0.76 < 1.0 (no payoff edge)",
+"priceable": 1,
+"status": "resolved",
+"entry_date": "2026-07-31",
+"entry_px": 71.97,
+"exit_date": "2026-08-03",
+"exit_px": 73.0496,
+"return_pct": -0.015001,
+"qqq_return_pct": 0.017558,
+"excess_pct": -0.032559
 }
 ]
 }
