@@ -4,9 +4,9 @@
 "capital_base": 5000.0,
 "max_concurrent": 5,
 "per_position_size": 1000.0,
-"last_open_scan_at": "2026-08-05T23:28:24.837480+00:00",
-"last_mark_at": "2026-08-05T23:28:24.837489+00:00",
-"setup_cursor": "2026-08-03T22:38:26.94308+00:00",
+"last_open_scan_at": "2026-08-07T01:36:12.702304+00:00",
+"last_mark_at": "2026-08-07T01:36:12.702312+00:00",
+"setup_cursor": "2026-08-06T17:28:00.337848+00:00",
 "forward_epoch": "2026-06-29"
 },
 "book_setups": [
@@ -33,6 +33,30 @@
 "horizon_days": 1,
 "valid_until": "2026-08-04T04:37:48.881649+00:00",
 "raw": "{\"id\": 619, \"signal_id\": 10373, \"ticker\": \"XLE\", \"direction\": \"long\", \"created_at\": \"2026-08-03T22:38:26.94308+00:00\", \"target_pct\": 0.02, \"stop_pct\": 0.015, \"horizon_days\": 1, \"valid_until\": \"2026-08-04T04:37:48.881649+00:00\"}"
+},
+{
+"setup_id": 623,
+"signal_id": 10732,
+"ticker": "XOM",
+"direction": "long",
+"created_at": "2026-08-06T17:28:00.337848+00:00",
+"target_pct": 0.02,
+"stop_pct": 0.015,
+"horizon_days": 1,
+"valid_until": "2026-08-06T22:29:13.389448+00:00",
+"raw": "{\"id\": 623, \"signal_id\": 10732, \"ticker\": \"XOM\", \"direction\": \"long\", \"created_at\": \"2026-08-06T17:28:00.337848+00:00\", \"target_pct\": 0.02, \"stop_pct\": 0.015, \"horizon_days\": 1, \"valid_until\": \"2026-08-06T22:29:13.389448+00:00\"}"
+},
+{
+"setup_id": 624,
+"signal_id": 10731,
+"ticker": "XLE",
+"direction": "long",
+"created_at": "2026-08-06T17:28:00.337848+00:00",
+"target_pct": 0.02,
+"stop_pct": 0.015,
+"horizon_days": 1,
+"valid_until": "2026-08-06T22:29:11.924291+00:00",
+"raw": "{\"id\": 624, \"signal_id\": 10731, \"ticker\": \"XLE\", \"direction\": \"long\", \"created_at\": \"2026-08-06T17:28:00.337848+00:00\", \"target_pct\": 0.02, \"stop_pct\": 0.015, \"horizon_days\": 1, \"valid_until\": \"2026-08-06T22:29:11.924291+00:00\"}"
 }
 ],
 "book_positions_closed": [
