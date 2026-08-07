@@ -1,6 +1,6 @@
 {
 "experiment_id": "fwd_prov_long_h1d",
-"cursor": "2026-08-05T20:37:45.725842+00:00",
+"cursor": "2026-08-06T16:29:18.252486+00:00",
 "forward_epoch": "2026-08-03",
 "config_hash": "f1b6a019435833a8a180b7609cacb0bb88f94948ae54ed6bd9d36175e615b9cc",
 "candidates": [
@@ -300,6 +300,72 @@
 "rule_keys": "[\"news_article:positive:h15d\", \"news_article:positive:h1d\", \"news_article:positive:h30d\", \"news_article:positive:h7d\"]",
 "source_agents": "[\"news\"]",
 "raw": "{\"id\": 253, \"created_at\": \"2026-08-05T20:37:45.725842+00:00\", \"ticker\": \"AI\", \"direction\": \"bullish\", \"score\": 32.749, \"recall_floor\": 30.0, \"rule_keys\": [\"news_article:positive:h15d\", \"news_article:positive:h1d\", \"news_article:positive:h30d\", \"news_article:positive:h7d\"], \"source_agents\": [\"news\"]}"
+},
+{
+"experiment_id": "fwd_prov_long_h1d",
+"candidate_id": 254,
+"created_at": "2026-08-06T03:37:42.037766+00:00",
+"ticker": "XLF",
+"direction": "bullish",
+"score": 46.477,
+"rule_keys": "[\"news_article:positive:h15d\", \"news_article:positive:h1d\", \"news_article:positive:h30d\", \"news_article:positive:h7d\"]",
+"source_agents": "[\"news\"]",
+"raw": "{\"id\": 254, \"created_at\": \"2026-08-06T03:37:42.037766+00:00\", \"ticker\": \"XLF\", \"direction\": \"bullish\", \"score\": 46.477, \"recall_floor\": 30.0, \"rule_keys\": [\"news_article:positive:h15d\", \"news_article:positive:h1d\", \"news_article:positive:h30d\", \"news_article:positive:h7d\"], \"source_agents\": [\"news\"]}"
+},
+{
+"experiment_id": "fwd_prov_long_h1d",
+"candidate_id": 255,
+"created_at": "2026-08-06T16:29:18.252486+00:00",
+"ticker": "XLE",
+"direction": "bullish",
+"score": 151.368,
+"rule_keys": "[\"truth_social_post:kwd0037_sector_energy_dom:h15d\", \"truth_social_post:kwd0037_sector_energy_dom:h1d\", \"truth_social_post:kwd0037_sector_energy_dom:h30d\", \"truth_social_post:kwd0037_sector_energy_dom:h7d\"]",
+"source_agents": "[\"truth_social\"]",
+"raw": "{\"id\": 255, \"created_at\": \"2026-08-06T16:29:18.252486+00:00\", \"ticker\": \"XLE\", \"direction\": \"bullish\", \"score\": 151.368, \"recall_floor\": 30.0, \"rule_keys\": [\"truth_social_post:kwd0037_sector_energy_dom:h15d\", \"truth_social_post:kwd0037_sector_energy_dom:h1d\", \"truth_social_post:kwd0037_sector_energy_dom:h30d\", \"truth_social_post:kwd0037_sector_energy_dom:h7d\"], \"source_agents\": [\"truth_social\"]}"
+},
+{
+"experiment_id": "fwd_prov_long_h1d",
+"candidate_id": 256,
+"created_at": "2026-08-06T16:29:18.252486+00:00",
+"ticker": "XOM",
+"direction": "bullish",
+"score": 151.368,
+"rule_keys": "[\"truth_social_post:kwd0037_sector_energy_dom:h15d\", \"truth_social_post:kwd0037_sector_energy_dom:h1d\", \"truth_social_post:kwd0037_sector_energy_dom:h30d\", \"truth_social_post:kwd0037_sector_energy_dom:h7d\"]",
+"source_agents": "[\"truth_social\"]",
+"raw": "{\"id\": 256, \"created_at\": \"2026-08-06T16:29:18.252486+00:00\", \"ticker\": \"XOM\", \"direction\": \"bullish\", \"score\": 151.368, \"recall_floor\": 30.0, \"rule_keys\": [\"truth_social_post:kwd0037_sector_energy_dom:h15d\", \"truth_social_post:kwd0037_sector_energy_dom:h1d\", \"truth_social_post:kwd0037_sector_energy_dom:h30d\", \"truth_social_post:kwd0037_sector_energy_dom:h7d\"], \"source_agents\": [\"truth_social\"]}"
+},
+{
+"experiment_id": "fwd_prov_long_h1d",
+"candidate_id": 258,
+"created_at": "2026-08-06T16:29:18.252486+00:00",
+"ticker": "LMT",
+"direction": "bullish",
+"score": 43.248,
+"rule_keys": "[\"truth_social_post:kwd0037_sector_defense:h15d\", \"truth_social_post:kwd0037_sector_defense:h1d\", \"truth_social_post:kwd0037_sector_defense:h30d\", \"truth_social_post:kwd0037_sector_defense:h7d\"]",
+"source_agents": "[\"truth_social\"]",
+"raw": "{\"id\": 258, \"created_at\": \"2026-08-06T16:29:18.252486+00:00\", \"ticker\": \"LMT\", \"direction\": \"bullish\", \"score\": 43.248, \"recall_floor\": 30.0, \"rule_keys\": [\"truth_social_post:kwd0037_sector_defense:h15d\", \"truth_social_post:kwd0037_sector_defense:h1d\", \"truth_social_post:kwd0037_sector_defense:h30d\", \"truth_social_post:kwd0037_sector_defense:h7d\"], \"source_agents\": [\"truth_social\"]}"
+},
+{
+"experiment_id": "fwd_prov_long_h1d",
+"candidate_id": 259,
+"created_at": "2026-08-06T16:29:18.252486+00:00",
+"ticker": "RTX",
+"direction": "bullish",
+"score": 43.248,
+"rule_keys": "[\"truth_social_post:kwd0037_sector_defense:h15d\", \"truth_social_post:kwd0037_sector_defense:h1d\", \"truth_social_post:kwd0037_sector_defense:h30d\", \"truth_social_post:kwd0037_sector_defense:h7d\"]",
+"source_agents": "[\"truth_social\"]",
+"raw": "{\"id\": 259, \"created_at\": \"2026-08-06T16:29:18.252486+00:00\", \"ticker\": \"RTX\", \"direction\": \"bullish\", \"score\": 43.248, \"recall_floor\": 30.0, \"rule_keys\": [\"truth_social_post:kwd0037_sector_defense:h15d\", \"truth_social_post:kwd0037_sector_defense:h1d\", \"truth_social_post:kwd0037_sector_defense:h30d\", \"truth_social_post:kwd0037_sector_defense:h7d\"], \"source_agents\": [\"truth_social\"]}"
+},
+{
+"experiment_id": "fwd_prov_long_h1d",
+"candidate_id": 260,
+"created_at": "2026-08-06T16:29:18.252486+00:00",
+"ticker": "NOC",
+"direction": "bullish",
+"score": 43.248,
+"rule_keys": "[\"truth_social_post:kwd0037_sector_defense:h15d\", \"truth_social_post:kwd0037_sector_defense:h1d\", \"truth_social_post:kwd0037_sector_defense:h30d\", \"truth_social_post:kwd0037_sector_defense:h7d\"]",
+"source_agents": "[\"truth_social\"]",
+"raw": "{\"id\": 260, \"created_at\": \"2026-08-06T16:29:18.252486+00:00\", \"ticker\": \"NOC\", \"direction\": \"bullish\", \"score\": 43.248, \"recall_floor\": 30.0, \"rule_keys\": [\"truth_social_post:kwd0037_sector_defense:h15d\", \"truth_social_post:kwd0037_sector_defense:h1d\", \"truth_social_post:kwd0037_sector_defense:h30d\", \"truth_social_post:kwd0037_sector_defense:h7d\"], \"source_agents\": [\"truth_social\"]}"
 }
 ],
 "positions": [
@@ -720,6 +786,40 @@
 "created_at": "2026-08-04T22:52:52.195623+00:00",
 "entry_session": "2026-08-05",
 "entry_px": 10.025,
+"exit_session": null,
+"exit_px": null,
+"exit_reason": null,
+"net_return": null,
+"qqq_return": null,
+"excess": null,
+"status": "open"
+},
+{
+"experiment_id": "fwd_prov_long_h1d",
+"candidate_id": 249,
+"ticker": "PLTR",
+"direction": "long",
+"horizon_days": 1,
+"created_at": "2026-08-05T10:22:54.355793+00:00",
+"entry_session": "2026-08-06",
+"entry_px": 155.81,
+"exit_session": null,
+"exit_px": null,
+"exit_reason": null,
+"net_return": null,
+"qqq_return": null,
+"excess": null,
+"status": "open"
+},
+{
+"experiment_id": "fwd_prov_long_h1d",
+"candidate_id": 253,
+"ticker": "AI",
+"direction": "long",
+"horizon_days": 1,
+"created_at": "2026-08-05T20:37:45.725842+00:00",
+"entry_session": "2026-08-06",
+"entry_px": 9.75,
 "exit_session": null,
 "exit_px": null,
 "exit_reason": null,
