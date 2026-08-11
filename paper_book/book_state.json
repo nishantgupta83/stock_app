@@ -4,9 +4,9 @@
 "capital_base": 5000.0,
 "max_concurrent": 5,
 "per_position_size": 1000.0,
-"last_open_scan_at": "2026-08-10T23:05:20.696912+00:00",
-"last_mark_at": "2026-08-10T23:05:20.696942+00:00",
-"setup_cursor": "2026-08-06T17:28:00.337848+00:00",
+"last_open_scan_at": "2026-08-11T23:10:59.160428+00:00",
+"last_mark_at": "2026-08-11T23:10:59.160440+00:00",
+"setup_cursor": "2026-08-10T23:23:32.274382+00:00",
 "forward_epoch": "2026-06-29"
 },
 "book_setups": [
@@ -57,6 +57,54 @@
 "horizon_days": 1,
 "valid_until": "2026-08-06T22:29:11.924291+00:00",
 "raw": "{\"id\": 624, \"signal_id\": 10731, \"ticker\": \"XLE\", \"direction\": \"long\", \"created_at\": \"2026-08-06T17:28:00.337848+00:00\", \"target_pct\": 0.02, \"stop_pct\": 0.015, \"horizon_days\": 1, \"valid_until\": \"2026-08-06T22:29:11.924291+00:00\"}"
+},
+{
+"setup_id": 626,
+"signal_id": 10876,
+"ticker": "XOM",
+"direction": "long",
+"created_at": "2026-08-10T23:18:01.161057+00:00",
+"target_pct": 0.02,
+"stop_pct": 0.015,
+"horizon_days": 1,
+"valid_until": "2026-08-11T05:17:26.295596+00:00",
+"raw": "{\"id\": 626, \"signal_id\": 10876, \"ticker\": \"XOM\", \"direction\": \"long\", \"created_at\": \"2026-08-10T23:18:01.161057+00:00\", \"target_pct\": 0.02, \"stop_pct\": 0.015, \"horizon_days\": 1, \"valid_until\": \"2026-08-11T05:17:26.295596+00:00\"}"
+},
+{
+"setup_id": 627,
+"signal_id": 10875,
+"ticker": "XLE",
+"direction": "long",
+"created_at": "2026-08-10T23:18:01.161057+00:00",
+"target_pct": 0.02,
+"stop_pct": 0.015,
+"horizon_days": 1,
+"valid_until": "2026-08-11T05:17:24.924981+00:00",
+"raw": "{\"id\": 627, \"signal_id\": 10875, \"ticker\": \"XLE\", \"direction\": \"long\", \"created_at\": \"2026-08-10T23:18:01.161057+00:00\", \"target_pct\": 0.02, \"stop_pct\": 0.015, \"horizon_days\": 1, \"valid_until\": \"2026-08-11T05:17:24.924981+00:00\"}"
+},
+{
+"setup_id": 628,
+"signal_id": 10879,
+"ticker": "RTX",
+"direction": "long",
+"created_at": "2026-08-10T23:23:32.274382+00:00",
+"target_pct": 0.02,
+"stop_pct": 0.015,
+"horizon_days": 1,
+"valid_until": "2026-08-11T05:22:48.676766+00:00",
+"raw": "{\"id\": 628, \"signal_id\": 10879, \"ticker\": \"RTX\", \"direction\": \"long\", \"created_at\": \"2026-08-10T23:23:32.274382+00:00\", \"target_pct\": 0.02, \"stop_pct\": 0.015, \"horizon_days\": 1, \"valid_until\": \"2026-08-11T05:22:48.676766+00:00\"}"
+},
+{
+"setup_id": 629,
+"signal_id": 10878,
+"ticker": "LMT",
+"direction": "long",
+"created_at": "2026-08-10T23:23:32.274382+00:00",
+"target_pct": 0.02,
+"stop_pct": 0.015,
+"horizon_days": 1,
+"valid_until": "2026-08-11T05:22:47.746457+00:00",
+"raw": "{\"id\": 629, \"signal_id\": 10878, \"ticker\": \"LMT\", \"direction\": \"long\", \"created_at\": \"2026-08-10T23:23:32.274382+00:00\", \"target_pct\": 0.02, \"stop_pct\": 0.015, \"horizon_days\": 1, \"valid_until\": \"2026-08-11T05:22:47.746457+00:00\"}"
 }
 ],
 "book_positions_closed": [
