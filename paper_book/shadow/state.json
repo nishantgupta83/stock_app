@@ -1,5 +1,5 @@
 {
-"cursor": "2026-08-12T22:23:22.922178+00:00",
+"cursor": "2026-08-13T22:08:13.018861+00:00",
 "setups": [
 {
 "setup_id": 315,
@@ -3808,6 +3808,20 @@
 "reason_to_skip": "CVX not a tradeable instrument (fund/placeholder)",
 "skip_category": "instrument",
 "raw": "{\"id\": 631, \"signal_id\": 10998, \"ticker\": \"CVX\", \"direction\": \"long\", \"created_at\": \"2026-08-12T22:23:22.922178+00:00\", \"target_pct\": 0.02, \"stop_pct\": 0.015, \"horizon_days\": 1, \"valid_until\": \"2026-08-13T04:22:47.900546+00:00\", \"reason_to_skip\": \"CVX not a tradeable instrument (fund/placeholder)\"}"
+},
+{
+"setup_id": 633,
+"signal_id": 11063,
+"ticker": "CVX",
+"direction": "long",
+"created_at": "2026-08-13T22:08:13.018861+00:00",
+"target_pct": 0.02,
+"stop_pct": 0.015,
+"horizon_days": 1,
+"valid_until": "2026-08-14T04:07:41.947882+00:00",
+"reason_to_skip": "CVX not a tradeable instrument (fund/placeholder)",
+"skip_category": "instrument",
+"raw": "{\"id\": 633, \"signal_id\": 11063, \"ticker\": \"CVX\", \"direction\": \"long\", \"created_at\": \"2026-08-13T22:08:13.018861+00:00\", \"target_pct\": 0.02, \"stop_pct\": 0.015, \"horizon_days\": 1, \"valid_until\": \"2026-08-14T04:07:41.947882+00:00\", \"reason_to_skip\": \"CVX not a tradeable instrument (fund/placeholder)\"}"
 }
 ],
 "outcomes": [
@@ -7860,6 +7874,21 @@
 "return_pct": 0.046721,
 "qqq_return_pct": -0.002987,
 "excess_pct": 0.049709
+},
+{
+"setup_id": 625,
+"ticker": "CVX",
+"skip_category": "instrument",
+"reason_to_skip": "CVX not a tradeable instrument (fund/placeholder)",
+"priceable": 1,
+"status": "resolved",
+"entry_date": "2026-08-11",
+"entry_px": 194.25,
+"exit_date": "2026-08-12",
+"exit_px": 196.6,
+"return_pct": 0.012098,
+"qqq_return_pct": 0.007307,
+"excess_pct": 0.00479
 }
 ]
 }
