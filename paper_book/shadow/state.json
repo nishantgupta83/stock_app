@@ -1,5 +1,5 @@
 {
-"cursor": "2026-08-13T22:08:13.018861+00:00",
+"cursor": "2026-08-16T14:23:39.022705+00:00",
 "setups": [
 {
 "setup_id": 315,
@@ -3822,6 +3822,76 @@
 "reason_to_skip": "CVX not a tradeable instrument (fund/placeholder)",
 "skip_category": "instrument",
 "raw": "{\"id\": 633, \"signal_id\": 11063, \"ticker\": \"CVX\", \"direction\": \"long\", \"created_at\": \"2026-08-13T22:08:13.018861+00:00\", \"target_pct\": 0.02, \"stop_pct\": 0.015, \"horizon_days\": 1, \"valid_until\": \"2026-08-14T04:07:41.947882+00:00\", \"reason_to_skip\": \"CVX not a tradeable instrument (fund/placeholder)\"}"
+},
+{
+"setup_id": 636,
+"signal_id": 11121,
+"ticker": "NRG",
+"direction": "short",
+"created_at": "2026-08-16T14:23:39.022705+00:00",
+"target_pct": 0.05,
+"stop_pct": 0.03,
+"horizon_days": 1,
+"valid_until": "2026-08-19T14:22:56.501344+00:00",
+"reason_to_skip": "rule institutional_decrease:BRDGW:h1d has only n=0 closed trades (need \u22655 or mature)",
+"skip_category": "other",
+"raw": "{\"id\": 636, \"signal_id\": 11121, \"ticker\": \"NRG\", \"direction\": \"short\", \"created_at\": \"2026-08-16T14:23:39.022705+00:00\", \"target_pct\": 0.05, \"stop_pct\": 0.03, \"horizon_days\": 1, \"valid_until\": \"2026-08-19T14:22:56.501344+00:00\", \"reason_to_skip\": \"rule institutional_decrease:BRDGW:h1d has only n=0 closed trades (need \\u22655 or mature)\"}"
+},
+{
+"setup_id": 637,
+"signal_id": 11120,
+"ticker": "CEG",
+"direction": "short",
+"created_at": "2026-08-16T14:23:39.022705+00:00",
+"target_pct": 0.05,
+"stop_pct": 0.03,
+"horizon_days": 1,
+"valid_until": "2026-08-19T14:22:55.260315+00:00",
+"reason_to_skip": "rule institutional_decrease:BRDGW:h1d has only n=0 closed trades (need \u22655 or mature)",
+"skip_category": "other",
+"raw": "{\"id\": 637, \"signal_id\": 11120, \"ticker\": \"CEG\", \"direction\": \"short\", \"created_at\": \"2026-08-16T14:23:39.022705+00:00\", \"target_pct\": 0.05, \"stop_pct\": 0.03, \"horizon_days\": 1, \"valid_until\": \"2026-08-19T14:22:55.260315+00:00\", \"reason_to_skip\": \"rule institutional_decrease:BRDGW:h1d has only n=0 closed trades (need \\u22655 or mature)\"}"
+},
+{
+"setup_id": 638,
+"signal_id": 11119,
+"ticker": "GEV",
+"direction": "short",
+"created_at": "2026-08-16T14:23:39.022705+00:00",
+"target_pct": 0.05,
+"stop_pct": 0.03,
+"horizon_days": 1,
+"valid_until": "2026-08-19T14:22:54.02593+00:00",
+"reason_to_skip": "rule institutional_decrease:BRDGW:h1d has only n=0 closed trades (need \u22655 or mature)",
+"skip_category": "other",
+"raw": "{\"id\": 638, \"signal_id\": 11119, \"ticker\": \"GEV\", \"direction\": \"short\", \"created_at\": \"2026-08-16T14:23:39.022705+00:00\", \"target_pct\": 0.05, \"stop_pct\": 0.03, \"horizon_days\": 1, \"valid_until\": \"2026-08-19T14:22:54.02593+00:00\", \"reason_to_skip\": \"rule institutional_decrease:BRDGW:h1d has only n=0 closed trades (need \\u22655 or mature)\"}"
+},
+{
+"setup_id": 639,
+"signal_id": 11118,
+"ticker": "TLN",
+"direction": "short",
+"created_at": "2026-08-16T14:23:39.022705+00:00",
+"target_pct": 0.05,
+"stop_pct": 0.03,
+"horizon_days": 1,
+"valid_until": "2026-08-19T14:22:52.557352+00:00",
+"reason_to_skip": "rule institutional_decrease:BRDGW:h1d has only n=0 closed trades (need \u22655 or mature)",
+"skip_category": "other",
+"raw": "{\"id\": 639, \"signal_id\": 11118, \"ticker\": \"TLN\", \"direction\": \"short\", \"created_at\": \"2026-08-16T14:23:39.022705+00:00\", \"target_pct\": 0.05, \"stop_pct\": 0.03, \"horizon_days\": 1, \"valid_until\": \"2026-08-19T14:22:52.557352+00:00\", \"reason_to_skip\": \"rule institutional_decrease:BRDGW:h1d has only n=0 closed trades (need \\u22655 or mature)\"}"
+},
+{
+"setup_id": 640,
+"signal_id": 11117,
+"ticker": "ETN",
+"direction": "short",
+"created_at": "2026-08-16T14:23:39.022705+00:00",
+"target_pct": 0.05,
+"stop_pct": 0.03,
+"horizon_days": 1,
+"valid_until": "2026-08-19T14:22:50.953267+00:00",
+"reason_to_skip": "rule institutional_exit:BRDGW:h1d has only n=0 closed trades (need \u22655 or mature)",
+"skip_category": "other",
+"raw": "{\"id\": 640, \"signal_id\": 11117, \"ticker\": \"ETN\", \"direction\": \"short\", \"created_at\": \"2026-08-16T14:23:39.022705+00:00\", \"target_pct\": 0.05, \"stop_pct\": 0.03, \"horizon_days\": 1, \"valid_until\": \"2026-08-19T14:22:50.953267+00:00\", \"reason_to_skip\": \"rule institutional_exit:BRDGW:h1d has only n=0 closed trades (need \\u22655 or mature)\"}"
 }
 ],
 "outcomes": [
