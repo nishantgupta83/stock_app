@@ -13,24 +13,24 @@
     "sync_ok": true
   },
   "forward": {
-    "n_raw_trades": 12,
-    "n_independent_cohorts": 5,
+    "n_raw_trades": 14,
+    "n_independent_cohorts": 6,
     "weeks": 2.0,
-    "book_equity_end": 5136.52,
-    "qqq_buy_hold_end": 4956.21,
-    "cumulative_excess": 180.31,
+    "book_equity_end": 5140.77,
+    "qqq_buy_hold_end": 4946.33,
+    "cumulative_excess": 194.44,
     "max_drawdown": 0.003,
-    "top_cohort_excess_share": 0.7055,
-    "profit_factor": 4.1328,
+    "top_cohort_excess_share": 0.6882,
+    "profit_factor": 4.2115,
     "subperiods_positive": 2,
     "sync_ok": true
   },
-  "captured_at": "2026-08-18T22:48:52.957711+00:00",
+  "captured_at": "2026-08-19T22:49:47.591247+00:00",
   "tier": {
     "status": "inconclusive",
     "reason": "insufficient_sample",
     "next": "alive",
-    "have_cohorts": 5,
+    "have_cohorts": 6,
     "need_cohorts": 30,
     "have_weeks": 2.0,
     "need_weeks": 8
