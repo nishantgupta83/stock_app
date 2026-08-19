@@ -1,5 +1,5 @@
 {
-  "captured_at": "2026-08-18T22:59:47.170283+00:00",
+  "captured_at": "2026-08-19T23:00:55.269904+00:00",
   "sync_ok": true,
   "by_category": {
     "payoff": {
@@ -30,21 +30,21 @@
       "status": "ok"
     },
     "other": {
-      "n_setups": 16,
-      "n_resolved": 15,
-      "mean_return_pct": -0.0058,
-      "mean_excess_vs_qqq_pct": 0.0031,
-      "win_rate": 0.6667,
-      "median_excess_pct": 0.0068,
+      "n_setups": 21,
+      "n_resolved": 20,
+      "mean_return_pct": 0.0165,
+      "mean_excess_vs_qqq_pct": 0.0274,
+      "win_rate": 0.75,
+      "median_excess_pct": 0.0159,
       "status": "ok"
     },
     "overall_priceable": {
-      "n_setups": 269,
-      "n_resolved": 269,
-      "mean_return_pct": 0.0272,
-      "mean_excess_vs_qqq_pct": 0.0324,
-      "win_rate": 0.6283,
-      "median_excess_pct": 0.0201,
+      "n_setups": 274,
+      "n_resolved": 274,
+      "mean_return_pct": 0.0283,
+      "mean_excess_vs_qqq_pct": 0.0336,
+      "win_rate": 0.635,
+      "median_excess_pct": 0.0217,
       "status": "ok"
     }
   },
@@ -117,6 +117,8 @@
     "CVX not a tradeable instrument (fund/placeholder)": 7,
     "rule truth_social_post:kwd0037_sector_energy_dom:h1d profit_factor 0.15 < 1.0 (no payoff edge)": 2,
     "rule 8k_material_event::h1d profit_factor 0.76 < 1.0 (no payoff edge)": 2,
-    "rule 8k_material_event::h1d profit_factor 0.78 < 1.0 (no payoff edge)": 1
+    "rule 8k_material_event::h1d profit_factor 0.78 < 1.0 (no payoff edge)": 1,
+    "rule institutional_decrease:BRDGW:h1d has only n=0 closed trades (need \u22655 or mature)": 4,
+    "rule institutional_exit:BRDGW:h1d has only n=0 closed trades (need \u22655 or mature)": 1
   }
 }

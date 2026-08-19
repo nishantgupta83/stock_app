@@ -1,5 +1,5 @@
 {
-"cursor": "2026-08-17T23:53:28.158339+00:00",
+"cursor": "2026-08-19T01:23:07.791771+00:00",
 "setups": [
 {
 "setup_id": 315,
@@ -3906,6 +3906,20 @@
 "reason_to_skip": "CVX not a tradeable instrument (fund/placeholder)",
 "skip_category": "instrument",
 "raw": "{\"id\": 641, \"signal_id\": 11282, \"ticker\": \"CVX\", \"direction\": \"long\", \"created_at\": \"2026-08-17T23:53:28.158339+00:00\", \"target_pct\": 0.02, \"stop_pct\": 0.015, \"horizon_days\": 1, \"valid_until\": \"2026-08-18T05:52:48.646797+00:00\", \"reason_to_skip\": \"CVX not a tradeable instrument (fund/placeholder)\"}"
+},
+{
+"setup_id": 644,
+"signal_id": 11434,
+"ticker": "META",
+"direction": "long",
+"created_at": "2026-08-19T01:23:07.791771+00:00",
+"target_pct": 0.05,
+"stop_pct": 0.03,
+"horizon_days": 1,
+"valid_until": "2026-08-26T01:22:39.4151+00:00",
+"reason_to_skip": "neutral or unknown signal direction",
+"skip_category": "other",
+"raw": "{\"id\": 644, \"signal_id\": 11434, \"ticker\": \"META\", \"direction\": \"long\", \"created_at\": \"2026-08-19T01:23:07.791771+00:00\", \"target_pct\": 0.05, \"stop_pct\": 0.03, \"horizon_days\": 1, \"valid_until\": \"2026-08-26T01:22:39.4151+00:00\", \"reason_to_skip\": \"neutral or unknown signal direction\"}"
 }
 ],
 "outcomes": [
@@ -8003,6 +8017,81 @@
 "return_pct": 0.019259,
 "qqq_return_pct": -0.001641,
 "excess_pct": 0.0209
+},
+{
+"setup_id": 636,
+"ticker": "NRG",
+"skip_category": "other",
+"reason_to_skip": "rule institutional_decrease:BRDGW:h1d has only n=0 closed trades (need \u22655 or mature)",
+"priceable": 1,
+"status": "resolved",
+"entry_date": "2026-08-17",
+"entry_px": 127.4,
+"exit_date": "2026-08-18",
+"exit_px": 115.56,
+"return_pct": 0.092936,
+"qqq_return_pct": -0.016935,
+"excess_pct": 0.10987
+},
+{
+"setup_id": 637,
+"ticker": "CEG",
+"skip_category": "other",
+"reason_to_skip": "rule institutional_decrease:BRDGW:h1d has only n=0 closed trades (need \u22655 or mature)",
+"priceable": 1,
+"status": "resolved",
+"entry_date": "2026-08-17",
+"entry_px": 285.0318,
+"exit_date": "2026-08-18",
+"exit_px": 266.83,
+"return_pct": 0.063859,
+"qqq_return_pct": -0.016935,
+"excess_pct": 0.080793
+},
+{
+"setup_id": 638,
+"ticker": "GEV",
+"skip_category": "other",
+"reason_to_skip": "rule institutional_decrease:BRDGW:h1d has only n=0 closed trades (need \u22655 or mature)",
+"priceable": 1,
+"status": "resolved",
+"entry_date": "2026-08-17",
+"entry_px": 1072.67,
+"exit_date": "2026-08-18",
+"exit_px": 1004.53,
+"return_pct": 0.063524,
+"qqq_return_pct": -0.016935,
+"excess_pct": 0.080458
+},
+{
+"setup_id": 639,
+"ticker": "TLN",
+"skip_category": "other",
+"reason_to_skip": "rule institutional_decrease:BRDGW:h1d has only n=0 closed trades (need \u22655 or mature)",
+"priceable": 1,
+"status": "resolved",
+"entry_date": "2026-08-17",
+"entry_px": 367.88,
+"exit_date": "2026-08-18",
+"exit_px": 317.66,
+"return_pct": 0.136512,
+"qqq_return_pct": -0.016935,
+"excess_pct": 0.153446
+},
+{
+"setup_id": 640,
+"ticker": "ETN",
+"skip_category": "other",
+"reason_to_skip": "rule institutional_exit:BRDGW:h1d has only n=0 closed trades (need \u22655 or mature)",
+"priceable": 1,
+"status": "resolved",
+"entry_date": "2026-08-17",
+"entry_px": 458.96,
+"exit_date": "2026-08-18",
+"exit_px": 431.33,
+"return_pct": 0.060201,
+"qqq_return_pct": -0.016935,
+"excess_pct": 0.077136
 }
 ]
 }
