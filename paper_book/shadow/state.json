@@ -8092,6 +8092,21 @@
 "return_pct": 0.060201,
 "qqq_return_pct": -0.016935,
 "excess_pct": 0.077136
+},
+{
+"setup_id": 641,
+"ticker": "CVX",
+"skip_category": "instrument",
+"reason_to_skip": "CVX not a tradeable instrument (fund/placeholder)",
+"priceable": 1,
+"status": "resolved",
+"entry_date": "2026-08-18",
+"entry_px": 203.2561,
+"exit_date": "2026-08-19",
+"exit_px": 205.76,
+"return_pct": 0.012319,
+"qqq_return_pct": -0.001993,
+"excess_pct": 0.014312
 }
 ]
 }

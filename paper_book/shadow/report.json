@@ -1,5 +1,5 @@
 {
-  "captured_at": "2026-08-19T23:00:55.269904+00:00",
+  "captured_at": "2026-08-20T23:02:44.608333+00:00",
   "sync_ok": true,
   "by_category": {
     "payoff": {
@@ -21,12 +21,12 @@
       "status": "ok"
     },
     "instrument": {
-      "n_setups": 12,
-      "n_resolved": 9,
-      "mean_return_pct": 0.0112,
-      "mean_excess_vs_qqq_pct": 0.0067,
-      "win_rate": 0.5556,
-      "median_excess_pct": 0.0042,
+      "n_setups": 13,
+      "n_resolved": 10,
+      "mean_return_pct": 0.0113,
+      "mean_excess_vs_qqq_pct": 0.0074,
+      "win_rate": 0.6,
+      "median_excess_pct": 0.0045,
       "status": "ok"
     },
     "other": {
@@ -39,11 +39,11 @@
       "status": "ok"
     },
     "overall_priceable": {
-      "n_setups": 274,
-      "n_resolved": 274,
-      "mean_return_pct": 0.0283,
-      "mean_excess_vs_qqq_pct": 0.0336,
-      "win_rate": 0.635,
+      "n_setups": 275,
+      "n_resolved": 275,
+      "mean_return_pct": 0.0282,
+      "mean_excess_vs_qqq_pct": 0.0335,
+      "win_rate": 0.6364,
       "median_excess_pct": 0.0217,
       "status": "ok"
     }
@@ -102,6 +102,12 @@
       "reason_to_skip": "CVX not a tradeable instrument (fund/placeholder)",
       "return_pct": 0.019259,
       "excess_pct": 0.0209
+    },
+    {
+      "ticker": "CVX",
+      "reason_to_skip": "CVX not a tradeable instrument (fund/placeholder)",
+      "return_pct": 0.012319,
+      "excess_pct": 0.014312
     }
   ],
   "reason_distribution": {
@@ -114,7 +120,7 @@
     "VTSAX not a tradeable instrument (fund/placeholder)": 1,
     "VFIAX not a tradeable instrument (fund/placeholder)": 1,
     "INST_VG not a tradeable instrument (fund/placeholder)": 1,
-    "CVX not a tradeable instrument (fund/placeholder)": 7,
+    "CVX not a tradeable instrument (fund/placeholder)": 8,
     "rule truth_social_post:kwd0037_sector_energy_dom:h1d profit_factor 0.15 < 1.0 (no payoff edge)": 2,
     "rule 8k_material_event::h1d profit_factor 0.76 < 1.0 (no payoff edge)": 2,
     "rule 8k_material_event::h1d profit_factor 0.78 < 1.0 (no payoff edge)": 1,
