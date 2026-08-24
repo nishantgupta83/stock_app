@@ -4,8 +4,8 @@
 "capital_base": 5000.0,
 "max_concurrent": 5,
 "per_position_size": 1000.0,
-"last_open_scan_at": "2026-08-21T22:49:04.425251+00:00",
-"last_mark_at": "2026-08-21T22:49:04.425259+00:00",
+"last_open_scan_at": "2026-08-24T22:51:57.883773+00:00",
+"last_mark_at": "2026-08-24T22:51:57.883780+00:00",
 "setup_cursor": "2026-08-17T23:53:28.158339+00:00",
 "forward_epoch": "2026-06-29"
 },
