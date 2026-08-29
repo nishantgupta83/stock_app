@@ -1,6 +1,6 @@
 {
 "experiment_id": "fwd_prov_long_h1d",
-"cursor": "2026-08-27T22:52:42.664085+00:00",
+"cursor": "2026-08-28T20:22:52.243878+00:00",
 "forward_epoch": "2026-08-03",
 "config_hash": "f1b6a019435833a8a180b7609cacb0bb88f94948ae54ed6bd9d36175e615b9cc",
 "candidates": [
@@ -1114,6 +1114,39 @@
 "rule_keys": "[\"truth_social_post:djt_self:h15d\", \"truth_social_post:djt_self:h1d\", \"truth_social_post:djt_self:h30d\", \"truth_social_post:djt_self:h7d\"]",
 "source_agents": "[\"truth_social\"]",
 "raw": "{\"id\": 355, \"created_at\": \"2026-08-27T22:52:42.664085+00:00\", \"ticker\": \"DJT\", \"direction\": \"bullish\", \"score\": 34.053, \"recall_floor\": 30.0, \"rule_keys\": [\"truth_social_post:djt_self:h15d\", \"truth_social_post:djt_self:h1d\", \"truth_social_post:djt_self:h30d\", \"truth_social_post:djt_self:h7d\"], \"source_agents\": [\"truth_social\"]}"
+},
+{
+"experiment_id": "fwd_prov_long_h1d",
+"candidate_id": 357,
+"created_at": "2026-08-28T12:22:44.912518+00:00",
+"ticker": "NOW",
+"direction": "bullish",
+"score": 32.539,
+"rule_keys": "[\"news_article:positive:h15d\", \"news_article:positive:h1d\", \"news_article:positive:h30d\", \"news_article:positive:h7d\"]",
+"source_agents": "[\"news\"]",
+"raw": "{\"id\": 357, \"created_at\": \"2026-08-28T12:22:44.912518+00:00\", \"ticker\": \"NOW\", \"direction\": \"bullish\", \"score\": 32.539, \"recall_floor\": 30.0, \"rule_keys\": [\"news_article:positive:h15d\", \"news_article:positive:h1d\", \"news_article:positive:h30d\", \"news_article:positive:h7d\"], \"source_agents\": [\"news\"]}"
+},
+{
+"experiment_id": "fwd_prov_long_h1d",
+"candidate_id": 359,
+"created_at": "2026-08-28T15:52:47.413154+00:00",
+"ticker": "AI",
+"direction": "bullish",
+"score": 32.539,
+"rule_keys": "[\"news_article:positive:h15d\", \"news_article:positive:h1d\", \"news_article:positive:h30d\", \"news_article:positive:h7d\"]",
+"source_agents": "[\"news\"]",
+"raw": "{\"id\": 359, \"created_at\": \"2026-08-28T15:52:47.413154+00:00\", \"ticker\": \"AI\", \"direction\": \"bullish\", \"score\": 32.539, \"recall_floor\": 30.0, \"rule_keys\": [\"news_article:positive:h15d\", \"news_article:positive:h1d\", \"news_article:positive:h30d\", \"news_article:positive:h7d\"], \"source_agents\": [\"news\"]}"
+},
+{
+"experiment_id": "fwd_prov_long_h1d",
+"candidate_id": 360,
+"created_at": "2026-08-28T20:22:52.243878+00:00",
+"ticker": "AI",
+"direction": "bullish",
+"score": 32.539,
+"rule_keys": "[\"news_article:positive:h15d\", \"news_article:positive:h1d\", \"news_article:positive:h30d\", \"news_article:positive:h7d\"]",
+"source_agents": "[\"news\"]",
+"raw": "{\"id\": 360, \"created_at\": \"2026-08-28T20:22:52.243878+00:00\", \"ticker\": \"AI\", \"direction\": \"bullish\", \"score\": 32.539, \"recall_floor\": 30.0, \"rule_keys\": [\"news_article:positive:h15d\", \"news_article:positive:h1d\", \"news_article:positive:h30d\", \"news_article:positive:h7d\"], \"source_agents\": [\"news\"]}"
 }
 ],
 "positions": [
@@ -2775,13 +2808,13 @@
 "created_at": "2026-08-26T12:37:38.19412+00:00",
 "entry_session": "2026-08-27",
 "entry_px": 9.93,
-"exit_session": null,
-"exit_px": null,
-"exit_reason": null,
-"net_return": null,
-"qqq_return": null,
-"excess": null,
-"status": "open"
+"exit_session": "2026-08-28",
+"exit_px": 10.53,
+"exit_reason": "horizon",
+"net_return": 0.059423,
+"qqq_return": -0.000697,
+"excess": 0.06012,
+"status": "closed"
 },
 {
 "experiment_id": "fwd_prov_long_h1d",
@@ -2792,6 +2825,40 @@
 "created_at": "2026-08-26T12:37:38.19412+00:00",
 "entry_session": "2026-08-27",
 "entry_px": 130.48,
+"exit_session": "2026-08-28",
+"exit_px": 144.71,
+"exit_reason": "horizon",
+"net_return": 0.108059,
+"qqq_return": -0.000697,
+"excess": 0.108756,
+"status": "closed"
+},
+{
+"experiment_id": "fwd_prov_long_h1d",
+"candidate_id": 354,
+"ticker": "AI",
+"direction": "long",
+"horizon_days": 1,
+"created_at": "2026-08-27T21:07:42.646178+00:00",
+"entry_session": "2026-08-28",
+"entry_px": 10.28,
+"exit_session": null,
+"exit_px": null,
+"exit_reason": null,
+"net_return": null,
+"qqq_return": null,
+"excess": null,
+"status": "open"
+},
+{
+"experiment_id": "fwd_prov_long_h1d",
+"candidate_id": 355,
+"ticker": "DJT",
+"direction": "long",
+"horizon_days": 1,
+"created_at": "2026-08-27T22:52:42.664085+00:00",
+"entry_session": "2026-08-28",
+"entry_px": 9.72,
 "exit_session": null,
 "exit_px": null,
 "exit_reason": null,

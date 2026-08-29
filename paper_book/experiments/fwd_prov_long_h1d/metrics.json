@@ -2,19 +2,19 @@
   "experiment_id": "fwd_prov_long_h1d",
   "config_hash": "f1b6a019435833a8a180b7609cacb0bb88f94948ae54ed6bd9d36175e615b9cc",
   "forward_epoch": "2026-08-03",
-  "captured_at": "2026-08-28T06:23:05.054613+00:00",
+  "captured_at": "2026-08-29T03:55:26.355136+00:00",
   "sync_ok": true,
-  "n_admitted": 99,
+  "n_admitted": 101,
   "n_open": 2,
-  "n_cohorts_forward": 17,
+  "n_cohorts_forward": 18,
   "forward": {
-    "n_cohorts": 17,
-    "n_positions": 97,
-    "weeks": 3.1,
-    "mean_cohort_excess": 0.006667,
-    "mean_cohort_net": 0.006053,
-    "profit_factor": 1.8546,
-    "top_cohort_excess_share": 0.7491,
+    "n_cohorts": 18,
+    "n_positions": 99,
+    "weeks": 3.3,
+    "mean_cohort_excess": 0.010987,
+    "mean_cohort_net": 0.010369,
+    "profit_factor": 2.4914,
+    "top_cohort_excess_share": 0.4293,
     "max_drawdown": 0.0979,
     "subperiods_positive": 2,
     "cohorts": {
@@ -119,6 +119,12 @@
         "net": 0.1028265,
         "qqq": 0.017927,
         "excess": 0.0848995
+      },
+      "2026-08-27": {
+        "n": 2,
+        "net": 0.083741,
+        "qqq": -0.000697,
+        "excess": 0.084438
       }
     }
   },
@@ -137,9 +143,9 @@
   "tier": {
     "status": "inconclusive",
     "reason": "insufficient_sample",
-    "have_cohorts": 17,
+    "have_cohorts": 18,
     "need_cohorts": 30,
-    "have_weeks": 3.1,
+    "have_weeks": 3.3,
     "need_weeks": 8
   }
 }
