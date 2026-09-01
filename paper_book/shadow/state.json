@@ -1,5 +1,5 @@
 {
-"cursor": "2026-08-19T01:23:07.791771+00:00",
+"cursor": "2026-08-31T17:23:21.547864+00:00",
 "setups": [
 {
 "setup_id": 315,
@@ -3920,6 +3920,48 @@
 "reason_to_skip": "neutral or unknown signal direction",
 "skip_category": "other",
 "raw": "{\"id\": 644, \"signal_id\": 11434, \"ticker\": \"META\", \"direction\": \"long\", \"created_at\": \"2026-08-19T01:23:07.791771+00:00\", \"target_pct\": 0.05, \"stop_pct\": 0.03, \"horizon_days\": 1, \"valid_until\": \"2026-08-26T01:22:39.4151+00:00\", \"reason_to_skip\": \"neutral or unknown signal direction\"}"
+},
+{
+"setup_id": 645,
+"signal_id": 12192,
+"ticker": "VTSAX",
+"direction": "long",
+"created_at": "2026-08-31T17:23:21.547864+00:00",
+"target_pct": 0.02,
+"stop_pct": 0.015,
+"horizon_days": 1,
+"valid_until": "2026-08-31T21:22:48.325158+00:00",
+"reason_to_skip": "VTSAX not a tradeable instrument (fund/placeholder)",
+"skip_category": "instrument",
+"raw": "{\"id\": 645, \"signal_id\": 12192, \"ticker\": \"VTSAX\", \"direction\": \"long\", \"created_at\": \"2026-08-31T17:23:21.547864+00:00\", \"target_pct\": 0.02, \"stop_pct\": 0.015, \"horizon_days\": 1, \"valid_until\": \"2026-08-31T21:22:48.325158+00:00\", \"reason_to_skip\": \"VTSAX not a tradeable instrument (fund/placeholder)\"}"
+},
+{
+"setup_id": 646,
+"signal_id": 12191,
+"ticker": "VFIAX",
+"direction": "long",
+"created_at": "2026-08-31T17:23:21.547864+00:00",
+"target_pct": 0.02,
+"stop_pct": 0.015,
+"horizon_days": 1,
+"valid_until": "2026-08-31T21:22:47.431403+00:00",
+"reason_to_skip": "VFIAX not a tradeable instrument (fund/placeholder)",
+"skip_category": "instrument",
+"raw": "{\"id\": 646, \"signal_id\": 12191, \"ticker\": \"VFIAX\", \"direction\": \"long\", \"created_at\": \"2026-08-31T17:23:21.547864+00:00\", \"target_pct\": 0.02, \"stop_pct\": 0.015, \"horizon_days\": 1, \"valid_until\": \"2026-08-31T21:22:47.431403+00:00\", \"reason_to_skip\": \"VFIAX not a tradeable instrument (fund/placeholder)\"}"
+},
+{
+"setup_id": 647,
+"signal_id": 12190,
+"ticker": "INST_VG",
+"direction": "long",
+"created_at": "2026-08-31T17:23:21.547864+00:00",
+"target_pct": 0.02,
+"stop_pct": 0.015,
+"horizon_days": 1,
+"valid_until": "2026-08-31T21:22:46.432589+00:00",
+"reason_to_skip": "INST_VG not a tradeable instrument (fund/placeholder)",
+"skip_category": "instrument",
+"raw": "{\"id\": 647, \"signal_id\": 12190, \"ticker\": \"INST_VG\", \"direction\": \"long\", \"created_at\": \"2026-08-31T17:23:21.547864+00:00\", \"target_pct\": 0.02, \"stop_pct\": 0.015, \"horizon_days\": 1, \"valid_until\": \"2026-08-31T21:22:46.432589+00:00\", \"reason_to_skip\": \"INST_VG not a tradeable instrument (fund/placeholder)\"}"
 }
 ],
 "outcomes": [
@@ -8122,6 +8164,51 @@
 "return_pct": 0.005394,
 "qqq_return_pct": 0.003531,
 "excess_pct": 0.001863
+},
+{
+"setup_id": 645,
+"ticker": "VTSAX",
+"skip_category": "instrument",
+"reason_to_skip": "VTSAX not a tradeable instrument (fund/placeholder)",
+"priceable": 0,
+"status": "unpriceable",
+"entry_date": null,
+"entry_px": null,
+"exit_date": null,
+"exit_px": null,
+"return_pct": null,
+"qqq_return_pct": null,
+"excess_pct": null
+},
+{
+"setup_id": 646,
+"ticker": "VFIAX",
+"skip_category": "instrument",
+"reason_to_skip": "VFIAX not a tradeable instrument (fund/placeholder)",
+"priceable": 0,
+"status": "unpriceable",
+"entry_date": null,
+"entry_px": null,
+"exit_date": null,
+"exit_px": null,
+"return_pct": null,
+"qqq_return_pct": null,
+"excess_pct": null
+},
+{
+"setup_id": 647,
+"ticker": "INST_VG",
+"skip_category": "instrument",
+"reason_to_skip": "INST_VG not a tradeable instrument (fund/placeholder)",
+"priceable": 0,
+"status": "unpriceable",
+"entry_date": null,
+"entry_px": null,
+"exit_date": null,
+"exit_px": null,
+"return_pct": null,
+"qqq_return_pct": null,
+"excess_pct": null
 }
 ]
 }
