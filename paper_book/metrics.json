@@ -15,24 +15,24 @@
   "forward": {
     "n_raw_trades": 14,
     "n_independent_cohorts": 6,
-    "weeks": 2.0,
-    "book_equity_end": 5149.94,
-    "qqq_buy_hold_end": 4888.03,
-    "cumulative_excess": 261.91,
+    "weeks": 4.1,
+    "book_equity_end": 5150.76,
+    "qqq_buy_hold_end": NaN,
+    "cumulative_excess": NaN,
     "max_drawdown": 0.003,
     "top_cohort_excess_share": 0.6882,
     "profit_factor": 4.2115,
     "subperiods_positive": 2,
     "sync_ok": true
   },
-  "captured_at": "2026-09-02T00:23:00.079645+00:00",
+  "captured_at": "2026-09-03T00:27:37.411884+00:00",
   "tier": {
     "status": "inconclusive",
     "reason": "insufficient_sample",
     "next": "alive",
     "have_cohorts": 6,
     "need_cohorts": 30,
-    "have_weeks": 2.0,
+    "have_weeks": 4.1,
     "need_weeks": 8
   }
 }
