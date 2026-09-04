@@ -1,5 +1,5 @@
 {
-  "captured_at": "2026-09-03T00:41:48.657195+00:00",
+  "captured_at": "2026-09-04T00:25:37.963594+00:00",
   "sync_ok": true,
   "by_category": {
     "payoff": {
@@ -21,7 +21,7 @@
       "status": "ok"
     },
     "instrument": {
-      "n_setups": 16,
+      "n_setups": 17,
       "n_resolved": 10,
       "mean_return_pct": 0.0113,
       "mean_excess_vs_qqq_pct": 0.0074,
@@ -119,7 +119,7 @@
     "rule 8k_material_event::h1d profit_factor 0.74 < 1.0 (no payoff edge)": 3,
     "VTSAX not a tradeable instrument (fund/placeholder)": 2,
     "VFIAX not a tradeable instrument (fund/placeholder)": 2,
-    "INST_VG not a tradeable instrument (fund/placeholder)": 2,
+    "INST_VG not a tradeable instrument (fund/placeholder)": 3,
     "CVX not a tradeable instrument (fund/placeholder)": 8,
     "rule truth_social_post:kwd0037_sector_energy_dom:h1d profit_factor 0.15 < 1.0 (no payoff edge)": 2,
     "rule 8k_material_event::h1d profit_factor 0.76 < 1.0 (no payoff edge)": 2,
