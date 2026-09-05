@@ -16,7 +16,7 @@
     "n_raw_trades": 15,
     "n_independent_cohorts": 7,
     "weeks": 4.1,
-    "book_equity_end": 5151.77,
+    "book_equity_end": 5152.79,
     "qqq_buy_hold_end": NaN,
     "cumulative_excess": NaN,
     "max_drawdown": 0.003,
@@ -25,7 +25,7 @@
     "subperiods_positive": 2,
     "sync_ok": true
   },
-  "captured_at": "2026-09-04T00:14:40.982643+00:00",
+  "captured_at": "2026-09-05T00:14:36.459918+00:00",
   "tier": {
     "status": "inconclusive",
     "reason": "insufficient_sample",
