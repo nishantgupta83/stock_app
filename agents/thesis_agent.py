@@ -1895,7 +1895,14 @@ def write_signal(ticker: str, score: float, action: str, direction: str,
         "valid_until":      compute_valid_until(events, fired_at),
         "direction":        direction,
         "confidence":       round(min(max(score, 0), 100) / 100, 4),
-        "horizon_days":     1 if horizon_for(events) == "1d" else 0,
+        # Persist the ACTUAL emitted horizon, not a 1/0 flag. The old
+        # `1 if horizon_for(events) == "1d" else 0` silently stored 0 for any
+        # other horizon (no CHECK constraint on the column), and every consumer
+        # coerced 0 back to 1 via `int(x or 1)` — so changing horizon_for()
+        # would not have lengthened the horizon anywhere, it would only have
+        # let cluster_has_mature_rule match the h7d/h15d/h30d adult cells and
+        # unlock BUY/SELL on trades still graded and held for one day.
+        "horizon_days":     emitted_horizon_days(events),
         "thesis_summary":   evidence_summary(events),
         "model_version":    MODEL_VERSION,
         # Snapshot the weights actually used for this signal — price_agent reads

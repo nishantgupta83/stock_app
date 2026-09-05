@@ -516,6 +516,58 @@ def forward_block(closed_positions: list[dict]) -> dict:
         "max_drawdown": round(mdd, 4),
         "subperiods_positive": _subperiods_positive(days, cohorts),
         "cohorts": cohorts,
+        # READ-SIDE robustness reads (2026-09-04). Diagnostics only: NOT inputs
+        # to classify_tier, NOT part of config_hash, no change to admission /
+        # exits / costs. They exist because the equal-weighted cohort mean can
+        # be carried by one or two tickers (2026-09-04: two names = 75% of the
+        # h1d summed excess). The 2026-10-30 read uses these alongside Tier ①.
+        **robustness_block(closed_positions),
+    }
+
+
+def robustness_block(closed_positions: list[dict]) -> dict:
+    """Position-weighted and concentration reads over DEDUPED closed positions.
+
+    - mean_position_excess: mean excess per position (each position one vote),
+      versus the cohort mean where an n=2 day votes like an n=11 day.
+    - top_ticker / top_ticker_excess_share: the ticker whose summed excess is the
+      largest, and its share of the total summed excess (signed; can exceed 1.0
+      when other tickers net negative, can be NEGATIVE when the total is
+      negative, and reads 0.0 when the total is ~0 even if one ticker carries
+      it all — mirroring top_cohort_excess_share; quote the ex-top-ticker mean,
+      not the share, for the verdict).
+    - n_positions_deduped: the base the two counts above are on. `n_positions`
+      in forward_block is the RAW closed count, so the counts differ whenever
+      two candidates share a (ticker, entry_session, horizon) key.
+    - mean_position_excess_ex_top_ticker: the position-weighted mean with that
+      ticker removed — the number that must also be >= 0 on the read date.
+    Pure function of the ledger; adding keys here cannot alter any verdict."""
+    ps = [p for p in dedup_positions(closed_positions) if p.get("excess") is not None]
+    if not ps:
+        return {"mean_position_excess": 0.0, "top_ticker": None,
+                "top_ticker_excess_share": 0.0, "top_ticker_positions": 0,
+                "mean_position_excess_ex_top_ticker": 0.0,
+                "n_positions_ex_top_ticker": 0, "n_positions_deduped": 0}
+    exs = [float(p["excess"]) for p in ps]
+    by_ticker: dict[str, float] = {}
+    n_ticker: dict[str, int] = {}
+    for p, e in zip(ps, exs):
+        t = p.get("ticker") or "?"
+        by_ticker[t] = by_ticker.get(t, 0.0) + e
+        n_ticker[t] = n_ticker.get(t, 0) + 1
+    top = max(by_ticker, key=lambda t: by_ticker[t])
+    total = sum(exs)
+    share = round(by_ticker[top] / total, 4) if abs(total) > 1e-9 else 0.0
+    rest = [e for p, e in zip(ps, exs) if (p.get("ticker") or "?") != top]
+    return {
+        "mean_position_excess": round(sum(exs) / len(exs), 6),
+        "top_ticker": top,
+        "top_ticker_excess_share": share,
+        "top_ticker_positions": n_ticker[top],
+        "mean_position_excess_ex_top_ticker": (round(sum(rest) / len(rest), 6)
+                                               if rest else 0.0),
+        "n_positions_ex_top_ticker": len(rest),
+        "n_positions_deduped": len(ps),
     }
 
 

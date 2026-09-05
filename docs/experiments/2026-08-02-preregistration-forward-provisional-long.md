@@ -107,6 +107,45 @@ Per-cohort matched excess = `candidate_net_return − qqq_same_window_return` (m
   (`:70`), the production `book_state`/`book.db`, or any production risk gate
   (`feedback_forward_experiment_isolation`).
 
+## Read date and freeze (added 2026-09-04 — no parameter change, `forward_epoch` and `config_hash` stand)
+
+**Verdict read date: 2026-10-30.** Until then nothing in admission, entry, exit, stop,
+target, costs or benchmark changes for either experiment. This section adds
+**read-side diagnostics only**; it does not alter Tier ① / Tier ② and is not part of
+`config_hash` — `config_hash()` in `scripts/forward_experiment.py` hashes only the frozen
+parameters (experiment, version, direction, horizon, stop, target, exit policy, slippage,
+benchmark, admission rule). `tests/test_forward_experiment.py::
+test_robustness_reads_do_not_touch_the_verdict_or_config_hash` pins both live digests
+(`f1b6a019…` h1d, `47eb4eb5…` h7d), so any frozen-parameter change without a version bump
+fails CI.
+
+Why: on 2026-09-04 the h1d ledger's equal-weighted cohort mean (+1.03%) was carried by
+two tickers (`AI` 51% and `NOW` 25% of summed excess); the other 73 positions averaged
++0.30%. A cohort mean lets an n=2 day vote like an n=11 day. So `metrics.json` now also
+reports, per experiment:
+
+- `mean_position_excess` — position-weighted net excess vs matched QQQ
+- `top_ticker`, `top_ticker_excess_share`, `top_ticker_positions`
+- `mean_position_excess_ex_top_ticker`, `n_positions_ex_top_ticker`
+
+**What is read on 2026-10-30, for each of `fwd_prov_long_h1d` and `fwd_prov_long_h7d`:**
+Tier ① as pre-registered, **and** `mean_position_excess >= 0`, **and**
+`mean_position_excess_ex_top_ticker >= 0`, at ≥30 cohorts. Both experiments clearing
+all three → continue to Tier ② (paper). Either experiment clearly negative on the
+position-weighted or ex-top-ticker read → the recall generator has no forward edge;
+shelve and collapse the architecture to ingest + candidates + experiments.
+
+**Stop-doing list until the read date** (the repo's own history is: return → audit →
+fix sprint → forward clock resets → verdict never read):
+- No changes to `scripts/forward_experiment.py` admission / exits / costs (a change
+  = new experiment version + new `forward_epoch`, and the current clock restarts).
+- No "just exclude AI" / per-ticker caps inside the experiment — concentration is
+  handled on the read side above, never in admission.
+- No capital step, no Tier ② claim, no BUY/SELL wiring on the strength of the
+  equal-weighted headline. The ex-top-ticker figure is the one quoted.
+- Layers 3/4/6, `realistic_loop` and the production `paper_book` are frozen legacy
+  for the duration; defects there are logged, not fixed.
+
 ## Deferred (explicitly NOT in this pre-registration)
 
 - The **AVOID_CHASE / bearish short** hypothesis (shadow showed +3.9% gross, capacity-free) —

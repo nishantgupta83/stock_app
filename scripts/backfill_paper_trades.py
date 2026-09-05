@@ -285,20 +285,41 @@ def recompute_calibration(rule_keys: set[str]) -> int:
     + payoff aggregates from the table. Returns rule count updated."""
     updated = 0
     for rk in sorted(rule_keys):
-        r = requests.get(
-            f"{SUPABASE_URL}/rest/v1/stock_event_paper_trades",
-            headers=HEADERS_SB,
-            params={
-                "rule_key": f"eq.{rk}",
-                "status":   "eq.closed",
-                "select":   "ticker,entry_at,realized_return,correct,mfe_pct,mae_pct,target_hit,stop_hit",
-                "limit":    "5000",
-            },
-            timeout=30,
-        )
-        if r.status_code != 200:
+        # Read the FULL closed population, paginated with a pinned order —
+        # same contract as price_agent.recompute_rule_payoff (FIX-1B). A bare
+        # `limit=5000` silently truncated the four news_article:neutral cells
+        # (9.3k-11.2k closed trades each) and then wrote is_mature/tier from
+        # that arbitrary subset, defeating the "backfill cannot re-promote a
+        # rule the live path demoted" guarantee asserted below.
+        rows: list[dict] = []
+        offset, page, truncated = 0, 1000, False
+        while True:
+            r = requests.get(
+                f"{SUPABASE_URL}/rest/v1/stock_event_paper_trades",
+                headers=HEADERS_SB,
+                params={
+                    "rule_key": f"eq.{rk}",
+                    "status":   "eq.closed",
+                    "select":   "ticker,entry_at,realized_return,correct,mfe_pct,mae_pct,target_hit,stop_hit",
+                    "order":    "id.asc",
+                    "offset":   str(offset),
+                    "limit":    str(page),
+                },
+                timeout=30,
+            )
+            if r.status_code != 200:
+                # Fail CLOSED: a partial read must never reach the maturity gate.
+                truncated = True
+                break
+            batch = r.json()
+            rows.extend(batch)
+            if len(batch) < page:
+                break
+            offset += page
+        if truncated:
+            print(f"  skip {rk}: incomplete read, refusing to recompute the gate "
+                  f"on {len(rows)} partial rows", file=sys.stderr)
             continue
-        rows = r.json()
         if not rows:
             continue
         n = len(rows)

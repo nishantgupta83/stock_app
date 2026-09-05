@@ -92,6 +92,25 @@ _DIRECTION_DEFAULT: dict[str, str] = {
     "truth_social_post":  "long",
     "momentum":           "long",
     "crypto_macro_move":  "long",
+    # DECLARED, not fallthrough (2026-09-04). biotech_agent emits
+    # direction_prior="neutral" for every ctgov readout and derive_direction
+    # deliberately defers neutral to this table — so before this entry every
+    # clinical trade, including a TERMINATED Phase 3, was graded LONG by the
+    # `.get(et, "long")` default. Subtypes are resolved in derive_direction;
+    # this is the default for any subtype not listed there.
+    "clinical_readout":   "long",
+}
+
+# Per-subtype direction for clinical readouts. `terminated` is a failed or
+# halted trial and must not be graded as a long. `completed` and
+# `active_not_recruiting` are declared long so the choice is explicit and
+# testable rather than an accident of dict fallthrough. NOTE: changing a
+# direction here does NOT rewrite already-opened trades (direction is stored
+# per row at open); existing cells re-accrue from the change date.
+_CLINICAL_SUBTYPE_DIRECTION: dict[str, str] = {
+    "terminated":            "short",
+    "completed":             "long",
+    "active_not_recruiting": "long",
 }
 
 
@@ -266,15 +285,35 @@ def derive_direction(event: dict) -> str:
         if sub == "beat":  return "long"
         if sub == "miss":  return "short"
         # inline / scheduled → fall through to default
+    if et == "clinical_readout" and sub in _CLINICAL_SUBTYPE_DIRECTION:
+        return _CLINICAL_SUBTYPE_DIRECTION[sub]
     return _DIRECTION_DEFAULT.get(et, "long")
+
+
+# Quarantine (2026-09-04, review C2): rule_keys carry no direction segment, and
+# every historical clinical_readout trade was graded LONG by fallthrough.
+# Declaring `terminated` as SHORT would otherwise blend short-graded outcomes
+# into the existing long-graded cells (`clinical_readout:terminated:h7d` is
+# n=38 / PF 2.31 — adult-gate range), corrupting the number the maturity gate
+# reads. So short-graded terminated trades accrue in a FRESH cell. The old
+# cells simply stop growing; no history is rewritten (operator decision).
+# thesis_agent / trade_setup_agent still derive `...:terminated:hNd` from the
+# raw subtype and therefore keep reading the frozen long cell, which never
+# licenses anything (clinical signals are direction-neutral in Layer 2).
+_CLINICAL_RULE_SUBTYPE_ALIAS: dict[str, str] = {"terminated": "terminated_short"}
 
 
 def derive_rule_key(event: dict, horizon_days: int) -> str:
     """Granular rule identity. Subtype + horizon included so beat vs miss AND
     1d vs 7d vs 15d vs 30d earn separate calibration tracks. Delegates to the
     canonical agents._rule_key.derive so trade_setup_agent and thesis_agent
-    compute the exact same string for the same inputs."""
-    return _rule_key.derive(event["event_type"], event.get("event_subtype"), horizon_days)
+    compute the exact same string for the same inputs — except the clinical
+    quarantine alias above, which is deliberately paper-trade-side only."""
+    et = event["event_type"]
+    sub = event.get("event_subtype")
+    if et == "clinical_readout" and (sub or "").lower() in _CLINICAL_RULE_SUBTYPE_ALIAS:
+        sub = _CLINICAL_RULE_SUBTYPE_ALIAS[(sub or "").lower()]
+    return _rule_key.derive(et, sub, horizon_days)
 
 
 def fetch_close_window(tickers: list[str], since_date: str) -> dict[str, list[dict]]:

@@ -389,3 +389,74 @@ def test_tier_scale_blocked_by_low_pf():
     # Tier-② sample met but PF below 1.4 → stays 'continue', not 'scale_paper'.
     r = fx.classify_tier(_fwd(n_cohorts=60, weeks=14.0, profit_factor=1.1))
     assert r["status"] == "continue"
+
+
+# ---------------------------------------------------------------------------
+# Read-side robustness metrics (2026-09-04) — diagnostics, never gates.
+# ---------------------------------------------------------------------------
+def _pos(ticker, day, excess, cid):
+    return {"candidate_id": cid, "ticker": ticker, "entry_session": day,
+            "horizon_days": 1, "status": "closed",
+            "net_return": excess, "qqq_return": 0.0, "excess": excess}
+
+
+def _concentrated_ledger():
+    # One ticker carries most of the excess across many days; three others are
+    # small and mixed. Mirrors the live h1d shape (2 names = 75% of the sum).
+    ps = []
+    cid = 1
+    for i in range(10):
+        ps.append(_pos("AI", f"2026-08-{i+1:02d}", 0.05, cid)); cid += 1
+    for i in range(10):
+        ps.append(_pos("XOM", f"2026-08-{i+1:02d}", 0.002, cid)); cid += 1
+        ps.append(_pos("XLE", f"2026-08-{i+1:02d}", -0.001, cid)); cid += 1
+        ps.append(_pos("GDX", f"2026-08-{i+1:02d}", 0.001, cid)); cid += 1
+    return ps
+
+
+def test_robustness_block_identifies_top_ticker_and_share():
+    r = fx.robustness_block(_concentrated_ledger())
+    assert r["top_ticker"] == "AI"
+    assert r["top_ticker_positions"] == 10
+    # AI: 0.50 of 0.52 total
+    assert abs(r["top_ticker_excess_share"] - round(0.50 / 0.52, 4)) < 1e-6
+
+
+def test_position_weighted_mean_differs_from_cohort_mean_when_concentrated():
+    ps = _concentrated_ledger()
+    fwd = fx.forward_block(ps)
+    # cohort mean: each day = mean(0.05, 0.002, -0.001, 0.001) = 0.013
+    assert abs(fwd["mean_cohort_excess"] - 0.013) < 1e-6
+    # position-weighted: 0.52 / 40
+    assert abs(fwd["mean_position_excess"] - round(0.52 / 40, 6)) < 1e-6
+    # ex-top-ticker: (0.02 - 0.01 + 0.01) / 30
+    assert abs(fwd["mean_position_excess_ex_top_ticker"] - round(0.02 / 30, 6)) < 1e-6
+    assert fwd["n_positions_ex_top_ticker"] == 30
+
+
+def test_robustness_reads_do_not_touch_the_verdict_or_config_hash():
+    ps = _concentrated_ledger()
+    fwd = fx.forward_block(ps)
+    stripped = {k: v for k, v in fwd.items()
+                if k not in ("mean_position_excess", "top_ticker",
+                             "top_ticker_excess_share", "top_ticker_positions",
+                             "mean_position_excess_ex_top_ticker",
+                             "n_positions_ex_top_ticker")}
+    assert fx.classify_tier(fwd) == fx.classify_tier(stripped)
+    # config_hash is PINNED to the digests the two live ledgers carry
+    # (paper_book/experiments/*/state.json `config_hash`). It has no metric
+    # input, so read-side additions cannot move it; and if a FROZEN parameter
+    # ever changes without a new experiment version, this fails loudly —
+    # which is the pre-registration contract. (Review C3: the previous
+    # assertion compared the function to itself and could not fail.)
+    assert fx.config_hash(1, "h1d") == "f1b6a019435833a8a180b7609cacb0bb88f94948ae54ed6bd9d36175e615b9cc"
+    assert fx.config_hash(7, "h7d") == "47eb4eb5fda8223568f21fae0301f48c6fe0da43261e959002d84a8c3fd72d35"
+
+
+def test_robustness_block_empty_and_single_ticker():
+    assert fx.robustness_block([])["top_ticker"] is None
+    r = fx.robustness_block([_pos("NOW", "2026-08-01", 0.1, 1),
+                             _pos("NOW", "2026-08-02", 0.1, 2)])
+    assert r["top_ticker"] == "NOW" and r["top_ticker_excess_share"] == 1.0
+    assert r["n_positions_ex_top_ticker"] == 0
+    assert r["mean_position_excess_ex_top_ticker"] == 0.0

@@ -5,8 +5,29 @@ buy-and-hold from forward_epoch, cumulative + unannualized. OLS alpha/beta and
 same-slot QQQ are diagnostics only (unstable at this n/sparsity)."""
 from __future__ import annotations
 import datetime as dt
+import math
 
 TRADING_DAYS = 252
+
+
+def _finite(x):
+    """Return x as a float, or None if it is missing or non-finite.
+
+    yfinance emits NaN for gap days. `bool(float("nan")) is True`, so the usual
+    falsy guard does NOT catch a NaN price — it flows through the buy-and-hold
+    arithmetic into qqq_buy_hold_end / cumulative_excess and reaches the
+    dashboard as "$nan" (observed live 2026-09-04). Worse, `NaN < 0` is False,
+    so a NaN excess also slips past the `fail` branch in classify_tier. Every
+    benchmark price crosses this helper so a missing bar stays MISSING instead
+    of silently becoming a number-shaped hole.
+    """
+    if x is None:
+        return None
+    try:
+        v = float(x)
+    except (TypeError, ValueError):
+        return None
+    return v if math.isfinite(v) else None
 
 TIERS = {
     "alive": {"min_cohorts": 30, "min_weeks": 8, "max_dd": 0.20},
@@ -50,12 +71,17 @@ def book_equity_curve(positions, days, capital, rf_annual) -> dict:
 
 
 def qqq_buy_hold_curve(qqq_daily, days, capital, epoch) -> dict:
-    base = qqq_daily.get(epoch)
-    if base is None:
-        base = next((qqq_daily[d] for d in days if d in qqq_daily), None)
-    if not base:
+    base = _finite(qqq_daily.get(epoch))
+    if base is None:                       # epoch bar missing OR NaN -> first finite bar
+        base = next((px for d in days if (px := _finite(qqq_daily.get(d))) is not None), None)
+    if base is None or base <= 0:
         return {}
-    return {day: round(capital * qqq_daily[day] / base, 2) for day in days if day in qqq_daily}
+    curve = {}
+    for day in days:
+        px = _finite(qqq_daily.get(day))
+        if px is not None:                 # a NaN bar is a MISSING day, not a NaN value
+            curve[day] = round(capital * px / base, 2)
+    return curve
 
 
 def max_drawdown(curve: dict) -> float:
@@ -67,6 +93,26 @@ def max_drawdown(curve: dict) -> float:
         if peak > 0:
             mdd = max(mdd, (peak - v) / peak)
     return round(mdd, 4)
+
+
+def matched_endpoints(book_curve, qqq_curve, capital):
+    """Book and benchmark end values on the LAST DAY BOTH ARE KNOWN.
+
+    Dropping a non-finite benchmark bar can leave the two curves ending on
+    different days. Reporting each curve's own last value would then print a
+    book/QQQ pair whose difference is NOT the reported cumulative_excess (which
+    is already matched-day). The pre-registration requires the benchmark share
+    the same exit bar, so both endpoints come from the last common day.
+    """
+    common = sorted(set(book_curve) & set(qqq_curve))
+    if not common:
+        # No shared day => the benchmark end is UNKNOWN. Returning `capital`
+        # here printed a QQQ figure that did not subtract to the reported
+        # excess (which cumulative_excess defaults to 0.0). Report None rather
+        # than fabricate a comparison.
+        return (book_curve[max(book_curve)] if book_curve else capital), None
+    last = common[-1]
+    return book_curve[last], qqq_curve[last]
 
 
 def cumulative_excess(book_curve, qqq_curve) -> float:
@@ -145,6 +191,24 @@ def classify_tier(fwd: dict, tiers=TIERS, sync_ok=True) -> dict:
         return {"status": "inconclusive", "reason": "insufficient_sample",
                 "next": "alive", "have_cohorts": cohorts, "need_cohorts": a["min_cohorts"],
                 "have_weeks": weeks, "need_weeks": a["min_weeks"]}
+    # No usable benchmark bar in THIS block's window => no verdict. Must be
+    # checked explicitly: with an empty benchmark curve cumulative_excess
+    # returns its 0.0 default, which is finite and not < 0, so both the
+    # non-finite guard and the fail branch below would wave it through.
+    # Fewer than TWO bars cannot express a benchmark return: with exactly one
+    # (the epoch bar) both curves pin to that day, excess is 0.0 by construction,
+    # and the fail branch below is skipped -> 'alive' on nothing (review C1).
+    # `_block` always emits benchmark_days; a hand-built dict without it (tests,
+    # legacy callers) is not evidence of a missing benchmark, so only a PRESENT
+    # count below 2 withholds.
+    bdays = fwd.get("benchmark_days")
+    if bdays is not None and bdays < 2:
+        return {"status": "inconclusive", "reason": "benchmark_unavailable", "next": "alive"}
+    # Defense in depth: a non-finite excess must never reach a verdict. `NaN < 0`
+    # is False, so without this the fail branch below is skipped and a book with
+    # no usable benchmark reports "alive".
+    if _finite(excess) is None:
+        return {"status": "inconclusive", "reason": "benchmark_unavailable", "next": "alive"}
     if excess < 0 or dd > a["max_dd"]:
         return {"status": "fail", "reason": "negative_excess_or_drawdown",
                 "excess": excess, "max_drawdown": dd}
@@ -165,12 +229,18 @@ def _block(sub, qqq_daily, days, capital, rf_annual, sync_ok) -> dict:
     closed = [p for p in sub if p.get("status") == "closed"]
     bcurve = book_equity_curve(sub, days, capital, rf_annual)
     qcurve = qqq_buy_hold_curve(qqq_daily, days, capital, days[0] if days else None)
+    book_end, qqq_end = matched_endpoints(bcurve, qcurve, capital)
     return {
         "n_raw_trades": len(closed),
         "n_independent_cohorts": independent_cohorts([p for p in sub if p.get("status") == "closed"]),
         "weeks": weeks_span(sub),
-        "book_equity_end": bcurve[max(bcurve)] if bcurve else capital,
-        "qqq_buy_hold_end": qcurve[max(qcurve)] if qcurve else capital,
+        "book_equity_end": book_end,
+        "qqq_buy_hold_end": qqq_end,
+        # Usable benchmark bars IN THIS BLOCK'S window. classify_tier withholds
+        # a verdict on 0 — a dict-wide "any finite price" check is NOT enough,
+        # because finite pre-epoch bars satisfy it while the forward window is
+        # entirely NaN (the live yfinance failure shape).
+        "benchmark_days": len(qcurve),
         "cumulative_excess": cumulative_excess(bcurve, qcurve),
         "max_drawdown": max_drawdown(bcurve),
         "top_cohort_excess_share": top_cohort_excess_share(sub),
@@ -196,7 +266,8 @@ def compute_metrics(positions, qqq_daily, forward_epoch, capital,
                           capital, rf_annual, sync_ok),
         "captured_at": dt.datetime.now(dt.timezone.utc).isoformat(),
     }
-    if not qqq_daily:
+    # An all-NaN benchmark is an ABSENT benchmark, not a usable one.
+    if not any(_finite(v) is not None for v in qqq_daily.values()):
         out["tier"] = {"status": "inconclusive", "reason": "benchmark_unavailable"}
     else:
         out["tier"] = classify_tier(out["forward"], tiers, sync_ok)

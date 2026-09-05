@@ -56,9 +56,29 @@ jobs:
             echo "No shadow changes."
             exit 0
           fi
-          git add paper_book/shadow/state.json paper_book/shadow/report.json
           today=$(date -u +%Y-%m-%d)
+          # Pull BEFORE staging: `git pull --rebase --autostash` pops its stash
+          # WITHOUT --index, so anything staged before the pull comes back
+          # UNSTAGED and the commit below finds an empty index -> exit 1 under
+          # `set -e`. Staging after the rebase keeps the index intact.
           git pull --rebase --autostash || true
+          # `git pull --rebase --autostash` EXITS 0 even when re-applying the
+          # stash conflicts, leaving unmerged entries with conflict markers on
+          # disk. The `git add` below would then RESOLVE them to the marker
+          # text and commit it into the ledger. Fail loudly instead.
+          if [ -d .git/rebase-merge ] || [ -d .git/rebase-apply ]; then
+            echo "::error::rebase still in progress after pull; refusing to commit"; exit 1
+          fi
+          if [ -n "$(git ls-files -u)" ]; then
+            echo "::error::autostash apply conflicted; refusing to commit merged output"
+            git ls-files -u
+            exit 1
+          fi
+          git add paper_book/shadow/state.json paper_book/shadow/report.json
+          if git diff --cached --quiet; then
+            echo "Nothing staged after rebase; nothing to commit."
+            exit 0
+          fi
           git commit -m "chore(shadow): forward-skip audit ${today}"
           git push || (git pull --rebase --autostash && git push)
 

@@ -102,11 +102,17 @@ def test_stored_tier_promotion_renders():
 # --- integration: the actual committed snapshots (the bug was found here) --------
 
 def test_real_snapshots_report_zero_adult_crossings():
-    files = sorted(glob.glob(str(REPO / "snapshots" / "*.json")))
-    if len(files) < 2:
-        return   # nothing to diff in this checkout
-    s1 = json.loads(Path(files[0]).read_text())
-    s2 = json.loads(Path(files[-1]).read_text())
+    # PINNED to two committed historical snapshots. This test used to glob
+    # `snapshots/*.json` and take `[-1]` — a directory a nightly cron appends
+    # to — so it asserted a fact about last night's data, not about the code,
+    # and went red the day the first real adult rules appeared (2026-09-04).
+    # A regression guard must test frozen inputs.
+    pinned = [REPO / "snapshots" / "2026-05-26.json",
+              REPO / "snapshots" / "2026-05-30.json"]
+    if not all(p.exists() for p in pinned):
+        return   # fixture snapshots absent in this checkout
+    s1 = json.loads(pinned[0].read_text())
+    s2 = json.loads(pinned[1].read_text())
     # These snapshots predate the tier/effective_* columns and have 0 mature rules;
     # the report must not invent any adult crossing from raw n.
     assert sum(1 for r in s2["calibration"] if r.get("is_mature")) == 0

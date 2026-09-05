@@ -363,7 +363,11 @@ def compute_setup(signal: dict, cal: dict[str, dict],
     # n ≥ 10 closed observations. Before that, fall back to the same defaults
     # event_paper_agent uses so the calibration audit lines up cleanly.
     target_pct, stop_pct, target_source = compute_target_and_stop(rule_cal)
-    horizon = int(signal.get("horizon_days") or 1)
+    # Explicit None check, per derive_rule_key's docstring above: `or 1` would
+    # coerce a 0 to 1, silently turning corrupt data into a valid-looking 1-day
+    # horizon. Only a MISSING horizon defaults to 1.
+    _raw_h = signal.get("horizon_days")
+    horizon = 1 if _raw_h is None else int(_raw_h)
 
     return {
         "signal_id":       signal["id"],
