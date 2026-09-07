@@ -1,6 +1,6 @@
 {
 "experiment_id": "fwd_prov_long_h1d",
-"cursor": "2026-09-04T13:37:38.853842+00:00",
+"cursor": "2026-09-06T14:37:33.552406+00:00",
 "forward_epoch": "2026-08-03",
 "config_hash": "f1b6a019435833a8a180b7609cacb0bb88f94948ae54ed6bd9d36175e615b9cc",
 "candidates": [
@@ -1565,6 +1565,17 @@
 "rule_keys": "[\"news_article:positive:h15d\", \"news_article:positive:h1d\", \"news_article:positive:h30d\", \"news_article:positive:h7d\"]",
 "source_agents": "[\"news\"]",
 "raw": "{\"id\": 408, \"created_at\": \"2026-09-04T13:37:38.853842+00:00\", \"ticker\": \"DELL\", \"direction\": \"bullish\", \"score\": 41.673, \"recall_floor\": 30.0, \"rule_keys\": [\"news_article:positive:h15d\", \"news_article:positive:h1d\", \"news_article:positive:h30d\", \"news_article:positive:h7d\"], \"source_agents\": [\"news\"]}"
+},
+{
+"experiment_id": "fwd_prov_long_h1d",
+"candidate_id": 409,
+"created_at": "2026-09-06T14:37:33.552406+00:00",
+"ticker": "PLTR",
+"direction": "bullish",
+"score": 36.673,
+"rule_keys": "[\"news_article:positive:h15d\", \"news_article:positive:h1d\", \"news_article:positive:h30d\", \"news_article:positive:h7d\"]",
+"source_agents": "[\"news\"]",
+"raw": "{\"id\": 409, \"created_at\": \"2026-09-06T14:37:33.552406+00:00\", \"ticker\": \"PLTR\", \"direction\": \"bullish\", \"score\": 36.673, \"recall_floor\": 30.0, \"rule_keys\": [\"news_article:positive:h15d\", \"news_article:positive:h1d\", \"news_article:positive:h30d\", \"news_article:positive:h7d\"], \"source_agents\": [\"news\"]}"
 }
 ],
 "positions": [
@@ -3888,7 +3899,7 @@
 "horizon_days": 1,
 "created_at": "2026-09-03T12:37:50.501185+00:00",
 "entry_session": "2026-09-04",
-"entry_px": null,
+"entry_px": 10.91,
 "exit_session": null,
 "exit_px": null,
 "exit_reason": null,
@@ -3905,7 +3916,7 @@
 "horizon_days": 1,
 "created_at": "2026-09-03T13:07:47.003521+00:00",
 "entry_session": "2026-09-04",
-"entry_px": null,
+"entry_px": 53.85,
 "exit_session": null,
 "exit_px": null,
 "exit_reason": null,
@@ -3922,7 +3933,7 @@
 "horizon_days": 1,
 "created_at": "2026-09-03T13:37:36.713023+00:00",
 "entry_session": "2026-09-04",
-"entry_px": null,
+"entry_px": 38.16,
 "exit_session": null,
 "exit_px": null,
 "exit_reason": null,
@@ -3939,7 +3950,7 @@
 "horizon_days": 1,
 "created_at": "2026-09-03T13:52:41.648864+00:00",
 "entry_session": "2026-09-04",
-"entry_px": null,
+"entry_px": 10.91,
 "exit_session": null,
 "exit_px": null,
 "exit_reason": null,
@@ -3956,7 +3967,7 @@
 "horizon_days": 1,
 "created_at": "2026-09-03T13:52:41.648864+00:00",
 "entry_session": "2026-09-04",
-"entry_px": null,
+"entry_px": 353.63,
 "exit_session": null,
 "exit_px": null,
 "exit_reason": null,

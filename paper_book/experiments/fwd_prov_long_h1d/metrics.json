@@ -2,7 +2,7 @@
   "experiment_id": "fwd_prov_long_h1d",
   "config_hash": "f1b6a019435833a8a180b7609cacb0bb88f94948ae54ed6bd9d36175e615b9cc",
   "forward_epoch": "2026-08-03",
-  "captured_at": "2026-09-05T00:25:38.775139+00:00",
+  "captured_at": "2026-09-07T21:31:38.815279+00:00",
   "sync_ok": true,
   "n_admitted": 141,
   "n_open": 5,
@@ -156,7 +156,14 @@
         "qqq": 0.0,
         "excess": 0.0
       }
-    }
+    },
+    "mean_position_excess": 0.007706,
+    "top_ticker": "AI",
+    "top_ticker_excess_share": 0.4067,
+    "top_ticker_positions": 13,
+    "mean_position_excess_ex_top_ticker": 0.005409,
+    "n_positions_ex_top_ticker": 71,
+    "n_positions_deduped": 84
   },
   "replay": {
     "n_cohorts": 0,
@@ -168,7 +175,14 @@
     "top_cohort_excess_share": 0.0,
     "max_drawdown": 0.0,
     "subperiods_positive": 0,
-    "cohorts": {}
+    "cohorts": {},
+    "mean_position_excess": 0.0,
+    "top_ticker": null,
+    "top_ticker_excess_share": 0.0,
+    "top_ticker_positions": 0,
+    "mean_position_excess_ex_top_ticker": 0.0,
+    "n_positions_ex_top_ticker": 0,
+    "n_positions_deduped": 0
   },
   "tier": {
     "status": "inconclusive",
