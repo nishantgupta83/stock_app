@@ -2,14 +2,14 @@
   "experiment_id": "fwd_prov_long_h7d",
   "config_hash": "47eb4eb5fda8223568f21fae0301f48c6fe0da43261e959002d84a8c3fd72d35",
   "forward_epoch": "2026-08-03",
-  "captured_at": "2026-09-10T00:40:24.666691+00:00",
+  "captured_at": "2026-09-11T00:37:18.592464+00:00",
   "sync_ok": true,
-  "n_admitted": 150,
-  "n_open": 16,
+  "n_admitted": 154,
+  "n_open": 14,
   "n_cohorts_forward": 24,
   "forward": {
     "n_cohorts": 24,
-    "n_positions": 134,
+    "n_positions": 140,
     "weeks": 4.4,
     "mean_cohort_excess": 0.0005,
     "mean_cohort_net": -0.000995,
@@ -151,7 +151,7 @@
         "excess": -0.046924
       },
       "2026-09-03": {
-        "n": 2,
+        "n": 6,
         "net": -0.031002500000000002,
         "qqq": 0.011409,
         "excess": -0.042411500000000005
