@@ -8252,6 +8252,21 @@
 "return_pct": null,
 "qqq_return_pct": null,
 "excess_pct": null
+},
+{
+"setup_id": 650,
+"ticker": "MSFT",
+"skip_category": "other",
+"reason_to_skip": "neutral or unknown signal direction",
+"priceable": 1,
+"status": "resolved",
+"entry_date": "2026-09-09",
+"entry_px": 493.07,
+"exit_date": "2026-09-10",
+"exit_px": 492.44,
+"return_pct": -0.001278,
+"qqq_return_pct": -0.010638,
+"excess_pct": 0.00936
 }
 ]
 }
