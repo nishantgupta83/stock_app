@@ -1,6 +1,6 @@
 {
 "experiment_id": "fwd_prov_long_h7d",
-"cursor": "2026-09-10T09:13:05.999573+00:00",
+"cursor": "2026-09-11T18:33:51.058279+00:00",
 "forward_epoch": "2026-08-03",
 "config_hash": "47eb4eb5fda8223568f21fae0301f48c6fe0da43261e959002d84a8c3fd72d35",
 "candidates": [
@@ -1708,6 +1708,17 @@
 "rule_keys": "[\"news_article:neutral:h15d\", \"news_article:neutral:h1d\", \"news_article:neutral:h30d\", \"news_article:neutral:h7d\", \"news_article:positive:h15d\", \"news_article:positive:h1d\", \"news_article:positive:h30d\", \"news_article:positive:h7d\"]",
 "source_agents": "[\"news\"]",
 "raw": "{\"id\": 422, \"created_at\": \"2026-09-10T09:13:05.999573+00:00\", \"ticker\": \"AI\", \"direction\": \"bullish\", \"score\": 31.472, \"recall_floor\": 30.0, \"rule_keys\": [\"news_article:neutral:h15d\", \"news_article:neutral:h1d\", \"news_article:neutral:h30d\", \"news_article:neutral:h7d\", \"news_article:positive:h15d\", \"news_article:positive:h1d\", \"news_article:positive:h30d\", \"news_article:positive:h7d\"], \"source_agents\": [\"news\"]}"
+},
+{
+"experiment_id": "fwd_prov_long_h7d",
+"candidate_id": 423,
+"created_at": "2026-09-11T18:33:51.058279+00:00",
+"ticker": "ORCL",
+"direction": "bullish",
+"score": 36.563,
+"rule_keys": "[\"news_article:positive:h15d\", \"news_article:positive:h1d\", \"news_article:positive:h30d\", \"news_article:positive:h7d\"]",
+"source_agents": "[\"news\"]",
+"raw": "{\"id\": 423, \"created_at\": \"2026-09-11T18:33:51.058279+00:00\", \"ticker\": \"ORCL\", \"direction\": \"bullish\", \"score\": 36.563, \"recall_floor\": 30.0, \"rule_keys\": [\"news_article:positive:h15d\", \"news_article:positive:h1d\", \"news_article:positive:h30d\", \"news_article:positive:h7d\"], \"source_agents\": [\"news\"]}"
 }
 ],
 "positions": [
@@ -4066,13 +4077,13 @@
 "created_at": "2026-09-03T13:37:36.713023+00:00",
 "entry_session": "2026-09-04",
 "entry_px": 38.16,
-"exit_session": null,
+"exit_session": "2026-09-11",
 "exit_px": null,
-"exit_reason": null,
+"exit_reason": "horizon",
 "net_return": null,
 "qqq_return": null,
 "excess": null,
-"status": "open"
+"status": "closed"
 },
 {
 "experiment_id": "fwd_prov_long_h7d",
@@ -4134,13 +4145,13 @@
 "created_at": "2026-09-06T14:37:33.552406+00:00",
 "entry_session": "2026-09-08",
 "entry_px": 173.6,
-"exit_session": null,
-"exit_px": null,
-"exit_reason": null,
-"net_return": null,
-"qqq_return": null,
-"excess": null,
-"status": "open"
+"exit_session": "2026-09-10",
+"exit_px": 167.35,
+"exit_reason": "stop",
+"net_return": -0.037002,
+"qqq_return": -0.016951,
+"excess": -0.020051,
+"status": "closed"
 },
 {
 "experiment_id": "fwd_prov_long_h7d",
@@ -4168,13 +4179,13 @@
 "created_at": "2026-09-08T14:07:43.02586+00:00",
 "entry_session": "2026-09-09",
 "entry_px": 14.15,
-"exit_session": null,
-"exit_px": null,
-"exit_reason": null,
-"net_return": null,
-"qqq_return": null,
-"excess": null,
-"status": "open"
+"exit_session": "2026-09-10",
+"exit_px": 13.53,
+"exit_reason": "stop",
+"net_return": -0.044816,
+"qqq_return": -0.010762,
+"excess": -0.034054,
+"status": "closed"
 },
 {
 "experiment_id": "fwd_prov_long_h7d",
@@ -4269,7 +4280,7 @@
 "horizon_days": 7,
 "created_at": "2026-09-09T12:37:45.202091+00:00",
 "entry_session": "2026-09-10",
-"entry_px": null,
+"entry_px": 10.3,
 "exit_session": null,
 "exit_px": null,
 "exit_reason": null,
@@ -4286,7 +4297,7 @@
 "horizon_days": 7,
 "created_at": "2026-09-09T13:42:49.001828+00:00",
 "entry_session": "2026-09-10",
-"entry_px": null,
+"entry_px": 10.3,
 "exit_session": null,
 "exit_px": null,
 "exit_reason": null,
@@ -4303,7 +4314,7 @@
 "horizon_days": 7,
 "created_at": "2026-09-09T14:37:41.538678+00:00",
 "entry_session": "2026-09-10",
-"entry_px": null,
+"entry_px": 10.3,
 "exit_session": null,
 "exit_px": null,
 "exit_reason": null,
@@ -4320,6 +4331,23 @@
 "horizon_days": 7,
 "created_at": "2026-09-09T22:10:53.070274+00:00",
 "entry_session": "2026-09-10",
+"entry_px": 13.53,
+"exit_session": null,
+"exit_px": null,
+"exit_reason": null,
+"net_return": null,
+"qqq_return": null,
+"excess": null,
+"status": "open"
+},
+{
+"experiment_id": "fwd_prov_long_h7d",
+"candidate_id": 422,
+"ticker": "AI",
+"direction": "long",
+"horizon_days": 7,
+"created_at": "2026-09-10T09:13:05.999573+00:00",
+"entry_session": "2026-09-11",
 "entry_px": null,
 "exit_session": null,
 "exit_px": null,

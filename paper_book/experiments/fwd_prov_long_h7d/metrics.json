@@ -2,20 +2,20 @@
   "experiment_id": "fwd_prov_long_h7d",
   "config_hash": "47eb4eb5fda8223568f21fae0301f48c6fe0da43261e959002d84a8c3fd72d35",
   "forward_epoch": "2026-08-03",
-  "captured_at": "2026-09-11T00:37:18.592464+00:00",
+  "captured_at": "2026-09-12T00:43:35.724913+00:00",
   "sync_ok": true,
-  "n_admitted": 154,
-  "n_open": 14,
-  "n_cohorts_forward": 24,
+  "n_admitted": 155,
+  "n_open": 12,
+  "n_cohorts_forward": 26,
   "forward": {
-    "n_cohorts": 24,
-    "n_positions": 140,
-    "weeks": 4.4,
-    "mean_cohort_excess": 0.0005,
-    "mean_cohort_net": -0.000995,
-    "profit_factor": 1.0261,
-    "top_cohort_excess_share": 8.72,
-    "max_drawdown": 0.198,
+    "n_cohorts": 26,
+    "n_positions": 143,
+    "weeks": 5.1,
+    "mean_cohort_excess": -0.001619,
+    "mean_cohort_net": -0.004065,
+    "profit_factor": 0.9181,
+    "top_cohort_excess_share": -2.4874,
+    "max_drawdown": 0.2623,
     "subperiods_positive": 1,
     "cohorts": {
       "2026-08-04": {
@@ -157,19 +157,31 @@
         "excess": -0.042411500000000005
       },
       "2026-09-04": {
-        "n": 3,
+        "n": 4,
         "net": -0.051582333333333334,
         "qqq": -0.0013759999999999998,
         "excess": -0.05020633333333333
+      },
+      "2026-09-08": {
+        "n": 1,
+        "net": -0.037002,
+        "qqq": -0.016951,
+        "excess": -0.020051
+      },
+      "2026-09-09": {
+        "n": 1,
+        "net": -0.044816,
+        "qqq": -0.010762,
+        "excess": -0.034054
       }
     },
-    "mean_position_excess": 0.002149,
+    "mean_position_excess": 0.001535,
     "top_ticker": "XLE",
-    "top_ticker_excess_share": 1.4759,
+    "top_ticker_excess_share": 2.0237,
     "top_ticker_positions": 6,
-    "mean_position_excess_ex_top_ticker": -0.001093,
-    "n_positions_ex_top_ticker": 87,
-    "n_positions_deduped": 93
+    "mean_position_excess_ex_top_ticker": -0.001677,
+    "n_positions_ex_top_ticker": 89,
+    "n_positions_deduped": 95
   },
   "replay": {
     "n_cohorts": 0,
@@ -193,9 +205,9 @@
   "tier": {
     "status": "inconclusive",
     "reason": "insufficient_sample",
-    "have_cohorts": 24,
+    "have_cohorts": 26,
     "need_cohorts": 30,
-    "have_weeks": 4.4,
+    "have_weeks": 5.1,
     "need_weeks": 8
   }
 }
