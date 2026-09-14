@@ -49,7 +49,8 @@ The bottom of the diagram. **Two different thresholds matter — do not blur the
 
 - **Layer 3 tradeable bar (`PF < 1.0` → skip):** if a rule's calibrated profit-factor is
   below 1.0, `trade_setup_agent` refuses to build a setup at all (`reason_to_skip = "no
-  payoff edge"`). This is why there are currently **0 tradeable setups**.
+  payoff edge"`). As of 2026-09-12 this yields **15 tradeable trades / 7 cohorts**
+  in the frozen production book -- still `inconclusive` (needs 30 cohorts / 8 weeks).
 - **Maturity bar (graduate to BUY/SELL):** a *far* stricter, payoff-aware gate — effective
   sample size **n ≥ 30** (collapsed so correlated same-day trades can't inflate it) **and**
   profit-factor at/above the maturity bar (well above 1.0 — ~2.0 in practice) **and** the
@@ -69,7 +70,7 @@ repo) answer the binding question — *does an edge exist forward?*
 
 - **`paper_book`** — grades the *tradeable* setups forward as a $5k book vs a $5k QQQ
   buy-and-hold, with a staggered tier (continue / inconclusive / fail → edge → conviction).
-  Currently starved (0 tradeable setups → honest `inconclusive`).
+  As of 2026-09-12: 15 trades / 7 cohorts, honest `inconclusive` (needs 30/8wk).
 - **`paper_book_shadow`** — grades the *skipped* setups, per-setup and capacity-free,
   stratified by skip-reason (payoff / vocabulary / instrument) → tells you **which gate
   over-filters real edge**, and flags instrument-gate anomalies (e.g. CVX/Chevron flagged

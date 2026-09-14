@@ -1,8 +1,9 @@
 # stock_app — Claude project context
 
 Real-time multi-source market intelligence pipeline. 25 GitHub Actions agents → Supabase →
-Telegram → static dashboard. Paper-trading until rule maturity (>=90% accuracy, n>=30)
-unlocks BUY/SELL. See `README.md` for the full surface; this file is the fast-load context.
+Telegram → static dashboard. Paper-trading until rule maturity (effective_n>=100, PF>=2.0,
+mean_realized>=0.5%, no accuracy floor -- see `agents/_maturity.py`, the single source of
+truth) unlocks BUY/SELL. See `README.md` for the full surface; this file is the fast-load context.
 
 **Project scope — read first:** solo-developer project, sole purpose is personal financial
 freedom. Not a commercial product, no clients, no team, no monetization. Free-tier
@@ -69,7 +70,9 @@ transparency and to unlock GitHub Actions free minutes. See [`README.md`](README
 ## Project conventions
 
 - **Vocabulary:** Bot uses WATCH / RESEARCH / AVOID_CHASE / CHASE_RISK until a rule's
-  paper-trade accuracy crosses 90% with n>=30. Only then does it graduate to BUY / SELL.
+  paper-trade evidence crosses the payoff-first gate in `agents/_maturity.py`
+  (effective_n>=100, profit_factor>=2.0, mean_realized>=0.5%, no accuracy floor).
+  Only then does it graduate to BUY / SELL.
   Never hardcode BUY/SELL outside the maturity gate.
 - **Scoring:** §17.7 100-point rubric in `agents/thesis_agent.py:score_evidence()`. Intelligence
   layer adds sector cluster bonus, hyperscaler echo, power scarcity, risk-off filter on top.
@@ -164,12 +167,17 @@ Layer 5.5 — FORWARD-EDGE VALIDATION (added 2026-06; isolated, read-only, off-S
   agents:
     paper_book        — auto forward loop: grades the TRADEABLE setups vs a $5k QQQ
                         buy-and-hold (staggered tier continue/inconclusive/fail);
-                        immutable frozen ledger. Currently starved (0 tradeable setups).
+                        immutable frozen ledger. As of 2026-09-12: 15 trades / 7 cohorts,
+                        `inconclusive` (needs 30 cohorts / 8 weeks) -- see the isolated
+                        pre-registered `fwd_prov_long_h1d`/`h7d` experiments below for the
+                        forward-only equivalent (27/26 cohorts, still pre-Tier-1 as of 2026-09-12).
     paper_book_shadow — grades the SKIPPED setups (per-setup, capacity-free) stratified
                         by skip-reason (payoff/vocabulary/instrument) → which gate
                         over-filters + instrument-gate anomalies (e.g. CVX/Chevron).
-  why: the maturity gate stays shut (0 mature rules on HONEST evidence after the
-       2026-06 effective-n + stop_only-grading fixes); these accrue the forward
+  why: the maturity gate stays shut for live BUY/SELL (5 rules cross the tier as of
+       2026-09-12 -- all `clinical_readout:*`, none at h1d the only live-emission
+       horizon, and shown to be sector drift not skill vs a same-names-arbitrary-days
+       null; see project_2026_09_04_evening_audit_freeze memory); these agents accrue the forward
        evidence to answer "does an edge exist FORWARD" without faking it.
        Design: docs/design/2026-06-2{6,7}-*.md. Diagram: docs/architecture.md.
 ```

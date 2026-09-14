@@ -1,12 +1,14 @@
 # Technical Architecture
 
-Current as of 2026-05-19 (Phase 11.6 — risk layer + adaptive setup sizing
-shipped). This system is a six-layer, paper-by-default market intelligence
-pipeline. The maturity gate (≥90% accuracy, n≥30 closed paper trades per
-rule) unlocks BUY/SELL vocabulary on a per-rule basis; until then the bot
-emits WATCH / RESEARCH / AVOID_CHASE / CHASE_RISK. A second `training`
-tier (≥70% accuracy, n≥30) is staged to emit PROVISIONAL_LONG /
-PROVISIONAL_SHORT once the dispatcher wiring is complete.
+Current as of 2026-09-12 (post forward-edge freeze; see `docs/experiments/2026-08-02-preregistration-forward-provisional-long.md`).
+This system is a six-layer, paper-by-default market intelligence
+pipeline. The maturity gate is payoff-first, computed on effective
+(independent ticker-entry-day) evidence: `effective_n >= 100 AND
+profit_factor >= 2.0 AND mean_realized >= 0.5%` -- no accuracy floor
+(single source of truth: `agents/_maturity.py`). It unlocks BUY/SELL
+vocabulary on a per-rule basis; until then the bot emits WATCH / RESEARCH
+/ AVOID_CHASE / CHASE_RISK. A `teen` tier (effective_n>=30, accuracy>=0.70,
+mean_realized>0) exists for visibility only and does not unlock emission.
 
 Layer boundaries are strict: each layer reads from layers below and writes
 only to its own output table. A bug in trade_setup_agent literally cannot
@@ -58,7 +60,9 @@ Layer 5.5 — FORWARD-EDGE VALIDATION (added 2026-06; isolated, read-only, off-S
   agents: paper_book (grade TRADEABLE setups vs $5k QQQ → staggered tier),
           paper_book_shadow (grade SKIPPED setups by skip-reason → which gate over-filters)
   note: answers "does an edge exist FORWARD" while the maturity gate stays shut
-        (0 mature rules on honest evidence after the 2026-06 stop_only/effective-n fixes).
+        (5 rules cross the tier ladder as of 2026-09-12 -- all `clinical_readout:*`,
+        none at h1d, the only live-emission horizon; see docs/findings/2026-09-04
+        evening-audit memory for why this is sector drift, not proven skill).
         See docs/architecture.md and RUNBOOK.md §5b.
 
 Layer 6 — PRESENTATION
@@ -215,7 +219,7 @@ sequenceDiagram
 | L3 | `stock_trade_setups` | Tradable proposals. Includes `target_source` (default vs calibrated from B1). |
 | L4 | `stock_risk_decisions` | One row per setup. `rules_applied` JSONB carries the audit trail; `portfolio_state` snapshots the risk state at decision time. |
 | L5 | `stock_event_paper_trades` | 4 paper trades per event × horizon. `realized_return`, `mfe_pct`, `mae_pct`, `target_hit`, `stop_hit`. ON CONFLICT idempotency (B3). |
-| L5 | `stock_rule_calibration` | Per-rule accuracy, profit_factor, mean_mfe_pct, mean_mae_pct, target_hit_rate, stop_hit_rate. Maturity gate: ≥90% acc + n≥30. |
+| L5 | `stock_rule_calibration` | Per-rule accuracy, profit_factor, mean_mfe_pct, mean_mae_pct, target_hit_rate, stop_hit_rate. Maturity gate: `agents/_maturity.py` (effective_n>=100, PF>=2.0, mean>=0.5%, no accuracy floor). |
 | L5 | `stock_agent_weights` | Per-agent EMA weights blended into thesis scoring. |
 | L5 | `stock_paper_forecasts` | Probability-calibrated forecasts split by `forecast_mode` (live vs shadow_backtest). |
 | L5 | `stock_forecast_audit` | One row per `(signal_id, horizon_days)` after `sql/0010`. |
@@ -323,7 +327,7 @@ fixes landed:
   stale tabs
 - **Weekly** dashboard tab (added 2026-05-21): 7-day retrospective with
   three sections — performance (win rate, equity curve, best/worst rule
-  by net), rule maturity (gap to 90%/n≥30 graduation gate, flags
+  by net), rule maturity (gap to the `agents/_maturity.py` graduation gate, flags
   direction-inverted rules), signal-to-outcome funnel (events landed →
   signals scored → trades opened → closed → winners). Self-detects
   backfill artifacts and renders a banner when synthetic exits dominate

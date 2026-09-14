@@ -43,7 +43,11 @@ Port the `trader's almanac` aesthetic from `docs/dashboard-preview.html` into th
 
 ## Phase 12 — Trading-Grade Additions (Path A)
 
-**Trigger:** when ≥3 rules have matured (≥30 obs, ≥90% accuracy) — expected 4–8 weeks out.
+**Trigger:** when ≥3 rules have matured — expected 4–8 weeks out. *(2026-09-12: the gate
+described here predates the payoff-first redesign; current gate is `agents/_maturity.py`
+-- effective_n≥100, PF≥2.0, mean≥0.5%, no accuracy floor. 5 rules have crossed it as of
+this date but all at h7d/h15d/h30d, none at h1d the live-emission horizon, and shown to
+be sector drift rather than proven skill -- this trigger has NOT fired.)*
 **Effort:** ~10–15 hours total across 3 new agents.
 **Risk:** medium — adds capital-allocation logic that needs careful validation.
 

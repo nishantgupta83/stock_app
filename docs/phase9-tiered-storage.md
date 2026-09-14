@@ -99,9 +99,11 @@ Tables NOT subject to retention (always full):
 
 ## Calibration must read both tiers
 
-The maturity gate (≥90% accuracy, n≥30) needs to count **all closed paper
-trades**, not just the active 90-day window. So the calibration extension
-in `price_agent` will:
+The maturity gate (*2026-09-12: superseded by the payoff-first gate in
+`agents/_maturity.py` -- effective_n≥100, PF≥2.0, mean≥0.5%, no accuracy floor;
+the "all closed trades, not just 90 days" requirement below is unchanged*) needs
+to count **all closed paper trades**, not just the active 90-day window. So the
+calibration extension in `price_agent` will:
 
 1. Compute per-rule deltas from active-tier trades closed today
 2. Add the cumulative archive counts pre-computed and cached at archive
