@@ -1,6 +1,6 @@
 {
 "experiment_id": "fwd_prov_long_h7d",
-"cursor": "2026-09-11T18:33:51.058279+00:00",
+"cursor": "2026-09-14T20:34:33.539477+00:00",
 "forward_epoch": "2026-08-03",
 "config_hash": "47eb4eb5fda8223568f21fae0301f48c6fe0da43261e959002d84a8c3fd72d35",
 "candidates": [
@@ -1719,6 +1719,61 @@
 "rule_keys": "[\"news_article:positive:h15d\", \"news_article:positive:h1d\", \"news_article:positive:h30d\", \"news_article:positive:h7d\"]",
 "source_agents": "[\"news\"]",
 "raw": "{\"id\": 423, \"created_at\": \"2026-09-11T18:33:51.058279+00:00\", \"ticker\": \"ORCL\", \"direction\": \"bullish\", \"score\": 36.563, \"recall_floor\": 30.0, \"rule_keys\": [\"news_article:positive:h15d\", \"news_article:positive:h1d\", \"news_article:positive:h30d\", \"news_article:positive:h7d\"], \"source_agents\": [\"news\"]}"
+},
+{
+"experiment_id": "fwd_prov_long_h7d",
+"candidate_id": 424,
+"created_at": "2026-09-12T16:31:22.325908+00:00",
+"ticker": "NOW",
+"direction": "bullish",
+"score": 36.563,
+"rule_keys": "[\"news_article:positive:h15d\", \"news_article:positive:h1d\", \"news_article:positive:h30d\", \"news_article:positive:h7d\"]",
+"source_agents": "[\"news\"]",
+"raw": "{\"id\": 424, \"created_at\": \"2026-09-12T16:31:22.325908+00:00\", \"ticker\": \"NOW\", \"direction\": \"bullish\", \"score\": 36.563, \"recall_floor\": 30.0, \"rule_keys\": [\"news_article:positive:h15d\", \"news_article:positive:h1d\", \"news_article:positive:h30d\", \"news_article:positive:h7d\"], \"source_agents\": [\"news\"]}"
+},
+{
+"experiment_id": "fwd_prov_long_h7d",
+"candidate_id": 425,
+"created_at": "2026-09-14T16:34:54.816068+00:00",
+"ticker": "NOW",
+"direction": "bullish",
+"score": 33.579,
+"rule_keys": "[\"news_article:positive:h15d\", \"news_article:positive:h1d\", \"news_article:positive:h30d\", \"news_article:positive:h7d\"]",
+"source_agents": "[\"news\"]",
+"raw": "{\"id\": 425, \"created_at\": \"2026-09-14T16:34:54.816068+00:00\", \"ticker\": \"NOW\", \"direction\": \"bullish\", \"score\": 33.579, \"recall_floor\": 30.0, \"rule_keys\": [\"news_article:positive:h15d\", \"news_article:positive:h1d\", \"news_article:positive:h30d\", \"news_article:positive:h7d\"], \"source_agents\": [\"news\"]}"
+},
+{
+"experiment_id": "fwd_prov_long_h7d",
+"candidate_id": 426,
+"created_at": "2026-09-14T20:34:33.539477+00:00",
+"ticker": "AI",
+"direction": "bullish",
+"score": 44.706,
+"rule_keys": "[\"news_article:positive:h15d\", \"news_article:positive:h1d\", \"news_article:positive:h30d\", \"news_article:positive:h7d\"]",
+"source_agents": "[\"news\"]",
+"raw": "{\"id\": 426, \"created_at\": \"2026-09-14T20:34:33.539477+00:00\", \"ticker\": \"AI\", \"direction\": \"bullish\", \"score\": 44.706, \"recall_floor\": 30.0, \"rule_keys\": [\"news_article:positive:h15d\", \"news_article:positive:h1d\", \"news_article:positive:h30d\", \"news_article:positive:h7d\"], \"source_agents\": [\"news\"]}"
+},
+{
+"experiment_id": "fwd_prov_long_h7d",
+"candidate_id": 427,
+"created_at": "2026-09-14T20:34:33.539477+00:00",
+"ticker": "CRWD",
+"direction": "bullish",
+"score": 44.706,
+"rule_keys": "[\"news_article:positive:h15d\", \"news_article:positive:h1d\", \"news_article:positive:h30d\", \"news_article:positive:h7d\"]",
+"source_agents": "[\"news\"]",
+"raw": "{\"id\": 427, \"created_at\": \"2026-09-14T20:34:33.539477+00:00\", \"ticker\": \"CRWD\", \"direction\": \"bullish\", \"score\": 44.706, \"recall_floor\": 30.0, \"rule_keys\": [\"news_article:positive:h15d\", \"news_article:positive:h1d\", \"news_article:positive:h30d\", \"news_article:positive:h7d\"], \"source_agents\": [\"news\"]}"
+},
+{
+"experiment_id": "fwd_prov_long_h7d",
+"candidate_id": 428,
+"created_at": "2026-09-14T20:34:33.539477+00:00",
+"ticker": "CRWD",
+"direction": "bullish",
+"score": 44.706,
+"rule_keys": "[\"news_article:positive:h15d\", \"news_article:positive:h1d\", \"news_article:positive:h30d\", \"news_article:positive:h7d\"]",
+"source_agents": "[\"news\"]",
+"raw": "{\"id\": 428, \"created_at\": \"2026-09-14T20:34:33.539477+00:00\", \"ticker\": \"CRWD\", \"direction\": \"bullish\", \"score\": 44.706, \"recall_floor\": 30.0, \"rule_keys\": [\"news_article:positive:h15d\", \"news_article:positive:h1d\", \"news_article:positive:h30d\", \"news_article:positive:h7d\"], \"source_agents\": [\"news\"]}"
 }
 ],
 "positions": [
@@ -4348,6 +4403,40 @@
 "horizon_days": 7,
 "created_at": "2026-09-10T09:13:05.999573+00:00",
 "entry_session": "2026-09-11",
+"entry_px": 10.52,
+"exit_session": null,
+"exit_px": null,
+"exit_reason": null,
+"net_return": null,
+"qqq_return": null,
+"excess": null,
+"status": "open"
+},
+{
+"experiment_id": "fwd_prov_long_h7d",
+"candidate_id": 423,
+"ticker": "ORCL",
+"direction": "long",
+"horizon_days": 7,
+"created_at": "2026-09-11T18:33:51.058279+00:00",
+"entry_session": "2026-09-14",
+"entry_px": null,
+"exit_session": null,
+"exit_px": null,
+"exit_reason": null,
+"net_return": null,
+"qqq_return": null,
+"excess": null,
+"status": "open"
+},
+{
+"experiment_id": "fwd_prov_long_h7d",
+"candidate_id": 424,
+"ticker": "NOW",
+"direction": "long",
+"horizon_days": 7,
+"created_at": "2026-09-12T16:31:22.325908+00:00",
+"entry_session": "2026-09-14",
 "entry_px": null,
 "exit_session": null,
 "exit_px": null,
