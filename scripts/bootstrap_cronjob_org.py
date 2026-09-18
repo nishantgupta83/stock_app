@@ -34,6 +34,21 @@ GHA_BRANCH = "main"
 # without doubling work when GHA is healthy (concurrency:cancel-in-progress
 # in each workflow cancels the duplicate within a second).
 WORKFLOWS = {
+    # 6:15 AM PT pre-open SOXX/SOXL/SOXS email. PRIMARY trigger (the workflow's two
+    # UTC crons are only a DST-gated backup). America/Los_Angeles so the Nov/Mar
+    # clock changes need no edit; the script's 06:10-06:29 PT window + origin/main
+    # idempotency make duplicate dispatches harmless.
+    "semis_brief.yml": {
+        "title": "stock_app:semis_brief",
+        "schedule": {
+            "timezone": "America/Los_Angeles",
+            "minutes": [15],
+            "hours": [6],
+            "mdays": [-1],
+            "months": [-1],
+            "wdays": [1, 2, 3, 4, 5],
+        },
+    },
     "site_generator.yml": {
         "title": "stock_app:site_generator",
         # Workflow is EOD-only since c35405c (~95% egress cut). This pinger had

@@ -1,0 +1,112 @@
+# .github/workflows/semis_brief.yml
+name: semis_brief
+
+# 6:15 AM PT pre-open email for SOXX / SOXL / SOXS (scripts/semis_brief.py).
+# Primary trigger: cron-job.org pinger at 06:15 America/Los_Angeles (DST-aware).
+# Backup: two UTC crons — 13:15 UTC is 06:15 PDT, 14:15 UTC is 06:15 PST. The script's
+# 06:10-06:29 PT window makes whichever one is wrong for the current DST state a no-op,
+# and the origin/main idempotency check stops a second send when both fire.
+# Order is deliberate: the call is COMMITTED AND PUSHED before the email goes out, so a
+# push failure means no email (never an email with no record); the sent/ marker is
+# committed after. Only calls with a sent/ marker are graded.
+
+on:
+  schedule:
+    - cron: "15 13 * * 1-5"
+    - cron: "15 14 * * 1-5"
+  workflow_dispatch:
+    inputs:
+      force:
+        description: "Manual test: bypass the time window, write under manual/, never graded"
+        type: boolean
+        default: false
+
+concurrency:
+  group: semis_brief
+  cancel-in-progress: false
+
+permissions:
+  contents: write
+
+jobs:
+  semis_brief:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          fetch-depth: 1
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - uses: actions/setup-python@v6
+        with:
+          python-version: "3.12"
+          cache: pip
+
+      - name: Install deps
+        run: pip install -r requirements.txt
+
+      - name: Prepare (gate, grade prior days, build today's call)
+        id: prep
+        env:
+          SUPABASE_URL:         ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
+          FRED_API_KEY:         ${{ secrets.FRED_API_KEY }}
+          FORCE:                ${{ inputs.force }}
+          GMAIL_USER:           ${{ secrets.GMAIL_USER }}
+          GMAIL_APP_PASSWORD:   ${{ secrets.GMAIL_APP_PASSWORD }}
+        run: |
+          if [ "$FORCE" = "true" ]; then
+            python scripts/semis_brief.py prepare --force
+          else
+            python scripts/semis_brief.py prepare
+          fi
+
+      - name: Commit and push the call BEFORE sending
+        if: steps.prep.outputs.send == 'true' && inputs.force != true
+        run: |
+          set -e
+          git config user.name  "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git pull --rebase --autostash || true
+          if [ -d .git/rebase-merge ] || [ -d .git/rebase-apply ]; then
+            echo "::error::rebase still in progress after pull; refusing to commit"; exit 1
+          fi
+          if [ -n "$(git ls-files -u)" ]; then
+            echo "::error::autostash apply conflicted; refusing to commit merged output"; git ls-files -u; exit 1
+          fi
+          mkdir -p semis_brief/calls semis_brief/grades
+          git add -A -- semis_brief/calls semis_brief/grades
+          git add -- semis_brief/scorecard.json semis_brief/social_history.json
+          if git diff --cached --quiet; then echo "Nothing staged."; exit 0; fi
+          git commit -m "chore(semis-brief): call $(TZ=America/Los_Angeles date +%Y-%m-%d)"
+          git push || (git pull --rebase --autostash && git push)
+
+      - name: Send the email
+        if: steps.prep.outputs.send == 'true'
+        env:
+          GMAIL_USER:         ${{ secrets.GMAIL_USER }}
+          GMAIL_APP_PASSWORD: ${{ secrets.GMAIL_APP_PASSWORD }}
+          CALL_PATH:          ${{ steps.prep.outputs.call_path }}
+        run: python scripts/semis_brief.py send "$CALL_PATH"
+
+      - name: Commit the sent marker
+        if: always() && steps.prep.outputs.send == 'true' && inputs.force != true
+        run: |
+          set -e
+          git config user.name  "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          if [ -z "$(git status --porcelain semis_brief/sent/ 2>/dev/null)" ]; then
+            echo "No sent marker (send failed or skipped)."; exit 0
+          fi
+          git pull --rebase --autostash || true
+          if [ -d .git/rebase-merge ] || [ -d .git/rebase-apply ]; then
+            echo "::error::rebase still in progress after pull; refusing to commit"; exit 1
+          fi
+          if [ -n "$(git ls-files -u)" ]; then
+            echo "::error::autostash apply conflicted; refusing to commit merged output"; git ls-files -u; exit 1
+          fi
+          git add -A -- semis_brief/sent/
+          if git diff --cached --quiet; then echo "Nothing staged."; exit 0; fi
+          git commit -m "chore(semis-brief): sent $(TZ=America/Los_Angeles date +%Y-%m-%d)"
+          git push || (git pull --rebase --autostash && git push)

@@ -1,0 +1,16 @@
+{
+ "as_of": "2026-09-17",
+ "source": "yfinance SOXX funds_data.top_holdings — used only if the live fetch fails",
+ "weights": {
+  "NVDA": 0.094308,
+  "MU": 0.089051,
+  "AMD": 0.08226,
+  "AVGO": 0.074761,
+  "INTC": 0.050921,
+  "MRVL": 0.04656,
+  "TSM": 0.046526,
+  "AMAT": 0.04593,
+  "LRCX": 0.04273,
+  "KLAC": 0.041171
+ }
+}
