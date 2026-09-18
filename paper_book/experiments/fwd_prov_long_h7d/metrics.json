@@ -2,20 +2,20 @@
   "experiment_id": "fwd_prov_long_h7d",
   "config_hash": "47eb4eb5fda8223568f21fae0301f48c6fe0da43261e959002d84a8c3fd72d35",
   "forward_epoch": "2026-08-03",
-  "captured_at": "2026-09-17T00:55:20.307444+00:00",
+  "captured_at": "2026-09-18T00:50:00.986721+00:00",
   "sync_ok": true,
   "n_admitted": 163,
-  "n_open": 13,
-  "n_cohorts_forward": 26,
+  "n_open": 8,
+  "n_cohorts_forward": 28,
   "forward": {
-    "n_cohorts": 26,
-    "n_positions": 150,
-    "weeks": 5.1,
-    "mean_cohort_excess": -0.001619,
-    "mean_cohort_net": -0.004065,
-    "profit_factor": 0.9181,
-    "top_cohort_excess_share": -2.4874,
-    "max_drawdown": 0.2623,
+    "n_cohorts": 28,
+    "n_positions": 155,
+    "weeks": 6.0,
+    "mean_cohort_excess": -0.002405,
+    "mean_cohort_net": -0.004882,
+    "profit_factor": 0.8751,
+    "top_cohort_excess_share": -1.5549,
+    "max_drawdown": 0.2852,
     "subperiods_positive": 1,
     "cohorts": {
       "2026-08-04": {
@@ -173,15 +173,27 @@
         "net": -0.044816,
         "qqq": -0.010762,
         "excess": -0.034054
+      },
+      "2026-09-10": {
+        "n": 2,
+        "net": 0.0,
+        "qqq": 0.0,
+        "excess": 0.0
+      },
+      "2026-09-15": {
+        "n": 1,
+        "net": -0.031,
+        "qqq": -0.005756,
+        "excess": -0.025244
       }
     },
-    "mean_position_excess": 0.001535,
+    "mean_position_excess": 0.001256,
     "top_ticker": "XLE",
-    "top_ticker_excess_share": 2.0237,
+    "top_ticker_excess_share": 2.4475,
     "top_ticker_positions": 6,
-    "mean_position_excess_ex_top_ticker": -0.001677,
-    "n_positions_ex_top_ticker": 89,
-    "n_positions_deduped": 95
+    "mean_position_excess_ex_top_ticker": -0.001939,
+    "n_positions_ex_top_ticker": 90,
+    "n_positions_deduped": 96
   },
   "replay": {
     "n_cohorts": 0,
@@ -205,9 +217,9 @@
   "tier": {
     "status": "inconclusive",
     "reason": "insufficient_sample",
-    "have_cohorts": 26,
+    "have_cohorts": 28,
     "need_cohorts": 30,
-    "have_weeks": 5.1,
+    "have_weeks": 6.0,
     "need_weeks": 8
   }
 }
