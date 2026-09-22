@@ -4443,13 +4443,13 @@
 "created_at": "2026-09-11T18:33:51.058279+00:00",
 "entry_session": "2026-09-14",
 "entry_px": 141.42,
-"exit_session": null,
+"exit_session": "2026-09-21",
 "exit_px": null,
-"exit_reason": null,
+"exit_reason": "horizon",
 "net_return": null,
 "qqq_return": null,
 "excess": null,
-"status": "open"
+"status": "closed"
 },
 {
 "experiment_id": "fwd_prov_long_h7d",
@@ -4460,13 +4460,13 @@
 "created_at": "2026-09-12T16:31:22.325908+00:00",
 "entry_session": "2026-09-14",
 "entry_px": 140.0,
-"exit_session": null,
-"exit_px": null,
-"exit_reason": null,
-"net_return": null,
-"qqq_return": null,
-"excess": null,
-"status": "open"
+"exit_session": "2026-09-18",
+"exit_px": 135.8,
+"exit_reason": "stop",
+"net_return": -0.031,
+"qqq_return": 0.025763,
+"excess": -0.056763,
+"status": "closed"
 },
 {
 "experiment_id": "fwd_prov_long_h7d",
