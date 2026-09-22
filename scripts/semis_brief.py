@@ -242,6 +242,34 @@ def grade_day(call: dict, soxx: dict, soxl: dict, soxs: dict, soxx_1030: float |
     return out
 
 
+ROUND_TRIP_COST = 0.001   # 10 bps per open->close round trip
+
+
+def strategy_returns(rows: list[dict]) -> dict:
+    """Compounded open->close result of acting on each called day, both ways:
+    follow = SOXL on lean_soxl / SOXS on lean_soxs; fade = the other fund."""
+    legs = {"follow": [], "fade": []}
+    for x in rows:
+        l, s = x.get("soxl_open_to_close"), x.get("soxs_open_to_close")
+        if x.get("bias") == "lean_soxl":
+            f, o = l, s
+        elif x.get("bias") == "lean_soxs":
+            f, o = s, l
+        else:
+            continue
+        if f is not None and o is not None:     # same days in both legs -> comparable
+            legs["follow"].append(f)
+            legs["fade"].append(o)
+    out = {}
+    for k, v in legs.items():
+        eq = 1.0
+        for r in v:
+            eq *= 1 + r - ROUND_TRIP_COST
+        out[f"{k}_compounded"] = (eq - 1) if v else None
+        out[f"{k}_n"] = len(v)
+    return out
+
+
 def scorecard(grades: list[dict], sent_dates: set[str]) -> dict:
     g = [x for x in grades if x.get("status") == "graded" and x["date"] in sent_dates]
     g.sort(key=lambda x: x["date"])
@@ -260,8 +288,11 @@ def scorecard(grades: list[dict], sent_dates: set[str]) -> dict:
 
     def block(rows):
         return {"bias": rate([x.get("bias_hit") for x in rows]),
+                "fade_called": rate([None if x.get("bias_hit") is None else not x["bias_hit"]
+                                     for x in rows]),
                 "up_day_base_rate": rate([(x["outcome_sign"] > 0) if x["outcome_sign"] else None
-                                          for x in rows])}
+                                          for x in rows]),
+                **strategy_returns(rows)}
     return {
         "updated": datetime.now(timezone.utc).isoformat(timespec="seconds"),
         "n_graded": len(g), "n_called": len(called), "n_no_edge": len(no_edge),
@@ -588,11 +619,11 @@ def cmd_prepare(force: bool) -> int:
             print(f"{today} is not a trading day"); gh_output(send="false"); return 0
         if not in_brief_window(now_pt):
             print(f"{now_pt:%H:%M} PT is outside the 06:10-06:29 brief window"); gh_output(send="false"); return 0
-    if not os.environ.get("GMAIL_USER") or not os.environ.get("GMAIL_APP_PASSWORD"):
-        # Checked before anything is written or pushed: a call committed without a way
-        # to send it would use up the day (origin idempotency would block a retry).
-        print("GMAIL_USER / GMAIL_APP_PASSWORD not set — refusing to record a call "
-              "that cannot be sent", file=sys.stderr)
+    if not channels():
+        # Checked before anything is written or pushed: a call committed without any way
+        # to deliver it would use up the day (origin idempotency would block a retry).
+        print("no delivery channel configured (need GMAIL_USER+GMAIL_APP_PASSWORD and/or "
+              "TELEGRAM_BOT_TOKEN+TELEGRAM_CHAT_ID) — refusing to record a call", file=sys.stderr)
         return 1
     rel = f"semis_brief/calls/{today}.json"
     if not force and ((REPO / rel).exists() or already_sent_on_origin(rel)):
@@ -621,6 +652,8 @@ def pct(x, digits=2):
 
 
 BIAS_LABEL = {"lean_soxl": "lean SOXL", "lean_soxs": "lean SOXS", "no_edge": "no edge"}
+GAP_LABEL = {"lean_soxl": "gap up", "lean_soxs": "gap down", "no_edge": "flat open"}
+CALL_PAIR = {"lean_soxl": ("SOXL", "SOXS"), "lean_soxs": ("SOXS", "SOXL"), "no_edge": ("—", "—")}
 BIAS_COLOR = {"lean_soxl": "#2a9d8f", "lean_soxs": "#e76f51", "no_edge": "#e9c46a"}
 
 
@@ -631,8 +664,10 @@ def render(call: dict, score: dict, last_grade: dict | None) -> tuple[str, str, 
         tags.append("[MANUAL]")
     if not call.get("calendar_verified", True):
         tags.append("[CALENDAR UNVERIFIED]")
-    subj = (f"{' '.join(tags) + ' ' if tags else ''}SOXL 6:15 · {BIAS_LABEL[call['bias']]} · implied SOXX "
-            f"{pct(call['implied_soxx'])} (SOXL ~{pct(call['implied_soxl'], 1)}) · {d:%a %b %-d}")
+    follow, fade = CALL_PAIR[call["bias"]]
+    gap = "no data" if call.get("implied_soxx") is None else GAP_LABEL[call["bias"]]
+    subj = (f"{' '.join(tags) + ' ' if tags else ''}SOXL 6:15 · {gap} · follow: {follow} / "
+            f"fade: {fade} · implied SOXX {pct(call['implied_soxx'])} (SOXL ~{pct(call['implied_soxl'], 1)}) · {d:%a %b %-d}")
     lines = [subj, ""]
     rows = []
     for t, w in sorted(call["weights"].items(), key=lambda kv: -kv[1]):
@@ -689,12 +724,22 @@ def render(call: dict, score: dict, last_grade: dict | None) -> tuple[str, str, 
 
     def r(x):
         return "n/a" if not x or x.get("hit_rate") is None else f"{x['hit_rate']*100:.0f}% (n={x['n']})"
-    sc_txt = (f"last 20 called days: bias {r(sa.get('bias'))} · up-day base {r(sa.get('up_day_base_rate'))}"
-              f" · fade-the-gap, all days {r((score or {}).get('fade_gap_null_last20'))}")
+    def cr(x):
+        return "n/a" if x is None else f"{x*100:+.1f}%"
+    sc_txt = (f"last 20 called days: follow {r(sa.get('bias'))} ({cr(sa.get('follow_compounded'))}) · "
+              f"fade {r(sa.get('fade_called'))} ({cr(sa.get('fade_compounded'))}) · "
+              f"up-day base {r(sa.get('up_day_base_rate'))} · "
+              f"fade-the-gap on all days {r((score or {}).get('fade_gap_null_last20'))}")
+    bf = read_json(STATE / "backfill" / "backfill.json", {}).get("summary")
+    bf_txt = (f"reconstructed with today's top-10 weights, {bf['first']}..{bf['last']} "
+              f"({bf['n_days']} days): follow "
+              f"{r(bf['follow'])} ({cr(bf['follow_compounded'])}) · fade {r(bf['fade'])} "
+              f"({cr(bf['fade_compounded'])}), SOXL/SOXS open→close, 10 bps") if bf else ""
     comp_sc = " · ".join(f"{k} {r(v)}" for k, v in ((score or {}).get("components") or {}).items())
 
     text = "\n".join(lines[:1] + [
-        "", f"BIAS: {BIAS_LABEL[call['bias']]} — implied SOXX {pct(call['implied_soxx'])}, SOXL ~{pct(call['implied_soxl'],1)}, SOXS ~{pct(call['implied_soxs'],1)}",
+        "", f"{gap.upper()} — follow the gap: {follow} · fade the gap: {fade}",
+        f"implied SOXX {pct(call['implied_soxx'])}, SOXL ~{pct(call['implied_soxl'],1)}, SOXS ~{pct(call['implied_soxs'],1)}",
         f"ETF premarket: {etf}",
         f"Top-10 coverage {imp['coverage']*100:.0f}% · up {imp.get('n_up',0)} / down {imp.get('n_down',0)} · dispersion {pct(imp.get('dispersion'))}",
         *lines[2:],
@@ -706,10 +751,12 @@ def render(call: dict, score: dict, last_grade: dict | None) -> tuple[str, str, 
         "", f"StockTwits: {soc_txt}",
         "", f"SOXL levels: {lv_txt}", f"Gap history: {gf_txt}",
         "", f"Yesterday: {lg or 'n/a'}", f"Scorecard: {sc_txt}", f"Components: {comp_sc or 'n/a'}",
+        *([f"Backfill: {bf_txt}"] if bf_txt else []),
     ])
     htm = f"""<html><body style="font-family:-apple-system,Helvetica,Arial,sans-serif;color:#264653;max-width:720px">
 <div style="background:{BIAS_COLOR[call['bias']]};color:#fff;padding:10px 14px;border-radius:8px;font-size:18px">
-<b>{BIAS_LABEL[call['bias']]}</b> — implied SOXX {pct(call['implied_soxx'])} · SOXL ~{pct(call['implied_soxl'],1)} · SOXS ~{pct(call['implied_soxs'],1)}</div>
+<b>{gap}</b> — follow the gap: <b>{follow}</b> · fade the gap: <b>{fade}</b><br>
+<span style="font-size:14px">implied SOXX {pct(call['implied_soxx'])} · SOXL ~{pct(call['implied_soxl'],1)} · SOXS ~{pct(call['implied_soxs'],1)}</span></div>
 <p>ETF premarket: {etf}<br>Top-10 coverage {imp['coverage']*100:.0f}% · up {imp.get('n_up',0)} / down {imp.get('n_down',0)} · dispersion {pct(imp.get('dispersion'))}</p>
 <table cellpadding="4" style="border-collapse:collapse;font-size:13px"><tr style="background:#e8f4f2">
 <th align=left>Holding</th><th>Weight</th><th>Premarket</th><th>Contribution</th><th></th></tr>{''.join(rows)}</table>
@@ -721,7 +768,8 @@ def render(call: dict, score: dict, last_grade: dict | None) -> tuple[str, str, 
 <p><b>StockTwits:</b> {html.escape(soc_txt)}</p>
 <p><b>SOXL levels:</b> {lv_txt}<br><b>Gap history:</b> {html.escape(gf_txt)}</p>
 <p style="background:#fdf6e3;padding:8px;border-radius:6px"><b>Yesterday:</b> {html.escape(lg or 'n/a')}<br>
-<b>Scorecard:</b> {html.escape(sc_txt)}<br><b>Components:</b> {html.escape(comp_sc or 'n/a')}</p>
+<b>Scorecard:</b> {html.escape(sc_txt)}<br><b>Components:</b> {html.escape(comp_sc or 'n/a')}
+{('<br><b>Backfill:</b> ' + html.escape(bf_txt)) if bf_txt else ''}</p>
 </body></html>"""
     return subj, text, htm
 
@@ -734,10 +782,40 @@ def cmd_send(call_path: str) -> int:
     grades = sorted((STATE / "grades").glob("*.json"))
     last = read_json(grades[-1], None) if grades else None
     subj, text, htm = render(call, score, last)
-    user, pw = os.environ.get("GMAIL_USER", ""), os.environ.get("GMAIL_APP_PASSWORD", "")
+    sent_via = []
+    for ch in channels():
+        try:
+            if ch == "email":
+                send_email(subj, text, htm)
+                sent_via.append("email")
+            else:
+                sent_via.append(send_telegram(subj, text, htm))
+            print(f"sent via {ch}: {subj}")
+        except Exception as e:                      # one channel failing must not block the other
+            print(f"{ch} send failed: {type(e).__name__}: {e}", file=sys.stderr)
+    if not sent_via:
+        print("no channel delivered the brief", file=sys.stderr)
+        return 1
+    if not call.get("manual"):
+        write_json(STATE / "sent" / f"{call['date']}.json",
+                   {"date": call["date"], "sent_at": datetime.now(timezone.utc).isoformat(timespec="seconds"),
+                    "subject": subj, "channels": sent_via})
+    return 0
+
+
+def channels() -> list[str]:
+    """Delivery channels whose credentials are present in the environment."""
+    out = []
+    if os.environ.get("GMAIL_USER") and os.environ.get("GMAIL_APP_PASSWORD"):
+        out.append("email")
+    if os.environ.get("TELEGRAM_BOT_TOKEN") and os.environ.get("TELEGRAM_CHAT_ID"):
+        out.append("telegram")
+    return out
+
+
+def send_email(subj: str, text: str, htm: str) -> None:
+    user, pw = os.environ["GMAIL_USER"], os.environ["GMAIL_APP_PASSWORD"]
     to = os.environ.get("BRIEF_TO") or user
-    if not user or not pw:
-        print("GMAIL_USER / GMAIL_APP_PASSWORD not set — cannot send", file=sys.stderr); return 1
     msg = MIMEMultipart("alternative")
     msg["Subject"], msg["From"], msg["To"] = subj, user, to
     msg.attach(MIMEText(text, "plain", "utf-8"))
@@ -745,12 +823,52 @@ def cmd_send(call_path: str) -> int:
     with smtplib.SMTP_SSL("smtp.gmail.com", 465, timeout=30) as s:
         s.login(user, pw)
         s.sendmail(user, [to], msg.as_string())
-    print(f"sent: {subj}")
-    if not call.get("manual"):
-        write_json(STATE / "sent" / f"{call['date']}.json",
-                   {"date": call["date"], "sent_at": datetime.now(timezone.utc).isoformat(timespec="seconds"),
-                    "subject": subj})
-    return 0
+
+
+TELEGRAM_LIMIT = 4000   # API hard limit is 4096 chars per message
+
+
+def telegram_chunks(text: str, limit: int = TELEGRAM_LIMIT) -> list[str]:
+    """Split on line boundaries so no message exceeds the Telegram limit; a single
+    over-long line is hard-cut rather than dropped."""
+    chunks, cur = [], ""
+    for line in text.splitlines():
+        while len(line) > limit:
+            if cur:
+                chunks.append(cur); cur = ""
+            chunks.append(line[:limit]); line = line[limit:]
+        if cur and len(cur) + len(line) + 1 > limit:
+            chunks.append(cur); cur = ""
+        cur = f"{cur}\n{line}" if cur else line
+    if cur:
+        chunks.append(cur)
+    return chunks
+
+
+def _telegram_post(token: str, chat: str, part: str) -> None:
+    body = json.dumps({"chat_id": chat, "text": part, "disable_web_page_preview": True}).encode()
+    req = urllib.request.Request(f"https://api.telegram.org/bot{token}/sendMessage", data=body,
+                                 headers={"Content-Type": "application/json"})
+    with urllib.request.urlopen(req, timeout=HTTP_TIMEOUT) as r:
+        if not json.load(r).get("ok"):
+            raise RuntimeError("telegram sendMessage returned ok=false")
+
+
+def send_telegram(subj: str, text: str, htm: str) -> str:
+    """Returns "telegram", or "telegram_partial" if the first chunk (subject + both calls)
+    posted but a later one failed — the operator saw the call, so it counts as delivered
+    and gets graded; the partial flag keeps the bookkeeping honest. A first-chunk failure
+    raises (nothing was seen)."""
+    token, chat = os.environ["TELEGRAM_BOT_TOKEN"], os.environ["TELEGRAM_CHAT_ID"]
+    parts = telegram_chunks(text)
+    _telegram_post(token, chat, parts[0])       # text starts with the subject line
+    for part in parts[1:]:
+        try:
+            _telegram_post(token, chat, part)
+        except Exception as e:
+            print(f"telegram later chunk failed: {type(e).__name__}", file=sys.stderr)
+            return "telegram_partial"
+    return "telegram"
 
 
 def main() -> int:

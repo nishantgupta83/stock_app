@@ -55,6 +55,8 @@ jobs:
           FORCE:                ${{ inputs.force }}
           GMAIL_USER:           ${{ secrets.GMAIL_USER }}
           GMAIL_APP_PASSWORD:   ${{ secrets.GMAIL_APP_PASSWORD }}
+          TELEGRAM_BOT_TOKEN:   ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID:     ${{ secrets.TELEGRAM_CHAT_ID }}
         run: |
           if [ "$FORCE" = "true" ]; then
             python scripts/semis_brief.py prepare --force
@@ -82,11 +84,13 @@ jobs:
           git commit -m "chore(semis-brief): call $(TZ=America/Los_Angeles date +%Y-%m-%d)"
           git push || (git pull --rebase --autostash && git push)
 
-      - name: Send the email
+      - name: Send (email and/or Telegram)
         if: steps.prep.outputs.send == 'true'
         env:
           GMAIL_USER:         ${{ secrets.GMAIL_USER }}
           GMAIL_APP_PASSWORD: ${{ secrets.GMAIL_APP_PASSWORD }}
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID:   ${{ secrets.TELEGRAM_CHAT_ID }}
           CALL_PATH:          ${{ steps.prep.outputs.call_path }}
         run: python scripts/semis_brief.py send "$CALL_PATH"
 

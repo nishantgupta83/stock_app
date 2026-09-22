@@ -1,0 +1,2307 @@
+{
+ "generated_at": "2026-09-22T14:14:10+00:00",
+ "weights_source": "yfinance",
+ "cutoff_et": "09:15",
+ "note": "reconstructed, price-based components only; not part of the live scorecard",
+ "summary": {
+  "first": "2026-06-29",
+  "last": "2026-09-21",
+  "n_days": 59,
+  "follow": {
+   "n": 55,
+   "hits": 24,
+   "hit_rate": 0.43636363636363634
+  },
+  "fade": {
+   "n": 55,
+   "hits": 31,
+   "hit_rate": 0.5636363636363636
+  },
+  "follow_compounded": -0.39998472177798783,
+  "fade_compounded": 0.19194029560538017
+ },
+ "scorecard": {
+  "updated": "2026-09-22T14:14:10+00:00",
+  "n_graded": 59,
+  "n_called": 55,
+  "n_no_edge": 4,
+  "all": {
+   "bias": {
+    "n": 55,
+    "hits": 24,
+    "hit_rate": 0.43636363636363634
+   },
+   "fade_called": {
+    "n": 55,
+    "hits": 31,
+    "hit_rate": 0.5636363636363636
+   },
+   "up_day_base_rate": {
+    "n": 55,
+    "hits": 24,
+    "hit_rate": 0.43636363636363634
+   },
+   "follow_compounded": -0.39998472177798783,
+   "follow_n": 55,
+   "fade_compounded": 0.19194029560538017,
+   "fade_n": 55
+  },
+  "last20": {
+   "bias": {
+    "n": 20,
+    "hits": 9,
+    "hit_rate": 0.45
+   },
+   "fade_called": {
+    "n": 20,
+    "hits": 11,
+    "hit_rate": 0.55
+   },
+   "up_day_base_rate": {
+    "n": 20,
+    "hits": 10,
+    "hit_rate": 0.5
+   },
+   "follow_compounded": 0.0519365756191319,
+   "follow_n": 20,
+   "fade_compounded": -0.14264825398568615,
+   "fade_n": 20
+  },
+  "fade_gap_null_all_days": {
+   "n": 59,
+   "hits": 32,
+   "hit_rate": 0.5423728813559322
+  },
+  "fade_gap_null_last20": {
+   "n": 20,
+   "hits": 11,
+   "hit_rate": 0.55
+  },
+  "no_edge_days_up_rate": {
+   "n": 4,
+   "hits": 3,
+   "hit_rate": 0.75
+  },
+  "components": {
+   "nasdaq_futures": {
+    "n": 48,
+    "hits": 24,
+    "hit_rate": 0.5
+   },
+   "overnight_asia": {
+    "n": 59,
+    "hits": 33,
+    "hit_rate": 0.559322033898305
+   }
+  },
+  "mean_soxl_oc_on_lean_soxl": -0.012568276179204706,
+  "mean_soxs_oc_on_lean_soxs": 0.0005786759618087936
+ },
+ "days": [
+  {
+   "call": {
+    "date": "2026-06-26",
+    "bias": "no_edge",
+    "implied_soxx": null,
+    "implied_soxl": null,
+    "levels": {
+     "soxl_prior_close": 252.61000061035156
+    },
+    "components": {
+     "overnight_asia": -0.04742193543991774,
+     "nasdaq_futures": null
+    }
+   },
+   "grade": {
+    "date": "2026-06-26",
+    "status": "no_data"
+   },
+   "soxl_premarket": null,
+   "soxs_premarket": null,
+   "n_holdings_used": 0
+  },
+  {
+   "call": {
+    "date": "2026-06-29",
+    "bias": "lean_soxl",
+    "implied_soxx": 0.013840143042026878,
+    "implied_soxl": 0.04152042912608063,
+    "levels": {
+     "soxl_prior_close": 215.60000610351562
+    },
+    "components": {
+     "overnight_asia": -0.007051268748878348,
+     "nasdaq_futures": null
+    }
+   },
+   "grade": {
+    "date": "2026-06-29",
+    "status": "graded",
+    "bias": "lean_soxl",
+    "soxx_open_to_close": 0.03476436787222004,
+    "soxx_open_to_1030": -0.014064166532594458,
+    "outcome_sign": 1,
+    "soxl_open_to_close": 0.09317805326880202,
+    "soxs_open_to_close": -0.105769179629149,
+    "soxl_open_actual_vs_prior": 0.0035250208039003805,
+    "soxl_open_error": -0.03799540832218025,
+    "gap_filled": true,
+    "bias_hit": true,
+    "component_hits": {
+     "overnight_asia": false,
+     "nasdaq_futures": null
+    },
+    "fade_gap_hit": false
+   },
+   "soxl_premarket": 0.023330212217476998,
+   "soxs_premarket": -0.04127361940802743,
+   "n_holdings_used": 10
+  },
+  {
+   "call": {
+    "date": "2026-06-30",
+    "bias": "lean_soxl",
+    "implied_soxx": 0.0033761217419005568,
+    "implied_soxl": 0.01012836522570167,
+    "levels": {
+     "soxl_prior_close": 236.52000427246094
+    },
+    "components": {
+     "overnight_asia": 0.02302565196693951,
+     "nasdaq_futures": null
+    }
+   },
+   "grade": {
+    "date": "2026-06-30",
+    "status": "graded",
+    "bias": "lean_soxl",
+    "soxx_open_to_close": 0.039941547312224435,
+    "soxx_open_to_1030": 0.032922133150642185,
+    "outcome_sign": 1,
+    "soxl_open_to_close": 0.10461791189109326,
+    "soxs_open_to_close": -0.11475401976346788,
+    "soxl_open_actual_vs_prior": 0.02084387192088033,
+    "soxl_open_error": 0.01071550669517866,
+    "gap_filled": false,
+    "bias_hit": true,
+    "component_hits": {
+     "overnight_asia": true,
+     "nasdaq_futures": null
+    },
+    "fade_gap_hit": false
+   },
+   "soxl_premarket": 0.012049702672320306,
+   "soxs_premarket": -0.005564536524033548,
+   "n_holdings_used": 10
+  },
+  {
+   "call": {
+    "date": "2026-07-01",
+    "bias": "lean_soxs",
+    "implied_soxx": -0.039288328046394955,
+    "implied_soxl": -0.11786498413918486,
+    "levels": {
+     "soxl_prior_close": 266.7099914550781
+    },
+    "components": {
+     "overnight_asia": -0.007884875481843967,
+     "nasdaq_futures": null
+    }
+   },
+   "grade": {
+    "date": "2026-07-01",
+    "status": "graded",
+    "bias": "lean_soxs",
+    "soxx_open_to_close": -0.02775525260838163,
+    "soxx_open_to_1030": -0.0017995287740059096,
+    "outcome_sign": -1,
+    "soxl_open_to_close": -0.08511708148298824,
+    "soxs_open_to_close": 0.07520882544519858,
+    "soxl_open_actual_vs_prior": -0.1084323763469367,
+    "soxl_open_error": 0.009432607792248165,
+    "gap_filled": false,
+    "bias_hit": true,
+    "component_hits": {
+     "overnight_asia": true,
+     "nasdaq_futures": null
+    },
+    "fade_gap_hit": false
+   },
+   "soxl_premarket": -0.10370811871041918,
+   "soxs_premarket": 0.10503081215607368,
+   "n_holdings_used": 10
+  },
+  {
+   "call": {
+    "date": "2026-07-02",
+    "bias": "lean_soxl",
+    "implied_soxx": 0.010565803332072396,
+    "implied_soxl": 0.03169740999621719,
+    "levels": {
+     "soxl_prior_close": 217.5500030517578
+    },
+    "components": {
+     "overnight_asia": -0.08166417572556511,
+     "nasdaq_futures": null
+    }
+   },
+   "grade": {
+    "date": "2026-07-02",
+    "status": "graded",
+    "bias": "lean_soxl",
+    "soxx_open_to_close": -0.05807994058502952,
+    "soxx_open_to_1030": -0.022786262440212424,
+    "outcome_sign": -1,
+    "soxl_open_to_close": -0.17223917913935638,
+    "soxs_open_to_close": 0.1744790802606313,
+    "soxl_open_actual_vs_prior": 0.007722328900090059,
+    "soxl_open_error": -0.02397508109612713,
+    "gap_filled": true,
+    "bias_hit": false,
+    "component_hits": {
+     "overnight_asia": true,
+     "nasdaq_futures": null
+    },
+    "fade_gap_hit": true
+   },
+   "soxl_premarket": 0.034267969862857406,
+   "soxs_premarket": -0.03101032438961382,
+   "n_holdings_used": 10
+  },
+  {
+   "call": {
+    "date": "2026-07-06",
+    "bias": "lean_soxl",
+    "implied_soxx": 0.030343656601752447,
+    "implied_soxl": 0.09103096980525734,
+    "levels": {
+     "soxl_prior_close": 181.47000122070312
+    },
+    "components": {
+     "overnight_asia": -0.0030594176344884705,
+     "nasdaq_futures": null
+    }
+   },
+   "grade": {
+    "date": "2026-07-06",
+    "status": "graded",
+    "bias": "lean_soxl",
+    "soxx_open_to_close": -0.0028123374428138392,
+    "soxx_open_to_1030": 0.01960043247407195,
+    "outcome_sign": -1,
+    "soxl_open_to_close": -0.012981150703458733,
+    "soxs_open_to_close": 0.01459859637698413,
+    "soxl_open_actual_vs_prior": 0.08673612931771091,
+    "soxl_open_error": -0.004294840487546428,
+    "gap_filled": false,
+    "bias_hit": false,
+    "component_hits": {
+     "overnight_asia": true,
+     "nasdaq_futures": null
+    },
+    "fade_gap_hit": true
+   },
+   "soxl_premarket": 0.09511213238107219,
+   "soxs_premarket": -0.09536591174363473,
+   "n_holdings_used": 10
+  },
+  {
+   "call": {
+    "date": "2026-07-07",
+    "bias": "lean_soxs",
+    "implied_soxx": -0.042129489569666584,
+    "implied_soxl": -0.12638846870899975,
+    "levels": {
+     "soxl_prior_close": 194.64999389648438
+    },
+    "components": {
+     "overnight_asia": -0.04433167942117211,
+     "nasdaq_futures": null
+    }
+   },
+   "grade": {
+    "date": "2026-07-07",
+    "status": "graded",
+    "bias": "lean_soxs",
+    "soxx_open_to_close": -0.000434820063340835,
+    "soxx_open_to_1030": -0.018752334033815377,
+    "outcome_sign": -1,
+    "soxl_open_to_close": -0.0007254844112183356,
+    "soxs_open_to_close": 0.0,
+    "soxl_open_actual_vs_prior": -0.1502697195847602,
+    "soxl_open_error": -0.023881250875760457,
+    "gap_filled": false,
+    "bias_hit": true,
+    "component_hits": {
+     "overnight_asia": true,
+     "nasdaq_futures": null
+    },
+    "fade_gap_hit": false
+   },
+   "soxl_premarket": -0.1291548660918732,
+   "soxs_premarket": 0.13177455962888573,
+   "n_holdings_used": 10
+  },
+  {
+   "call": {
+    "date": "2026-07-08",
+    "bias": "lean_soxs",
+    "implied_soxx": -0.010586227311433957,
+    "implied_soxl": -0.03175868193430187,
+    "levels": {
+     "soxl_prior_close": 165.27999877929688
+    },
+    "components": {
+     "overnight_asia": -0.03489080882380491,
+     "nasdaq_futures": null
+    }
+   },
+   "grade": {
+    "date": "2026-07-08",
+    "status": "graded",
+    "bias": "lean_soxs",
+    "soxx_open_to_close": 0.03189155988838266,
+    "soxx_open_to_1030": 0.023849836430121174,
+    "outcome_sign": 1,
+    "soxl_open_to_close": 0.09804660481175609,
+    "soxs_open_to_close": -0.09638552832523839,
+    "soxl_open_actual_vs_prior": -0.03672550889557502,
+    "soxl_open_error": -0.004966826961273152,
+    "gap_filled": true,
+    "bias_hit": false,
+    "component_hits": {
+     "overnight_asia": false,
+     "nasdaq_futures": null
+    },
+    "fade_gap_hit": true
+   },
+   "soxl_premarket": -0.031249992845134522,
+   "soxs_premarket": 0.03541660416666681,
+   "n_holdings_used": 10
+  },
+  {
+   "call": {
+    "date": "2026-07-09",
+    "bias": "lean_soxl",
+    "implied_soxx": 0.04827120943125962,
+    "implied_soxl": 0.14481362829377886,
+    "levels": {
+     "soxl_prior_close": 174.82000732421875
+    },
+    "components": {
+     "overnight_asia": 0.02239742839346459,
+     "nasdaq_futures": null
+    }
+   },
+   "grade": {
+    "date": "2026-07-09",
+    "status": "graded",
+    "bias": "lean_soxl",
+    "soxx_open_to_close": -0.013231531455417778,
+    "soxx_open_to_1030": -0.0025445292620864812,
+    "outcome_sign": -1,
+    "soxl_open_to_close": -0.0368349967483147,
+    "soxs_open_to_close": 0.05167958554448582,
+    "soxl_open_actual_vs_prior": 0.1429469693822225,
+    "soxl_open_error": -0.0018666589115563514,
+    "gap_filled": false,
+    "bias_hit": false,
+    "component_hits": {
+     "overnight_asia": false,
+     "nasdaq_futures": null
+    },
+    "fade_gap_hit": true
+   },
+   "soxl_premarket": 0.14151694107813872,
+   "soxs_premarket": -0.1356666666666666,
+   "n_holdings_used": 10
+  },
+  {
+   "call": {
+    "date": "2026-07-10",
+    "bias": "lean_soxs",
+    "implied_soxx": -0.017676166604261603,
+    "implied_soxl": -0.053028499812784805,
+    "levels": {
+     "soxl_prior_close": 192.4499969482422
+    },
+    "components": {
+     "overnight_asia": 0.012222908121484743,
+     "nasdaq_futures": null
+    }
+   },
+   "grade": {
+    "date": "2026-07-10",
+    "status": "graded",
+    "bias": "lean_soxs",
+    "soxx_open_to_close": 0.01634650392616588,
+    "soxx_open_to_1030": 0.006888236697624395,
+    "outcome_sign": 1,
+    "soxl_open_to_close": 0.05405702269895518,
+    "soxs_open_to_close": -0.04449652205926824,
+    "soxl_open_actual_vs_prior": -0.052221372881916306,
+    "soxl_open_error": 0.0008071269308684986,
+    "gap_filled": true,
+    "bias_hit": false,
+    "component_hits": {
+     "overnight_asia": true,
+     "nasdaq_futures": null
+    },
+    "fade_gap_hit": true
+   },
+   "soxl_premarket": -0.059288111868927795,
+   "soxs_premarket": 0.056511036706291096,
+   "n_holdings_used": 10
+  },
+  {
+   "call": {
+    "date": "2026-07-13",
+    "bias": "lean_soxs",
+    "implied_soxx": -0.028622086565166245,
+    "implied_soxl": -0.08586625969549874,
+    "levels": {
+     "soxl_prior_close": 192.25999450683594
+    },
+    "components": {
+     "overnight_asia": -0.06820488384331416,
+     "nasdaq_futures": null
+    }
+   },
+   "grade": {
+    "date": "2026-07-13",
+    "status": "graded",
+    "bias": "lean_soxs",
+    "soxx_open_to_close": -0.017690534504334443,
+    "soxx_open_to_1030": 0.0027680143214607877,
+    "outcome_sign": -1,
+    "soxl_open_to_close": -0.05291796266459825,
+    "soxs_open_to_close": 0.04729726130520717,
+    "soxl_open_actual_vs_prior": -0.09180273796302862,
+    "soxl_open_error": -0.005936478267529882,
+    "gap_filled": false,
+    "bias_hit": true,
+    "component_hits": {
+     "overnight_asia": true,
+     "nasdaq_futures": null
+    },
+    "fade_gap_hit": false
+   },
+   "soxl_premarket": -0.09284299915134597,
+   "soxs_premarket": 0.0906862949050884,
+   "n_holdings_used": 10
+  },
+  {
+   "call": {
+    "date": "2026-07-14",
+    "bias": "lean_soxl",
+    "implied_soxx": 0.04305256542288115,
+    "implied_soxl": 0.12915769626864343,
+    "levels": {
+     "soxl_prior_close": 165.3699951171875
+    },
+    "components": {
+     "overnight_asia": 0.014918544186294902,
+     "nasdaq_futures": null
+    }
+   },
+   "grade": {
+    "date": "2026-07-14",
+    "status": "graded",
+    "bias": "lean_soxl",
+    "soxx_open_to_close": -0.021687872118780205,
+    "soxx_open_to_1030": -0.02620113644344757,
+    "outcome_sign": -1,
+    "soxl_open_to_close": -0.058767108720882755,
+    "soxs_open_to_close": 0.07808560238152418,
+    "soxl_open_actual_vs_prior": 0.1349701153973062,
+    "soxl_open_error": 0.00581241912866276,
+    "gap_filled": false,
+    "bias_hit": false,
+    "component_hits": {
+     "overnight_asia": false,
+     "nasdaq_futures": null
+    },
+    "fade_gap_hit": true
+   },
+   "soxl_premarket": 0.13871926927588252,
+   "soxs_premarket": -0.14580651612903228,
+   "n_holdings_used": 10
+  },
+  {
+   "call": {
+    "date": "2026-07-15",
+    "bias": "lean_soxl",
+    "implied_soxx": 0.006564998906311274,
+    "implied_soxl": 0.01969499671893382,
+    "levels": {
+     "soxl_prior_close": 176.66000366210938
+    },
+    "components": {
+     "overnight_asia": 0.050766945855378776,
+     "nasdaq_futures": 0.005363122865032377
+    }
+   },
+   "grade": {
+    "date": "2026-07-15",
+    "status": "graded",
+    "bias": "lean_soxl",
+    "soxx_open_to_close": -0.034514493939465374,
+    "soxx_open_to_1030": -0.03311479877564616,
+    "outcome_sign": -1,
+    "soxl_open_to_close": -0.09914567555698484,
+    "soxs_open_to_close": 0.1152073745510005,
+    "soxl_open_actual_vs_prior": 0.040246804386750545,
+    "soxl_open_error": 0.020551807667816724,
+    "gap_filled": true,
+    "bias_hit": false,
+    "component_hits": {
+     "overnight_asia": false,
+     "nasdaq_futures": false
+    },
+    "fade_gap_hit": true
+   },
+   "soxl_premarket": 0.032488940444427516,
+   "soxs_premarket": -0.02757007612371143,
+   "n_holdings_used": 10
+  },
+  {
+   "call": {
+    "date": "2026-07-16",
+    "bias": "lean_soxs",
+    "implied_soxx": -0.028607704610431793,
+    "implied_soxl": -0.08582311383129537,
+    "levels": {
+     "soxl_prior_close": 165.5500030517578
+    },
+    "components": {
+     "overnight_asia": -0.05893978629492824,
+     "nasdaq_futures": -0.008366862510732154
+    }
+   },
+   "grade": {
+    "date": "2026-07-16",
+    "status": "graded",
+    "bias": "lean_soxs",
+    "soxx_open_to_close": -0.01586121507575755,
+    "soxx_open_to_1030": 0.004174009926634303,
+    "outcome_sign": -1,
+    "soxl_open_to_close": -0.052911503487694134,
+    "soxs_open_to_close": 0.04520795618455775,
+    "soxl_open_actual_vs_prior": -0.09127152118280268,
+    "soxl_open_error": -0.005448407351507312,
+    "gap_filled": false,
+    "bias_hit": true,
+    "component_hits": {
+     "overnight_asia": true,
+     "nasdaq_futures": true
+    },
+    "fade_gap_hit": false
+   },
+   "soxl_premarket": -0.09598310334545834,
+   "soxs_premarket": 0.08812745754904783,
+   "n_holdings_used": 10
+  },
+  {
+   "call": {
+    "date": "2026-07-17",
+    "bias": "lean_soxs",
+    "implied_soxx": -0.03678885839681105,
+    "implied_soxl": -0.11036657519043315,
+    "levels": {
+     "soxl_prior_close": 142.47999572753906
+    },
+    "components": {
+     "overnight_asia": -0.07727516486453612,
+     "nasdaq_futures": -0.020381969401375932
+    }
+   },
+   "grade": {
+    "date": "2026-07-17",
+    "status": "graded",
+    "bias": "lean_soxs",
+    "soxx_open_to_close": 0.02607415216579101,
+    "soxx_open_to_1030": 0.022564225536399585,
+    "outcome_sign": 1,
+    "soxl_open_to_close": 0.08610596949184246,
+    "soxs_open_to_close": -0.06383344715355155,
+    "soxl_open_actual_vs_prior": -0.12457883845356321,
+    "soxl_open_error": -0.014212263263130062,
+    "gap_filled": true,
+    "bias_hit": false,
+    "component_hits": {
+     "overnight_asia": false,
+     "nasdaq_futures": false
+    },
+    "fade_gap_hit": true
+   },
+   "soxl_premarket": -0.117490147596232,
+   "soxs_premarket": 0.11887734501765856,
+   "n_holdings_used": 10
+  },
+  {
+   "call": {
+    "date": "2026-07-20",
+    "bias": "lean_soxl",
+    "implied_soxx": 0.027681245891398303,
+    "implied_soxl": 0.0830437376741949,
+    "levels": {
+     "soxl_prior_close": 135.47000122070312
+    },
+    "components": {
+     "overnight_asia": -0.0241273650312341,
+     "nasdaq_futures": 0.009030306717539904
+    }
+   },
+   "grade": {
+    "date": "2026-07-20",
+    "status": "graded",
+    "bias": "lean_soxl",
+    "soxx_open_to_close": -0.018464392044124533,
+    "soxx_open_to_1030": 0.00040267201398647146,
+    "outcome_sign": -1,
+    "soxl_open_to_close": -0.04675311116301806,
+    "soxs_open_to_close": 0.05469824432261028,
+    "soxl_open_actual_vs_prior": 0.059422772416182434,
+    "soxl_open_error": -0.023620965258012466,
+    "gap_filled": false,
+    "bias_hit": false,
+    "component_hits": {
+     "overnight_asia": true,
+     "nasdaq_futures": false
+    },
+    "fade_gap_hit": true
+   },
+   "soxl_premarket": 0.0674688026643353,
+   "soxs_premarket": -0.07493160598828896,
+   "n_holdings_used": 10
+  },
+  {
+   "call": {
+    "date": "2026-07-21",
+    "bias": "lean_soxl",
+    "implied_soxx": 0.042901678505759676,
+    "implied_soxl": 0.12870503551727902,
+    "levels": {
+     "soxl_prior_close": 136.80999755859375
+    },
+    "components": {
+     "overnight_asia": 0.040916371244060945,
+     "nasdaq_futures": 0.013079388238972367
+    }
+   },
+   "grade": {
+    "date": "2026-07-21",
+    "status": "graded",
+    "bias": "lean_soxl",
+    "soxx_open_to_close": 0.006538020424491586,
+    "soxx_open_to_1030": -0.0053359912694490585,
+    "outcome_sign": 1,
+    "soxl_open_to_close": 0.017325442836818805,
+    "soxs_open_to_close": -0.026111331042045438,
+    "soxl_open_actual_vs_prior": 0.139098012710267,
+    "soxl_open_error": 0.010392977192987984,
+    "gap_filled": false,
+    "bias_hit": true,
+    "component_hits": {
+     "overnight_asia": true,
+     "nasdaq_futures": true
+    },
+    "fade_gap_hit": false
+   },
+   "soxl_premarket": 0.12937652771922314,
+   "soxs_premarket": -0.130024105579286,
+   "n_holdings_used": 10
+  },
+  {
+   "call": {
+    "date": "2026-07-22",
+    "bias": "lean_soxs",
+    "implied_soxx": -0.0286565054594229,
+    "implied_soxl": -0.0859695163782687,
+    "levels": {
+     "soxl_prior_close": 158.5399932861328
+    },
+    "components": {
+     "overnight_asia": -0.002697283105968673,
+     "nasdaq_futures": -0.00866576256151752
+    }
+   },
+   "grade": {
+    "date": "2026-07-22",
+    "status": "graded",
+    "bias": "lean_soxs",
+    "soxx_open_to_close": 0.03112764646171695,
+    "soxx_open_to_1030": 0.02782829266966358,
+    "outcome_sign": 1,
+    "soxl_open_to_close": 0.09442555277580289,
+    "soxs_open_to_close": -0.0833847902513396,
+    "soxl_open_actual_vs_prior": -0.07215836802749398,
+    "soxl_open_error": 0.013811148350774724,
+    "gap_filled": true,
+    "bias_hit": false,
+    "component_hits": {
+     "overnight_asia": false,
+     "nasdaq_futures": false
+    },
+    "fade_gap_hit": true
+   },
+   "soxl_premarket": -0.08161974160537988,
+   "soxs_premarket": 0.08553066342849913,
+   "n_holdings_used": 10
+  },
+  {
+   "call": {
+    "date": "2026-07-23",
+    "bias": "lean_soxs",
+    "implied_soxx": -0.01503220023704123,
+    "implied_soxl": -0.04509660071112369,
+    "levels": {
+     "soxl_prior_close": 160.99000549316406
+    },
+    "components": {
+     "overnight_asia": 0.021758484053636173,
+     "nasdaq_futures": -0.014866000240050803
+    }
+   },
+   "grade": {
+    "date": "2026-07-23",
+    "status": "graded",
+    "bias": "lean_soxs",
+    "soxx_open_to_close": 0.010522438559807501,
+    "soxx_open_to_1030": 0.018936786599163646,
+    "outcome_sign": 1,
+    "soxl_open_to_close": 0.035094612311844964,
+    "soxs_open_to_close": -0.029367972309471524,
+    "soxl_open_actual_vs_prior": -0.0548481367151058,
+    "soxl_open_error": -0.009751536003982111,
+    "gap_filled": true,
+    "bias_hit": false,
+    "component_hits": {
+     "overnight_asia": true,
+     "nasdaq_futures": false
+    },
+    "fade_gap_hit": true
+   },
+   "soxl_premarket": -0.0677061005108599,
+   "soxs_premarket": 0.06848606268836255,
+   "n_holdings_used": 10
+  },
+  {
+   "call": {
+    "date": "2026-07-24",
+    "bias": "lean_soxs",
+    "implied_soxx": -0.0035549839745638357,
+    "implied_soxl": -0.010664951923691508,
+    "levels": {
+     "soxl_prior_close": 157.5
+    },
+    "components": {
+     "overnight_asia": -0.05801449625159871,
+     "nasdaq_futures": -0.000812510920845666
+    }
+   },
+   "grade": {
+    "date": "2026-07-24",
+    "status": "graded",
+    "bias": "lean_soxs",
+    "soxx_open_to_close": -0.031872246404614835,
+    "soxx_open_to_1030": -0.018406860837911543,
+    "outcome_sign": -1,
+    "soxl_open_to_close": -0.09666556411124683,
+    "soxs_open_to_close": 0.08989001924130768,
+    "soxl_open_actual_vs_prior": -0.03841271778893851,
+    "soxl_open_error": -0.027747765865247003,
+    "gap_filled": false,
+    "bias_hit": true,
+    "component_hits": {
+     "overnight_asia": true,
+     "nasdaq_futures": true
+    },
+    "fade_gap_hit": false
+   },
+   "soxl_premarket": -0.01828571428571424,
+   "soxs_premarket": 0.016005248407796824,
+   "n_holdings_used": 10
+  },
+  {
+   "call": {
+    "date": "2026-07-27",
+    "bias": "lean_soxl",
+    "implied_soxx": 0.016674021402226957,
+    "implied_soxl": 0.05002206420668087,
+    "levels": {
+     "soxl_prior_close": 136.80999755859375
+    },
+    "components": {
+     "overnight_asia": 0.013168781956864661,
+     "nasdaq_futures": 0.013400157336939778
+    }
+   },
+   "grade": {
+    "date": "2026-07-27",
+    "status": "graded",
+    "bias": "lean_soxl",
+    "soxx_open_to_close": -0.03080886476491773,
+    "soxx_open_to_1030": -0.04883224889288984,
+    "outcome_sign": -1,
+    "soxl_open_to_close": -0.08887309308523506,
+    "soxs_open_to_close": 0.09662607582040161,
+    "soxl_open_actual_vs_prior": 0.02806809740820304,
+    "soxl_open_error": -0.02195396679847783,
+    "gap_filled": true,
+    "bias_hit": false,
+    "component_hits": {
+     "overnight_asia": false,
+     "nasdaq_futures": false
+    },
+    "fade_gap_hit": true
+   },
+   "soxl_premarket": 0.0527739388220807,
+   "soxs_premarket": -0.0537550717041696,
+   "n_holdings_used": 10
+  },
+  {
+   "call": {
+    "date": "2026-07-28",
+    "bias": "lean_soxs",
+    "implied_soxx": -0.03750392347369813,
+    "implied_soxl": -0.11251177042109439,
+    "levels": {
+     "soxl_prior_close": 128.14999389648438
+    },
+    "components": {
+     "overnight_asia": -0.10491885320289682,
+     "nasdaq_futures": -0.006792526447402247
+    }
+   },
+   "grade": {
+    "date": "2026-07-28",
+    "status": "graded",
+    "bias": "lean_soxs",
+    "soxx_open_to_close": -0.010629300807461939,
+    "soxx_open_to_1030": -0.026200797976258294,
+    "outcome_sign": -1,
+    "soxl_open_to_close": -0.03190455644426926,
+    "soxs_open_to_close": 0.025946478202689915,
+    "soxl_open_actual_vs_prior": -0.11705027768258813,
+    "soxl_open_error": -0.0045385072614937405,
+    "gap_filled": false,
+    "bias_hit": true,
+    "component_hits": {
+     "overnight_asia": true,
+     "nasdaq_futures": true
+    },
+    "fade_gap_hit": false
+   },
+   "soxl_premarket": -0.1055013229841073,
+   "soxs_premarket": 0.10613507486681883,
+   "n_holdings_used": 10
+  },
+  {
+   "call": {
+    "date": "2026-07-29",
+    "bias": "lean_soxs",
+    "implied_soxx": -0.01367501360125267,
+    "implied_soxl": -0.04102504080375801,
+    "levels": {
+     "soxl_prior_close": 109.54000091552734
+    },
+    "components": {
+     "overnight_asia": -0.07233875025089309,
+     "nasdaq_futures": -0.0016744569207901572
+    }
+   },
+   "grade": {
+    "date": "2026-07-29",
+    "status": "graded",
+    "bias": "lean_soxs",
+    "soxx_open_to_close": -0.048398637453977766,
+    "soxx_open_to_1030": -0.029540566333561946,
+    "outcome_sign": -1,
+    "soxl_open_to_close": -0.1452332696888814,
+    "soxs_open_to_close": 0.14350476989212235,
+    "soxl_open_actual_vs_prior": -0.017527826847709593,
+    "soxl_open_error": 0.023497213956048417,
+    "gap_filled": true,
+    "bias_hit": true,
+    "component_hits": {
+     "overnight_asia": true,
+     "nasdaq_futures": true
+    },
+    "fade_gap_hit": false
+   },
+   "soxl_premarket": -0.02766113648167623,
+   "soxs_premarket": 0.027039941100636344,
+   "n_holdings_used": 10
+  },
+  {
+   "call": {
+    "date": "2026-07-30",
+    "bias": "lean_soxl",
+    "implied_soxx": 0.05852794383524198,
+    "implied_soxl": 0.17558383150572593,
+    "levels": {
+     "soxl_prior_close": 91.98999786376953
+    },
+    "components": {
+     "overnight_asia": -0.004127452851812402,
+     "nasdaq_futures": 0.018409284205328058
+    }
+   },
+   "grade": {
+    "date": "2026-07-30",
+    "status": "graded",
+    "bias": "lean_soxl",
+    "soxx_open_to_close": 0.02636448778806444,
+    "soxx_open_to_1030": 0.03462373366983362,
+    "outcome_sign": 1,
+    "soxl_open_to_close": 0.06835541213474494,
+    "soxs_open_to_close": -0.10476509083926067,
+    "soxl_open_actual_vs_prior": 0.16730079081466998,
+    "soxl_open_error": -0.008283040691055954,
+    "gap_filled": false,
+    "bias_hit": true,
+    "component_hits": {
+     "overnight_asia": false,
+     "nasdaq_futures": true
+    },
+    "fade_gap_hit": false
+   },
+   "soxl_premarket": 0.14429723279141893,
+   "soxs_premarket": -0.15352018170370063,
+   "n_holdings_used": 10
+  },
+  {
+   "call": {
+    "date": "2026-07-31",
+    "bias": "lean_soxl",
+    "implied_soxx": 0.03476692977485795,
+    "implied_soxl": 0.10430078932457384,
+    "levels": {
+     "soxl_prior_close": 114.72000122070312
+    },
+    "components": {
+     "overnight_asia": 0.18245990369253412,
+     "nasdaq_futures": 0.01060014346058824
+    }
+   },
+   "grade": {
+    "date": "2026-07-31",
+    "status": "graded",
+    "bias": "lean_soxl",
+    "soxx_open_to_close": -0.042136144879936444,
+    "soxx_open_to_1030": -0.02876109627529211,
+    "outcome_sign": -1,
+    "soxl_open_to_close": -0.11685907150910257,
+    "soxs_open_to_close": 0.15296368832845264,
+    "soxl_open_actual_vs_prior": 0.13232211047990972,
+    "soxl_open_error": 0.02802132115533587,
+    "gap_filled": true,
+    "bias_hit": false,
+    "component_hits": {
+     "overnight_asia": false,
+     "nasdaq_futures": false
+    },
+    "fade_gap_hit": true
+   },
+   "soxl_premarket": 0.11061365624364039,
+   "soxs_premarket": -0.10719581537883371,
+   "n_holdings_used": 10
+  },
+  {
+   "call": {
+    "date": "2026-08-03",
+    "bias": "lean_soxs",
+    "implied_soxx": -0.023813892058941216,
+    "implied_soxl": -0.07144167617682365,
+    "levels": {
+     "soxl_prior_close": 114.72000122070312
+    },
+    "components": {
+     "overnight_asia": -0.051845386974703006,
+     "nasdaq_futures": 0.0020156498930561373
+    }
+   },
+   "grade": {
+    "date": "2026-08-03",
+    "status": "graded",
+    "bias": "lean_soxs",
+    "soxx_open_to_close": 0.03203768665200313,
+    "soxx_open_to_1030": 0.016588008053732173,
+    "outcome_sign": 1,
+    "soxl_open_to_close": 0.09948184085536038,
+    "soxs_open_to_close": -0.08859889592551173,
+    "soxl_open_actual_vs_prior": -0.07470362276528308,
+    "soxl_open_error": -0.0032619465884594356,
+    "gap_filled": true,
+    "bias_hit": false,
+    "component_hits": {
+     "overnight_asia": false,
+     "nasdaq_futures": true
+    },
+    "fade_gap_hit": true
+   },
+   "soxl_premarket": -0.07662134873754534,
+   "soxs_premarket": 0.0748111204715407,
+   "n_holdings_used": 10
+  },
+  {
+   "call": {
+    "date": "2026-08-04",
+    "bias": "lean_soxl",
+    "implied_soxx": 0.04305118217292269,
+    "implied_soxl": 0.12915354651876806,
+    "levels": {
+     "soxl_prior_close": 116.70999908447266
+    },
+    "components": {
+     "overnight_asia": 0.004617205050476247,
+     "nasdaq_futures": 0.011444537677009814
+    }
+   },
+   "grade": {
+    "date": "2026-08-04",
+    "status": "graded",
+    "bias": "lean_soxl",
+    "soxx_open_to_close": 0.02437139761871676,
+    "soxx_open_to_1030": 0.008501634242232159,
+    "outcome_sign": 1,
+    "soxl_open_to_close": 0.06379742787695375,
+    "soxs_open_to_close": -0.09045979805875026,
+    "soxl_open_actual_vs_prior": 0.12681000375684448,
+    "soxl_open_error": -0.002343542761923584,
+    "gap_filled": false,
+    "bias_hit": true,
+    "component_hits": {
+     "overnight_asia": true,
+     "nasdaq_futures": true
+    },
+    "fade_gap_hit": false
+   },
+   "soxl_premarket": 0.13880559542976312,
+   "soxs_premarket": -0.13721366955178882,
+   "n_holdings_used": 10
+  },
+  {
+   "call": {
+    "date": "2026-08-05",
+    "bias": "lean_soxs",
+    "implied_soxx": -0.020124922027075092,
+    "implied_soxl": -0.06037476608122527,
+    "levels": {
+     "soxl_prior_close": 139.89999389648438
+    },
+    "components": {
+     "overnight_asia": 0.037992574803771495,
+     "nasdaq_futures": 0.001765586953065501
+    }
+   },
+   "grade": {
+    "date": "2026-08-05",
+    "status": "graded",
+    "bias": "lean_soxs",
+    "soxx_open_to_close": -0.010626420483961896,
+    "soxx_open_to_1030": -0.0009508011603506228,
+    "outcome_sign": -1,
+    "soxl_open_to_close": -0.025601196206264554,
+    "soxs_open_to_close": 0.029693994700899173,
+    "soxl_open_actual_vs_prior": -0.031165123663819738,
+    "soxl_open_error": 0.029209642417405535,
+    "gap_filled": true,
+    "bias_hit": true,
+    "component_hits": {
+     "overnight_asia": false,
+     "nasdaq_futures": false
+    },
+    "fade_gap_hit": false
+   },
+   "soxl_premarket": -0.05496779293767795,
+   "soxs_premarket": 0.06094254801219412,
+   "n_holdings_used": 10
+  },
+  {
+   "call": {
+    "date": "2026-08-06",
+    "bias": "lean_soxs",
+    "implied_soxx": -0.017119906252664654,
+    "implied_soxl": -0.05135971875799396,
+    "levels": {
+     "soxl_prior_close": 132.07000732421875
+    },
+    "components": {
+     "overnight_asia": -0.05958822580934736,
+     "nasdaq_futures": -0.008646457823186737
+    }
+   },
+   "grade": {
+    "date": "2026-08-06",
+    "status": "graded",
+    "bias": "lean_soxs",
+    "soxx_open_to_close": 0.018865126264398624,
+    "soxx_open_to_1030": 0.02989515325995562,
+    "outcome_sign": 1,
+    "soxl_open_to_close": 0.056695666244490184,
+    "soxs_open_to_close": -0.05089061776175141,
+    "soxl_open_actual_vs_prior": -0.0517907442110882,
+    "soxl_open_error": -0.0004310254530942442,
+    "gap_filled": true,
+    "bias_hit": false,
+    "component_hits": {
+     "overnight_asia": false,
+     "nasdaq_futures": false
+    },
+    "fade_gap_hit": true
+   },
+   "soxl_premarket": -0.049216377404007305,
+   "soxs_premarket": 0.04633092466971722,
+   "n_holdings_used": 10
+  },
+  {
+   "call": {
+    "date": "2026-08-07",
+    "bias": "lean_soxl",
+    "implied_soxx": 0.023186203437791635,
+    "implied_soxl": 0.0695586103133749,
+    "levels": {
+     "soxl_prior_close": 132.3300018310547
+    },
+    "components": {
+     "overnight_asia": -0.01488674320129929,
+     "nasdaq_futures": 0.008263482189017513
+    }
+   },
+   "grade": {
+    "date": "2026-08-07",
+    "status": "graded",
+    "bias": "lean_soxl",
+    "soxx_open_to_close": -0.003539971813222076,
+    "soxx_open_to_1030": -0.011078574701510413,
+    "outcome_sign": -1,
+    "soxl_open_to_close": -0.012115244107304468,
+    "soxs_open_to_close": 0.01299954028950201,
+    "soxl_open_actual_vs_prior": 0.07284817695352097,
+    "soxl_open_error": 0.003289566640146069,
+    "gap_filled": true,
+    "bias_hit": false,
+    "component_hits": {
+     "overnight_asia": true,
+     "nasdaq_futures": false
+    },
+    "fade_gap_hit": true
+   },
+   "soxl_premarket": 0.07844024805650229,
+   "soxs_premarket": -0.07685429960970935,
+   "n_holdings_used": 10
+  },
+  {
+   "call": {
+    "date": "2026-08-10",
+    "bias": "no_edge",
+    "implied_soxx": -0.0002593788990114492,
+    "implied_soxl": -0.0007781366970343476,
+    "levels": {
+     "soxl_prior_close": 140.25
+    },
+    "components": {
+     "overnight_asia": 0.009942084715630212,
+     "nasdaq_futures": -0.0009804168028356708
+    }
+   },
+   "grade": {
+    "date": "2026-08-10",
+    "status": "graded",
+    "bias": "no_edge",
+    "soxx_open_to_close": -0.030154734219473456,
+    "soxx_open_to_1030": -0.01243927513243015,
+    "outcome_sign": -1,
+    "soxl_open_to_close": -0.08963587379699467,
+    "soxs_open_to_close": 0.09334947406992877,
+    "soxl_open_actual_vs_prior": 0.018181839941232125,
+    "soxl_open_error": 0.018959976638266474,
+    "gap_filled": true,
+    "bias_hit": null,
+    "component_hits": {
+     "overnight_asia": false,
+     "nasdaq_futures": true
+    },
+    "fade_gap_hit": false
+   },
+   "soxl_premarket": 0.007914438502673926,
+   "soxs_premarket": -0.006178750469131633,
+   "n_holdings_used": 10
+  },
+  {
+   "call": {
+    "date": "2026-08-11",
+    "bias": "lean_soxl",
+    "implied_soxx": 0.012783583331767637,
+    "implied_soxl": 0.03835074999530291,
+    "levels": {
+     "soxl_prior_close": 130.0
+    },
+    "components": {
+     "overnight_asia": 0.017042665198351292,
+     "nasdaq_futures": 0.0027988602839204013
+    }
+   },
+   "grade": {
+    "date": "2026-08-11",
+    "status": "graded",
+    "bias": "lean_soxl",
+    "soxx_open_to_close": -0.006896992290014947,
+    "soxx_open_to_1030": 3.721725242056273e-05,
+    "outcome_sign": -1,
+    "soxl_open_to_close": -0.023924810202985758,
+    "soxs_open_to_close": 0.02371542658844983,
+    "soxl_open_actual_vs_prior": 0.04815380389873791,
+    "soxl_open_error": 0.009803053903435,
+    "gap_filled": false,
+    "bias_hit": false,
+    "component_hits": {
+     "overnight_asia": false,
+     "nasdaq_futures": false
+    },
+    "fade_gap_hit": true
+   },
+   "soxl_premarket": 0.042230769230769294,
+   "soxs_premarket": -0.04202608102076266,
+   "n_holdings_used": 10
+  },
+  {
+   "call": {
+    "date": "2026-08-12",
+    "bias": "lean_soxl",
+    "implied_soxx": 0.029687559889210475,
+    "implied_soxl": 0.08906267966763143,
+    "levels": {
+     "soxl_prior_close": 133.0
+    },
+    "components": {
+     "overnight_asia": 0.039168616961457625,
+     "nasdaq_futures": 0.01024961827553339
+    }
+   },
+   "grade": {
+    "date": "2026-08-12",
+    "status": "graded",
+    "bias": "lean_soxl",
+    "soxx_open_to_close": -0.012269676116637762,
+    "soxx_open_to_1030": -0.003017787986331788,
+    "outcome_sign": -1,
+    "soxl_open_to_close": -0.03489476770643618,
+    "soxs_open_to_close": 0.042493689976149884,
+    "soxl_open_actual_vs_prior": 0.10751881993802859,
+    "soxl_open_error": 0.01845614027039716,
+    "gap_filled": false,
+    "bias_hit": false,
+    "component_hits": {
+     "overnight_asia": false,
+     "nasdaq_futures": false
+    },
+    "fade_gap_hit": true
+   },
+   "soxl_premarket": 0.09753082706766913,
+   "soxs_premarket": -0.09584598901422603,
+   "n_holdings_used": 10
+  },
+  {
+   "call": {
+    "date": "2026-08-13",
+    "bias": "no_edge",
+    "implied_soxx": 0.0020393119289592514,
+    "implied_soxl": 0.006117935786877754,
+    "levels": {
+     "soxl_prior_close": 142.16000366210938
+    },
+    "components": {
+     "overnight_asia": 0.03441891241607209,
+     "nasdaq_futures": 0.0018591252062205577
+    }
+   },
+   "grade": {
+    "date": "2026-08-13",
+    "status": "graded",
+    "bias": "no_edge",
+    "soxx_open_to_close": 0.006579624025946362,
+    "soxx_open_to_1030": 0.019574442831386873,
+    "outcome_sign": 1,
+    "soxl_open_to_close": 0.0225098260115979,
+    "soxs_open_to_close": -0.021702009901842012,
+    "soxl_open_actual_vs_prior": 0.0,
+    "soxl_open_error": -0.006117935786877754,
+    "gap_filled": null,
+    "bias_hit": null,
+    "component_hits": {
+     "overnight_asia": true,
+     "nasdaq_futures": true
+    },
+    "fade_gap_hit": false
+   },
+   "soxl_premarket": 0.00614586603393219,
+   "soxs_premarket": -0.003905326237146123,
+   "n_holdings_used": 10
+  },
+  {
+   "call": {
+    "date": "2026-08-14",
+    "bias": "no_edge",
+    "implied_soxx": 0.0018062615472807509,
+    "implied_soxl": 0.005418784641842252,
+    "levels": {
+     "soxl_prior_close": 145.36000061035156
+    },
+    "components": {
+     "overnight_asia": 0.00868806765103966,
+     "nasdaq_futures": 0.0019540306021064158
+    }
+   },
+   "grade": {
+    "date": "2026-08-14",
+    "status": "graded",
+    "bias": "no_edge",
+    "soxx_open_to_close": 0.0015283776596541898,
+    "soxx_open_to_1030": -0.0021107648451814676,
+    "outcome_sign": 1,
+    "soxl_open_to_close": 0.00806734624294081,
+    "soxs_open_to_close": -0.008126122287488213,
+    "soxl_open_actual_vs_prior": -0.01080082084222933,
+    "soxl_open_error": -0.016219605484071583,
+    "gap_filled": true,
+    "bias_hit": null,
+    "component_hits": {
+     "overnight_asia": true,
+     "nasdaq_futures": true
+    },
+    "fade_gap_hit": false
+   },
+   "soxl_premarket": -0.0012892171819255394,
+   "soxs_premarket": 0.0019940446222608266,
+   "n_holdings_used": 10
+  },
+  {
+   "call": {
+    "date": "2026-08-17",
+    "bias": "lean_soxl",
+    "implied_soxx": 0.009968031964486555,
+    "implied_soxl": 0.029904095893459666,
+    "levels": {
+     "soxl_prior_close": 144.9499969482422
+    },
+    "components": {
+     "overnight_asia": 0.009161548083960636,
+     "nasdaq_futures": 0.0024382152927517886
+    }
+   },
+   "grade": {
+    "date": "2026-08-17",
+    "status": "graded",
+    "bias": "lean_soxl",
+    "soxx_open_to_close": 0.0021508679448474233,
+    "soxx_open_to_1030": 0.005108325043723605,
+    "outcome_sign": 1,
+    "soxl_open_to_close": 0.0061084799496513575,
+    "soxs_open_to_close": -0.0075032575440693305,
+    "soxl_open_actual_vs_prior": 0.03904797365487633,
+    "soxl_open_error": 0.009143877761416667,
+    "gap_filled": false,
+    "bias_hit": true,
+    "component_hits": {
+     "overnight_asia": true,
+     "nasdaq_futures": true
+    },
+    "fade_gap_hit": false
+   },
+   "soxl_premarket": 0.03035531662224833,
+   "soxs_premarket": -0.03103274124078048,
+   "n_holdings_used": 10
+  },
+  {
+   "call": {
+    "date": "2026-08-18",
+    "bias": "lean_soxs",
+    "implied_soxx": -0.03945296272022499,
+    "implied_soxl": -0.11835888816067497,
+    "levels": {
+     "soxl_prior_close": 151.52999877929688
+    },
+    "components": {
+     "overnight_asia": -0.020399408144000042,
+     "nasdaq_futures": -0.013102141872019413
+    }
+   },
+   "grade": {
+    "date": "2026-08-18",
+    "status": "graded",
+    "bias": "lean_soxs",
+    "soxx_open_to_close": -0.011220215945574208,
+    "soxx_open_to_1030": -0.009713019368685516,
+    "outcome_sign": -1,
+    "soxl_open_to_close": -0.03800291326901828,
+    "soxs_open_to_close": 0.03031007823642695,
+    "soxl_open_actual_vs_prior": -0.11436680505947738,
+    "soxl_open_error": 0.0039920831011975855,
+    "gap_filled": false,
+    "bias_hit": true,
+    "component_hits": {
+     "overnight_asia": true,
+     "nasdaq_futures": true
+    },
+    "fade_gap_hit": false
+   },
+   "soxl_premarket": -0.11430079138668381,
+   "soxs_premarket": 0.11731489358824576,
+   "n_holdings_used": 10
+  },
+  {
+   "call": {
+    "date": "2026-08-19",
+    "bias": "lean_soxl",
+    "implied_soxx": 0.01600431298453806,
+    "implied_soxl": 0.04801293895361418,
+    "levels": {
+     "soxl_prior_close": 129.10000610351562
+    },
+    "components": {
+     "overnight_asia": -0.05469938219740608,
+     "nasdaq_futures": 0.004638940057120733
+    }
+   },
+   "grade": {
+    "date": "2026-08-19",
+    "status": "graded",
+    "bias": "lean_soxl",
+    "soxx_open_to_close": -0.03093653554871545,
+    "soxx_open_to_1030": -0.030600891136483566,
+    "outcome_sign": -1,
+    "soxl_open_to_close": -0.08964794225521278,
+    "soxs_open_to_close": 0.09852900363282435,
+    "soxl_open_actual_vs_prior": 0.027343134100756172,
+    "soxl_open_error": -0.020669804852858006,
+    "gap_filled": true,
+    "bias_hit": false,
+    "component_hits": {
+     "overnight_asia": true,
+     "nasdaq_futures": false
+    },
+    "fade_gap_hit": true
+   },
+   "soxl_premarket": 0.043000725282949404,
+   "soxs_premarket": -0.04571166982313668,
+   "n_holdings_used": 10
+  },
+  {
+   "call": {
+    "date": "2026-08-20",
+    "bias": "lean_soxs",
+    "implied_soxx": -0.0061232978005166016,
+    "implied_soxl": -0.018369893401549806,
+    "levels": {
+     "soxl_prior_close": 120.73999786376953
+    },
+    "components": {
+     "overnight_asia": 0.05530309529656752,
+     "nasdaq_futures": -0.006215808817302659
+    }
+   },
+   "grade": {
+    "date": "2026-08-20",
+    "status": "graded",
+    "bias": "lean_soxs",
+    "soxx_open_to_close": 0.007658417889830682,
+    "soxx_open_to_1030": 0.005112126990047816,
+    "outcome_sign": 1,
+    "soxl_open_to_close": 0.018501552297913948,
+    "soxs_open_to_close": -0.0228185461498559,
+    "soxl_open_actual_vs_prior": -0.006211694660175682,
+    "soxl_open_error": 0.012158198741374124,
+    "gap_filled": true,
+    "bias_hit": false,
+    "component_hits": {
+     "overnight_asia": true,
+     "nasdaq_futures": false
+    },
+    "fade_gap_hit": true
+   },
+   "soxl_premarket": -0.017972485523959802,
+   "soxs_premarket": 0.016578124879650602,
+   "n_holdings_used": 10
+  },
+  {
+   "call": {
+    "date": "2026-08-21",
+    "bias": "lean_soxl",
+    "implied_soxx": 0.011156250015968167,
+    "implied_soxl": 0.033468750047904505,
+    "levels": {
+     "soxl_prior_close": 122.20999908447266
+    },
+    "components": {
+     "overnight_asia": 0.02038591364021275,
+     "nasdaq_futures": 0.005570579152555322
+    }
+   },
+   "grade": {
+    "date": "2026-08-21",
+    "status": "graded",
+    "bias": "lean_soxl",
+    "soxx_open_to_close": -0.015336620745365015,
+    "soxx_open_to_1030": -0.0191044710575613,
+    "outcome_sign": -1,
+    "soxl_open_to_close": -0.04731809808873988,
+    "soxs_open_to_close": 0.052831894047227435,
+    "soxl_open_actual_vs_prior": 0.03583992542533676,
+    "soxl_open_error": 0.0023711753774322553,
+    "gap_filled": true,
+    "bias_hit": false,
+    "component_hits": {
+     "overnight_asia": false,
+     "nasdaq_futures": false
+    },
+    "fade_gap_hit": true
+   },
+   "soxl_premarket": 0.03633091358145246,
+   "soxs_premarket": -0.03372972972972976,
+   "n_holdings_used": 10
+  },
+  {
+   "call": {
+    "date": "2026-08-24",
+    "bias": "lean_soxs",
+    "implied_soxx": -0.018807719702108417,
+    "implied_soxl": -0.056423159106325255,
+    "levels": {
+     "soxl_prior_close": 120.5999984741211
+    },
+    "components": {
+     "overnight_asia": -0.02995494023248027,
+     "nasdaq_futures": -0.00636157202269072
+    }
+   },
+   "grade": {
+    "date": "2026-08-24",
+    "status": "graded",
+    "bias": "lean_soxs",
+    "soxx_open_to_close": -0.011309273065055803,
+    "soxx_open_to_1030": -0.022579443192044413,
+    "outcome_sign": -1,
+    "soxl_open_to_close": -0.033979282550486656,
+    "soxs_open_to_close": 0.03276354559114458,
+    "soxl_open_actual_vs_prior": -0.0458540534764893,
+    "soxl_open_error": 0.010569105629835956,
+    "gap_filled": false,
+    "bias_hit": true,
+    "component_hits": {
+     "overnight_asia": true,
+     "nasdaq_futures": true
+    },
+    "fade_gap_hit": false
+   },
+   "soxl_premarket": -0.05422884375512227,
+   "soxs_premarket": 0.05485862827278809,
+   "n_holdings_used": 10
+  },
+  {
+   "call": {
+    "date": "2026-08-25",
+    "bias": "lean_soxl",
+    "implied_soxx": 0.022143903766915038,
+    "implied_soxl": 0.06643171130074511,
+    "levels": {
+     "soxl_prior_close": 111.16000366210938
+    },
+    "components": {
+     "overnight_asia": 0.0048574598347584375,
+     "nasdaq_futures": 0.007895324661935765
+    }
+   },
+   "grade": {
+    "date": "2026-08-25",
+    "status": "graded",
+    "bias": "lean_soxl",
+    "soxx_open_to_close": -0.0035858496292709985,
+    "soxx_open_to_1030": -0.007346200353994692,
+    "outcome_sign": -1,
+    "soxl_open_to_close": -0.014484148742053504,
+    "soxs_open_to_close": 0.012547019614181032,
+    "soxl_open_actual_vs_prior": 0.05586540913896565,
+    "soxl_open_error": -0.010566302161779464,
+    "gap_filled": false,
+    "bias_hit": false,
+    "component_hits": {
+     "overnight_asia": false,
+     "nasdaq_futures": false
+    },
+    "fade_gap_hit": true
+   },
+   "soxl_premarket": 0.06234253427118963,
+   "soxs_premarket": -0.0640394088669951,
+   "n_holdings_used": 10
+  },
+  {
+   "call": {
+    "date": "2026-08-26",
+    "bias": "lean_soxs",
+    "implied_soxx": -0.0067483049181234,
+    "implied_soxl": -0.0202449147543702,
+    "levels": {
+     "soxl_prior_close": 115.66999816894531
+    },
+    "components": {
+     "overnight_asia": 0.00783586468553732,
+     "nasdaq_futures": -0.003365191619477126
+    }
+   },
+   "grade": {
+    "date": "2026-08-26",
+    "status": "graded",
+    "bias": "lean_soxs",
+    "soxx_open_to_close": 0.006463702444898356,
+    "soxx_open_to_1030": -0.004022784995094786,
+    "outcome_sign": 1,
+    "soxl_open_to_close": 0.016564965792774,
+    "soxs_open_to_close": -0.018771642531175137,
+    "soxl_open_actual_vs_prior": -0.008385936163726404,
+    "soxl_open_error": 0.011858978590643797,
+    "gap_filled": true,
+    "bias_hit": false,
+    "component_hits": {
+     "overnight_asia": true,
+     "nasdaq_futures": false
+    },
+    "fade_gap_hit": true
+   },
+   "soxl_premarket": -0.016621407446874903,
+   "soxs_premarket": 0.020239609006908577,
+   "n_holdings_used": 10
+  },
+  {
+   "call": {
+    "date": "2026-08-27",
+    "bias": "lean_soxl",
+    "implied_soxx": 0.027525926540094642,
+    "implied_soxl": 0.08257777962028393,
+    "levels": {
+     "soxl_prior_close": 116.5999984741211
+    },
+    "components": {
+     "overnight_asia": 0.012257136305964367,
+     "nasdaq_futures": 0.008823353727738903
+    }
+   },
+   "grade": {
+    "date": "2026-08-27",
+    "status": "graded",
+    "bias": "lean_soxl",
+    "soxx_open_to_close": -0.0011975913122767023,
+    "soxx_open_to_1030": -0.0029939782806919224,
+    "outcome_sign": -1,
+    "soxl_open_to_close": -0.0028362922997832163,
+    "soxs_open_to_close": -0.0015411646333371998,
+    "soxl_open_actual_vs_prior": 0.05831906638718398,
+    "soxl_open_error": -0.024258713233099943,
+    "gap_filled": false,
+    "bias_hit": false,
+    "component_hits": {
+     "overnight_asia": false,
+     "nasdaq_futures": false
+    },
+    "fade_gap_hit": true
+   },
+   "soxl_premarket": 0.06912522839927648,
+   "soxs_premarket": -0.06820545107466336,
+   "n_holdings_used": 10
+  },
+  {
+   "call": {
+    "date": "2026-08-28",
+    "bias": "lean_soxs",
+    "implied_soxx": -0.009620952848303693,
+    "implied_soxl": -0.02886285854491108,
+    "levels": {
+     "soxl_prior_close": 123.05000305175781
+    },
+    "components": {
+     "overnight_asia": -0.017521684133973203,
+     "nasdaq_futures": -0.0010356412134684412
+    }
+   },
+   "grade": {
+    "date": "2026-08-28",
+    "status": "graded",
+    "bias": "lean_soxs",
+    "soxx_open_to_close": -0.02413664005220073,
+    "soxx_open_to_1030": -0.001957059684113749,
+    "outcome_sign": -1,
+    "soxl_open_to_close": -0.0715477148270719,
+    "soxs_open_to_close": 0.0688693207989306,
+    "soxl_open_actual_vs_prior": -0.025436853353802413,
+    "soxl_open_error": 0.0034260051911086664,
+    "gap_filled": false,
+    "bias_hit": true,
+    "component_hits": {
+     "overnight_asia": true,
+     "nasdaq_futures": true
+    },
+    "fade_gap_hit": false
+   },
+   "soxl_premarket": -0.022023591910175888,
+   "soxs_premarket": 0.024255822775972602,
+   "n_holdings_used": 10
+  },
+  {
+   "call": {
+    "date": "2026-08-31",
+    "bias": "no_edge",
+    "implied_soxx": -0.002077472574371569,
+    "implied_soxl": -0.006232417723114707,
+    "levels": {
+     "soxl_prior_close": 111.33999633789062
+    },
+    "components": {
+     "overnight_asia": 0.005478410021271363,
+     "nasdaq_futures": -0.002966503932736675
+    }
+   },
+   "grade": {
+    "date": "2026-08-31",
+    "status": "graded",
+    "bias": "no_edge",
+    "soxx_open_to_close": 0.002393003811494765,
+    "soxx_open_to_1030": 0.0002550015318050214,
+    "outcome_sign": 1,
+    "soxl_open_to_close": 0.0033804576197702385,
+    "soxs_open_to_close": -0.00507408154408906,
+    "soxl_open_actual_vs_prior": 0.009610269080407852,
+    "soxl_open_error": 0.01584268680352256,
+    "gap_filled": true,
+    "bias_hit": null,
+    "component_hits": {
+     "overnight_asia": true,
+     "nasdaq_futures": false
+    },
+    "fade_gap_hit": true
+   },
+   "soxl_premarket": 0.001886147557182083,
+   "soxs_premarket": -0.0026093877081602157,
+   "n_holdings_used": 10
+  },
+  {
+   "call": {
+    "date": "2026-09-01",
+    "bias": "lean_soxs",
+    "implied_soxx": -0.02292457603123772,
+    "implied_soxl": -0.06877372809371315,
+    "levels": {
+     "soxl_prior_close": 112.79000091552734
+    },
+    "components": {
+     "overnight_asia": 0.0009702623848962533,
+     "nasdaq_futures": -0.013997153121399042
+    }
+   },
+   "grade": {
+    "date": "2026-09-01",
+    "status": "graded",
+    "bias": "lean_soxs",
+    "soxx_open_to_close": -0.002233602164902204,
+    "soxx_open_to_1030": -0.011945815611089872,
+    "outcome_sign": -1,
+    "soxl_open_to_close": -0.00423088516039738,
+    "soxs_open_to_close": 0.006553588002850885,
+    "soxl_open_actual_vs_prior": -0.05700860229615079,
+    "soxl_open_error": 0.011765125797562365,
+    "gap_filled": false,
+    "bias_hit": true,
+    "component_hits": {
+     "overnight_asia": false,
+     "nasdaq_futures": true
+    },
+    "fade_gap_hit": false
+   },
+   "soxl_premarket": -0.06571239343351232,
+   "soxs_premarket": 0.06895143840621909,
+   "n_holdings_used": 10
+  },
+  {
+   "call": {
+    "date": "2026-09-02",
+    "bias": "lean_soxs",
+    "implied_soxx": -0.00475016679772988,
+    "implied_soxl": -0.01425050039318964,
+    "levels": {
+     "soxl_prior_close": 105.91000366210938
+    },
+    "components": {
+     "overnight_asia": -0.03600915828393933,
+     "nasdaq_futures": -0.002008514729108013
+    }
+   },
+   "grade": {
+    "date": "2026-09-02",
+    "status": "graded",
+    "bias": "lean_soxs",
+    "soxx_open_to_close": 0.006543839201801571,
+    "soxx_open_to_1030": 0.007366842269241447,
+    "outcome_sign": 1,
+    "soxl_open_to_close": 0.017703334680584604,
+    "soxs_open_to_close": -0.018371163257991374,
+    "soxl_open_actual_vs_prior": -0.013313224561938397,
+    "soxl_open_error": 0.0009372758312512428,
+    "gap_filled": true,
+    "bias_hit": false,
+    "component_hits": {
+     "overnight_asia": false,
+     "nasdaq_futures": false
+    },
+    "fade_gap_hit": true
+   },
+   "soxl_premarket": -0.02275520327426428,
+   "soxs_premarket": 0.020417440719518343,
+   "n_holdings_used": 10
+  },
+  {
+   "call": {
+    "date": "2026-09-03",
+    "bias": "lean_soxs",
+    "implied_soxx": -0.005494709663380781,
+    "implied_soxl": -0.016484128990142344,
+    "levels": {
+     "soxl_prior_close": 106.3499984741211
+    },
+    "components": {
+     "overnight_asia": -0.0017153647157101548,
+     "nasdaq_futures": 0.0016786426974759738
+    }
+   },
+   "grade": {
+    "date": "2026-09-03",
+    "status": "graded",
+    "bias": "lean_soxs",
+    "soxx_open_to_close": 0.011195226712711781,
+    "soxx_open_to_1030": -0.0055171163642396825,
+    "outcome_sign": 1,
+    "soxl_open_to_close": 0.03631065887154894,
+    "soxs_open_to_close": -0.0355140472126898,
+    "soxl_open_actual_vs_prior": -0.03149975103136715,
+    "soxl_open_error": -0.015015622041224808,
+    "gap_filled": true,
+    "bias_hit": false,
+    "component_hits": {
+     "overnight_asia": false,
+     "nasdaq_futures": true
+    },
+    "fade_gap_hit": true
+   },
+   "soxl_premarket": -0.022002806842451372,
+   "soxs_premarket": 0.022380824386741383,
+   "n_holdings_used": 10
+  },
+  {
+   "call": {
+    "date": "2026-09-04",
+    "bias": "lean_soxl",
+    "implied_soxx": 0.010538941379051613,
+    "implied_soxl": 0.03161682413715484,
+    "levels": {
+     "soxl_prior_close": 106.73999786376953
+    },
+    "components": {
+     "overnight_asia": 0.01567458064411026,
+     "nasdaq_futures": 0.0005926026260762995
+    }
+   },
+   "grade": {
+    "date": "2026-09-04",
+    "status": "graded",
+    "bias": "lean_soxl",
+    "soxx_open_to_close": 0.02071427587037511,
+    "soxx_open_to_1030": 0.01829928210499454,
+    "outcome_sign": 1,
+    "soxl_open_to_close": 0.054486580579768074,
+    "soxs_open_to_close": -0.06497177424289691,
+    "soxl_open_actual_vs_prior": 0.04197117712754084,
+    "soxl_open_error": 0.010354352990386,
+    "gap_filled": false,
+    "bias_hit": true,
+    "component_hits": {
+     "overnight_asia": true,
+     "nasdaq_futures": true
+    },
+    "fade_gap_hit": false
+   },
+   "soxl_premarket": 0.031399683373687814,
+   "soxs_premarket": -0.02926353718553687,
+   "n_holdings_used": 10
+  },
+  {
+   "call": {
+    "date": "2026-09-08",
+    "bias": "lean_soxl",
+    "implied_soxx": 0.018483309059175664,
+    "implied_soxl": 0.05544992717752699,
+    "levels": {
+     "soxl_prior_close": 117.27999877929688
+    },
+    "components": {
+     "overnight_asia": -0.00628239391044752,
+     "nasdaq_futures": 0.0030183383075323977
+    }
+   },
+   "grade": {
+    "date": "2026-09-08",
+    "status": "graded",
+    "bias": "lean_soxl",
+    "soxx_open_to_close": -0.003958483668119683,
+    "soxx_open_to_1030": 0.00015083334560550554,
+    "outcome_sign": -1,
+    "soxl_open_to_close": -0.01478585408332056,
+    "soxs_open_to_close": 0.012169979409393683,
+    "soxl_open_actual_vs_prior": 0.0668486020539516,
+    "soxl_open_error": 0.011398674876424611,
+    "gap_filled": false,
+    "bias_hit": false,
+    "component_hits": {
+     "overnight_asia": true,
+     "nasdaq_futures": false
+    },
+    "fade_gap_hit": true
+   },
+   "soxl_premarket": 0.06597630713881841,
+   "soxs_premarket": -0.06039059437576644,
+   "n_holdings_used": 10
+  },
+  {
+   "call": {
+    "date": "2026-09-09",
+    "bias": "lean_soxs",
+    "implied_soxx": -0.010439677757272342,
+    "implied_soxl": -0.03131903327181702,
+    "levels": {
+     "soxl_prior_close": 123.2699966430664
+    },
+    "components": {
+     "overnight_asia": 0.006889198861268625,
+     "nasdaq_futures": -0.004730312928393765
+    }
+   },
+   "grade": {
+    "date": "2026-09-09",
+    "status": "graded",
+    "bias": "lean_soxs",
+    "soxx_open_to_close": 0.013622987037543943,
+    "soxx_open_to_1030": 0.01659526031783165,
+    "outcome_sign": 1,
+    "soxl_open_to_close": 0.03818875754200346,
+    "soxs_open_to_close": -0.03482137466875779,
+    "soxl_open_actual_vs_prior": -0.01646790650262464,
+    "soxl_open_error": 0.014851126769192383,
+    "gap_filled": true,
+    "bias_hit": false,
+    "component_hits": {
+     "overnight_asia": true,
+     "nasdaq_futures": false
+    },
+    "fade_gap_hit": true
+   },
+   "soxl_premarket": -0.02985314142355333,
+   "soxs_premarket": 0.03153353246836854,
+   "n_holdings_used": 10
+  },
+  {
+   "call": {
+    "date": "2026-09-10",
+    "bias": "lean_soxs",
+    "implied_soxx": -0.028202327535342634,
+    "implied_soxl": -0.0846069826060279,
+    "levels": {
+     "soxl_prior_close": 125.87000274658203
+    },
+    "components": {
+     "overnight_asia": -0.0065326040936768415,
+     "nasdaq_futures": -0.013096470827887119
+    }
+   },
+   "grade": {
+    "date": "2026-09-10",
+    "status": "graded",
+    "bias": "lean_soxs",
+    "soxx_open_to_close": -0.0017171142071712442,
+    "soxx_open_to_1030": 0.0022958836714590536,
+    "outcome_sign": -1,
+    "soxl_open_to_close": -0.005070875338445746,
+    "soxs_open_to_close": 0.004729174947082582,
+    "soxl_open_actual_vs_prior": -0.07563362250517991,
+    "soxl_open_error": 0.008973360100847996,
+    "gap_filled": false,
+    "bias_hit": true,
+    "component_hits": {
+     "overnight_asia": true,
+     "nasdaq_futures": true
+    },
+    "fade_gap_hit": false
+   },
+   "soxl_premarket": -0.08802734968465631,
+   "soxs_premarket": 0.08765028155446619,
+   "n_holdings_used": 10
+  },
+  {
+   "call": {
+    "date": "2026-09-11",
+    "bias": "lean_soxl",
+    "implied_soxx": 0.018344177687884915,
+    "implied_soxl": 0.05503253306365474,
+    "levels": {
+     "soxl_prior_close": 115.76000213623047
+    },
+    "components": {
+     "overnight_asia": -0.024833034431040457,
+     "nasdaq_futures": 0.010484590569016294
+    }
+   },
+   "grade": {
+    "date": "2026-09-11",
+    "status": "graded",
+    "bias": "lean_soxl",
+    "soxx_open_to_close": 0.0034841541464258885,
+    "soxx_open_to_1030": 0.004912072838727521,
+    "outcome_sign": 1,
+    "soxl_open_to_close": 0.009195597869028127,
+    "soxs_open_to_close": -0.01230698711035183,
+    "soxl_open_actual_vs_prior": 0.042760857436896504,
+    "soxl_open_error": -0.012271675626758238,
+    "gap_filled": false,
+    "bias_hit": true,
+    "component_hits": {
+     "overnight_asia": false,
+     "nasdaq_futures": true
+    },
+    "fade_gap_hit": false
+   },
+   "soxl_premarket": 0.05079472836264931,
+   "soxs_premarket": -0.05070606746594675,
+   "n_holdings_used": 10
+  },
+  {
+   "call": {
+    "date": "2026-09-14",
+    "bias": "lean_soxs",
+    "implied_soxx": -0.057162217179592564,
+    "implied_soxl": -0.17148665153877768,
+    "levels": {
+     "soxl_prior_close": 121.81999969482422
+    },
+    "components": {
+     "overnight_asia": -0.03166890143814638,
+     "nasdaq_futures": -0.017354907865856806
+    }
+   },
+   "grade": {
+    "date": "2026-09-14",
+    "status": "graded",
+    "bias": "lean_soxs",
+    "soxx_open_to_close": 0.0004625791229129206,
+    "soxx_open_to_1030": 0.005526273677793236,
+    "outcome_sign": 1,
+    "soxl_open_to_close": -0.003939737325796888,
+    "soxs_open_to_close": 0.0023251100652128542,
+    "soxl_open_actual_vs_prior": -0.1665572234966063,
+    "soxl_open_error": 0.004929428042171391,
+    "gap_filled": false,
+    "bias_hit": false,
+    "component_hits": {
+     "overnight_asia": false,
+     "nasdaq_futures": false
+    },
+    "fade_gap_hit": true
+   },
+   "soxl_premarket": -0.16310950373174593,
+   "soxs_premarket": 0.16560944067583927,
+   "n_holdings_used": 10
+  },
+  {
+   "call": {
+    "date": "2026-09-15",
+    "bias": "lean_soxl",
+    "implied_soxx": 0.012668033919270056,
+    "implied_soxl": 0.03800410175781017,
+    "levels": {
+     "soxl_prior_close": 101.12999725341797
+    },
+    "components": {
+     "overnight_asia": -0.0023824650329506425,
+     "nasdaq_futures": -0.000670639569432363
+    }
+   },
+   "grade": {
+    "date": "2026-09-15",
+    "status": "graded",
+    "bias": "lean_soxl",
+    "soxx_open_to_close": -0.0073624152409239585,
+    "soxx_open_to_1030": -0.0012390422429360282,
+    "outcome_sign": -1,
+    "soxl_open_to_close": -0.021329538898527067,
+    "soxs_open_to_close": 0.02466411807861335,
+    "soxl_open_actual_vs_prior": 0.033817916456279296,
+    "soxl_open_error": -0.004186185301530872,
+    "gap_filled": true,
+    "bias_hit": false,
+    "component_hits": {
+     "overnight_asia": true,
+     "nasdaq_futures": true
+    },
+    "fade_gap_hit": true
+   },
+   "soxl_premarket": 0.029529346659614264,
+   "soxs_premarket": -0.030458139496983505,
+   "n_holdings_used": 10
+  },
+  {
+   "call": {
+    "date": "2026-09-16",
+    "bias": "lean_soxl",
+    "implied_soxx": 0.014988993474594875,
+    "implied_soxl": 0.04496698042378462,
+    "levels": {
+     "soxl_prior_close": 102.31999969482422
+    },
+    "components": {
+     "overnight_asia": 0.01984644018577128,
+     "nasdaq_futures": 0.005179221578380577
+    }
+   },
+   "grade": {
+    "date": "2026-09-16",
+    "status": "graded",
+    "bias": "lean_soxl",
+    "soxx_open_to_close": -0.009176834826428726,
+    "soxx_open_to_1030": 0.003818747589794169,
+    "outcome_sign": -1,
+    "soxl_open_to_close": -0.03229710668142938,
+    "soxs_open_to_close": 0.03213185165408183,
+    "soxl_open_actual_vs_prior": 0.050039120033744666,
+    "soxl_open_error": 0.005072139609960044,
+    "gap_filled": true,
+    "bias_hit": false,
+    "component_hits": {
+     "overnight_asia": false,
+     "nasdaq_futures": false
+    },
+    "fade_gap_hit": true
+   },
+   "soxl_premarket": 0.043881942128298324,
+   "soxs_premarket": -0.04409194797260407,
+   "n_holdings_used": 10
+  },
+  {
+   "call": {
+    "date": "2026-09-17",
+    "bias": "lean_soxl",
+    "implied_soxx": 0.03349950780287646,
+    "implied_soxl": 0.10049852340862937,
+    "levels": {
+     "soxl_prior_close": 103.97000122070312
+    },
+    "components": {
+     "overnight_asia": -0.0017313677674909989,
+     "nasdaq_futures": 0.0162882316244648
+    }
+   },
+   "grade": {
+    "date": "2026-09-17",
+    "status": "graded",
+    "bias": "lean_soxl",
+    "soxx_open_to_close": 0.003887038283626687,
+    "soxx_open_to_1030": 0.0015180589525287669,
+    "outcome_sign": 1,
+    "soxl_open_to_close": 0.013147426451035615,
+    "soxs_open_to_close": -0.015966743717096943,
+    "soxl_open_actual_vs_prior": 0.09002597384299871,
+    "soxl_open_error": -0.010472549565630665,
+    "gap_filled": false,
+    "bias_hit": true,
+    "component_hits": {
+     "overnight_asia": false,
+     "nasdaq_futures": true
+    },
+    "fade_gap_hit": false
+   },
+   "soxl_premarket": 0.10252956289447646,
+   "soxs_premarket": -0.09938137197553354,
+   "n_holdings_used": 10
+  },
+  {
+   "call": {
+    "date": "2026-09-18",
+    "bias": "lean_soxl",
+    "implied_soxx": 0.002520941866289286,
+    "implied_soxl": 0.0075628255988678585,
+    "levels": {
+     "soxl_prior_close": 114.81999969482422
+    },
+    "components": {
+     "overnight_asia": 0.03856630469301414,
+     "nasdaq_futures": 0.0014036208374657022
+    }
+   },
+   "grade": {
+    "date": "2026-09-18",
+    "status": "graded",
+    "bias": "lean_soxl",
+    "soxx_open_to_close": 0.019819756492261087,
+    "soxx_open_to_1030": 0.004897548259994222,
+    "outcome_sign": 1,
+    "soxl_open_to_close": 0.05673758402895146,
+    "soxs_open_to_close": -0.059396937103417646,
+    "soxl_open_actual_vs_prior": 0.019247509931601847,
+    "soxl_open_error": 0.011684684332733989,
+    "gap_filled": false,
+    "bias_hit": true,
+    "component_hits": {
+     "overnight_asia": true,
+     "nasdaq_futures": true
+    },
+    "fade_gap_hit": false
+   },
+   "soxl_premarket": 0.006531965747859081,
+   "soxs_premarket": -0.0057790991057296015,
+   "n_holdings_used": 10
+  },
+  {
+   "call": {
+    "date": "2026-09-21",
+    "bias": "lean_soxl",
+    "implied_soxx": 0.02155039420137681,
+    "implied_soxl": 0.06465118260413044,
+    "levels": {
+     "soxl_prior_close": 123.66999816894531
+    },
+    "components": {
+     "overnight_asia": 0.021287347666338663,
+     "nasdaq_futures": 0.010270509681355122
+    }
+   },
+   "grade": {
+    "date": "2026-09-21",
+    "status": "graded",
+    "bias": "lean_soxl",
+    "soxx_open_to_close": 0.02616131451994619,
+    "soxx_open_to_1030": 0.011466206435833959,
+    "outcome_sign": 1,
+    "soxl_open_to_close": 0.074657263608362,
+    "soxs_open_to_close": -0.0882580172631049,
+    "soxl_open_actual_vs_prior": 0.06792277253694312,
+    "soxl_open_error": 0.0032715899328126796,
+    "gap_filled": false,
+    "bias_hit": true,
+    "component_hits": {
+     "overnight_asia": true,
+     "nasdaq_futures": true
+    },
+    "fade_gap_hit": false
+   },
+   "soxl_premarket": 0.06808443402378117,
+   "soxs_premarket": -0.06676311319371242,
+   "n_holdings_used": 10
+  }
+ ]
+}

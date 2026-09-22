@@ -168,9 +168,13 @@ def test_fade_null_is_not_the_mirror_of_the_bias():
     assert s["fade_gap_null_all_days"] == {"n": 2, "hits": 1, "hit_rate": 0.5}   # != 1 - bias
 
 
-def test_prepare_refuses_before_writing_when_mail_secrets_missing(monkeypatch, tmp_path):
-    monkeypatch.delenv("GMAIL_USER", raising=False)
-    monkeypatch.delenv("GMAIL_APP_PASSWORD", raising=False)
+def _no_channels(monkeypatch):
+    for k in ("GMAIL_USER", "GMAIL_APP_PASSWORD", "TELEGRAM_BOT_TOKEN", "TELEGRAM_CHAT_ID"):
+        monkeypatch.delenv(k, raising=False)
+
+
+def test_prepare_refuses_before_writing_when_no_channel_is_configured(monkeypatch, tmp_path):
+    _no_channels(monkeypatch)
     monkeypatch.setattr(sb, "STATE", tmp_path)
     monkeypatch.setattr(sb, "is_trading_day", lambda d: True)
     monkeypatch.setattr(sb, "in_brief_window", lambda now: True)
@@ -180,8 +184,48 @@ def test_prepare_refuses_before_writing_when_mail_secrets_missing(monkeypatch, t
     assert called == [] and not any(tmp_path.iterdir())
 
 
+def test_telegram_alone_is_enough_to_proceed(monkeypatch):
+    _no_channels(monkeypatch)
+    monkeypatch.setenv("TELEGRAM_BOT_TOKEN", "t"); monkeypatch.setenv("TELEGRAM_CHAT_ID", "c")
+    assert sb.channels() == ["telegram"]
+    monkeypatch.setenv("GMAIL_USER", "u"); monkeypatch.setenv("GMAIL_APP_PASSWORD", "p")
+    assert sb.channels() == ["email", "telegram"]
+
+
+def test_send_succeeds_if_any_channel_delivers_and_records_which(monkeypatch, tmp_path):
+    _no_channels(monkeypatch)
+    for k, v in (("GMAIL_USER", "u"), ("GMAIL_APP_PASSWORD", "p"),
+                 ("TELEGRAM_BOT_TOKEN", "t"), ("TELEGRAM_CHAT_ID", "c")):
+        monkeypatch.setenv(k, v)
+    monkeypatch.setattr(sb, "STATE", tmp_path); monkeypatch.setattr(sb, "REPO", tmp_path)
+    (tmp_path / "c.json").write_text('{"date": "2026-09-18", "bias": "no_edge"}')
+    monkeypatch.setattr(sb, "render", lambda call, score, last: ("S", "T", "H"))
+    def boom(*a):
+        raise OSError("smtp down")
+    sent = []
+    monkeypatch.setattr(sb, "send_email", boom)
+    monkeypatch.setattr(sb, "send_telegram", lambda *a: sent.append(1) or "telegram")
+    assert sb.cmd_send("c.json") == 0 and sent == [1]
+    import json as _j
+    assert _j.loads((tmp_path / "sent" / "2026-09-18.json").read_text())["channels"] == ["telegram"]
+    monkeypatch.setattr(sb, "send_telegram", boom)
+    (tmp_path / "sent" / "2026-09-18.json").unlink()
+    assert sb.cmd_send("c.json") == 1 and not (tmp_path / "sent" / "2026-09-18.json").exists()
+
+
+def test_telegram_chunks_respect_the_limit_and_keep_everything():
+    text = "\n".join(f"line {i} " + "x" * 50 for i in range(300)) + "\n" + "y" * 9000
+    parts = sb.telegram_chunks(text, limit=4000)
+    assert all(parts) and all(len(p) <= 4000 for p in parts)
+    for exact in ("x" * 10, "x" * 20, "a\n" + "x" * 10):
+        got = sb.telegram_chunks(exact, limit=10)
+        assert all(got) and all(len(p) <= 10 for p in got), got
+    assert "".join(p.replace("\n", "") for p in parts) == text.replace("\n", "")
+
+
 def test_prepare_skips_when_the_call_already_exists_on_origin(monkeypatch, tmp_path):
-    monkeypatch.setenv("GMAIL_USER", "x"); monkeypatch.setenv("GMAIL_APP_PASSWORD", "y")
+    _no_channels(monkeypatch)
+    monkeypatch.setenv("TELEGRAM_BOT_TOKEN", "t"); monkeypatch.setenv("TELEGRAM_CHAT_ID", "c")
     monkeypatch.setattr(sb, "is_trading_day", lambda d: True)
     monkeypatch.setattr(sb, "in_brief_window", lambda now: True)
     monkeypatch.setattr(sb, "already_sent_on_origin", lambda rel: True)
@@ -208,7 +252,8 @@ def test_scorecard_counts_only_sent_calls_and_reports_nulls():
     assert s["components"]["news_net"] == {"n": 1, "hits": 1, "hit_rate": 1.0}
 
 
-def test_render_has_no_nan_and_carries_tags():
+def test_render_has_no_nan_and_carries_tags(monkeypatch, tmp_path):
+    monkeypatch.setattr(sb, "STATE", tmp_path)
     call = {"date": D.isoformat(), "bias": "lean_soxl", "implied_soxx": 0.006, "implied_soxl": 0.018,
             "implied_soxs": -0.018, "calendar_verified": False, "manual": True,
             "weights": {"NVDA": 0.1}, "premarket": {"NVDA": {"move": 0.01}},
@@ -221,3 +266,60 @@ def test_render_has_no_nan_and_carries_tags():
     subj, text, htm = sb.render(call, {}, None)
     assert subj.startswith("[MANUAL] [CALENDAR UNVERIFIED]")
     assert "nan" not in text.lower() and "nan" not in htm.lower()
+
+
+def test_strategy_returns_follow_vs_fade_compounded():
+    rows = [{"bias": "lean_soxl", "soxl_open_to_close": 0.05, "soxs_open_to_close": -0.05},
+            {"bias": "lean_soxs", "soxl_open_to_close": 0.03, "soxs_open_to_close": -0.03},
+            {"bias": "no_edge", "soxl_open_to_close": 0.10, "soxs_open_to_close": -0.10}]
+    r = sb.strategy_returns(rows)
+    assert r["follow_n"] == 2 and r["fade_n"] == 2
+    assert r["follow_compounded"] == pytest.approx((1.049) * (0.969) - 1)
+    assert r["fade_compounded"] == pytest.approx((0.949) * (1.029) - 1)
+
+
+def test_subject_shows_both_calls(monkeypatch, tmp_path):
+    monkeypatch.setattr(sb, "STATE", tmp_path)
+    call = {"date": D.isoformat(), "bias": "lean_soxl", "implied_soxx": 0.006, "implied_soxl": 0.018,
+            "implied_soxs": -0.018, "calendar_verified": True,
+            "weights": {"NVDA": 0.1}, "premarket": {"NVDA": {"move": 0.01}},
+            "implied": {"contrib": {"NVDA": 0.006}, "coverage": 1.0, "n_up": 1, "n_down": 0, "dispersion": 0.0},
+            "components": {"overnight_asia_eu": None, "nasdaq_futures": None, "news_net": None, "social_skew": None},
+            "overnight": {}, "nasdaq_futures": None, "news": [], "filings": None, "truth_social": None,
+            "social": {}, "levels": {"soxl_prior_close": 100, "soxl_prior_high": None, "soxl_prior_low": None,
+            "soxl_pm_high": None, "soxl_pm_low": None, "soxl_gap": None, "gap_fill": None},
+            "catalysts": {"earnings_next_7d": [], "macro_today": None}}
+    subj, text, _ = sb.render(call, {}, None)
+    assert "gap up" in subj and "follow: SOXL" in subj and "fade: SOXS" in subj
+
+
+def test_send_telegram_partial_and_first_chunk_failure(monkeypatch):
+    monkeypatch.setenv("TELEGRAM_BOT_TOKEN", "t"); monkeypatch.setenv("TELEGRAM_CHAT_ID", "c")
+    calls = []
+    def post(token, chat, part):
+        calls.append(part)
+        if len(calls) == 2:
+            raise OSError("down")
+    monkeypatch.setattr(sb, "_telegram_post", post)
+    long = "\n".join("y" * 100 for _ in range(100))          # > 4000 chars -> several chunks
+    assert sb.send_telegram("S", long, "H") == "telegram_partial"
+    def fail_first(token, chat, part):
+        raise OSError("down")
+    monkeypatch.setattr(sb, "_telegram_post", fail_first)
+    with pytest.raises(OSError):
+        sb.send_telegram("S", "short", "H")
+
+
+def test_outage_day_is_labelled_no_data_not_flat_open(monkeypatch, tmp_path):
+    monkeypatch.setattr(sb, "STATE", tmp_path)                # no backfill file -> no line
+    call = {"date": D.isoformat(), "bias": "no_edge", "implied_soxx": None, "implied_soxl": None,
+            "implied_soxs": None, "calendar_verified": True, "weights": {"NVDA": 0.1},
+            "premarket": {"NVDA": {"move": None, "why_missing": "no bar"}},
+            "implied": {"contrib": {}, "coverage": 0.0},
+            "components": {"overnight_asia_eu": None, "nasdaq_futures": None, "news_net": None, "social_skew": None},
+            "overnight": {}, "nasdaq_futures": None, "news": [], "filings": None, "truth_social": None,
+            "social": {}, "levels": {"soxl_prior_close": None, "soxl_prior_high": None, "soxl_prior_low": None,
+            "soxl_pm_high": None, "soxl_pm_low": None, "soxl_gap": None, "gap_fill": None},
+            "catalysts": {"earnings_next_7d": [], "macro_today": None}}
+    subj, text, htm = sb.render(call, {}, None)
+    assert "no data" in subj and "flat open" not in subj and "Backfill" not in text
