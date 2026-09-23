@@ -34,21 +34,41 @@ GHA_BRANCH = "main"
 # without doubling work when GHA is healthy (concurrency:cancel-in-progress
 # in each workflow cancels the duplicate within a second).
 WORKFLOWS = {
-    # 6:15 AM PT pre-open SOXX/SOXL/SOXS email. PRIMARY trigger (the workflow's two
+    # 6:00 AM PT pre-open SOXX/SOXL/SOXS brief. PRIMARY trigger (the workflow's two
     # UTC crons are only a DST-gated backup). America/Los_Angeles so the Nov/Mar
-    # clock changes need no edit; the script's 06:10-06:29 PT window + origin/main
+    # clock changes need no edit; the script's 05:55-06:24 PT window + origin/main
     # idempotency make duplicate dispatches harmless.
     "semis_brief.yml": {
         "title": "stock_app:semis_brief",
         "schedule": {
             "timezone": "America/Los_Angeles",
-            "minutes": [15],
+            "minutes": [0],
             "hours": [6],
             "mdays": [-1],
             "months": [-1],
             "wdays": [1, 2, 3, 4, 5],
         },
     },
+    # Three intraday SOXL/SOXS checkpoints. Same reasoning as semis_brief: the five UTC
+    # crons in the workflow are a DST-gated backup, this is the primary trigger. The
+    # script's slot_for() matches on the Pacific wall clock with a [-2, +12] min window
+    # and rejects weekends and market holidays, so a stray dispatch is a no-op.
+    # NOTE (CLAUDE.md rule #9): these three times exist in TWO places only -- here and
+    # semis_intraday.SLOTS. Changing one without the other means a missed checkpoint.
+    "semis_intraday.yml": [
+        {
+            "title": f"stock_app:semis_intraday_{h:02d}{m:02d}",
+            "schedule": {
+                "timezone": "America/Los_Angeles",
+                "minutes": [m],
+                "hours": [h],
+                "mdays": [-1],
+                "months": [-1],
+                "wdays": [1, 2, 3, 4, 5],
+            },
+        }
+        for h, m in ((6, 35), (7, 0), (8, 0))
+    ],
     "site_generator.yml": {
         "title": "stock_app:site_generator",
         # Workflow is EOD-only since c35405c (~95% egress cut). This pinger had
@@ -364,16 +384,22 @@ def main() -> int:
     for wf_file, cfg in WORKFLOWS.items():
         print(f"Provisioning pinger for {wf_file}...")
         wf_id = resolve_workflow_id(pat, wf_file)
-        action = "PATCH" if cfg["title"] in existing else "PUT"
-        new_id = upsert_job(
-            api_key=api_key,
-            pat=pat,
-            workflow_id=wf_id,
-            title=cfg["title"],
-            schedule=cfg["schedule"],
-            existing_id=existing.get(cfg["title"]),
-        )
-        print(f"  {action} -> jobId={new_id} (workflow_id={wf_id})\n")
+        # A cron-job.org schedule is the CROSS-PRODUCT of its minutes and hours, so a
+        # workflow needing 06:35 + 07:00 + 08:00 cannot be one entry -- minutes [35, 0] x
+        # hours [6, 7, 8] would dispatch six times. Such a workflow lists one entry per
+        # wall-clock time instead, and each gets its own cron-job.org job.
+        for entry in (cfg if isinstance(cfg, list) else [cfg]):
+            action = "PATCH" if entry["title"] in existing else "PUT"
+            new_id = upsert_job(
+                api_key=api_key,
+                pat=pat,
+                workflow_id=wf_id,
+                title=entry["title"],
+                schedule=entry["schedule"],
+                existing_id=existing.get(entry["title"]),
+            )
+            print(f"  {action} {entry['title']} -> jobId={new_id} (workflow_id={wf_id})")
+        print()
 
     print("Done. Visit https://console.cron-job.org/jobs to verify schedules.")
     print("Next firing for each job is shown on the dashboard.")

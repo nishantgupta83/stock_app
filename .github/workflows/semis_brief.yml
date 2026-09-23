@@ -1,10 +1,10 @@
 # .github/workflows/semis_brief.yml
 name: semis_brief
 
-# 6:15 AM PT pre-open email for SOXX / SOXL / SOXS (scripts/semis_brief.py).
-# Primary trigger: cron-job.org pinger at 06:15 America/Los_Angeles (DST-aware).
-# Backup: two UTC crons — 13:15 UTC is 06:15 PDT, 14:15 UTC is 06:15 PST. The script's
-# 06:10-06:29 PT window makes whichever one is wrong for the current DST state a no-op,
+# 6:00 AM PT pre-open brief for SOXX / SOXL / SOXS (scripts/semis_brief.py).
+# Primary trigger: cron-job.org pinger at 06:00 America/Los_Angeles (DST-aware).
+# Backup: two UTC crons — 13:00 UTC is 06:00 PDT, 14:00 UTC is 06:00 PST. The script's
+# 05:55-06:24 PT window makes whichever one is wrong for the current DST state a no-op,
 # and the origin/main idempotency check stops a second send when both fire.
 # Order is deliberate: the call is COMMITTED AND PUSHED before the email goes out, so a
 # push failure means no email (never an email with no record); the sent/ marker is
@@ -12,8 +12,8 @@ name: semis_brief
 
 on:
   schedule:
-    - cron: "15 13 * * 1-5"
-    - cron: "15 14 * * 1-5"
+    - cron: "0 13 * * 1-5"
+    - cron: "0 14 * * 1-5"
   workflow_dispatch:
     inputs:
       force:

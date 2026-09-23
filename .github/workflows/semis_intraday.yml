@@ -1,0 +1,103 @@
+# .github/workflows/semis_intraday.yml
+name: semis_intraday
+
+# Three intraday SOXL/SOXS Telegram checkpoints (scripts/semis_intraday.py):
+#   06:35 PT / 09:35 ET  opening read
+#   07:00 PT / 10:00 ET  VWAP check  <- the measured filter
+#   08:00 PT / 11:00 ET  VWAP check
+#
+# Crons are UTC and GitHub does not do DST, so each slot is listed twice: PDT = UTC-7,
+# PST = UTC-8. The script's own slot_for() matches on the PACIFIC wall clock, so the
+# cron that is wrong for the current DST state resolves to no slot and exits 0 without
+# sending. (15:00 UTC deliberately serves 08:00 PDT and 07:00 PST — one of the two
+# always resolves to a real slot, never both.)
+#
+# Unlike semis_brief this writes no committed call and sends no email: it is a
+# state ping, and its day file under semis_brief/intraday/ is committed after the
+# send so a re-run cannot re-fire a trigger that already went out.
+
+on:
+  schedule:
+    - cron: "35 13 * * 1-5"   # 06:35 PDT
+    - cron: "0 14 * * 1-5"    # 07:00 PDT
+    - cron: "0 15 * * 1-5"    # 08:00 PDT  /  07:00 PST
+    - cron: "35 14 * * 1-5"   # 06:35 PST
+    - cron: "0 16 * * 1-5"    # 08:00 PST
+  workflow_dispatch:
+    inputs:
+      slot:
+        description: "Force a checkpoint (testing). Leave blank to use the clock."
+        type: choice
+        default: ""
+        options: ["", "open", "t1000et", "t1100et"]
+      dry_run:
+        description: "Render only — send nothing, write nothing"
+        type: boolean
+        default: false
+
+concurrency:
+  group: semis_intraday
+  cancel-in-progress: false
+
+permissions:
+  contents: write
+
+jobs:
+  ping:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          fetch-depth: 1
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - uses: actions/setup-python@v6
+        with:
+          python-version: "3.12"
+
+      - name: Install deps
+        run: pip install --quiet yfinance
+
+      - name: Send checkpoint
+        env:
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+          SEMIS_SHARES: ${{ vars.SEMIS_SHARES || '25' }}
+          # Never interpolate an input into `run:` — pass it through env and let the
+          # shell quote it. `slot` is a choice today, but a later edit to a free-text
+          # input would silently turn a template into shell injection.
+          SLOT: ${{ inputs.slot }}
+          DRY: ${{ inputs.dry_run }}
+        run: |
+          set -euo pipefail
+          # if-blocks, not `[ ... ] && ...`: under `set -e` a false test is a failed
+          # command and would kill the step before the script ever ran.
+          args=()
+          if [ -n "${SLOT:-}" ]; then args+=(--slot "$SLOT"); fi
+          if [ "${DRY:-false}" = "true" ]; then args+=(--dry-run); fi
+          python scripts/semis_intraday.py ${args[@]+"${args[@]}"}
+
+      - name: Commit the day file
+        if: ${{ !inputs.dry_run }}
+        run: |
+          set -euo pipefail
+          git config user.name  "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          mkdir -p semis_brief/intraday
+          git add -A -- semis_brief/intraday
+          if git diff --cached --quiet; then
+            echo "nothing to commit (slot was outside its window)"; exit 0
+          fi
+          git commit -m "chore(semis-intraday): checkpoint $(date -u +%Y-%m-%dT%H:%MZ)"
+          # Rebase AFTER staging our own commit, never before: --autostash pops without
+          # --index and EXITS 0 on conflict, which is how the h7d leg silently committed
+          # conflict markers for 14 nights. Guard both failure shapes explicitly.
+          git pull --rebase origin main || true
+          if [ -d .git/rebase-merge ] || [ -d .git/rebase-apply ]; then
+            echo "::error::rebase still in progress"; exit 1
+          fi
+          if [ -n "$(git ls-files -u)" ]; then
+            echo "::error::merge conflict left unresolved"; git ls-files -u; exit 1
+          fi
+          git push origin HEAD:main

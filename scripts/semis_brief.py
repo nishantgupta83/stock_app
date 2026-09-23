@@ -1,12 +1,12 @@
 #!/usr/bin/env python3
-"""semis_brief — 6:15 AM PT pre-open email for SOXX / SOXL (3x bull) / SOXS (3x bear).
+"""semis_brief — 6:00 AM PT pre-open brief for SOXX / SOXL (3x bull) / SOXS (3x bear).
 
 Isolated module: reads yfinance, Yahoo RSS, StockTwits, FRED, and two raw Supabase tables
 (read-only); writes only committed JSON under semis_brief/. Never touches the frozen
 forward experiments, calibration, or Layers 2-4.
 
 Two subcommands, run by .github/workflows/semis_brief.yml:
-  prepare  gate (trading day, 06:10-06:29 PT window, not already sent on origin/main),
+  prepare  gate (trading day, 05:55-06:24 PT window, not already sent on origin/main),
            grade any earlier SENT calls whose official close is now published, build
            today's snapshot, write semis_brief/calls/DATE.json. Emits send=true|false
            and call_path to $GITHUB_OUTPUT. The workflow commits+pushes the call BEFORE send.
@@ -43,8 +43,8 @@ PT = ZoneInfo("America/Los_Angeles")
 ET = ZoneInfo("America/New_York")
 STATE = REPO / "semis_brief"
 
-WINDOW_START = time(6, 10)          # PT
-WINDOW_END = time(6, 30)            # PT, exclusive
+WINDOW_START = time(5, 55)          # PT
+WINDOW_END = time(6, 25)            # PT, exclusive
 OPEN_ET = time(9, 30)
 PREMARKET_START_ET = time(4, 0)
 STALE_MINUTES = 30
@@ -744,7 +744,7 @@ def cmd_prepare(force: bool) -> int:
         if not is_trading_day(today):
             print(f"{today} is not a trading day"); gh_output(send="false"); return 0
         if not in_brief_window(now_pt):
-            print(f"{now_pt:%H:%M} PT is outside the 06:10-06:29 brief window"); gh_output(send="false"); return 0
+            print(f"{now_pt:%H:%M} PT is outside the {WINDOW_START:%H:%M}-{WINDOW_END:%H:%M} brief window"); gh_output(send="false"); return 0
     if not channels():
         # Checked before anything is written or pushed: a call committed without any way
         # to deliver it would use up the day (origin idempotency would block a retry).
@@ -792,7 +792,7 @@ def render(call: dict, score: dict, last_grade: dict | None) -> tuple[str, str, 
         tags.append("[CALENDAR UNVERIFIED]")
     follow, fade = CALL_PAIR[call["bias"]]
     gap = "no data" if call.get("implied_soxx") is None else GAP_LABEL[call["bias"]]
-    subj = (f"{' '.join(tags) + ' ' if tags else ''}SOXL 6:15 · {gap} · follow: {follow} / "
+    subj = (f"{' '.join(tags) + ' ' if tags else ''}SOXL 6:00 · {gap} · follow: {follow} / "
             f"fade: {fade} · implied SOXX {pct(call['implied_soxx'])} (SOXL ~{pct(call['implied_soxl'], 1)}) · {d:%a %b %-d}")
     lines = [subj, ""]
     rows = []

@@ -21,17 +21,17 @@ def et(h, m, d=D):
 # --- window / DST -----------------------------------------------------------------
 
 def test_window_pdt_and_pst():
-    assert sb.in_brief_window(datetime(2026, 9, 18, 6, 15, tzinfo=PT))       # PDT
-    assert sb.in_brief_window(datetime(2026, 12, 3, 6, 15, tzinfo=PT))       # PST
-    assert not sb.in_brief_window(datetime(2026, 9, 18, 6, 30, tzinfo=PT))
-    assert not sb.in_brief_window(datetime(2026, 9, 18, 6, 5, tzinfo=PT))
+    assert sb.in_brief_window(datetime(2026, 9, 18, 6, 0, tzinfo=PT))        # PDT
+    assert sb.in_brief_window(datetime(2026, 12, 3, 6, 0, tzinfo=PT))        # PST
+    assert not sb.in_brief_window(datetime(2026, 9, 18, 6, 25, tzinfo=PT))
+    assert not sb.in_brief_window(datetime(2026, 9, 18, 5, 50, tzinfo=PT))
 
 
 def test_utc_backup_crons_land_in_window_exactly_once_per_dst_state():
-    # workflow backups: 13:15 and 14:15 UTC. Summer -> 13:15 hits; winter -> 14:15 hits.
+    # workflow backups: 13:00 and 14:00 UTC. Summer -> 13:00 hits; winter -> 14:00 hits.
     for d, hit_hour in ((date(2026, 9, 18), 13), (date(2026, 12, 3), 14)):
         hits = [h for h in (13, 14)
-                if sb.in_brief_window(datetime(d.year, d.month, d.day, h, 15, tzinfo=timezone.utc).astimezone(PT))]
+                if sb.in_brief_window(datetime(d.year, d.month, d.day, h, 0, tzinfo=timezone.utc).astimezone(PT))]
         assert hits == [hit_hour]
 
 
