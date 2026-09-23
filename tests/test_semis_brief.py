@@ -1,6 +1,7 @@
 """semis_brief — pure-function tests (no network)."""
 from __future__ import annotations
 
+import math
 import sys
 from datetime import date, datetime, timedelta, timezone
 from pathlib import Path
@@ -422,3 +423,109 @@ def test_band_signal_on_a_fund_where_the_rule_lost_is_not_called_a_buy(monkeypat
     soxl = [l for l in text.splitlines() if l.strip().startswith("SOXL:")][0]
     assert "LOST on this fund" in soxs and "BUY SIGNAL" not in soxs
     assert "BUY SIGNAL" in soxl
+
+
+# ------------------------------------------------------------ portfolio watch section
+
+def _pbars(closes, vols=None):
+    vols = vols or [1_000_000.0] * len(closes)
+    return [{"date": f"d{i}", "open": c, "close": c, "volume": v}
+            for i, (c, v) in enumerate(zip(closes, vols))]
+
+
+def test_sma_and_range_position():
+    assert sb.sma([1.0] * 25, 20) == pytest.approx(1.0)
+    assert sb.sma([1.0] * 5, 20) is None
+    closes = [float(i) for i in range(1, 101)]          # 1..100, last is the high
+    assert sb.range_position(closes) == (pytest.approx(1.0), 100)
+    assert sb.range_position(list(reversed(closes)))[0] == pytest.approx(0.0)
+    assert sb.range_position([5.0] * 100) is None        # flat: no range to sit in
+    assert sb.range_position([1.0, 2.0]) is None         # too short
+    # the window length comes back so the label can be honest
+    assert sb.range_position([float(i) for i in range(1, 401)])[1] == 252
+
+
+def test_portfolio_row_needs_a_full_band_window():
+    r = sb.portfolio_row("X", "theme", "note", _pbars([10.0] * (sb.BAND_N - 1)))
+    assert r["close"] is None
+    assert sb.portfolio_line(r).startswith("X     n/a")
+
+
+def test_portfolio_row_flags_a_thin_book():
+    thin = sb.portfolio_row("THIN", "watch", "n", _pbars([40.0] * 60, [2_800.0] * 60))
+    assert thin["thin"] is True
+    assert "THIN" in sb.portfolio_line(thin) and "limit orders only" in sb.portfolio_line(thin)
+    # HSYDF's real shape: ~2,839 shares at ~$41 = ~$118k/day, well under the threshold
+    assert 2_800 * 40.0 < sb.THIN_DOLLAR_VOLUME
+    fat = sb.portfolio_row("FAT", "core", "n", _pbars([40.0] * 60, [1_000_000.0] * 60))
+    assert fat["thin"] is False and "THIN" not in sb.portfolio_line(fat)
+
+
+def test_portfolio_row_is_nan_safe():
+    # non-flat closes, with the NaN INSIDE the trailing 20-bar band window, so every
+    # derived field is actually exercised. An unguarded version leaves these NaN.
+    closes = [100.0 + (i % 7) for i in range(80)]
+    bars = _pbars(closes)
+    bars[-5]["close"] = float("nan")       # NaN is truthy; must not reach the math
+    bars[-3]["volume"] = float("nan")
+    r = sb.portfolio_row("X", "core", "n", bars)
+    for k in ("close", "chg", "pct_b", "vs_sma20", "range_pos", "dollar_volume"):
+        assert r[k] is not None and math.isfinite(r[k]), k
+    assert "nan" not in sb.portfolio_line(r)
+
+
+def test_a_zero_close_cannot_kill_the_brief():
+    # one 0.0 close used to raise ZeroDivisionError out of build_call -> no brief at all
+    bars = _pbars([10.0] * 60)
+    bars[-2]["close"] = 0.0
+    r = sb.portfolio_row("X", "core", "n", bars)
+    assert r["close"] == pytest.approx(10.0)
+    assert sb.portfolio_line(r)
+
+
+def test_unknown_volume_flags_thin_rather_than_passing_as_liquid():
+    bars = _pbars([40.0] * 60)
+    for b in bars:
+        b["volume"] = None
+    r = sb.portfolio_row("UNK", "watch", "n", bars)
+    assert r["dollar_volume"] is None and r["thin"] is True
+    assert "volume unknown" in sb.portfolio_line(r)
+
+
+def test_zero_volume_sessions_count_toward_the_median():
+    # trades 20 of the last 60 sessions; true median dollar volume is 0
+    vols = [0.0] * 40 + [80_000.0] * 20
+    r = sb.portfolio_row("GAPPY", "watch", "n", _pbars([41.0] * 60, vols))
+    assert r["dollar_volume"] == pytest.approx(0.0)
+    assert r["thin"] is True
+
+
+def test_stale_daily_bar_is_flagged():
+    # yfinance drops whole trading days: it is currently missing 2026-09-22 for all 8 names
+    r = sb.portfolio_row("X", "core", "n", _pbars([10.0 + i * 0.1 for i in range(60)]))
+    r["as_of"] = "2026-09-21"
+    assert "STALE" in sb.portfolio_line(r, "2026-09-22")
+    assert "STALE" not in sb.portfolio_line(r, "2026-09-21")
+    assert "STALE" not in sb.portfolio_line(r, None)
+
+
+def test_range_label_says_52w_only_when_it_has_52_weeks():
+    short = sb.portfolio_row("NEW", "theme", "n", _pbars([10.0 + i * 0.1 for i in range(61)]))
+    assert "61d" in sb.portfolio_line(short) and "52w" not in sb.portfolio_line(short)
+    long_ = sb.portfolio_row("OLD", "core", "n", _pbars([10.0 + i * 0.05 for i in range(300)]))
+    assert "52w" in sb.portfolio_line(long_)
+
+
+def test_portfolio_row_computes_the_stated_distances():
+    closes = [100.0] * 199 + [110.0]
+    r = sb.portfolio_row("X", "core", "n", _pbars(closes))
+    assert r["vs_sma200"] == pytest.approx(110.0 / ((100.0 * 199 + 110.0) / 200) - 1)
+    assert r["vs_sma20"] == pytest.approx(110.0 / ((100.0 * 19 + 110.0) / 20) - 1)
+    assert r["chg"] == pytest.approx(0.10)
+
+
+def test_portfolio_covers_every_configured_ticker_exactly_once():
+    ticks = [t for t, _, _ in sb.PORTFOLIO]
+    assert len(ticks) == len(set(ticks))
+    assert {r for _, r, _ in sb.PORTFOLIO} <= {"core", "theme", "watch"}
+    assert "VTI" in ticks and any(r == "core" for _, r, _ in sb.PORTFOLIO)

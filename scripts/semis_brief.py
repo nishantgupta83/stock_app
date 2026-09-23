@@ -296,6 +296,97 @@ def band_record(trades: list[dict], since: date | None = None) -> dict:
             "mean": statistics.mean(r) if r else None}
 
 
+# ---------------------------------------------------------------- portfolio watch
+# The 1-3 year bucket, which is a DIFFERENT job from the SOXL day-trade above: these
+# lines answer "is today a reasonable day to make a scheduled purchase", not "trade this".
+# role: core = the VTI base; theme = the humanoid/magnet sleeve; watch = tracked, not held.
+PORTFOLIO = [
+    ("VTI",   "core",  "total US market"),
+    ("RRX",   "theme", "frameless motors; ~$30M humanoid orders (JPM note, not an RRX filing)"),
+    ("NOVT",  "theme", "ATI force/torque, global #1; no humanoid revenue disclosed"),
+    ("ALGM",  "theme", "2 disclosed humanoid joint design wins"),
+    ("KOID",  "theme", "humanoid ETF, 41 holdings, 0.69%"),
+    ("MP",    "watch", "NdPr + magnets; DoD $110/kg floor"),
+    ("USAR",  "watch", "magnet converter, no mine"),
+    ("AME",   "watch", "no humanoid disclosure found"),
+]
+# Below this, a scheduled buy is a meaningful fraction of a day's volume and needs a limit
+# order. Set from the measured medians: KOID ~$5.1M/day is fine, HSYDF ~$118k/day is not.
+THIN_DOLLAR_VOLUME = 2_000_000
+
+
+def sma(closes: list[float], n: int) -> float | None:
+    return sum(closes[-n:]) / n if len(closes) >= n else None
+
+
+def range_position(closes: list[float]) -> tuple[float, int] | None:
+    """(position, n_sessions) of the last close in its trailing range, 0.0 = low, 1.0 = high.
+    Returns the window length too: a 2025 listing has no 52-week range, and labelling three
+    months of history "52w" is a confident wrong answer."""
+    w = closes[-252:]
+    if len(w) < 60:
+        return None
+    lo, hi = min(w), max(w)
+    return ((w[-1] - lo) / (hi - lo), len(w)) if hi > lo else None
+
+
+def portfolio_row(ticker: str, role: str, note: str, bars: list[dict]) -> dict:
+    """One line of the watch section. bars: chronological {close, volume}, prior sessions only."""
+    # truthy `finite(...)`, not `is not None`: a 0.0 close is bad data, and it reaches a
+    # division in `chg` below. One 0.0 bar used to raise ZeroDivisionError out of
+    # build_call and kill the entire brief -- no email, no Telegram.
+    closes = [b["close"] for b in bars if finite(b.get("close"))]
+    if len(closes) < BAND_N:
+        return {"ticker": ticker, "role": role, "note": note, "close": None,
+                "as_of": bars[-1]["date"] if bars else None}
+    bb = bollinger(closes)
+    m, u, lo = bb[-1] if bb[-1] else (None, None, None)
+    c = closes[-1]
+    # A zero-volume session is a data point, not a missing one -- dropping it is what makes
+    # a name that trades 20 days in 60 look liquid. Use the finite VALUES, including 0.0.
+    dv = [finite(b.get("close")) * finite(b.get("volume")) for b in bars[-60:]
+          if finite(b.get("close")) and finite(b.get("volume")) is not None]
+    dv_med = statistics.median(dv) if dv else None
+    s200 = sma(closes, 200)
+    rp = range_position(closes)
+    return {
+        "ticker": ticker, "role": role, "note": note, "close": c,
+        "as_of": bars[-1]["date"] if bars else None,
+        "chg": (c / closes[-2] - 1) if len(closes) > 1 else None,
+        "pct_b": ((c - lo) / (u - lo)) if (u is not None and u > lo) else None,
+        "vs_sma20": (c / m - 1) if m else None,
+        "vs_sma200": (c / s200 - 1) if s200 else None,
+        "range_pos": rp[0] if rp else None,
+        "range_n": rp[1] if rp else None,
+        "dollar_volume": dv_med,
+        # An unknown book is not a liquid one: None must flag, not pass.
+        "thin": (dv_med is None or dv_med < THIN_DOLLAR_VOLUME),
+    }
+
+
+def portfolio_line(r: dict, prior_session: str | None = None) -> str:
+    if r.get("close") is None:
+        return f"{r['ticker']:<5} n/a — {r['note']}"
+    def p(x, d=1):
+        return "n/a" if x is None else f"{x*100:+.{d}f}%"
+    bits = [f"{r['ticker']:<5} {r['close']:>8.2f} {p(r.get('chg'), 2):>7}",
+            f"%B {'n/a' if r.get('pct_b') is None else format(r['pct_b'], '.2f')}",
+            f"vs 20d {p(r.get('vs_sma20'))}",
+            f"vs 200d {p(r.get('vs_sma200'))}"]
+    if r.get("range_pos") is not None:
+        n = r.get("range_n") or 0
+        bits.append(f"{'52w' if n >= 200 else f'{n}d'} {r['range_pos']*100:.0f}%")
+    if r.get("thin"):
+        bits.append("THIN (volume unknown) — limit orders only" if r.get("dollar_volume") is None
+                    else f"THIN ${r['dollar_volume']:,.0f}/d — limit orders only")
+    # yfinance drops whole trading days (it is currently missing 2026-09-22 for every one of
+    # these names). Without this the line prints a two-session-old close as "prior close"
+    # and a two-day move as a one-day change, with no tell. The band section already does this.
+    if prior_session and r.get("as_of") and r["as_of"] != prior_session:
+        bits.append(f"STALE: as of {r['as_of']}, not {prior_session}")
+    return " · ".join(bits)
+
+
 def validate_call(call: dict) -> None:
     """Lookahead guard: no snapshot timestamp may be at or after 09:30 ET of the call day."""
     day = date.fromisoformat(call["date"])
@@ -443,6 +534,25 @@ def intraday_bars(ticker: str) -> list[tuple[datetime, float]]:
     except Exception:
         return []
     return [(ts.to_pydatetime(), r["Close"]) for ts, r in h.iterrows()]
+
+
+def portfolio_bars(ticker: str, day: date) -> list[dict]:
+    """1y of daily closes + volume, STRICTLY before `day` (no lookahead), split-corrected."""
+    try:
+        h = _yf().Ticker(ticker).history(period="1y", interval="1d", auto_adjust=False,
+                                         timeout=HTTP_TIMEOUT)
+    except Exception:
+        return []
+    rows = [{"date": ts.date().isoformat(),
+             "open": finite(r["Open"]) or finite(r["Close"]),
+             "close": finite(r["Close"]), "volume": finite(r["Volume"])}
+            for ts, r in h.iterrows()
+            if ts.date() < day and finite(r["Close"]) is not None]
+    fixed = destitch(rows)
+    for src, fx in zip(rows, fixed):        # carry volume through the rescale, inverted
+        f = (fx["close"] / src["close"]) if src.get("close") else 1.0
+        fx["volume"] = (src["volume"] / f) if (finite(src.get("volume")) and f) else None
+    return fixed
 
 
 def soxx_weights() -> tuple[dict[str, float], str]:
@@ -696,6 +806,14 @@ def build_call(ctx: Ctx) -> dict:
                      "record_5y": band_record(tr), "record_live": band_record(tr, BANDS_LIVE_SINCE),
                      "last_trade": tr[-1] if tr else None}
 
+    portfolio = []
+    for t, role, note in PORTFOLIO:                 # one bad ticker must not kill the brief
+        try:
+            portfolio.append(portfolio_row(t, role, note, portfolio_bars(t, today)))
+        except Exception as e:
+            portfolio.append({"ticker": t, "role": role, "note": f"{note} [error: {e}]",
+                              "close": None, "as_of": None})
+
     soxl_daily = [v for _, v in sorted(daily_bars("SOXL", "2y").items())]
     soxl_pm = premarket.get("SOXL", {})
     soxl_pc = prior_closes.get("SOXL")
@@ -731,6 +849,7 @@ def build_call(ctx: Ctx) -> dict:
         "social": social, "_social_history": hist,
         "levels": levels,
         "bands": bands,
+        "portfolio": portfolio,
         "catalysts": {"earnings_next_7d": earnings_soon(list(weights), today),
                       "macro_today": fred_today(today)},
     }
@@ -877,6 +996,14 @@ def render(call: dict, score: dict, last_grade: dict | None) -> tuple[str, str, 
             ln += (f" · rule record 5y: {r5['win_rate']*100:.0f}% win, {r5['mean']*100:+.1f}%/trade (n={r5['n']})"
                    f"; live: " + (f"{rl['win_rate']*100:.0f}% (n={rl['n']})" if rl.get("n") else "no trades yet"))
         band_lines.append(ln)
+    pf = call.get("portfolio") or []
+    pf_lines = []
+    for role, label in (("core", "core"), ("theme", "thematic sleeve"), ("watch", "watch only")):
+        rows_r = [r for r in pf if r.get("role") == role]
+        if rows_r:
+            pf_lines.append(f"[{label}]")
+            pf_lines += [f"  {portfolio_line(r, call.get('prior_session'))}" for r in rows_r]
+
     lv_txt = (f"prior close {f2(lv['soxl_prior_close'])} · prior H/L {f2(lv['soxl_prior_high'])}/{f2(lv['soxl_prior_low'])}"
               f" · premarket H/L {f2(lv['soxl_pm_high'])}/{f2(lv['soxl_pm_low'])} · gap {pct(lv['soxl_gap'])}")
     lg = ""
@@ -915,6 +1042,7 @@ def render(call: dict, score: dict, last_grade: dict | None) -> tuple[str, str, 
         "", f"StockTwits: {soc_txt}",
         "", f"SOXL levels: {lv_txt}", f"Gap history: {gf_txt}",
         "", "Daily Bollinger (20, 2) as of yesterday's close:", *[f"  {x}" for x in band_lines],
+        *(["", "Portfolio watch (1-3y bucket, prior close):", *pf_lines] if pf_lines else []),
         "", f"Yesterday: {lg or 'n/a'}", f"Scorecard: {sc_txt}", f"Components: {comp_sc or 'n/a'}",
         *([f"Backfill: {bf_txt}"] if bf_txt else []),
     ])
@@ -933,6 +1061,7 @@ def render(call: dict, score: dict, last_grade: dict | None) -> tuple[str, str, 
 <p><b>StockTwits:</b> {html.escape(soc_txt)}</p>
 <p><b>SOXL levels:</b> {lv_txt}<br><b>Gap history:</b> {html.escape(gf_txt)}</p>
 <p><b>Daily Bollinger (20, 2) as of yesterday's close</b><br>{'<br>'.join(html.escape(x) for x in band_lines)}</p>
+{('<p><b>Portfolio watch</b> (1-3y bucket, prior close)</p><pre style="white-space:pre-wrap;font-size:12px">' + html.escape(chr(10).join(pf_lines)) + '</pre>') if pf_lines else ''}
 <p style="background:#fdf6e3;padding:8px;border-radius:6px"><b>Yesterday:</b> {html.escape(lg or 'n/a')}<br>
 <b>Scorecard:</b> {html.escape(sc_txt)}<br><b>Components:</b> {html.escape(comp_sc or 'n/a')}
 {('<br><b>Backfill:</b> ' + html.escape(bf_txt)) if bf_txt else ''}</p>
