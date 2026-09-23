@@ -1,0 +1,636 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>AI &amp; Humanoid Screen</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,700&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
+<style>
+:root{--ink:#12201e;--ink2:#41514e;--muted:#7b8b88;--hair:#dcd6cb;--paper:#f6f4ef;
+--card:#fffdf9;--sunk:#ece8df;--go:#3f7d4f;--go-bg:#e2efe3;--warn:#a96f16;--warn-bg:#faf0dc;
+--no:#b8452f;--no-bg:#fae4de;--teal:#136b62;}
+@media(prefers-color-scheme:dark){:root:not([data-theme=light]){--ink:#e9e7e0;--ink2:#c3c9c6;
+--muted:#8b9a97;--hair:#2a3836;--paper:#0f1817;--card:#172322;--sunk:#1d2b29;--go:#7fb98d;
+--go-bg:#1b2f20;--warn:#dda54e;--warn-bg:#332714;--no:#e58873;--no-bg:#3a201a;--teal:#4db8a8;}}
+:root[data-theme=dark]{--ink:#e9e7e0;--ink2:#c3c9c6;--muted:#8b9a97;--hair:#2a3836;
+--paper:#0f1817;--card:#172322;--sunk:#1d2b29;--go:#7fb98d;--go-bg:#1b2f20;--warn:#dda54e;
+--warn-bg:#332714;--no:#e58873;--no-bg:#3a201a;--teal:#4db8a8;}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--paper);color:var(--ink);font-family:"IBM Plex Mono",ui-monospace,monospace;
+font-size:14px;line-height:1.5;padding-inline:16px;padding-block:0 60px;max-width:1240px;margin:0 auto;
+font-variant-numeric:tabular-nums}
+h1,h2{font-family:"Bricolage Grotesque",system-ui,sans-serif;letter-spacing:-.02em;text-wrap:balance}
+h1{font-size:clamp(28px,6vw,42px);line-height:1.05}
+h2{font-size:20px;margin-bottom:4px}
+header{padding-block:34px 20px;border-bottom:3px solid var(--ink);margin-bottom:24px}
+.kick{font-size:11px;letter-spacing:.18em;text-transform:uppercase;color:var(--teal);font-weight:600;margin-bottom:10px}
+.lede{color:var(--ink2);margin-top:12px;max-width:80ch;font-size:13.5px}
+section{margin-bottom:30px}
+.sub{color:var(--muted);font-size:12.5px;margin:2px 0 12px;max-width:88ch}
+.tw{overflow-x:auto;border:1px solid var(--hair);border-radius:3px;background:var(--card)}
+table{border-collapse:collapse;width:100%;font-size:12.5px;min-width:900px}
+th{background:var(--ink);color:var(--paper);font-size:10px;letter-spacing:.07em;text-transform:uppercase;
+padding:7px 9px;text-align:right;font-weight:600;position:sticky;top:0}
+th:first-child{text-align:left}
+td{padding:7px 9px;text-align:right;border-top:1px solid var(--hair);white-space:nowrap}
+td.tk{text-align:left;line-height:1.25}
+td.pb{font-weight:600}
+td.vd{font-weight:600;font-size:11px;letter-spacing:.03em}
+tr.v-go td.vd{color:var(--go)} tr.v-go{background:var(--go-bg)}
+tr.v-warn td.vd{color:var(--warn)}
+tr.v-no td.vd{color:var(--no)} tr.v-no{background:var(--no-bg)}
+.sp{color:var(--no);font-weight:600;font-size:10px;letter-spacing:.04em}
+.stale{display:inline-block;background:var(--warn-bg);color:var(--warn);font-size:9px;
+padding:1px 4px;border-radius:2px;margin-left:5px;letter-spacing:.03em}
+.tiny{color:var(--muted);font-size:9.5px}
+.tag{display:inline-block;background:var(--sunk);color:var(--muted);font-size:9.5px;
+padding:1px 5px;border-radius:2px;margin:2px 3px 0 0;letter-spacing:.03em}
+.none{color:var(--muted);font-size:13px;padding:12px;background:var(--sunk);border-radius:3px}
+.ev{background:var(--sunk);border-left:3px solid var(--teal);padding:14px 16px;margin-bottom:26px;font-size:13px}
+.ev b{color:var(--teal)}
+.ev table{min-width:0;margin-top:8px;font-size:12px}
+.ev td,.ev th{border:none;padding:3px 10px 3px 0;text-align:left;background:none;color:inherit;
+position:static;text-transform:none;letter-spacing:0;font-size:12px}
+footer{border-top:1px solid var(--hair);padding-top:16px;color:var(--muted);font-size:12px}
+</style></head><body>
+<header>
+<div class="kick">Nasdaq-100 + the AI / humanoid complex · 144 of 145 resolved · 98 on an older bar</div>
+<h1>AI &amp; Humanoid Screen</h1>
+<p class="lede">Ranked by <b>%B ascending</b> — which names are on sale — not by momentum.
+Measured on the AI complex over the 2023+ wave, forward 60 days: buying dips beat simply
+holding by <b>+3.47 pts</b>, while buying strength lost <b>2.65 pts</b> and top-quartile
+12-month momentum lost <b>3.01 pts</b>. Owning the complex at all was worth <b>+17.95%</b>,
+which is roughly five times what the timing overlay adds.</p>
+</header>
+
+<div class="ev"><b>Why there are two signals.</b> Meta launched Muse on 2026-09-08 and ran
++20.3% before the first analyst upgrade on 09-21 — following that upgrade captured 2% of
+the move. Replaying these rules over those sessions:
+<table>
+<tr><td><b>%B &lt; 0.20 dip rule</b></td><td>2026-08-21 @ 549.47</td><td><b>+35.4%</b></td><td>18 days <i>before</i> the launch, and META was 11.8% below its 200-day</td></tr>
+<tr><td><b>move + volume spike</b></td><td>2026-09-09 @ 653.17</td><td><b>+13.9%</b></td><td>the day <i>after</i> the launch</td></tr>
+<tr><td>follow the analyst</td><td>2026-09-21 @ 741.25</td><td>+0.4%</td><td>the move was over</td></tr>
+</table>
+The dip rule caught it by accident — it was buying a drawdown, not predicting a product.
+The spike rule reacts to the catalyst, late but not uselessly. They are labelled separately
+so a reaction is never mistaken for a setup.</div>
+
+<section><h2>Buy zone</h2>
+<p class="sub">%B below 0.2, liquid, and passes the 1–3 year hold gate
+(≥80% of rolling 2-year windows positive with a
+10th percentile above -10%).</p>
+<div class="tw"><table><tr><th>Ticker</th><th>Close</th><th>1d</th><th>%B</th><th>vs 20d</th><th>vs 200d</th><th>range</th><th>ATR</th><th>$vol/d</th><th>2y pos</th><th>2y p10</th><th>msgs</th><th>Verdict</th></tr><tr class="v-go">
+<td class="tk"><b>TMUS</b><span class="stale">2026-09-21</span><br><span class="tag">ndx100</span></td>
+<td>165.27</td><td>-1.73%</td>
+<td class="pb">-0.07</td>
+<td>-7.6%</td><td>-13.5%</td><td>0%</td>
+<td>3.3%</td><td>797M</td>
+<td>95% <span class="tiny">4w</span></td>
+<td>+8.9%</td><td>—</td>
+<td class="vd">BUY ZONE</td>
+</tr><tr class="v-go">
+<td class="tk"><b>CSCO</b><br><span class="tag">ndx100</span></td>
+<td>106.44</td><td>-4.50%</td>
+<td class="pb">-0.06</td>
+<td>-3.1%</td><td>+10.8%</td><td>64%</td>
+<td>2.9%</td><td>2.1B</td>
+<td>82% <span class="tiny">4w</span></td>
+<td>-3.2%</td><td>—</td>
+<td class="vd">BUY ZONE</td>
+</tr><tr class="v-go">
+<td class="tk"><b>CSX</b><span class="stale">2026-09-21</span><br><span class="tag">ndx100</span></td>
+<td>45.99</td><td>-2.36%</td>
+<td class="pb">-0.04</td>
+<td>-6.6%</td><td>+5.4%</td><td>65%</td>
+<td>2.2%</td><td>521M</td>
+<td>90% <span class="tiny">4w</span></td>
+<td>-0.2%</td><td>—</td>
+<td class="vd">BUY ZONE</td>
+</tr><tr class="v-go">
+<td class="tk"><b>PCAR</b><span class="stale">2026-09-21</span><br><span class="tag">ndx100</span></td>
+<td>114.73</td><td>-1.15%</td>
+<td class="pb">-0.01</td>
+<td>-6.7%</td><td>-4.5%</td><td>51%</td>
+<td>2.6%</td><td>341M</td>
+<td>98% <span class="tiny">4w</span></td>
+<td>+8.1%</td><td>—</td>
+<td class="vd">BUY ZONE</td>
+</tr><tr class="v-go">
+<td class="tk"><b>XEL</b><span class="stale">2026-09-21</span><br><span class="tag">ndx100</span></td>
+<td>71.85</td><td>-0.62%</td>
+<td class="pb">0.01</td>
+<td>-4.0%</td><td>-6.8%</td><td>16%</td>
+<td>1.8%</td><td>394M</td>
+<td>82% <span class="tiny">4w</span></td>
+<td>-6.9%</td><td>—</td>
+<td class="vd">BUY ZONE</td>
+</tr><tr class="v-go">
+<td class="tk"><b>ORLY</b><span class="stale">2026-09-21</span><br><span class="tag">ndx100</span></td>
+<td>82.88</td><td>-2.16%</td>
+<td class="pb">0.02</td>
+<td>-4.6%</td><td>-9.3%</td><td>1%</td>
+<td>2.2%</td><td>540M</td>
+<td>100% <span class="tiny">4w</span></td>
+<td>+27.8%</td><td>—</td>
+<td class="vd">BUY ZONE</td>
+</tr><tr class="v-go">
+<td class="tk"><b>AEP</b><span class="stale">2026-09-21</span><br><span class="tag">ndx100</span></td>
+<td>120.03</td><td>+0.02%</td>
+<td class="pb">0.06</td>
+<td>-2.2%</td><td>-4.3%</td><td>48%</td>
+<td>1.7%</td><td>470M</td>
+<td>86% <span class="tiny">4w</span></td>
+<td>-2.5%</td><td>—</td>
+<td class="vd">BUY ZONE</td>
+</tr><tr class="v-go">
+<td class="tk"><b>VRSK</b><span class="stale">2026-09-21</span><br><span class="tag">ndx100</span></td>
+<td>172.02</td><td>-1.93%</td>
+<td class="pb">0.08</td>
+<td>-6.3%</td><td>-10.1%</td><td>17%</td>
+<td>3.7%</td><td>268M</td>
+<td>83% <span class="tiny">4w</span></td>
+<td>-9.0%</td><td>—</td>
+<td class="vd">BUY ZONE</td>
+</tr><tr class="v-go">
+<td class="tk"><b>INTU</b><span class="stale">2026-09-21</span><br><span class="tag">ndx100</span></td>
+<td>304.12</td><td>+0.31%</td>
+<td class="pb">0.12</td>
+<td>-8.9%</td><td>-25.6%</td><td>11%</td>
+<td>4.5%</td><td>1.2B</td>
+<td>84% <span class="tiny">4w</span></td>
+<td>-9.9%</td><td>—</td>
+<td class="vd">BUY ZONE</td>
+</tr><tr class="v-go">
+<td class="tk"><b>CCEP</b><span class="stale">2026-09-21</span><br><span class="tag">ndx100</span></td>
+<td>100.53</td><td>+0.76%</td>
+<td class="pb">0.12</td>
+<td>-4.8%</td><td>+2.9%</td><td>60%</td>
+<td>2.1%</td><td>183M</td>
+<td>94% <span class="tiny">4w</span></td>
+<td>+5.4%</td><td>—</td>
+<td class="vd">BUY ZONE</td>
+</tr><tr class="v-go">
+<td class="tk"><b>TRI</b><span class="stale">2026-09-21</span><br><span class="tag">ndx100</span></td>
+<td>95.43</td><td>+1.10%</td>
+<td class="pb">0.13</td>
+<td>-7.0%</td><td>-2.6%</td><td>24%</td>
+<td>4.5%</td><td>152M</td>
+<td>90% <span class="tiny">4w</span></td>
+<td>-1.9%</td><td>—</td>
+<td class="vd">BUY ZONE</td>
+</tr><tr class="v-go">
+<td class="tk"><b>CTAS</b><span class="stale">2026-09-21</span><br><span class="tag">ndx100</span></td>
+<td>196.88</td><td>-0.38%</td>
+<td class="pb">0.13</td>
+<td>-2.1%</td><td>+5.4%</td><td>64%</td>
+<td>1.9%</td><td>380M</td>
+<td>99% <span class="tiny">4w</span></td>
+<td>+23.3%</td><td>—</td>
+<td class="vd">BUY ZONE</td>
+</tr><tr class="v-go">
+<td class="tk"><b>LIN</b><span class="stale">2026-09-21</span><br><span class="tag">ndx100</span></td>
+<td>457.50</td><td>-0.63%</td>
+<td class="pb">0.15</td>
+<td>-3.5%</td><td>-4.7%</td><td>45%</td>
+<td>1.6%</td><td>987M</td>
+<td>100% <span class="tiny">4w</span></td>
+<td>+17.9%</td><td>—</td>
+<td class="vd">BUY ZONE</td>
+</tr><tr class="v-go">
+<td class="tk"><b>BKNG</b><br><span class="tag">ndx100</span></td>
+<td>164.22</td><td>-2.55%</td>
+<td class="pb">0.16</td>
+<td>-11.2%</td><td>-10.6%</td><td>16%</td>
+<td>4.0%</td><td>1.1B</td>
+<td>84% <span class="tiny">4w</span></td>
+<td>-5.0%</td><td>—</td>
+<td class="vd">BUY ZONE</td>
+</tr><tr class="v-go">
+<td class="tk"><b>VRTX</b><span class="stale">2026-09-21</span><br><span class="tag">ndx100</span></td>
+<td>510.72</td><td>+0.47%</td>
+<td class="pb">0.18</td>
+<td>-4.1%</td><td>+8.5%</td><td>74%</td>
+<td>2.4%</td><td>582M</td>
+<td>92% <span class="tiny">4w</span></td>
+<td>+1.7%</td><td>—</td>
+<td class="vd">BUY ZONE</td>
+</tr><tr class="v-go">
+<td class="tk"><b>PAYX</b><span class="stale">2026-09-21</span><br><span class="tag">ndx100</span></td>
+<td>115.01</td><td>-0.97%</td>
+<td class="pb">0.19</td>
+<td>-4.8%</td><td>+12.1%</td><td>72%</td>
+<td>2.3%</td><td>312M</td>
+<td>88% <span class="tiny">4w</span></td>
+<td>-2.0%</td><td>—</td>
+<td class="vd">BUY ZONE</td>
+</tr><tr class="v-go">
+<td class="tk"><b>ODFL</b><span class="stale">2026-09-21</span><br><span class="tag">ndx100</span></td>
+<td>175.36</td><td>+1.36%</td>
+<td class="pb">0.20</td>
+<td>-6.0%</td><td>-11.6%</td><td>41%</td>
+<td>3.4%</td><td>319M</td>
+<td>88% <span class="tiny">4w</span></td>
+<td>-5.7%</td><td>—</td>
+<td class="vd">BUY ZONE</td>
+</tr></table></div></section>
+
+<section><h2>Catalyst spikes today</h2>
+<p class="sub">A move of 5%+ on
+2×+ the 20-day average volume. This is a reaction, not a setup —
+something happened, and the rule does not know what or which direction it resolves.</p>
+<div class="tw"><table><tr><th>Ticker</th><th>Close</th><th>1d</th><th>%B</th><th>vs 20d</th><th>vs 200d</th><th>range</th><th>ATR</th><th>$vol/d</th><th>2y pos</th><th>2y p10</th><th>msgs</th><th>Verdict</th></tr><tr class="v-mid">
+<td class="tk"><b>SHOP</b><br><span class="tag">ndx100</span></td>
+<td>147.74</td><td>+7.12%</td>
+<td class="pb">0.72</td>
+<td>+6.1%</td><td>+13.5%</td><td>63%</td>
+<td>4.5%</td><td>1.0B</td>
+<td>77% <span class="tiny">4w</span></td>
+<td>-61.5%</td><td>—</td>
+<td class="vd">neutral<br><span class="sp">SPIKE +7.1% · 3.0x</span></td>
+</tr><tr class="v-warn">
+<td class="tk"><b>WBD</b><span class="stale">2026-09-21</span><br><span class="tag">ndx100</span></td>
+<td>30.80</td><td>+10.79%</td>
+<td class="pb">1.44</td>
+<td>+8.2%</td><td>+11.9%</td><td>100%</td>
+<td>1.8%</td><td>513M</td>
+<td>40% <span class="tiny">4w</span></td>
+<td>-61.0%</td><td>—</td>
+<td class="vd">extended<br><span class="sp">SPIKE +10.8% · 12.5x</span></td>
+</tr></table></div></section>
+
+<section><h2>Near the band / neutral</h2>
+<p class="sub">Dips that fail the hold gate, plus names with no measured edge either way.</p>
+<div class="tw"><table><tr><th>Ticker</th><th>Close</th><th>1d</th><th>%B</th><th>vs 20d</th><th>vs 200d</th><th>range</th><th>ATR</th><th>$vol/d</th><th>2y pos</th><th>2y p10</th><th>msgs</th><th>Verdict</th></tr><tr class="v-warn">
+<td class="tk"><b>FANG</b><span class="stale">2026-09-21</span><br><span class="tag">ndx100</span></td>
+<td>189.27</td><td>-1.64%</td>
+<td class="pb">-0.08</td>
+<td>-5.7%</td><td>+4.2%</td><td>71%</td>
+<td>3.4%</td><td>382M</td>
+<td>68% <span class="tiny">4w</span></td>
+<td>-49.1%</td><td>—</td>
+<td class="vd">DIP · FAILS HOLD</td>
+</tr><tr class="v-warn">
+<td class="tk"><b>PEP</b><span class="stale">2026-09-21</span><br><span class="tag">ndx100</span></td>
+<td>129.59</td><td>-0.12%</td>
+<td class="pb">-0.07</td>
+<td>-5.5%</td><td>-10.8%</td><td>0%</td>
+<td>1.8%</td><td>1.1B</td>
+<td>78% <span class="tiny">4w</span></td>
+<td>-11.1%</td><td>—</td>
+<td class="vd">DIP · FAILS HOLD</td>
+</tr><tr class="v-warn">
+<td class="tk"><b>KDP</b><span class="stale">2026-09-21</span><br><span class="tag">ndx100</span></td>
+<td>30.62</td><td>-1.10%</td>
+<td class="pb">-0.06</td>
+<td>-4.0%</td><td>+5.3%</td><td>67%</td>
+<td>2.3%</td><td>362M</td>
+<td>70% <span class="tiny">4w</span></td>
+<td>-9.1%</td><td>—</td>
+<td class="vd">DIP · FAILS HOLD</td>
+</tr><tr class="v-warn">
+<td class="tk"><b>MDLZ</b><span class="stale">2026-09-21</span><br><span class="tag">ndx100</span></td>
+<td>60.17</td><td>-1.12%</td>
+<td class="pb">-0.06</td>
+<td>-3.2%</td><td>+2.4%</td><td>66%</td>
+<td>2.1%</td><td>479M</td>
+<td>79% <span class="tiny">4w</span></td>
+<td>-7.6%</td><td>—</td>
+<td class="vd">DIP · FAILS HOLD</td>
+</tr><tr class="v-warn">
+<td class="tk"><b>CPRT</b><span class="stale">2026-09-21</span><br><span class="tag">ndx100</span></td>
+<td>28.91</td><td>-1.26%</td>
+<td class="pb">-0.00</td>
+<td>-9.2%</td><td>-14.9%</td><td>9%</td>
+<td>3.8%</td><td>302M</td>
+<td>87% <span class="tiny">4w</span></td>
+<td>-15.7%</td><td>—</td>
+<td class="vd">DIP · FAILS HOLD</td>
+</tr><tr class="v-warn">
+<td class="tk"><b>ROP</b><span class="stale">2026-09-21</span><br><span class="tag">ndx100</span></td>
+<td>365.40</td><td>-1.97%</td>
+<td class="pb">0.04</td>
+<td>-8.8%</td><td>-1.7%</td><td>25%</td>
+<td>2.8%</td><td>289M</td>
+<td>85% <span class="tiny">4w</span></td>
+<td>-14.7%</td><td>—</td>
+<td class="vd">DIP · FAILS HOLD</td>
+</tr><tr class="v-warn">
+<td class="tk"><b>CMCSA</b><br><span class="tag">ndx100</span></td>
+<td>22.42</td><td>-2.22%</td>
+<td class="pb">0.05</td>
+<td>-11.4%</td><td>-15.1%</td><td>5%</td>
+<td>3.2%</td><td>667M</td>
+<td>57% <span class="tiny">4w</span></td>
+<td>-26.8%</td><td>—</td>
+<td class="vd">DIP · FAILS HOLD</td>
+</tr><tr class="v-warn">
+<td class="tk"><b>NFLX</b><br><span class="tag">ndx100</span></td>
+<td>72.16</td><td>-1.64%</td>
+<td class="pb">0.05</td>
+<td>-7.7%</td><td>-15.2%</td><td>8%</td>
+<td>3.3%</td><td>2.5B</td>
+<td>77% <span class="tiny">4w</span></td>
+<td>-39.2%</td><td>—</td>
+<td class="vd">DIP · FAILS HOLD</td>
+</tr><tr class="v-warn">
+<td class="tk"><b>ADBE</b><br><span class="tag">ndx100</span></td>
+<td>238.25</td><td>-4.52%</td>
+<td class="pb">0.09</td>
+<td>-10.4%</td><td>-9.8%</td><td>26%</td>
+<td>4.4%</td><td>1.2B</td>
+<td>64% <span class="tiny">4w</span></td>
+<td>-42.9%</td><td>—</td>
+<td class="vd">DIP · FAILS HOLD</td>
+</tr><tr class="v-warn">
+<td class="tk"><b>CSGP</b><span class="stale">2026-09-21</span><br><span class="tag">ndx100</span></td>
+<td>29.04</td><td>-0.17%</td>
+<td class="pb">0.09</td>
+<td>-6.3%</td><td>-30.6%</td><td>3%</td>
+<td>4.3%</td><td>186M</td>
+<td>62% <span class="tiny">4w</span></td>
+<td>-22.5%</td><td>—</td>
+<td class="vd">DIP · FAILS HOLD</td>
+</tr><tr class="v-warn">
+<td class="tk"><b>SBUX</b><span class="stale">2026-09-21</span><br><span class="tag">ndx100</span></td>
+<td>94.90</td><td>-0.97%</td>
+<td class="pb">0.10</td>
+<td>-7.3%</td><td>-2.5%</td><td>58%</td>
+<td>2.5%</td><td>657M</td>
+<td>75% <span class="tiny">4w</span></td>
+<td>-8.6%</td><td>—</td>
+<td class="vd">DIP · FAILS HOLD</td>
+</tr><tr class="v-warn">
+<td class="tk"><b>NOVT</b><span class="stale">2026-09-21</span><br><span class="tag">humanoid_disclosed</span></td>
+<td>134.31</td><td>+0.88%</td>
+<td class="pb">0.13</td>
+<td>-5.3%</td><td>-3.5%</td><td>50%</td>
+<td>4.2%</td><td>56M</td>
+<td>76% <span class="tiny">4w</span></td>
+<td>-21.7%</td><td>—</td>
+<td class="vd">DIP · FAILS HOLD</td>
+</tr><tr class="v-warn">
+<td class="tk"><b>TTD</b><br><span class="tag">ndx100</span></td>
+<td>13.18</td><td>-5.04%</td>
+<td class="pb">0.13</td>
+<td>-6.1%</td><td>-44.3%</td><td>0%</td>
+<td>5.2%</td><td>268M</td>
+<td>70% <span class="tiny">4w</span></td>
+<td>-46.7%</td><td>—</td>
+<td class="vd">DIP · FAILS HOLD</td>
+</tr><tr class="v-warn">
+<td class="tk"><b>MELI</b><span class="stale">2026-09-21</span><br><span class="tag">ndx100</span></td>
+<td>1,820.47</td><td>+1.85%</td>
+<td class="pb">0.13</td>
+<td>-4.9%</td><td>-1.7%</td><td>28%</td>
+<td>3.3%</td><td>744M</td>
+<td>78% <span class="tiny">4w</span></td>
+<td>-24.0%</td><td>—</td>
+<td class="vd">DIP · FAILS HOLD</td>
+</tr><tr class="v-warn">
+<td class="tk"><b>RRX</b><span class="stale">2026-09-21</span><br><span class="tag">humanoid_disclosed</span></td>
+<td>150.73</td><td>+1.81%</td>
+<td class="pb">0.18</td>
+<td>-4.5%</td><td>-19.8%</td><td>21%</td>
+<td>4.4%</td><td>206M</td>
+<td>80% <span class="tiny">4w</span></td>
+<td>-7.0%</td><td>—</td>
+<td class="vd">DIP · FAILS HOLD</td>
+</tr><tr class="v-warn">
+<td class="tk"><b>ALB</b><span class="stale">2026-09-21</span><br><span class="tag">humanoid_materials</span></td>
+<td>112.92</td><td>+1.81%</td>
+<td class="pb">0.18</td>
+<td>-10.2%</td><td>-27.3%</td><td>25%</td>
+<td>4.8%</td><td>272M</td>
+<td>49% <span class="tiny">4w</span></td>
+<td>-62.4%</td><td>—</td>
+<td class="vd">DIP · FAILS HOLD</td>
+</tr><tr class="v-mid">
+<td class="tk"><b>KHC</b><span class="stale">2026-09-21</span><br><span class="tag">ndx100</span></td>
+<td>24.37</td><td>-0.25%</td>
+<td class="pb">0.21</td>
+<td>-1.9%</td><td>+4.8%</td><td>58%</td>
+<td>2.7%</td><td>357M</td>
+<td>37% <span class="tiny">4w</span></td>
+<td>-58.1%</td><td>—</td>
+<td class="vd">neutral</td>
+</tr><tr class="v-mid">
+<td class="tk"><b>AXON</b><span class="stale">2026-09-21</span><br><span class="tag">ndx100</span></td>
+<td>452.06</td><td>+0.96%</td>
+<td class="pb">0.21</td>
+<td>-12.9%</td><td>-10.1%</td><td>25%</td>
+<td>6.1%</td><td>459M</td>
+<td>98% <span class="tiny">4w</span></td>
+<td>+22.1%</td><td>—</td>
+<td class="vd">neutral</td>
+</tr><tr class="v-mid">
+<td class="tk"><b>BKR</b><span class="stale">2026-09-21</span><br><span class="tag">ndx100</span></td>
+<td>57.83</td><td>+1.01%</td>
+<td class="pb">0.24</td>
+<td>-4.9%</td><td>-1.4%</td><td>55%</td>
+<td>3.2%</td><td>446M</td>
+<td>65% <span class="tiny">4w</span></td>
+<td>-44.0%</td><td>—</td>
+<td class="vd">neutral</td>
+</tr><tr class="v-mid">
+<td class="tk"><b>COST</b><span class="stale">2026-09-21</span><br><span class="tag">ndx100</span></td>
+<td>898.48</td><td>+0.35%</td>
+<td class="pb">0.25</td>
+<td>-2.6%</td><td>-6.2%</td><td>21%</td>
+<td>1.6%</td><td>1.9B</td>
+<td>100% <span class="tiny">4w</span></td>
+<td>+27.5%</td><td>—</td>
+<td class="vd">neutral</td>
+</tr><tr class="v-mid">
+<td class="tk"><b>TTWO</b><span class="stale">2026-09-21</span><br><span class="tag">ndx100</span></td>
+<td>209.92</td><td>+2.18%</td>
+<td class="pb">0.25</td>
+<td>-4.1%</td><td>-7.3%</td><td>28%</td>
+<td>3.6%</td><td>512M</td>
+<td>76% <span class="tiny">4w</span></td>
+<td>-25.0%</td><td>—</td>
+<td class="vd">neutral</td>
+</tr><tr class="v-mid">
+<td class="tk"><b>ADP</b><span class="stale">2026-09-21</span><br><span class="tag">ndx100</span></td>
+<td>269.94</td><td>-0.47%</td>
+<td class="pb">0.27</td>
+<td>-2.1%</td><td>+15.0%</td><td>84%</td>
+<td>2.0%</td><td>580M</td>
+<td>93% <span class="tiny">4w</span></td>
+<td>+4.3%</td><td>—</td>
+<td class="vd">neutral</td>
+</tr><tr class="v-mid">
+<td class="tk"><b>ADSK</b><span class="stale">2026-09-21</span><br><span class="tag">ndx100</span></td>
+<td>218.85</td><td>+0.88%</td>
+<td class="pb">0.31</td>
+<td>-6.2%</td><td>-10.0%</td><td>23%</td>
+<td>4.2%</td><td>450M</td>
+<td>74% <span class="tiny">4w</span></td>
+<td>-26.7%</td><td>—</td>
+<td class="vd">neutral</td>
+</tr><tr class="v-mid">
+<td class="tk"><b>IDXX</b><span class="stale">2026-09-21</span><br><span class="tag">ndx100</span></td>
+<td>515.30</td><td>+0.71%</td>
+<td class="pb">0.32</td>
+<td>-2.6%</td><td>-13.6%</td><td>4%</td>
+<td>2.8%</td><td>299M</td>
+<td>77% <span class="tiny">4w</span></td>
+<td>-13.7%</td><td>—</td>
+<td class="vd">neutral</td>
+</tr><tr class="v-mid">
+<td class="tk"><b>PDD</b><span class="stale">2026-09-21</span><br><span class="tag">ndx100</span></td>
+<td>79.30</td><td>+0.51%</td>
+<td class="pb">0.33</td>
+<td>-2.8%</td><td>-17.5%</td><td>9%</td>
+<td>2.5%</td><td>517M</td>
+<td>63% <span class="tiny">4w</span></td>
+<td>-43.0%</td><td>—</td>
+<td class="vd">neutral</td>
+</tr></table></div></section>
+
+<section><h2>Extended</h2>
+<p class="sub">%B above 1.00 — the stall zone, −2.65 pts vs the
+null at 60 days. Not a short signal; a not-today signal.</p>
+<div class="tw"><table><tr><th>Ticker</th><th>Close</th><th>1d</th><th>%B</th><th>vs 20d</th><th>vs 200d</th><th>range</th><th>ATR</th><th>$vol/d</th><th>2y pos</th><th>2y p10</th><th>msgs</th><th>Verdict</th></tr><tr class="v-warn">
+<td class="tk"><b>WMT</b><br><span class="tag">ndx100</span></td>
+<td>110.12</td><td>+2.49%</td>
+<td class="pb">1.01</td>
+<td>+3.5%</td><td>-6.8%</td><td>30%</td>
+<td>1.9%</td><td>2.4B</td>
+<td>98% <span class="tiny">4w</span></td>
+<td>+7.6%</td><td>—</td>
+<td class="vd">extended</td>
+</tr><tr class="v-warn">
+<td class="tk"><b>ANET</b><span class="stale">2026-09-21</span><br><span class="tag">ai_network</span></td>
+<td>205.42</td><td>+3.02%</td>
+<td class="pb">1.01</td>
+<td>+5.5%</td><td>+32.1%</td><td>95%</td>
+<td>4.0%</td><td>1.2B</td>
+<td>86% <span class="tiny">4w</span></td>
+<td>-12.2%</td><td>—</td>
+<td class="vd">extended</td>
+</tr><tr class="v-warn">
+<td class="tk"><b>ZS</b><span class="stale">2026-09-21</span><br><span class="tag">ndx100</span></td>
+<td>207.13</td><td>+4.98%</td>
+<td class="pb">1.01</td>
+<td>+14.8%</td><td>+23.2%</td><td>41%</td>
+<td>4.8%</td><td>411M</td>
+<td>67% <span class="tiny">4w</span></td>
+<td>-36.5%</td><td>—</td>
+<td class="vd">extended</td>
+</tr><tr class="v-warn">
+<td class="tk"><b>MRVL</b><br><span class="tag">ndx100</span><span class="tag">ai_compute</span></td>
+<td>262.36</td><td>+1.93%</td>
+<td class="pb">1.02</td>
+<td>+14.0%</td><td>+64.0%</td><td>78%</td>
+<td>5.5%</td><td>4.9B</td>
+<td>86% <span class="tiny">4w</span></td>
+<td>-7.7%</td><td>—</td>
+<td class="vd">extended</td>
+</tr><tr class="v-warn">
+<td class="tk"><b>QCOM</b><br><span class="tag">ndx100</span></td>
+<td>198.27</td><td>+2.08%</td>
+<td class="pb">1.03</td>
+<td>+12.9%</td><td>+18.5%</td><td>60%</td>
+<td>4.4%</td><td>2.0B</td>
+<td>75% <span class="tiny">4w</span></td>
+<td>-13.6%</td><td>—</td>
+<td class="vd">extended</td>
+</tr><tr class="v-warn">
+<td class="tk"><b>ETN</b><span class="stale">2026-09-21</span><br><span class="tag">ai_power</span></td>
+<td>435.43</td><td>+2.51%</td>
+<td class="pb">1.04</td>
+<td>+6.6%</td><td>+13.6%</td><td>83%</td>
+<td>3.5%</td><td>774M</td>
+<td>99% <span class="tiny">4w</span></td>
+<td>+14.0%</td><td>—</td>
+<td class="vd">extended</td>
+</tr><tr class="v-warn">
+<td class="tk"><b>TXN</b><span class="stale">2026-09-21</span><br><span class="tag">ndx100</span></td>
+<td>270.87</td><td>+1.59%</td>
+<td class="pb">1.05</td>
+<td>+3.8%</td><td>+11.6%</td><td>67%</td>
+<td>3.3%</td><td>1.8B</td>
+<td>88% <span class="tiny">4w</span></td>
+<td>-1.8%</td><td>—</td>
+<td class="vd">extended</td>
+</tr><tr class="v-warn">
+<td class="tk"><b>ARKQ</b><span class="stale">2026-09-21</span><br><span class="tag">humanoid_etf</span></td>
+<td>125.49</td><td>+2.69%</td>
+<td class="pb">1.05</td>
+<td>+3.0%</td><td>+1.1%</td><td>57%</td>
+<td>2.1%</td><td>13M</td>
+<td>76% <span class="tiny">4w</span></td>
+<td>-33.3%</td><td>—</td>
+<td class="vd">extended</td>
+</tr><tr class="v-warn">
+<td class="tk"><b>ADI</b><span class="stale">2026-09-21</span><br><span class="tag">ndx100</span></td>
+<td>383.00</td><td>+1.94%</td>
+<td class="pb">1.07</td>
+<td>+4.8%</td><td>+8.7%</td><td>72%</td>
+<td>3.0%</td><td>1.3B</td>
+<td>98% <span class="tiny">4w</span></td>
+<td>+15.1%</td><td>—</td>
+<td class="vd">extended</td>
+</tr><tr class="v-warn">
+<td class="tk"><b>INTC</b><br><span class="tag">ndx100</span></td>
+<td>123.86</td><td>+1.71%</td>
+<td class="pb">1.09</td>
+<td>+24.8%</td><td>+58.9%</td><td>85%</td>
+<td>5.2%</td><td>10.4B</td>
+<td>49% <span class="tiny">4w</span></td>
+<td>-37.8%</td><td>—</td>
+<td class="vd">extended</td>
+</tr><tr class="v-warn">
+<td class="tk"><b>MSTR</b><br><span class="tag">ndx100</span></td>
+<td>167.33</td><td>-0.69%</td>
+<td class="pb">1.10</td>
+<td>+22.7%</td><td>+22.3%</td><td>31%</td>
+<td>5.6%</td><td>2.0B</td>
+<td>64% <span class="tiny">4w</span></td>
+<td>-40.8%</td><td>—</td>
+<td class="vd">extended</td>
+</tr><tr class="v-warn">
+<td class="tk"><b>TSM</b><br><span class="tag">ai_compute</span></td>
+<td>452.00</td><td>+1.54%</td>
+<td class="pb">1.10</td>
+<td>+6.3%</td><td>+19.3%</td><td>88%</td>
+<td>2.4%</td><td>4.9B</td>
+<td>83% <span class="tiny">4w</span></td>
+<td>-16.0%</td><td>—</td>
+<td class="vd">extended</td>
+</tr><tr class="v-warn">
+<td class="tk"><b>ISRG</b><span class="stale">2026-09-21</span><br><span class="tag">ndx100</span></td>
+<td>401.65</td><td>+2.12%</td>
+<td class="pb">1.12</td>
+<td>+7.7%</td><td>-11.6%</td><td>27%</td>
+<td>3.0%</td><td>968M</td>
+<td>85% <span class="tiny">4w</span></td>
+<td>-6.6%</td><td>—</td>
+<td class="vd">extended</td>
+</tr><tr class="v-warn">
+<td class="tk"><b>AMD</b><br><span class="tag">ndx100</span><span class="tag">ai_compute</span></td>
+<td>623.77</td><td>+1.34%</td>
+<td class="pb">1.13</td>
+<td>+23.2%</td><td>+73.9%</td><td>100%</td>
+<td>4.1%</td><td>12.3B</td>
+<td>89% <span class="tiny">4w</span></td>
+<td>-2.7%</td><td>—</td>
+<td class="vd">extended</td>
+</tr><tr class="v-warn">
+<td class="tk"><b>MU</b><br><span class="tag">ndx100</span><span class="tag">ai_memory</span></td>
+<td>1,096.16</td><td>+5.00%</td>
+<td class="pb">1.17</td>
+<td>+12.7%</td><td>+69.1%</td><td>89%</td>
+<td>4.6%</td><td>31.8B</td>
+<td>80% <span class="tiny">4w</span></td>
+<td>-13.6%</td><td>—</td>
+<td class="vd">extended</td>
+</tr></table></div></section>
+
+<footer><b>as of 2026-09-22</b>
+— but 98 of 144 rows carry an OLDER bar, tagged with their own date beside the ticker. yfinance drops whole trading days per-ticker, so one header date cannot speak for the table.
+· the <b>2y pos</b> column shows the count of INDEPENDENT (non-overlapping) 2-year windows
+behind it — a name with 1-2 is one market cycle, not a distribution · generated
+2026-09-23T23:46:07+00:00 · bars strictly before today, split-corrected,
+entry measured at the next open. The <b>msgs</b> column is StockTwits message volume in 12h —
+the bull/bear ratio is deliberately not shown, because in a live pull across 20 tickers nine
+of them read 100% bullish. Thresholds were each measured against the unconditional base rate;
+stacking them into one verdict is judgement, not a tested system.</footer>
+</body></html>

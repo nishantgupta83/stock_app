@@ -1,0 +1,153 @@
+# .github/workflows/ai_humanoid_screen.yml
+name: ai_humanoid_screen
+
+# Daily screen over the Nasdaq-100 + the AI/humanoid complex (scripts/ai_humanoid_screen.py).
+#
+# ISOLATED by construction: no Supabase, no Telegram, no contact with the frozen forward
+# experiments. It reads yfinance + StockTwits and writes ai_humanoid/{screen.json,index.html},
+# which are committed, then publishes that folder to its OWN Cloudflare Pages project.
+#
+# WHY A SEPARATE PAGES PROJECT: site_generator.yml:83 runs
+#   wrangler pages deploy dist/ --project-name=hub4apps-stock
+# i.e. it publishes the WHOLE dist/ tree to hub4apps-stock. Publishing a subfolder to that
+# same project would replace the entire dashboard with this one page. So this deploys
+# ai_humanoid/ to `ai-humanoid-screen` instead, and the two can never collide.
+#
+# FIRST RUN: the Pages project must exist. Create it once with
+#   npx wrangler@4 pages project create ai-humanoid-screen --production-branch=main
+# Until it exists the deploy step warns and exits 0 on "project not found" ONLY; every
+# other deploy failure is fatal, and a successful deploy is smoke-tested against the live
+# URL before the step passes.
+#
+# Schedule: 08:10 UTC Tue-Sat = 01:10 PT, i.e. AFTER Pacific midnight has rolled.
+# This matters: fetch() keeps bars with `ts.date() < datetime.now(PT).date()`, so a run at
+# 22:40 UTC (15:40 PT, the SAME PT day) would throw away the very close it just waited for
+# and publish a page one full session behind. Running after PT midnight makes "yesterday"
+# the completed session. The operator is adding a cron-job.org pinger; this is the backup.
+
+on:
+  schedule:
+    - cron: "10 8 * * 2-6"
+  workflow_dispatch:
+    inputs:
+      no_social:
+        description: "Skip StockTwits (faster, avoids rate limits)"
+        type: boolean
+        default: false
+
+concurrency:
+  group: ai_humanoid_screen
+  cancel-in-progress: true
+
+permissions:
+  contents: write
+
+jobs:
+  screen:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          fetch-depth: 1
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - uses: actions/setup-python@v6
+        with:
+          python-version: "3.12"
+
+      - name: Install deps
+        run: pip install --quiet yfinance pandas numpy
+
+      - name: Run the screen
+        env:
+          NO_SOCIAL: ${{ inputs.no_social }}
+        run: |
+          set -euo pipefail
+          # if-block, not `[ ... ] && ...`: under `set -e` a false test kills the step
+          args=()
+          if [ "${NO_SOCIAL:-false}" = "true" ]; then args+=(--no-social); fi
+          python scripts/ai_humanoid_screen.py ${args[@]+"${args[@]}"}
+
+      - name: Verify the artifact, not the exit code
+        run: |
+          set -euo pipefail
+          test -s ai_humanoid/screen.json || { echo "::error::screen.json missing or empty"; exit 1; }
+          test -s ai_humanoid/index.html  || { echo "::error::index.html missing or empty"; exit 1; }
+          python - <<'PY'
+          import json, sys
+          d = json.load(open("ai_humanoid/screen.json"))
+          n = d.get("n_resolved", 0)
+          print(f"resolved {n}/{d.get('n_universe')} as of {d.get('as_of')}")
+          # A silent collapse to a handful of tickers is the failure shape that matters:
+          # the page would still render, just describing almost nothing.
+          if n < 100:
+              print(f"::error::only {n} tickers resolved — expected >=100"); sys.exit(1)
+          # The failure that n_resolved cannot see: every ticker resolves, but most carry a
+          # bar older than the header. On 2026-09-23 this was 98/144 = 68%.
+          # Every row now carries its own date and a badge, so a moderate stale fraction is
+          # DISCLOSED rather than hidden — that only needs a warning. A majority-stale table
+          # means the feed is broken for that session and should not publish at all.
+          stale = d.get("n_stale", 0)
+          frac = stale / n if n else 0
+          if frac > 0.50:
+              print(f"::error::{stale}/{n} rows ({frac*100:.0f}%) are on a stale bar"); sys.exit(1)
+          if frac > 0.15:
+              print(f"::warning::{stale}/{n} rows ({frac*100:.0f}%) are on a stale bar")
+          print(f"stale rows: {stale}/{n}")
+          buys = [r for r in d["rows"] if r["verdict"] == "buy_zone"]
+          print(f"buy zone: {len(buys)} -> {', '.join(r['ticker'] for r in buys[:15])}")
+          PY
+
+      - name: Commit the screen
+        run: |
+          set -euo pipefail
+          git config user.name  "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A -- ai_humanoid
+          if git diff --cached --quiet; then echo "no change"; exit 0; fi
+          git commit -m "chore(ai-humanoid): screen $(date -u +%Y-%m-%d)"
+          # Rebase AFTER staging our own commit, never before: --autostash pops without
+          # --index and EXITS 0 on conflict, which is how a sibling job silently committed
+          # conflict markers for 14 nights. Guard both failure shapes explicitly.
+          git pull --rebase origin main || true
+          if [ -d .git/rebase-merge ] || [ -d .git/rebase-apply ]; then
+            echo "::error::rebase still in progress"; exit 1
+          fi
+          if [ -n "$(git ls-files -u)" ]; then
+            echo "::error::merge conflict left unresolved"; git ls-files -u; exit 1
+          fi
+          git push origin HEAD:main
+
+      # continue-on-error is NOT set: a silently failing publish would freeze the live page
+      # at whatever day it broke while the committed JSON kept updating and the run stayed
+      # green. The only tolerated failure is "project does not exist yet", handled below.
+      - name: Publish to Cloudflare Pages
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+        run: |
+          set -euo pipefail
+          if [ -z "${CLOUDFLARE_API_TOKEN:-}" ] || [ -z "${CLOUDFLARE_ACCOUNT_ID:-}" ]; then
+            echo "::warning::Cloudflare credentials not set — skipping publish"; exit 0
+          fi
+          # ACCOUNT_ID must be pinned on every command: the token spans three accounts
+          # (see docs/design/2026-07-14-cloudflare-pages-migration.md).
+          if ! npx wrangler@4 pages deploy ai_humanoid/ \
+                 --project-name=ai-humanoid-screen --branch=main --commit-dirty=true 2>&1 | tee deploy.log; then
+            if grep -qi "project not found\|does not exist" deploy.log; then
+              echo "::warning::Pages project ai-humanoid-screen does not exist yet — create it with:"
+              echo "  npx wrangler@4 pages project create ai-humanoid-screen --production-branch=main"
+              exit 0
+            fi
+            echo "::error::wrangler deploy failed"; exit 1
+          fi
+          # Verify the artifact, not the exit code.
+          want=$(python -c "import json;print(json.load(open('ai_humanoid/screen.json'))['generated_at'])")
+          for i in 1 2 3 4 5 6; do
+            got=$(curl -fsS https://ai-humanoid-screen.pages.dev/screen.json 2>/dev/null \
+                  | python -c "import json,sys;print(json.load(sys.stdin).get('generated_at',''))" 2>/dev/null || true)
+            if [ "$got" = "$want" ]; then echo "live page confirmed at $got"; exit 0; fi
+            sleep 10
+          done
+          echo "::error::deployed but the live page still does not serve $want"; exit 1

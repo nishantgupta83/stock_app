@@ -69,6 +69,22 @@ WORKFLOWS = {
         }
         for h, m in ((6, 35), (7, 0), (8, 0))
     ],
+    # Daily AI/humanoid screen. Isolated: no Supabase, no Telegram. UTC because it keys
+    # off the US close, not a wall-clock hour the operator reads it at.
+    # NOTE (CLAUDE.md rule #9): this time exists in TWO places -- here and the `cron:` in
+    # .github/workflows/ai_humanoid_screen.yml. Change one without the other and the
+    # pinger fires at a time the workflow's own concurrency guard no longer expects.
+    "ai_humanoid_screen.yml": {
+        "title": "stock_app:ai_humanoid_screen",
+        "schedule": {
+            "timezone": "UTC",
+            "minutes": [40],
+            "hours": [22],
+            "mdays": [-1],
+            "months": [-1],
+            "wdays": [1, 2, 3, 4, 5],
+        },
+    },
     "site_generator.yml": {
         "title": "stock_app:site_generator",
         # Workflow is EOD-only since c35405c (~95% egress cut). This pinger had
