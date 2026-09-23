@@ -188,6 +188,114 @@ def gap_fill_rate(daily: list[dict], gap_now: float) -> dict:
     return {"bucket": want, "n": n, "fill_rate": (filled / n) if n else None}
 
 
+# ----------------------------------------------------------------------------- Bollinger bands (daily)
+
+BAND_TICKERS = ["SOXX", "SOXL", "SOXS"]
+BAND_N, BAND_K = 20, 2.0
+BAND_COST = 0.0002                 # per side
+# First morning the band section ships, so the first ENTRY it can claim is that day's open.
+# band_record() gates on entry_date, not signal_date (a signal from the 09-22 close is bought
+# on 09-23 and IS live; the SOXS trade entered 09-21 is not).
+BANDS_LIVE_SINCE = date(2026, 9, 23)
+# A leveraged ETF's real one-day move tops out well inside ±60% (SOXS did -56.0% on
+# 2025-04-09, the tariff-pause rally, and that is genuine). Anything outside this band is a
+# reverse split yfinance failed to stitch: SOXS 2026-05-22 close 1159.50 -> 2026-05-26 close
+# 62.90 (-94.6%), present with auto_adjust BOTH False and True, and matching no date in
+# Ticker("SOXS").splits. Left in, it manufactures a -98.8% trade that alone moves the 5y
+# mean from -1.42% to -6.29% and drives the label the brief prints.
+SPLIT_RATIO_RANGE = (0.25, 4.0)
+
+
+def destitch(bars: list[dict]) -> list[dict]:
+    """Rescale history across unadjusted split discontinuities so returns stay continuous.
+    Walks backwards, multiplying everything before a jump by the jump ratio."""
+    if len(bars) < 2:
+        return list(bars)
+    out = [dict(b) for b in bars]
+    factor = 1.0
+    for i in range(len(out) - 1, 0, -1):
+        out[i]["open"] *= factor
+        out[i]["close"] *= factor
+        prev, cur = bars[i - 1]["close"], bars[i]["close"]
+        if prev > 0:
+            r = cur / prev
+            if not (SPLIT_RATIO_RANGE[0] <= r <= SPLIT_RATIO_RANGE[1]):
+                factor *= r
+    out[0]["open"] *= factor
+    out[0]["close"] *= factor
+    return out
+
+
+def bollinger(closes: list[float], n: int = BAND_N, k: float = BAND_K) -> list[tuple | None]:
+    """[(mid, upper, lower)] aligned to closes; None until n closes exist. Population std
+    (ddof=0), matching common charting platforms."""
+    out: list[tuple | None] = []
+    for i in range(len(closes)):
+        if i + 1 < n:
+            out.append(None); continue
+        w = closes[i + 1 - n:i + 1]
+        m = sum(w) / n
+        sd = (sum((x - m) ** 2 for x in w) / n) ** 0.5
+        out.append((m, m + k * sd, m - k * sd))
+    return out
+
+
+def band_state(bars: list[dict]) -> dict | None:
+    """Where the LAST bar closed relative to its daily bands. bars: chronological, each
+    {date, open, close}, all strictly before the brief's date (no lookahead)."""
+    closes = [b["close"] for b in bars]
+    bb = bollinger(closes)
+    if not bb or bb[-1] is None:
+        return None
+    m, u, lo = bb[-1]
+    c = closes[-1]
+    zone = "above_upper" if c > u else "below_lower" if c < lo else "inside"
+    return {"as_of": bars[-1]["date"], "close": c, "upper": u, "middle": m, "lower": lo,
+            "pct_b": (c - lo) / (u - lo) if u > lo else None,
+            "bandwidth": (u - lo) / m if m else None, "zone": zone}
+
+
+def band_trades(bars: list[dict]) -> tuple[list[dict], dict | None]:
+    """The lower-band buy rule, exactly as backtested: a daily CLOSE below the lower band
+    -> buy at the NEXT session's open -> sell at the close of the first day that closes back
+    above the middle band. Non-overlapping. Returns (closed trades, open trade or None)."""
+    closes = [b["close"] for b in bars]
+    bb = bollinger(closes)
+    trades, open_trade, i = [], None, BAND_N - 1
+    while i < len(bars) - 1:
+        if bb[i] is None or not closes[i] < bb[i][2]:
+            i += 1; continue
+        e = i + 1
+        entry = bars[e]["open"]
+        j = e
+        while j < len(bars) and not (bb[j] and closes[j] > bb[j][0]):
+            j += 1
+        if j >= len(bars):
+            last = bars[-1]["close"]
+            open_trade = {"signal_date": bars[i]["date"], "entry_date": bars[e]["date"], "entry": entry,
+                          "last": last, "unrealized": last / entry - 1 - BAND_COST}
+            break
+        trades.append({"signal_date": bars[i]["date"], "entry_date": bars[e]["date"], "entry": entry,
+                       "exit_date": bars[j]["date"], "exit": closes[j],
+                       "ret": closes[j] / entry - 1 - 2 * BAND_COST, "hold_days": j - e + 1})
+        i = j + 1
+    # a signal on the very last bar has no entry yet: surface it as today's setup
+    if open_trade is None and bb and bb[-1] and closes[-1] < bb[-1][2]:
+        open_trade = {"signal_date": bars[-1]["date"], "entry_date": None, "entry": None,
+                      "last": closes[-1], "unrealized": None, "pending_entry": True}
+    return trades, open_trade
+
+
+def band_record(trades: list[dict], since: date | None = None) -> dict:
+    # `since` gates on the ENTRY date: a trade signalled by the close of day D-1 is published
+    # and bought on day D, so entry_date is what "was this trade live" actually means.
+    t = [x for x in trades
+         if since is None or (x.get("entry_date") and date.fromisoformat(x["entry_date"]) >= since)]
+    r = [x["ret"] for x in t]
+    return {"n": len(r), "win_rate": (sum(1 for v in r if v > 0) / len(r)) if r else None,
+            "mean": statistics.mean(r) if r else None}
+
+
 def validate_call(call: dict) -> None:
     """Lookahead guard: no snapshot timestamp may be at or after 09:30 ET of the call day."""
     day = date.fromisoformat(call["date"])
@@ -571,6 +679,23 @@ def build_call(ctx: Ctx) -> dict:
     tagged = [v for v in social.values() if v]
     skew = (sum(v["bull"] for v in tagged) - sum(v["bear"] for v in tagged)) if tagged else None
 
+    bands = {}
+    for bt in BAND_TICKERS:
+        # NB: do NOT name this `hist` — that name holds social_history above and is
+        # returned as _social_history below.
+        # A bar needs a finite CLOSE to belong in the 20-bar window; a missing open only
+        # disqualifies it as an entry bar, so don't drop it and make the window discontiguous.
+        bhist = [{"date": d.isoformat(), "open": finite(v.get("open")) or finite(v.get("close")),
+                  "close": finite(v.get("close"))}
+                 for d, v in sorted(daily_bars(bt, "5y").items())
+                 if d < today and finite(v.get("close"))]
+        bhist = destitch(bhist)
+        st = band_state(bhist) if bhist else None
+        tr, op = band_trades(bhist) if bhist else ([], None)
+        bands[bt] = {"state": st, "open_trade": op,
+                     "record_5y": band_record(tr), "record_live": band_record(tr, BANDS_LIVE_SINCE),
+                     "last_trade": tr[-1] if tr else None}
+
     soxl_daily = [v for _, v in sorted(daily_bars("SOXL", "2y").items())]
     soxl_pm = premarket.get("SOXL", {})
     soxl_pc = prior_closes.get("SOXL")
@@ -605,6 +730,7 @@ def build_call(ctx: Ctx) -> dict:
         "filings": filings, "truth_social": truth,
         "social": social, "_social_history": hist,
         "levels": levels,
+        "bands": bands,
         "catalysts": {"earnings_next_7d": earnings_soon(list(weights), today),
                       "macro_today": fred_today(today)},
     }
@@ -713,6 +839,44 @@ def render(call: dict, score: dict, last_grade: dict | None) -> tuple[str, str, 
 
     def f2(x):
         return "n/a" if x is None else f"{x:.2f}"
+    band_lines = []
+    zone_txt = {"above_upper": "ABOVE upper band", "below_lower": "BELOW lower band", "inside": "inside bands"}
+    for bt in BAND_TICKERS:
+        b = (call.get("bands") or {}).get(bt) or {}
+        st = b.get("state")
+        if not st:
+            band_lines.append(f"{bt}: n/a"); continue
+        # The bands describe st["as_of"], not necessarily the prior session. If the daily bar
+        # is stale, "buy at today's open" would point at an open that has already gone.
+        stale = st.get("as_of") != call.get("prior_session")
+        pb = f"{st['pct_b']:.2f}" if st.get("pct_b") is not None else "n/a"
+        bw = f"{st['bandwidth']*100:.0f}%" if st.get("bandwidth") is not None else "n/a"
+        ln = (f"{bt}: {zone_txt[st['zone']]} as of {st.get('as_of')} — close {st['close']:.2f} vs "
+              f"upper {st['upper']:.2f} / middle {st['middle']:.2f} / lower {st['lower']:.2f} "
+              f"(%B {pb}, width {bw})")
+        op = b.get("open_trade")
+        if stale:
+            ln += f" · STALE: no bar for {call.get('prior_session')}, signal not actionable"
+        r5 = b.get("record_5y") or {}
+        # The same rule is not equally good on every fund (5y: SOXX/SOXL positive, SOXS negative);
+        # a signal on a fund where the rule has lost is labelled as such, never as a plain buy.
+        losing = r5.get("n") and r5.get("mean") is not None and r5["mean"] <= 0
+        if op and op.get("pending_entry"):
+            if stale:
+                ln += " · lower-band signal, but on a stale bar — the entry open has already passed"
+            elif losing:
+                ln += " · lower-band signal at yesterday's close — this rule has LOST on this fund over 5y"
+            else:
+                ln += (" · LOWER-BAND BUY SIGNAL at yesterday's close → buy at today's open, "
+                       "sell on first close above middle")
+        elif op:
+            ln += (f" · open band trade since {op['entry_date']} @ {op['entry']:.2f} "
+                   f"({op['unrealized']*100:+.1f}%), exit on a close above {st['middle']:.2f}")
+        rl = b.get("record_live") or {}
+        if r5.get("n"):
+            ln += (f" · rule record 5y: {r5['win_rate']*100:.0f}% win, {r5['mean']*100:+.1f}%/trade (n={r5['n']})"
+                   f"; live: " + (f"{rl['win_rate']*100:.0f}% (n={rl['n']})" if rl.get("n") else "no trades yet"))
+        band_lines.append(ln)
     lv_txt = (f"prior close {f2(lv['soxl_prior_close'])} · prior H/L {f2(lv['soxl_prior_high'])}/{f2(lv['soxl_prior_low'])}"
               f" · premarket H/L {f2(lv['soxl_pm_high'])}/{f2(lv['soxl_pm_low'])} · gap {pct(lv['soxl_gap'])}")
     lg = ""
@@ -750,6 +914,7 @@ def render(call: dict, score: dict, last_grade: dict | None) -> tuple[str, str, 
         "", "Truth Social (chips/China/tariffs):", tru_txt,
         "", f"StockTwits: {soc_txt}",
         "", f"SOXL levels: {lv_txt}", f"Gap history: {gf_txt}",
+        "", "Daily Bollinger (20, 2) as of yesterday's close:", *[f"  {x}" for x in band_lines],
         "", f"Yesterday: {lg or 'n/a'}", f"Scorecard: {sc_txt}", f"Components: {comp_sc or 'n/a'}",
         *([f"Backfill: {bf_txt}"] if bf_txt else []),
     ])
@@ -767,6 +932,7 @@ def render(call: dict, score: dict, last_grade: dict | None) -> tuple[str, str, 
 <p><b>Truth Social</b> (chips/China/tariffs)</p><pre style="white-space:pre-wrap;font-size:12px">{html.escape(tru_txt)}</pre>
 <p><b>StockTwits:</b> {html.escape(soc_txt)}</p>
 <p><b>SOXL levels:</b> {lv_txt}<br><b>Gap history:</b> {html.escape(gf_txt)}</p>
+<p><b>Daily Bollinger (20, 2) as of yesterday's close</b><br>{'<br>'.join(html.escape(x) for x in band_lines)}</p>
 <p style="background:#fdf6e3;padding:8px;border-radius:6px"><b>Yesterday:</b> {html.escape(lg or 'n/a')}<br>
 <b>Scorecard:</b> {html.escape(sc_txt)}<br><b>Components:</b> {html.escape(comp_sc or 'n/a')}
 {('<br><b>Backfill:</b> ' + html.escape(bf_txt)) if bf_txt else ''}</p>

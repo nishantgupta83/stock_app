@@ -323,3 +323,102 @@ def test_outage_day_is_labelled_no_data_not_flat_open(monkeypatch, tmp_path):
             "catalysts": {"earnings_next_7d": [], "macro_today": None}}
     subj, text, htm = sb.render(call, {}, None)
     assert "no data" in subj and "flat open" not in subj and "Backfill" not in text
+
+
+# --- daily Bollinger bands --------------------------------------------------------
+
+def _bars(closes, opens=None):
+    opens = opens or closes
+    return [{"date": (date(2026, 1, 1) + timedelta(days=i)).isoformat(), "open": o, "close": c}
+            for i, (o, c) in enumerate(zip(opens, closes))]
+
+
+def test_bollinger_matches_population_std():
+    closes = [float(x) for x in range(1, 21)]
+    m, u, lo = sb.bollinger(closes)[-1]
+    import statistics as st
+    assert m == pytest.approx(10.5)
+    assert u - m == pytest.approx(2 * st.pstdev(closes))
+    assert sb.bollinger(closes[:19])[-1] is None
+
+
+def test_band_state_zones():
+    flat = [100.0] * 19
+    assert sb.band_state(_bars(flat + [100.0]))["zone"] == "inside"
+    assert sb.band_state(_bars([100.0 + (i % 2) for i in range(19)] + [120.0]))["zone"] == "above_upper"
+    assert sb.band_state(_bars([100.0 + (i % 2) for i in range(19)] + [80.0]))["zone"] == "below_lower"
+
+
+def test_band_trade_enters_next_open_and_exits_on_close_above_middle():
+    base = [100.0 + (i % 2) for i in range(20)]
+    closes = base + [80.0, 85.0, 99.0, 104.0]          # 80 closes below lower -> signal
+    opens = base + [80.0, 82.0, 90.0, 100.0]
+    trades, op = sb.band_trades(_bars(closes, opens))
+    assert len(trades) == 1 and op is None
+    t = trades[0]
+    assert t["entry"] == 82.0                          # NEXT session's open, not the signal close
+    assert t["exit"] == 99.0                           # FIRST close above that day's middle (98.65)
+    assert t["exit_date"] == "2026-01-23" and t["hold_days"] == 2   # the 99.0 bar, not the 104.0 bar
+    assert t["ret"] == pytest.approx(99.0 / 82.0 - 1 - 2 * sb.BAND_COST)
+
+
+def test_band_trade_open_and_pending_signal():
+    base = [100.0 + (i % 2) for i in range(20)]
+    _, op = sb.band_trades(_bars(base + [80.0, 81.0], base + [80.0, 82.0]))
+    assert op["entry"] == 82.0 and op["unrealized"] == pytest.approx(81.0 / 82.0 - 1 - sb.BAND_COST)
+    _, pend = sb.band_trades(_bars(base + [80.0]))
+    assert pend["pending_entry"] is True and pend["entry"] is None
+
+
+def test_band_record_since_filters_by_entry_date_not_signal_date():
+    # A signal from the 09-22 close is BOUGHT on 09-23, so it is live even though its
+    # signal_date predates the cutover. Filtering on signal_date would drop it.
+    trades = [{"signal_date": "2026-09-01", "entry_date": "2026-09-02", "ret": 0.05},
+              {"signal_date": "2026-09-22", "entry_date": "2026-09-23", "ret": -0.02}]
+    assert sb.band_record(trades)["n"] == 2
+    live = sb.band_record(trades, date(2026, 9, 23))
+    assert live["n"] == 1 and live["win_rate"] == 0.0
+
+
+def test_destitch_removes_an_unadjusted_reverse_split():
+    # Real shape: SOXS 2026-05-22 close 1159.50 -> 2026-05-26 close 62.90, present in the
+    # yfinance series with auto_adjust both False and True, matching no date in .splits.
+    bars = [{"date": f"2026-05-{d:02d}", "open": o, "close": c} for d, o, c in
+            [(20, 1290.0, 1281.0), (21, 1275.0, 1243.5), (22, 1250.0, 1159.5),
+             (26, 63.5, 62.9), (27, 62.0, 65.3)]]
+    out = sb.destitch(bars)
+    rets = [out[i]["close"] / out[i - 1]["close"] - 1 for i in range(1, len(out))]
+    assert all(abs(r) < 0.20 for r in rets), rets            # the -94.6% artifact is gone
+    assert out[-1]["close"] == 65.3 and out[-1]["open"] == 62.0   # present scale untouched
+    assert out[0]["close"] / out[0]["open"] == pytest.approx(1281.0 / 1290.0)  # ratios preserved
+
+
+def test_destitch_keeps_a_real_leveraged_etf_crash():
+    # SOXS did -56.0% on 2025-04-09 (the tariff-pause rally). That is genuine, keep it.
+    bars = [{"date": "2025-04-08", "open": 140000.0, "close": 141060.0},
+            {"date": "2025-04-09", "open": 130000.0, "close": 62100.0}]
+    assert sb.destitch(bars) == bars
+
+
+def test_band_signal_on_a_fund_where_the_rule_lost_is_not_called_a_buy(monkeypatch, tmp_path):
+    monkeypatch.setattr(sb, "STATE", tmp_path)
+    st = {"zone": "below_lower", "close": 35.0, "upper": 55.0, "middle": 47.0, "lower": 39.0,
+          "pct_b": -0.2, "bandwidth": 0.4}
+    pend = {"pending_entry": True, "entry": None}
+    call = {"date": D.isoformat(), "bias": "no_edge", "implied_soxx": 0.001, "implied_soxl": 0.003,
+            "implied_soxs": -0.003, "calendar_verified": True, "weights": {}, "premarket": {},
+            "implied": {"contrib": {}, "coverage": 1.0},
+            "components": {"overnight_asia_eu": None, "nasdaq_futures": None, "news_net": None, "social_skew": None},
+            "overnight": {}, "nasdaq_futures": None, "news": [], "filings": None, "truth_social": None, "social": {},
+            "levels": {"soxl_prior_close": None, "soxl_prior_high": None, "soxl_prior_low": None,
+                       "soxl_pm_high": None, "soxl_pm_low": None, "soxl_gap": None, "gap_fill": None},
+            "catalysts": {"earnings_next_7d": [], "macro_today": None},
+            "bands": {"SOXS": {"state": st, "open_trade": pend, "record_5y": {"n": 20, "win_rate": 0.5, "mean": -0.063},
+                               "record_live": {"n": 0}},
+                      "SOXL": {"state": st, "open_trade": pend, "record_5y": {"n": 24, "win_rate": 0.71, "mean": 0.075},
+                               "record_live": {"n": 0}}}}
+    _, text, _ = sb.render(call, {}, None)
+    soxs = [l for l in text.splitlines() if l.strip().startswith("SOXS:")][0]
+    soxl = [l for l in text.splitlines() if l.strip().startswith("SOXL:")][0]
+    assert "LOST on this fund" in soxs and "BUY SIGNAL" not in soxs
+    assert "BUY SIGNAL" in soxl
