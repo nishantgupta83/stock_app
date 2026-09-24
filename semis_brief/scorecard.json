@@ -1,0 +1,66 @@
+{
+ "updated": "2026-09-24T13:00:37+00:00",
+ "n_graded": 0,
+ "n_called": 0,
+ "n_no_edge": 0,
+ "all": {
+  "bias": {
+   "n": 0,
+   "hits": 0,
+   "hit_rate": null
+  },
+  "fade_called": {
+   "n": 0,
+   "hits": 0,
+   "hit_rate": null
+  },
+  "up_day_base_rate": {
+   "n": 0,
+   "hits": 0,
+   "hit_rate": null
+  },
+  "follow_compounded": null,
+  "follow_n": 0,
+  "fade_compounded": null,
+  "fade_n": 0
+ },
+ "last20": {
+  "bias": {
+   "n": 0,
+   "hits": 0,
+   "hit_rate": null
+  },
+  "fade_called": {
+   "n": 0,
+   "hits": 0,
+   "hit_rate": null
+  },
+  "up_day_base_rate": {
+   "n": 0,
+   "hits": 0,
+   "hit_rate": null
+  },
+  "follow_compounded": null,
+  "follow_n": 0,
+  "fade_compounded": null,
+  "fade_n": 0
+ },
+ "fade_gap_null_all_days": {
+  "n": 0,
+  "hits": 0,
+  "hit_rate": null
+ },
+ "fade_gap_null_last20": {
+  "n": 0,
+  "hits": 0,
+  "hit_rate": null
+ },
+ "no_edge_days_up_rate": {
+  "n": 0,
+  "hits": 0,
+  "hit_rate": null
+ },
+ "components": {},
+ "mean_soxl_oc_on_lean_soxl": null,
+ "mean_soxs_oc_on_lean_soxs": null
+}
