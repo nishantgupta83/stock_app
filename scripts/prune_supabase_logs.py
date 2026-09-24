@@ -60,7 +60,10 @@ HTTP_TIMEOUT = 45
 # table -> (age column, retention days, what it is)
 TABLES: dict[str, tuple[str, int, str]] = {
     "stock_job_runs":          ("started_at", 90, "operational log of every agent run"),
-    "stock_thesis_rejections": ("created_at", 60, "audit of clusters dropped before emit"),
+    # fired_at, NOT created_at — sql/0035_thesis_rejections.sql:27. Verified against the
+    # migration, not guessed: the first version of this script guessed created_at and
+    # PostgREST rejected it with 42703 while the run still exited 0.
+    "stock_thesis_rejections": ("fired_at", 60, "audit of clusters dropped before emit"),
     "stock_health_pulse":      ("pulsed_at",  30, "hourly health pulse ledger"),
 }
 
@@ -98,7 +101,13 @@ def count(url: str, key: str, table: str, where: str = "") -> int | None:
             cr = r.headers.get("Content-Range", "")
             return int(cr.split("/")[-1]) if "/" in cr else None
     except urllib.error.HTTPError as e:
-        print(f"  ! count {table}: {e.code} {e.read()[:160].decode('utf-8', 'ignore')}")
+        body = e.read()[:200].decode("utf-8", "ignore")
+        # 42703 = undefined_column. A wrong age column must be fatal, not a line that
+        # scrolls past while the run still reports success for the other tables.
+        if "42703" in body:
+            sys.exit(f"\nFATAL: {table} has no column used by this script.\n  {body}\n"
+                     f"  Check the CREATE TABLE in sql/ and fix TABLES[{table!r}].")
+        print(f"  ! count {table}: {e.code} {body[:160]}")
         return None
 
 
@@ -166,6 +175,7 @@ def main() -> int:
     print("frozen experiments are on the FORBIDDEN list and are never read or written here.")
 
     results = [prune(url, key, t, a.apply) for t in ([a.table] if a.table else sorted(TABLES))]
+    failed = [r for r in results if r.get("error")]
     total_del = sum(r.get("deleted", 0) for r in results)
     would = sum(r.get("old", 0) for r in results)
     print("\n" + "=" * 78)
@@ -177,6 +187,10 @@ def main() -> int:
             print(f"    VACUUM (ANALYZE) public.{t};")
     else:
         print(f"dry run: {would:,} rows are eligible. Re-run with --apply.")
+    if failed:
+        for r in failed:
+            print(f"::error::{r['table']}: {r['error']}")
+        return 1
     return 0
 
 
