@@ -77,12 +77,16 @@ WORKFLOWS = {
     "ai_humanoid_screen.yml": {
         "title": "stock_app:ai_humanoid_screen",
         "schedule": {
+            # 08:10 UTC = 01:10 PT, Tue-Sat. NOT 22:40 UTC: the screen keeps bars strictly
+            # before datetime.now(PT).date(), so a 22:40 UTC run is the SAME PT day and
+            # would discard the close it just waited for. Must run after PT midnight,
+            # which is why the weekday mask is 2-6 (Tue-Sat) and not 1-5.
             "timezone": "UTC",
-            "minutes": [40],
-            "hours": [22],
+            "minutes": [10],
+            "hours": [8],
             "mdays": [-1],
             "months": [-1],
-            "wdays": [1, 2, 3, 4, 5],
+            "wdays": [2, 3, 4, 5, 6],
         },
     },
     "site_generator.yml": {
