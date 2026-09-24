@@ -66,6 +66,13 @@ MIN_DOLLAR_VOLUME = 2_000_000      # below this, a scheduled buy needs limit ord
 HOLD_MIN_POSITIVE = 0.80
 HOLD_MIN_P10 = -0.10
 MIN_INDEPENDENT_WINDOWS = 4        # 4 x 504 sessions ~ 8 years of history
+# A session is usable as the page's reference only if this share of the universe has a bar
+# for it. Yahoo fills a session's daily bars in over the following hours: measured
+# 2026-09-23 17:00 PT, 2026-09-22 existed for 33% of the universe and 2026-09-23 for 100%.
+# Anchoring to the newest session that clears this bar is what keeps one as_of honest,
+# and it is why a second data provider is not the fix -- Yahoo's chart/v8 endpoint has the
+# identical gaps (0/11 recovered), and Stooq serves a bot-check page instead of CSV.
+REFERENCE_COVERAGE = 0.80
 
 # --- universe -----------------------------------------------------------------
 # Tagged so the page can separate "the index" from "the theme". A name in both keeps
@@ -276,12 +283,37 @@ def fetch(tickers: list[str]) -> dict[str, list[dict]]:
     return out
 
 
+def reference_session(bars: dict[str, list[dict]], coverage: float = REFERENCE_COVERAGE):
+    """The newest date at least `coverage` of the resolved tickers actually have a bar for.
+
+    Without this the page anchors on the single newest date ANY ticker reached, which on
+    2026-09-23 was a session only a third of the universe had -- 98 of 144 rows were then
+    correctly but uselessly flagged stale. Stepping back to the newest well-covered session
+    gives every row the same reference and makes the stale flag mean "this ticker is behind
+    the market", not "the feed has not finished publishing yet".
+    """
+    if not bars:
+        return None, {}
+    seen: dict[str, int] = {}
+    for rows_ in bars.values():
+        for d in {b["date"] for b in rows_}:
+            seen[d] = seen.get(d, 0) + 1
+    n = len(bars)
+    ok = [d for d, c in seen.items() if c / n >= coverage]
+    return (max(ok) if ok else max(seen, default=None)), seen
+
+
 def build(tickers: dict[str, list[str]], bars: dict[str, list[dict]], social: bool) -> dict:
+    reference, _coverage = reference_session(bars)
     rows = []
     for t, tags in tickers.items():
         b = bars.get(t)
         if not b:
             continue
+        if reference:
+            b = [x for x in b if x["date"] <= reference]   # never render ahead of as_of
+            if not b:
+                continue
         closes = [x["close"] for x in b if sb.finite(x.get("close"))]
         if len(closes) < BAND_N + 1:
             continue
@@ -310,7 +342,7 @@ def build(tickers: dict[str, list[str]], bars: dict[str, list[dict]], social: bo
     # yfinance returns NaN for a real trading day on a PER-TICKER basis, so rows carry
     # different bar dates. Today 98 of 144 were a session older than the newest -- and the
     # page showed ONE as_of over all of them. Mark each row against the freshest bar.
-    freshest = max((r["as_of"] for r in rows), default=None)
+    freshest = reference or max((r["as_of"] for r in rows), default=None)
     for r in rows:
         r["stale"] = (r["as_of"] != freshest)
     rows.sort(key=lambda r: (r["pct_b"] is None, r["pct_b"] if r["pct_b"] is not None else 9))

@@ -260,3 +260,43 @@ def test_pinned_member_that_fails_to_resolve_still_renders():
     assert got[1]["close"] is None and got[1]["why"] == ["did not resolve"]
     html = ar.render(_data(rows))
     assert "SOXL" in html and "SOXS" in html
+
+
+def test_reference_session_skips_a_thinly_covered_day():
+    """Yahoo fills a session's bars in over the following hours. On 2026-09-23 at 17:00 PT,
+    2026-09-22 existed for 33% of the universe and 2026-09-23 for 100% -- anchoring on the
+    newest date ANY ticker reached flagged 98 of 144 rows stale for no useful reason."""
+    bars = {"A": [{"date": "2026-09-21"}, {"date": "2026-09-22"}, {"date": "2026-09-23"}]}
+    for k in "BCDE":
+        bars[k] = [{"date": "2026-09-21"}, {"date": "2026-09-23"}]   # no 09-22
+    ref, seen = ah.reference_session(bars)
+    assert seen["2026-09-22"] == 1 and seen["2026-09-23"] == 5
+    assert ref == "2026-09-23"                       # 09-22 is 20%, below the 80% bar
+
+
+def test_reference_session_steps_back_when_the_newest_is_thin():
+    bars = {k: [{"date": "2026-09-21"}, {"date": "2026-09-22"}] for k in "ABCDE"}
+    bars["A"].append({"date": "2026-09-23"})          # only 1 of 5 has the newest day
+    assert ah.reference_session(bars)[0] == "2026-09-22"
+
+
+def test_reference_session_handles_empty_and_all_thin():
+    assert ah.reference_session({})[0] is None
+    # every day thin -> fall back to the newest rather than returning nothing
+    bars = {"A": [{"date": "2026-01-02"}], "B": [{"date": "2026-01-01"}]}
+    assert ah.reference_session(bars, coverage=0.99)[0] == "2026-01-02"
+
+
+def test_build_never_renders_a_row_ahead_of_as_of():
+    """A ticker with a bar the reference session does not include must be trimmed, not
+    shown one session ahead of the page's own header."""
+    def bars_for(dates):
+        return [{"date": d, "open": 100.0, "high": 101.0, "low": 99.0,
+                 "close": 100.0 + i, "volume": 1e6} for i, d in enumerate(dates)]
+    common = [f"2026-0{1 + i // 28}-{i % 28 + 1:02d}" for i in range(40)]
+    b = {t: bars_for(common) for t in ("AAA", "BBB", "CCC", "DDD", "EEE")}
+    b["AAA"] = bars_for(common + ["2026-03-01"])       # one ticker runs a session ahead
+    data = ah.build({t: ["ndx100"] for t in b}, b, social=False)
+    assert data["as_of"] == common[-1]
+    assert all(r["as_of"] == data["as_of"] for r in data["rows"])
+    assert data["n_stale"] == 0
