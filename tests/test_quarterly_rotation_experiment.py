@@ -153,3 +153,71 @@ def test_name_missing_a_window_session_is_ineligible_not_stretched():
     c0 = build_cohorts(bars, cal, cal[-1], cfg)[3]
     del bars["T1"][cal[cal.index(c0["decision"]) - 5]]
     assert "T1" not in build_cohorts(bars, cal, cal[-1], cfg)[3]["names"]
+
+
+def test_v1_hash_is_stable_and_v2_differs():
+    from scripts.quarterly_rotation.experiment import ExperimentConfigV2
+    assert ExperimentConfig().config_hash() == "1774730074739b66"   # v1 froze with this hash
+    v2 = ExperimentConfigV2()
+    assert v2.config_hash() != ExperimentConfig().config_hash()
+    assert (v2.experiment_id, v2.sma_window, v2.max_p, v2.min_ex_best, v2.trials) == \
+        ("qr_s1_v2", 200, 0.025, 0.005, 2)
+    assert (v2.dip_pct_b, v2.min_signal_quarters, v2.min_hit_rate, v2.cost_round_trip, v2.seed) == \
+        (0.20, 20, 0.55, 0.0020, 20260924)
+    assert ExperimentConfig().trials == 1
+
+
+def test_v2_dip_must_be_above_200d_sma():
+    from scripts.quarterly_rotation.experiment import ExperimentConfigV2
+    cfg1 = ExperimentConfig(min_history=250, min_universe=8, n_draws=50)
+    cfg2 = ExperimentConfigV2(min_history=250, min_universe=8, n_draws=50)
+    bars, cal = _synthetic(n_names=14, sessions=1500, seed=23)
+    cohorts = build_cohorts(bars, cal, cal[-1], cfg2)
+    for c in cohorts:                                  # every flag matches a hand computation
+        i = cal.index(c["decision"])
+        for t, v in c["names"].items():
+            w = [bars[t][d][1] for d in cal[max(0, i - 199): i + 1]]
+            assert v["above_sma"] == (bars[t][c["decision"]][1] > sum(w) / len(w))
+    r1, r2 = evaluate(cohorts, cfg1), evaluate(cohorts, cfg2)
+    assert r2["signal_quarters"] <= r1["signal_quarters"]
+    assert r2["experiment_id"] == "qr_s1_v2"
+    assert r2["p_value_vs_trend_pool_null_INFORMATIONAL"] is not None
+    assert r1["p_value_vs_trend_pool_null_INFORMATIONAL"] is None
+
+
+def test_v2_dip_set_is_exactly_dip_and_above_sma_and_gapped_names_are_excluded():
+    from scripts.quarterly_rotation.experiment import ExperimentConfigV2
+    cfg1 = ExperimentConfig(min_history=250, min_universe=8, n_draws=20)
+    cfg2 = ExperimentConfigV2(min_history=250, min_universe=8, n_draws=20)
+    bars, cal = _synthetic(n_names=14, sessions=1500, seed=29)
+    base = build_cohorts(bars, cal, cal[-1], cfg2)
+    k = 12
+    victim = "T3"
+    i = cal.index(base[k]["decision"])
+    for d in cal[i - 40: i - 10]:                       # 30 missing sessions in the 200 window
+        bars[victim].pop(d, None)
+    cohorts = build_cohorts(bars, cal, cal[-1], cfg2)
+    assert cohorts[k]["names"][victim]["above_sma"] is None
+    for c in cohorts:
+        want = sorted(t for t, v in c["names"].items() if v["pb"] < 0.20 and v["above_sma"] is True)
+        if len(c["names"]) < 8 or not want:
+            continue
+        got = evaluate([c], cfg2)
+        assert got["signal_quarters"] == 1
+        assert got["mean_dips_per_signal_quarter"] == len(want)
+        assert victim not in want or c is not cohorts[k]
+    r1, r2 = evaluate(cohorts, cfg1), evaluate(cohorts, cfg2)
+    dips1 = sum(1 for c in cohorts for v in c["names"].values() if v["pb"] < 0.20)
+    dips2 = sum(1 for c in cohorts for v in c["names"].values() if v["pb"] < 0.20 and v["above_sma"] is True)
+    assert dips2 < dips1                                # the filter actually removes names
+
+
+V1_SNAPSHOT = (16, 0.036956, 0.099502)   # measured on the pre-v2 code, byte-identical per review
+
+
+def test_v1_evaluate_snapshot_is_unchanged():
+    cfg = ExperimentConfig(min_history=100, n_draws=200)
+    bars, cal = _synthetic(sessions=1200, seed=5)
+    res = evaluate(build_cohorts(bars, cal, cal[-1], cfg), cfg)
+    got = (res["signal_quarters"], round(res["mean_net_excess"], 6), round(res["p_value"], 6))
+    assert got == V1_SNAPSHOT
