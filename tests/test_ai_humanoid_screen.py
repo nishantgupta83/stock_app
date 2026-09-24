@@ -228,3 +228,35 @@ def test_render_shows_the_spike_and_the_meta_evidence():
 def test_render_empty_groups_do_not_break():
     html = ar.render(_data([]))
     assert "Nothing in this group today." in html
+
+
+def test_leveraged_and_inverse_products_never_get_a_dip_verdict():
+    """SOXL/SOXS are daily-reset products. The +3.47/+7.49 pt figures are long-only cash-
+    equity statistics, and on SOXS a LOW %B means the underlying is strong -- the opposite
+    of 'on sale'. classify() must refuse to rate them rather than rely on a caption."""
+    lev = ah.classify(_row(pct_b=0.05, vs_sma200=-0.3), tags=["semis_etf", "leveraged"])
+    assert lev[0] == "leveraged" and "do not transfer" in lev[1][0]
+    inv = ah.classify(_row(pct_b=-0.16), tags=["semis_etf", "leveraged", "inverse"])
+    assert inv[0] == "leveraged" and "INVERSE" in inv[1][0]
+    # and the long-only reasons must not appear
+    assert "3.47" not in " ".join(lev[1]) and "7.49" not in " ".join(lev[1])
+    # an ordinary name is unaffected
+    assert ah.classify(_row(pct_b=0.05), tags=["ndx100"])[0] == "buy_zone"
+
+
+def test_every_leveraged_member_is_tagged():
+    u = ah.universe()
+    for t in ah.AI_HUMANOID["leveraged"]:
+        assert "leveraged" in u[t], t
+    assert "inverse" in u["SOXS"] and "inverse" not in u.get("SOXL", [])
+
+
+def test_pinned_member_that_fails_to_resolve_still_renders():
+    """These sections promise 'tracked every day whether or not they signal' -- a silently
+    missing ticker reads as 'no signal' when the feed actually dropped it."""
+    rows = [_full(ticker="SOXX", tags=["semis_etf"])]          # SOXL and SOXS absent
+    got = ar._by_tag(rows, "semis_etf")
+    assert [r["ticker"] for r in got] == ["SOXX", "SOXL", "SOXS"]
+    assert got[1]["close"] is None and got[1]["why"] == ["did not resolve"]
+    html = ar.render(_data(rows))
+    assert "SOXL" in html and "SOXS" in html

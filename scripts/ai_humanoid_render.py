@@ -25,6 +25,7 @@ VERDICT = {
     "extended": ("extended", "v-warn"),
     "illiquid": ("illiquid", "v-no"),
     "no_hold_data": ("dip · unmeasured", "v-warn"),
+    "leveraged": ("leveraged · not rated", "v-warn"),
     "no_data": ("no data", "v-mid"),
 }
 
@@ -58,11 +59,21 @@ def _row(r):
 
 
 def _by_tag(rows, tag):
-    """Rows carrying `tag`, in the order the universe lists them, not by %B."""
+    """Rows carrying `tag`, in the order the universe lists them, not by %B.
+
+    A pinned member that failed to resolve gets a placeholder row rather than vanishing:
+    these sections promise "tracked every day whether or not they signal", and a silently
+    missing ticker reads as "no signal" when it actually means the feed dropped it.
+    """
     from ai_humanoid_screen import AI_HUMANOID
-    order = {t: i for i, t in enumerate(AI_HUMANOID.get(tag, []))}
-    return sorted((r for r in rows if tag in r["tags"]),
-                  key=lambda r: order.get(r["ticker"], 99))
+    want = AI_HUMANOID.get(tag, [])
+    have = {r["ticker"]: r for r in rows if tag in r["tags"]}
+    out = []
+    for t in want:
+        out.append(have.get(t) or {"ticker": t, "tags": [tag], "close": None,
+                                   "verdict": "no_data", "why": ["did not resolve"],
+                                   "hold": {}, "stale": False, "as_of": None})
+    return out
 
 
 def render(data: dict) -> str:
@@ -157,21 +168,29 @@ which is roughly five times what the timing overlay adds.</p>
 <p>%B says where price sits inside its normal trading channel. Below 0.20 means it has
 pulled back to the bottom of that channel — on sale. Above 1.00 is <i>extended</i>: too
 stretched to buy, and it returned <b>2.65 pts below</b> simply holding.</p></div>
-<div class="rule"><b>2. Healthy dip or falling knife?</b><span class="th">vs 200d &gt; 0%</span>
-<p>Buy dips in stocks still above their 200-day average. Measured on 46 large caps over 15
-years, this lifts the <b>hit rate to 71% from 68%</b> at 60 days (66% vs 61% at 20 days).
-It does <i>not</i> raise the average return — below-200d dips actually averaged slightly
-more. You are buying better odds, not a bigger number.</p></div>
-<div class="rule"><b>3. Does it survive bad timing?</b><span class="th">2y p10 near 0% or positive</span>
-<p>The 10th-percentile outcome across past 2-year holds — your unlucky-but-realistic case.
-Near zero means even bad timing historically got your money back. Avoid the big negatives
-(a −50% p10 means one in ten 2-year holds halved).</p></div>
+<div class="rule"><b>2. Above or below the 200-day?</b><span class="th">a trade-off, not a gate</span>
+<p>Two studies disagree, so this is <b>not</b> a filter the verdict column applies.
+<b>46 large caps, 15y, fwd 60d:</b> dips <i>above</i> the 200-day hit <b>71%</b> vs
+<b>68%</b> below — better odds, but below-200d averaged slightly <i>more</i> (+7.16% vs
++6.96%). <b>The AI complex, 2023+:</b> dips <i>below</i> the 200-day were the best bucket
+of all, <b>+7.49 pts</b> vs the null. The Meta trade in the box below was 11.8% <i>below</i>
+its 200-day. Above = steadier; below = bigger and lumpier. Pick per your tolerance.</p></div>
+<div class="rule"><b>3. Does it survive bad timing?</b>
+<span class="th">2y pos &ge; {data['thresholds']['hold_min_positive']*100:.0f}% AND 2y p10 &gt; {data['thresholds']['hold_min_p10']*100:.0f}%</span>
+<p>Both halves are gates, and <b>2y pos is often the binding one</b>. p10 is the
+10th-percentile outcome across past 2-year holds — your unlucky-but-realistic case; a −50%
+p10 means one in ten 2-year holds halved. These are the exact thresholds the verdict column
+applies, not a rule of thumb.</p></div>
 </div>
 
-<div class="exit"><b>The exit is a rule, not a guess.</b> Once you buy, hold until price
-closes back above the <b>20-day middle band</b> — the average-price line between the two
-bands — then take the profit. That is the same rule the record in these tables was measured
-with; changing the exit invalidates the numbers.</div>
+<div class="exit"><b>The exit is a rule, not a guess</b> — but be clear which rule.
+Everything in these tables is a <b>fixed hold</b>: the +3.47 / −2.65 / +7.49 pt figures are
+<b>60 trading days, entry at the next open</b>, and the <b>2y pos / 2y p10</b> columns are
+504-day holds. Nothing on this page measures a middle-band exit.<br>
+Selling on the first close above the <b>20-day middle band</b> is the rule used by the
+separate SOXX/SOXL/SOXS band strategy in the morning brief, and it is a reasonable discipline
+— it just is not what produced these numbers. Reproduce the tabulated edge by holding the
+horizon, not by exiting at the midband.</div>
 
 <div class="ev"><b>Why there are two signals.</b> Meta launched Muse on 2026-09-08 and ran
 +20.3% before the first analyst upgrade on 09-21 — following that upgrade captured 2% of

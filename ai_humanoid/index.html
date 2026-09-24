@@ -75,21 +75,29 @@ which is roughly five times what the timing overlay adds.</p>
 <p>%B says where price sits inside its normal trading channel. Below 0.20 means it has
 pulled back to the bottom of that channel — on sale. Above 1.00 is <i>extended</i>: too
 stretched to buy, and it returned <b>2.65 pts below</b> simply holding.</p></div>
-<div class="rule"><b>2. Healthy dip or falling knife?</b><span class="th">vs 200d &gt; 0%</span>
-<p>Buy dips in stocks still above their 200-day average. Measured on 46 large caps over 15
-years, this lifts the <b>hit rate to 71% from 68%</b> at 60 days (66% vs 61% at 20 days).
-It does <i>not</i> raise the average return — below-200d dips actually averaged slightly
-more. You are buying better odds, not a bigger number.</p></div>
-<div class="rule"><b>3. Does it survive bad timing?</b><span class="th">2y p10 near 0% or positive</span>
-<p>The 10th-percentile outcome across past 2-year holds — your unlucky-but-realistic case.
-Near zero means even bad timing historically got your money back. Avoid the big negatives
-(a −50% p10 means one in ten 2-year holds halved).</p></div>
+<div class="rule"><b>2. Above or below the 200-day?</b><span class="th">a trade-off, not a gate</span>
+<p>Two studies disagree, so this is <b>not</b> a filter the verdict column applies.
+<b>46 large caps, 15y, fwd 60d:</b> dips <i>above</i> the 200-day hit <b>71%</b> vs
+<b>68%</b> below — better odds, but below-200d averaged slightly <i>more</i> (+7.16% vs
++6.96%). <b>The AI complex, 2023+:</b> dips <i>below</i> the 200-day were the best bucket
+of all, <b>+7.49 pts</b> vs the null. The Meta trade in the box below was 11.8% <i>below</i>
+its 200-day. Above = steadier; below = bigger and lumpier. Pick per your tolerance.</p></div>
+<div class="rule"><b>3. Does it survive bad timing?</b>
+<span class="th">2y pos &ge; 80% AND 2y p10 &gt; -10%</span>
+<p>Both halves are gates, and <b>2y pos is often the binding one</b>. p10 is the
+10th-percentile outcome across past 2-year holds — your unlucky-but-realistic case; a −50%
+p10 means one in ten 2-year holds halved. These are the exact thresholds the verdict column
+applies, not a rule of thumb.</p></div>
 </div>
 
-<div class="exit"><b>The exit is a rule, not a guess.</b> Once you buy, hold until price
-closes back above the <b>20-day middle band</b> — the average-price line between the two
-bands — then take the profit. That is the same rule the record in these tables was measured
-with; changing the exit invalidates the numbers.</div>
+<div class="exit"><b>The exit is a rule, not a guess</b> — but be clear which rule.
+Everything in these tables is a <b>fixed hold</b>: the +3.47 / −2.65 / +7.49 pt figures are
+<b>60 trading days, entry at the next open</b>, and the <b>2y pos / 2y p10</b> columns are
+504-day holds. Nothing on this page measures a middle-band exit.<br>
+Selling on the first close above the <b>20-day middle band</b> is the rule used by the
+separate SOXX/SOXL/SOXS band strategy in the morning brief, and it is a reasonable discipline
+— it just is not what produced these numbers. Reproduce the tabulated edge by holding the
+horizon, not by exiting at the midband.</div>
 
 <div class="ev"><b>Why there are two signals.</b> Meta launched Muse on 2026-09-08 and ran
 +20.3% before the first analyst upgrade on 09-21 — following that upgrade captured 2% of
@@ -113,23 +121,23 @@ so a reaction is never mistaken for a setup.</div>
 <td>+7.3%</td><td>—</td>
 <td class="vd">extended</td>
 </tr><tr class="v-warn">
-<td class="tk"><b>SOXL</b><br><span class="tag">semis_etf</span></td>
+<td class="tk"><b>SOXL</b><br><span class="tag">semis_etf</span><span class="tag">leveraged</span></td>
 <td>151.95</td><td>+7.13%</td>
 <td class="pb">1.20</td>
 <td>+29.8%</td><td>+34.1%</td><td>45%</td>
 <td>8.5%</td><td>8.1B</td>
 <td>76% <span class="tiny">4w</span></td>
 <td>-52.2%</td><td>—</td>
-<td class="vd">extended</td>
+<td class="vd">leveraged · not rated</td>
 </tr><tr class="v-warn">
-<td class="tk"><b>SOXS</b><br><span class="tag">semis_etf</span></td>
+<td class="tk"><b>SOXS</b><br><span class="tag">semis_etf</span><span class="tag">leveraged</span><span class="tag">inverse</span></td>
 <td>32.42</td><td>-7.09%</td>
 <td class="pb">-0.16</td>
 <td>-29.3%</td><td>-82.7%</td><td>0%</td>
 <td>14.5%</td><td>2.6B</td>
 <td>0% <span class="tiny">4w</span></td>
 <td>-98.7%</td><td>—</td>
-<td class="vd">DIP · FAILS HOLD</td>
+<td class="vd">leveraged · not rated</td>
 </tr></table></div></section><section class="pin"><h2>Mega caps</h2><p class="sub">META, GOOGL, MSFT, AAPL, AMZN, NFLX — tracked every day whether or not they signal.</p><div class="tw"><table><tr><th>Ticker</th><th>Close</th><th>1d</th><th>%B</th><th>vs 20d</th><th>vs 200d</th><th>range</th><th>ATR</th><th>$vol/d</th><th>2y pos</th><th>2y p10</th><th>msgs</th><th>Verdict</th></tr><tr class="v-mid">
 <td class="tk"><b>META</b><br><span class="tag">ndx100</span><span class="tag">ai_platform</span><span class="tag">megacap</span></td>
 <td>736.60</td><td>-0.63%</td>
@@ -372,15 +380,6 @@ something happened, and the rule does not know what or which direction it resolv
 <section><h2>Near the band / neutral</h2>
 <p class="sub">Dips that fail the hold gate, plus names with no measured edge either way.</p>
 <div class="tw"><table><tr><th>Ticker</th><th>Close</th><th>1d</th><th>%B</th><th>vs 20d</th><th>vs 200d</th><th>range</th><th>ATR</th><th>$vol/d</th><th>2y pos</th><th>2y p10</th><th>msgs</th><th>Verdict</th></tr><tr class="v-warn">
-<td class="tk"><b>SOXS</b><br><span class="tag">semis_etf</span></td>
-<td>32.42</td><td>-7.09%</td>
-<td class="pb">-0.16</td>
-<td>-29.3%</td><td>-82.7%</td><td>0%</td>
-<td>14.5%</td><td>2.6B</td>
-<td>0% <span class="tiny">4w</span></td>
-<td>-98.7%</td><td>—</td>
-<td class="vd">DIP · FAILS HOLD</td>
-</tr><tr class="v-warn">
 <td class="tk"><b>FANG</b><span class="stale">2026-09-21</span><br><span class="tag">ndx100</span></td>
 <td>189.27</td><td>-1.64%</td>
 <td class="pb">-0.08</td>
@@ -596,6 +595,15 @@ something happened, and the rule does not know what or which direction it resolv
 <td>77% <span class="tiny">4w</span></td>
 <td>-13.7%</td><td>—</td>
 <td class="vd">neutral</td>
+</tr><tr class="v-mid">
+<td class="tk"><b>PDD</b><span class="stale">2026-09-21</span><br><span class="tag">ndx100</span></td>
+<td>79.30</td><td>+0.51%</td>
+<td class="pb">0.33</td>
+<td>-2.8%</td><td>-17.5%</td><td>9%</td>
+<td>2.5%</td><td>517M</td>
+<td>63% <span class="tiny">4w</span></td>
+<td>-43.0%</td><td>—</td>
+<td class="vd">neutral</td>
 </tr></table></div></section>
 
 <section><h2>Extended</h2>
@@ -742,7 +750,7 @@ null at 60 days. Not a short signal; a not-today signal.</p>
 — but 98 of 146 rows carry an OLDER bar, tagged with their own date beside the ticker. yfinance drops whole trading days per-ticker, so one header date cannot speak for the table.
 · the <b>2y pos</b> column shows the count of INDEPENDENT (non-overlapping) 2-year windows
 behind it — a name with 1-2 is one market cycle, not a distribution · generated
-2026-09-24T05:16:31+00:00 · bars strictly before today, split-corrected,
+2026-09-24T05:21:30+00:00 · bars strictly before today, split-corrected,
 entry measured at the next open. The <b>msgs</b> column is StockTwits message volume in 12h —
 the bull/bear ratio is deliberately not shown, because in a live pull across 20 tickers nine
 of them read 100% bullish. Thresholds were each measured against the unconditional base rate;

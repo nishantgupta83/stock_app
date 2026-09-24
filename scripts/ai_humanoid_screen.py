@@ -96,6 +96,11 @@ AI_HUMANOID = {
     "benchmark":            ["VTI", "QQQ", "SPY", "SMH"],
     # Pinned sections the operator reads first, every day, regardless of verdict.
     "semis_etf":            ["SOXX", "SOXL", "SOXS"],
+    # Daily-reset leveraged/inverse products. %B, the 200-day and every forward return on
+    # this page were measured on ordinary long instruments; none of that transfers. SOXS is
+    # inverse, so a low %B means the OPPOSITE of "on sale".
+    "leveraged":            ["SOXL", "SOXS"],
+    "inverse":              ["SOXS"],
     "megacap":              ["META", "GOOGL", "MSFT", "AAPL", "AMZN", "NFLX"],
 }
 
@@ -189,13 +194,22 @@ def spike(bars: list[dict]) -> dict | None:
     return None
 
 
-def classify(row: dict) -> tuple[str, list[str]]:
+def classify(row: dict, tags: list[str] | None = None) -> tuple[str, list[str]]:
     """(verdict, reasons). Gates in the order the decision card states them.
 
     Every input goes through finite() first: NaN is truthy and `nan < x` is False, so a
     NaN dollar_volume would sail through the liquidity gate and a NaN pct_b would land in
     the neutral bucket -- both failing OPEN, which is the wrong direction for a gate."""
     why = []
+    tags = tags or row.get("tags") or []
+    if "leveraged" in tags:
+        # Never hand a daily-reset 3x product a dip verdict. The +3.47/+7.49 pt figures are
+        # long-only cash-equity statistics; applying them here would be the same category
+        # error as reading SOXS's low %B as "on sale" when it is the inverse leg.
+        return "leveraged", [
+            "daily-reset leveraged product — the %B and forward-return thresholds on this "
+            "page were measured on ordinary long instruments and do not transfer"
+            + (" · INVERSE: a low %B here means the underlying is STRONG" if "inverse" in tags else "")]
     dv = sb.finite(row.get("dollar_volume"))
     if dv is None or dv < MIN_DOLLAR_VOLUME:
         return "illiquid", ["below the liquidity gate — limit orders only, size in days-to-exit"]
@@ -290,7 +304,7 @@ def build(tickers: dict[str, list[str]], bars: dict[str, list[dict]], social: bo
             "hold": hold_period(closes),
             "spike": spike(b),
         }
-        row["verdict"], row["why"] = classify(row)
+        row["verdict"], row["why"] = classify(row, tags)
         rows.append(row)
 
     # yfinance returns NaN for a real trading day on a PER-TICKER basis, so rows carry
