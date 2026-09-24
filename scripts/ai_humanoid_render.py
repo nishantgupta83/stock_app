@@ -6,6 +6,7 @@ and so a rendering change can never alter a number.
 from __future__ import annotations
 
 import html
+import json
 
 
 def _p(x, d=1, plus=True):
@@ -16,6 +17,166 @@ def _p(x, d=1, plus=True):
 
 def _f(x, d=2):
     return "—" if x is None else f"{x:,.{d}f}"
+
+
+SCRIPT = r"""<script>
+// Formulas ported from scripts/ai_humanoid_screen.py, kept deliberately literal so a live
+// lookup and the nightly table cannot silently diverge. Thresholds and the leveraged list
+// are injected from the same screen.json the tables were built from, never restated here.
+const TH = __TH__, LEVERAGED = __LEV__, INVERSE = __INV__;
+const N = 20, K = 2, ATR_N = 14, HOLD = 504, MIN_IND = 4;
+const fin = x => (x === null || x === undefined || !isFinite(x)) ? null : +x;
+const mean = a => a.reduce((s, x) => s + x, 0) / a.length;
+
+function bands(cl) {
+  if (cl.length < N) return null;
+  const w = cl.slice(-N), m = mean(w);
+  const sd = Math.sqrt(mean(w.map(x => (x - m) ** 2)));   // population std, ddof=0
+  return { mid: m, up: m + K * sd, lo: m - K * sd };
+}
+function pctB(cl) { const b = bands(cl); return (!b || b.up <= b.lo) ? null : (cl[cl.length-1] - b.lo) / (b.up - b.lo); }
+function sma(cl, n) { return cl.length >= n ? mean(cl.slice(-n)) : null; }
+function atrPct(bars) {
+  const r = bars.filter(b => fin(b.h) !== null && fin(b.l) !== null && fin(b.c) !== null);
+  if (r.length < ATR_N + 1) return null;
+  let v = null;
+  for (let i = 1; i < r.length; i++) {
+    const pc = r[i-1].c;
+    const tr = Math.max(r[i].h - r[i].l, Math.abs(r[i].h - pc), Math.abs(r[i].l - pc));
+    v = v === null ? tr : v + (tr - v) / ATR_N;
+  }
+  return r[r.length-1].c ? v / r[r.length-1].c : null;
+}
+function rangePos(cl) {
+  const w = cl.slice(-252); if (w.length < 60) return null;
+  const lo = Math.min.apply(null, w), hi = Math.max.apply(null, w);
+  return hi > lo ? { p: (w[w.length-1] - lo) / (hi - lo), n: w.length } : null;
+}
+function analyse(sym, bars) {
+  const cl = bars.map(b => b.c).filter(c => fin(c) !== null && c > 0);
+  const last = cl[cl.length-1], b = bands(cl);
+  const dv = bars.slice(-60).filter(x => fin(x.c) && fin(x.v) !== null).map(x => x.c * x.v).sort((a, z) => a - z);
+  const rp = rangePos(cl), s200 = sma(cl, 200);
+  return { symbol: sym, close: last, band: b,
+    chg: cl.length > 1 ? last / cl[cl.length-2] - 1 : null,
+    pct_b: pctB(cl), vs20: b ? last / b.mid - 1 : null,
+    vs200: s200 ? last / s200 - 1 : null,
+    range_pos: rp ? rp.p : null, range_n: rp ? rp.n : null,
+    atr_pct: atrPct(bars),
+    dollar_volume: dv.length ? dv[Math.floor(dv.length/2)] : null, n_bars: cl.length };
+}
+function verdict(a) {
+  if (LEVERAGED.indexOf(a.symbol) >= 0)
+    return { label: 'NOT RATED', cls: 'vb-warn',
+      why: 'Daily-reset leveraged product. Every threshold on this page was measured on ordinary long instruments and does not transfer.'
+         + (INVERSE.indexOf(a.symbol) >= 0 ? ' INVERSE: a low %B here means the underlying is STRONG.' : '') };
+  const dv = fin(a.dollar_volume);
+  if (dv === null || dv < TH.min_dollar_volume)
+    return { label: 'TOO THIN', cls: 'vb-no', why: 'Below the liquidity gate — limit orders only, and size it in days-to-exit rather than dollars.' };
+  const pb = fin(a.pct_b);
+  if (pb === null) return { label: 'NO DATA', cls: 'vb-mid', why: 'Not enough history for a band reading.' };
+  const chg = fin(a.chg);
+  if ((chg !== null && Math.abs(chg) > 0.35) || pb < -2)
+    return { label: 'SUSPECT BAR', cls: 'vb-no', why: 'Implausible move — suspect an unadjusted split.' };
+  if (pb > TH.extended_pct_b)
+    return { label: 'EXTENDED — WAIT', cls: 'vb-warn',
+      why: '%B ' + pb.toFixed(2) + ' is above ' + TH.extended_pct_b.toFixed(2) + '. The stall zone: it returned 2.65 pts below simply holding.' };
+  if (pb < TH.dip_pct_b)
+    return { label: 'IN THE BUY BAND', cls: 'vb-go',
+      why: '%B ' + pb.toFixed(2) + ' is under ' + TH.dip_pct_b.toFixed(2) + ' — the measured dip band. The 1–3 year hold gate needs ~8 years of history and cannot be judged from this 2-year fetch; read the 2y columns in the table for that.' };
+  return { label: 'NEUTRAL — NO EDGE', cls: 'vb-mid',
+    why: '%B ' + pb.toFixed(2) + ' sits between ' + TH.dip_pct_b.toFixed(2) + ' and ' + TH.extended_pct_b.toFixed(2) + ', where the measured edge is zero either way.' };
+}
+const pc  = (x, d) => (x === null || x === undefined) ? '—' : (x*100).toFixed(d === undefined ? 1 : d) + '%';
+const pcs = (x, d) => (x === null || x === undefined) ? '—' : (x >= 0 ? '+' : '') + (x*100).toFixed(d === undefined ? 1 : d) + '%';
+const usd = x => (x === null || x === undefined) ? '—' : '$' + x.toLocaleString(undefined, { maximumFractionDigits: Math.abs(x) < 100 ? 2 : 0 });
+const big = x => x === null ? '—' : x >= 1e9 ? (x/1e9).toFixed(1) + 'B' : (x/1e6).toFixed(0) + 'M';
+
+async function quote(sym) {
+  const r = await fetch('/api/quote?symbol=' + encodeURIComponent(sym));
+  const j = await r.json().catch(() => ({ error: 'bad response' }));
+  if (!r.ok || j.error) throw new Error(j.error || ('HTTP ' + r.status));
+  return j;
+}
+function card(q, a, v, cash, pf) {
+  const shares = (cash > 0 && a.close) ? Math.floor(cash / a.close) : 0;
+  const atrD = a.atr_pct ? a.atr_pct * a.close * shares : null;
+  const chk = [
+    ['%B', a.pct_b === null ? '—' : a.pct_b.toFixed(2),
+      a.pct_b === null ? 'na' : (a.pct_b < TH.dip_pct_b ? 'ok' : (a.pct_b > TH.extended_pct_b ? 'bad' : 'na')),
+      'on sale below ' + TH.dip_pct_b.toFixed(2) + ', extended above ' + TH.extended_pct_b.toFixed(2)],
+    ['vs 200-day', pcs(a.vs200), a.vs200 === null ? 'na' : (a.vs200 > 0 ? 'ok' : 'na'),
+      'above = steadier odds (71% vs 68% at 60d); below = bigger and lumpier. Not a gate.'],
+    ['Liquidity', big(a.dollar_volume), (a.dollar_volume !== null && a.dollar_volume >= TH.min_dollar_volume) ? 'ok' : 'bad',
+      'needs ' + big(TH.min_dollar_volume) + '/day to trade without limit orders']
+  ];
+  return '<div class="vbig ' + v.cls + '">' + q.name + ' · ' + v.label + '<small>' + v.why + '</small></div>'
+    + '<div class="chk">' + chk.map(function (r) {
+        return '<div><span class="mk ' + r[2] + '">' + (r[2] === 'ok' ? '✓' : r[2] === 'bad' ? '✗' : '·')
+             + '</span><span><b>' + r[0] + ' ' + r[1] + '</b> — ' + r[3] + '</span></div>'; }).join('')
+    + '</div><div class="kv">'
+    + '<div><span>Close (' + q.as_of + ')</span><span>' + usd(a.close) + '</span></div>'
+    + '<div><span>1-day</span><span>' + pcs(a.chg, 2) + '</span></div>'
+    + '<div><span>vs 20-day</span><span>' + pcs(a.vs20) + '</span></div>'
+    + '<div><span>' + (a.range_n >= 200 ? '52w' : (a.range_n || 0) + 'd') + ' range</span><span>' + pc(a.range_pos, 0) + '</span></div>'
+    + '<div><span>ATR(14)</span><span>' + pc(a.atr_pct, 1) + '</span></div>'
+    + '<div><span>Exit level (20d mid)</span><span>' + (a.band ? usd(a.band.mid) + ' (' + pcs(a.band.mid / a.close - 1) + ')' : '—') + '</span></div>'
+    + '<div><span>Shares for ' + usd(cash) + '</span><span>' + (shares || '—') + '</span></div>'
+    + '<div><span>Share of portfolio</span><span>' + (pf > 0 && a.close ? pc(shares * a.close / pf, 1) : '—') + '</span></div>'
+    + '<div><span>A quiet day moves it</span><span>' + (atrD ? '± ' + usd(atrD) : '—') + '</span></div>'
+    + '<div><span>Min sane stop (1 ATR)</span><span>' + (atrD ? usd(atrD) : '—') + '</span></div>'
+    + '</div>';
+}
+(function () {
+  const $ = function (i) { return document.getElementById(i); };
+  const sym = $('q-sym'), go = $('q-go'), out = $('q-out'), err = $('q-err');
+  async function run() {
+    const s = (sym.value || '').trim().toUpperCase();
+    if (!s) return;
+    go.disabled = true; go.textContent = '…'; err.hidden = true;
+    try {
+      const q = await quote(s), a = analyse(q.symbol, q.bars);
+      out.innerHTML = card(q, a, verdict(a), parseFloat($('q-cash').value) || 0, parseFloat($('q-pf').value) || 0);
+      out.hidden = false;
+    } catch (e) { err.textContent = s + ': ' + e.message; err.hidden = false; out.hidden = true; }
+    finally { go.disabled = false; go.textContent = 'Check'; }
+  }
+  go.addEventListener('click', run);
+  sym.addEventListener('keydown', function (e) { if (e.key === 'Enter') { e.preventDefault(); run(); } });
+  ['q-cash', 'q-pf'].forEach(function (i) { $(i).addEventListener('input', function () { if (!out.hidden) run(); }); });
+  run();
+
+  // Refresh only the pinned sections. A live refresh of all 146 rows would be 146 upstream
+  // calls per click, and Yahoo rate-limits hard (a bare request already returns 429).
+  Array.prototype.forEach.call(document.querySelectorAll('button.refresh'), function (btn) {
+    btn.addEventListener('click', async function () {
+      const box = document.querySelector('[data-pin="' + btn.dataset.tag + '"]');
+      const trs = Array.prototype.filter.call(box.querySelectorAll('tr'), function (tr) { return tr.querySelector('td'); });
+      btn.disabled = true; const label = btn.textContent; btn.textContent = 'refreshing…';
+      let done = 0;
+      for (const tr of trs) {
+        const b = tr.querySelector('td b'); if (!b) continue;
+        try {
+          const q = await quote(b.textContent.trim());
+          const a = analyse(q.symbol, q.bars), v = verdict(a), td = tr.querySelectorAll('td');
+          if (td[1]) td[1].textContent = a.close.toFixed(2);
+          if (td[2]) td[2].textContent = pcs(a.chg, 2);
+          if (td[3]) td[3].textContent = a.pct_b === null ? '—' : a.pct_b.toFixed(2);
+          if (td[4]) td[4].textContent = pcs(a.vs20);
+          if (td[5]) td[5].textContent = pcs(a.vs200);
+          if (td[td.length - 1]) td[td.length - 1].textContent = v.label;
+          const badge = tr.querySelector('.stale'); if (badge) badge.textContent = q.as_of;
+          tr.classList.add('live'); done++;
+        } catch (e) { /* leave the nightly row standing rather than blanking it */ }
+      }
+      btn.disabled = false;
+      btn.textContent = done ? ('live · ' + done + ' updated') : label;
+      setTimeout(function () { btn.textContent = label; }, 6000);
+    });
+  });
+})();
+</script>
+"""
 
 
 VERDICT = {
@@ -77,7 +238,11 @@ def _by_tag(rows, tag):
 
 
 def render(data: dict) -> str:
-    from ai_humanoid_screen import PINNED
+    from ai_humanoid_screen import PINNED, AI_HUMANOID
+    script = (SCRIPT
+              .replace("__TH__", json.dumps(data["thresholds"]))
+              .replace("__LEV__", json.dumps(AI_HUMANOID.get("leveraged", [])))
+              .replace("__INV__", json.dumps(AI_HUMANOID.get("inverse", []))))
     rows = data["rows"]
     buys = [r for r in rows if r["verdict"] == "buy_zone"]
     spikes = [r for r in rows if r.get("spike")]
@@ -152,6 +317,40 @@ border-radius:3px;font-size:13px;margin-bottom:26px}}
 .ev td,.ev th{{border:none;padding:3px 10px 3px 0;text-align:left;background:none;color:inherit;
 position:static;text-transform:none;letter-spacing:0;font-size:12px}}
 footer{{border-top:1px solid var(--hair);padding-top:16px;color:var(--muted);font-size:12px}}
+.pinhd{{display:flex;align-items:baseline;justify-content:space-between;gap:12px;flex-wrap:wrap}}
+button{{font-family:"IBM Plex Mono",monospace;font-size:12px;font-weight:600;letter-spacing:.04em;
+padding:7px 13px;border:1px solid var(--teal);background:var(--card);color:var(--teal);
+border-radius:3px;cursor:pointer}}
+button:hover{{background:var(--teal);color:var(--paper)}}
+button:disabled{{opacity:.5;cursor:progress}}
+button:focus-visible{{outline:2px solid var(--teal);outline-offset:2px}}
+.tool{{background:var(--sunk);border:1px solid var(--hair);border-radius:3px;padding:16px}}
+.trow{{display:flex;gap:12px;flex-wrap:wrap;align-items:flex-end}}
+.fld{{flex:1 1 140px;display:flex;flex-direction:column;gap:4px}}
+.fld label{{font-size:10.5px;letter-spacing:.07em;text-transform:uppercase;color:var(--muted);font-weight:600}}
+.fld input{{font-family:"IBM Plex Mono",monospace;font-size:16px;padding:8px 10px;border:1px solid var(--hair);
+border-radius:2px;background:var(--card);color:var(--ink);width:100%}}
+.fld input:focus{{outline:2px solid var(--teal);outline-offset:1px}}
+.qout{{margin-top:16px}}
+.qerr{{margin-top:14px;padding:10px 12px;background:var(--no-bg);color:var(--no);border-radius:3px;font-size:13px}}
+.vbig{{font-family:"Bricolage Grotesque",system-ui,sans-serif;font-size:clamp(19px,4vw,25px);
+font-weight:700;padding:13px 16px;border-radius:3px;margin-bottom:14px;letter-spacing:-.01em;line-height:1.2}}
+.vbig small{{display:block;font-family:"IBM Plex Mono",monospace;font-size:12px;font-weight:400;
+letter-spacing:0;margin-top:6px;opacity:.9;line-height:1.45}}
+.vb-go{{background:var(--go-bg);color:var(--go)}} .vb-warn{{background:var(--warn-bg);color:var(--warn)}}
+.vb-no{{background:var(--no-bg);color:var(--no)}}
+.vb-mid{{background:var(--card);color:var(--ink2);border:1px solid var(--hair)}}
+.chk{{display:grid;gap:7px;margin-bottom:14px}}
+.chk div{{display:flex;gap:10px;align-items:baseline;font-size:13.5px}}
+.chk .mk{{flex:0 0 16px;font-weight:700}}
+.chk .ok{{color:var(--go)}} .chk .bad{{color:var(--no)}} .chk .na{{color:var(--muted)}}
+.chk b{{font-family:"IBM Plex Mono",monospace}}
+.kv{{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:8px 18px;
+padding-top:13px;border-top:1px solid var(--hair);font-size:13px}}
+.kv div{{display:flex;justify-content:space-between;gap:10px}}
+.kv span:first-child{{color:var(--muted)}}
+.kv span:last-child{{font-family:"IBM Plex Mono",monospace;font-weight:600}}
+tr.live td{{background:var(--go-bg)}}
 </style></head><body>
 <header>
 <div class="kick">Nasdaq-100 + the AI / humanoid complex · {data['n_resolved']} of {data['n_universe']} resolved{f" · {data['n_stale']} on an older bar" if data.get('n_stale') else ""}</div>
@@ -204,7 +403,28 @@ The dip rule caught it by accident — it was buying a drawdown, not predicting 
 The spike rule reacts to the catalyst, late but not uselessly. They are labelled separately
 so a reaction is never mistaken for a setup.</div>
 
-{"".join(f'<section class="pin"><h2>{ttl}</h2><p class="sub">{sub}</p>{table(_by_tag(rows, tag))}</section>' for tag, ttl, sub in PINNED)}
+{"".join(f'<section class="pin"><div class="pinhd"><h2>{ttl}</h2><button type="button" class="refresh" data-tag="{tag}">Refresh live</button></div><p class="sub">{sub}</p><div data-pin="{tag}">{table(_by_tag(rows, tag))}</div></section>' for tag, ttl, sub in PINNED)}
+
+<section id="tools">
+<h2>Live lookup &amp; sizing</h2>
+<p class="sub">Any symbol, priced now. The browser cannot call Yahoo directly (no CORS), so this
+goes through this site's own <code>/api/quote</code> and then applies the <b>same formulas as the
+nightly table</b>, ported from the Python — so a live check and the tables cannot disagree.
+Cached 10 minutes.</p>
+<div class="tool">
+  <div class="trow">
+    <div class="fld" style="flex:2 1 190px"><label for="q-sym">Symbol</label>
+      <input id="q-sym" type="text" autocapitalize="characters" spellcheck="false" placeholder="NVDA" value="NVDA"></div>
+    <div class="fld"><label for="q-cash">Amount to put in ($)</label>
+      <input id="q-cash" type="number" inputmode="numeric" value="500" step="50" min="0"></div>
+    <div class="fld"><label for="q-pf">Whole portfolio ($)</label>
+      <input id="q-pf" type="number" inputmode="numeric" value="7000" step="100" min="0"></div>
+    <div class="fld" style="flex:0 0 auto"><label>&nbsp;</label><button id="q-go" type="button">Check</button></div>
+  </div>
+  <div id="q-out" class="qout" hidden></div>
+  <div id="q-err" class="qerr" hidden></div>
+</div>
+</section>
 
 <section><h2>Buy zone</h2>
 <p class="sub">%B below {data['thresholds']['dip_pct_b']}, liquid, and passes the 1–3 year hold gate
@@ -236,4 +456,5 @@ entry measured at the next open. The <b>msgs</b> column is StockTwits message vo
 the bull/bear ratio is deliberately not shown, because in a live pull across 20 tickers nine
 of them read 100% bullish. Thresholds were each measured against the unconditional base rate;
 stacking them into one verdict is judgement, not a tested system.</footer>
+{script}
 </body></html>"""
