@@ -119,8 +119,10 @@ def delete_batch(url: str, key: str, table: str, where: str) -> int:
     return body.count('"id"') if body and body != "[]" else 0
 
 
-def prune(url: str, key: str, table: str, apply: bool) -> dict:
+def prune(url: str, key: str, table: str, apply: bool, days_override: int | None = None) -> dict:
     age_col, days, what = TABLES[table]
+    if days_override is not None:
+        days = days_override
     if table in FORBIDDEN:
         sys.exit(f"refusing: {table} is on the FORBIDDEN list")
     if days < MIN_RETENTION_DAYS:
@@ -165,6 +167,11 @@ def main() -> int:
                                  formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("--apply", action="store_true", help="actually delete (default is a dry run)")
     ap.add_argument("--table", choices=sorted(TABLES), help="prune only this table")
+    ap.add_argument("--days", type=int, default=None,
+                    help=f"override the retention window for every selected table "
+                         f"(floor {MIN_RETENTION_DAYS}d). Current defaults leave ~67 MB of "
+                         f"headroom, about 37 days at the observed refill rate; 45/30/14 "
+                         f"roughly doubles that.")
     a = ap.parse_args()
     url, key = env()
 
@@ -174,7 +181,8 @@ def main() -> int:
     print("Touches only diagnostic log tables. Calibration, paper trades, signals and the")
     print("frozen experiments are on the FORBIDDEN list and are never read or written here.")
 
-    results = [prune(url, key, t, a.apply) for t in ([a.table] if a.table else sorted(TABLES))]
+    results = [prune(url, key, t, a.apply, a.days)
+               for t in ([a.table] if a.table else sorted(TABLES))]
     failed = [r for r in results if r.get("error")]
     total_del = sum(r.get("deleted", 0) for r in results)
     would = sum(r.get("old", 0) for r in results)
