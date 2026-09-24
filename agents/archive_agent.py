@@ -65,6 +65,15 @@ HEADERS_SB = {
 # threshold_interval_sql_label is used only for readable output; the actual
 # cutoff is computed in Python and passed as an ISO timestamp to the REST API.
 #
+# "archive": False means DELETE WITHOUT EXPORTING. Reserved for pure operational logs.
+# Two reasons it is not just a nicety:
+#   (a) the delete would otherwise be gated on a Hostinger FTPS upload, which CLAUDE.md
+#       records as having intermittent control-socket timeouts. A flaky upload would
+#       silently stop pruning and the quota problem would come back.
+#   (b) the export path stamps archived_at first, and sql/0019_retention_columns.sql adds
+#       that column to exactly the six tables below it -- the log tables do not have it,
+#       so the stamp would fail with 42703 and skip the delete every week.
+#
 # Rows that must NEVER be archived are excluded by extra_params passed to sb_fetch.
 TABLES: list[dict] = [
     {
@@ -106,6 +115,37 @@ TABLES: list[dict] = [
         "days":        90,
         "extra_params": {},
     },
+    # --- operational logs: delete, do not export -----------------------------------
+    # These three were never in this list, and by 2026-09-23 they were 268 MB = 45% of a
+    # database sitting at 118% of the free tier with the grace period expired.
+    #
+    # NOTE: the WEEKLY prune of these is done by .github/workflows/prune_supabase_logs.yml,
+    # not by this agent. archive_agent.yml:53 defaults DRY_RUN to 'true' on a schedule
+    # event, so the Sunday run has never deleted anything. These entries make a manual
+    # `dry_run=false` dispatch of archive_agent prune them too, and keep one list of
+    # everything with a retention policy -- but they are not the scheduled mechanism.
+    {
+        "table":       "stock_job_runs",
+        "age_col":     "started_at",
+        "days":        90,
+        "extra_params": {},
+        "archive":     False,
+    },
+    {
+        # fired_at, NOT created_at — sql/0035_thesis_rejections.sql:27.
+        "table":       "stock_thesis_rejections",
+        "age_col":     "fired_at",
+        "days":        60,
+        "extra_params": {},
+        "archive":     False,
+    },
+    {
+        "table":       "stock_health_pulse",
+        "age_col":     "pulsed_at",
+        "days":        30,
+        "extra_params": {},
+        "archive":     False,
+    },
 ]
 
 PAGE_SIZE = 1000
@@ -127,14 +167,22 @@ def sb_fetch_page(table: str, params: dict, offset: int) -> list[dict]:
 
 
 def sb_fetch_all(table: str, age_col: str, threshold_iso: str,
-                 extra_params: dict) -> list[dict]:
-    """Paginate through all eligible rows for a table."""
+                 extra_params: dict, do_archive: bool = True) -> list[dict]:
+    """Paginate through all eligible rows for a table.
+
+    do_archive=False tables have NO archived_at column (sql/0019_retention_columns.sql
+    adds it to the six export tables only), so sending that predicate returns 400/42703
+    and the whole table is skipped. They also only need the id, not the full row — for
+    stock_job_runs that is the difference between pulling 125 MB of `meta` jsonb through
+    the read-egress budget and pulling a bigint.
+    """
     base_params: dict = {
-        "archived_at": "is.null",
-        age_col:       f"lt.{threshold_iso}",
-        "select":      "*",
+        age_col:  f"lt.{threshold_iso}",
+        "select": "*" if do_archive else "id",
         **extra_params,
     }
+    if do_archive:
+        base_params["archived_at"] = "is.null"
     rows: list[dict] = []
     offset = 0
     while True:
@@ -166,20 +214,51 @@ def sb_set_archived_at(table: str, ids: list, now_iso: str) -> bool:
     return True
 
 
-def sb_delete_archived(table: str, age_col: str, threshold_iso: str) -> bool:
-    """Delete rows that have been stamped with archived_at for this table."""
-    r = requests.delete(
-        f"{SUPABASE_URL}/rest/v1/{table}",
-        headers={**HEADERS_SB, "Prefer": "return=minimal"},
-        params={
-            "archived_at": "not.is.null",
-            age_col:       f"lt.{threshold_iso}",
-        },
-        timeout=60,
-    )
-    if r.status_code not in (200, 201, 204):
-        print(f"  SB DELETE {table}: {r.status_code} {r.text[:200]}", file=sys.stderr)
-        return False
+DELETE_CHUNK = 500        # ids per DELETE statement
+
+
+def sb_delete_stamped(table: str, age_col: str, threshold_iso: str) -> None:
+    """Sweep rows already stamped archived_at whose DELETE failed on an earlier run.
+
+    Best-effort and non-fatal: these are by definition rows that were successfully
+    exported, so losing the sweep costs quota, not data.
+    """
+    try:
+        r = requests.delete(
+            f"{SUPABASE_URL}/rest/v1/{table}",
+            headers={**HEADERS_SB, "Prefer": "return=minimal"},
+            params={"archived_at": "not.is.null", age_col: f"lt.{threshold_iso}"},
+            timeout=60,
+        )
+        if r.status_code in (200, 201, 204):
+            print(f"  [{table}] orphan sweep ok")
+        else:
+            print(f"  [{table}] orphan sweep: {r.status_code} {r.text[:120]}", file=sys.stderr)
+    except Exception as e:  # noqa: BLE001
+        print(f"  [{table}] orphan sweep failed (non-fatal): {e}", file=sys.stderr)
+
+
+def sb_delete_ids(table: str, ids: list) -> bool:
+    """Delete exactly these ids. Bounded by construction.
+
+    This used to be ONE filtered DELETE over the whole age range. A filtered PostgREST
+    DELETE removes every matching row in a single statement, so on a large table it hits
+    the Postgres statement timeout and returns 500 -- reproduced on 2026-09-23 against
+    156,965 stock_job_runs rows. The six original tables never grew large enough to trip
+    it; the log tables added below do, immediately.
+    """
+    for i in range(0, len(ids), DELETE_CHUNK):
+        batch = ids[i:i + DELETE_CHUNK]
+        id_list = ",".join(str(x) for x in batch)
+        r = requests.delete(
+            f"{SUPABASE_URL}/rest/v1/{table}?id=in.({id_list})",
+            headers={**HEADERS_SB, "Prefer": "return=minimal"},
+            timeout=60,
+        )
+        if r.status_code not in (200, 201, 204):
+            print(f"  SB DELETE {table} chunk {i//DELETE_CHUNK}: "
+                  f"{r.status_code} {r.text[:200]}", file=sys.stderr)
+            return False
     return True
 
 
@@ -363,9 +442,18 @@ def archive_table(cfg: dict, week_path: str, now_iso: str) -> dict | None:
     # Compute ISO threshold by subtracting days — avoids importing dateutil.
     threshold_iso = (cutoff - timedelta(days=days)).isoformat()
 
+    do_archive = cfg.get("archive", True)
+
+    # Orphan sweep, export tables only: a previous run can stamp archived_at and then fail
+    # its DELETE. Those rows are excluded from the fetch below (archived_at=is.null), so
+    # an id-list delete can never reach them again. The old blanket filtered DELETE swept
+    # them as a side effect; this restores that explicitly.
+    if do_archive and not DRY_RUN:
+        sb_delete_stamped(table, age_col, threshold_iso)
+
     print(f"[{table}] fetching rows with {age_col} < {threshold_iso[:10]} ...")
     try:
-        rows = sb_fetch_all(table, age_col, threshold_iso, extra)
+        rows = sb_fetch_all(table, age_col, threshold_iso, extra, do_archive)
     except Exception as e:
         print(f"  [{table}] fetch failed: {e}", file=sys.stderr)
         return None
@@ -373,6 +461,19 @@ def archive_table(cfg: dict, week_path: str, now_iso: str) -> dict | None:
     if not rows:
         print(f"  [{table}] 0 eligible rows — skipping")
         return {"table": table, "rows": 0, "bytes": 0, "_rows": None}
+
+    ids = [r["id"] for r in rows if r.get("id") is not None]
+
+    if not do_archive:
+        print(f"  [{table}] {len(rows)} rows to DELETE (operational log — not exported)")
+        if DRY_RUN:
+            print(f"  DRY_RUN: skipping delete for {table}")
+            return {"table": table, "rows": len(rows), "bytes": 0, "_rows": None}
+        if not sb_delete_ids(table, ids):
+            print(f"  [{table}] DELETE failed", file=sys.stderr)
+            return None
+        print(f"  [{table}] deleted {len(ids):,} rows")
+        return {"table": table, "rows": len(rows), "bytes": 0, "_rows": None}
 
     print(f"  [{table}] {len(rows)} rows to archive")
 
@@ -395,7 +496,6 @@ def archive_table(cfg: dict, week_path: str, now_iso: str) -> dict | None:
                 "_rows": rows if table == "stock_event_paper_trades" else None}
 
     # Live mode: stamp archived_at then delete.
-    ids = [r["id"] for r in rows if r.get("id") is not None]
     if ids:
         ok = sb_set_archived_at(table, ids, now_iso)
         if not ok:
@@ -403,9 +503,13 @@ def archive_table(cfg: dict, week_path: str, now_iso: str) -> dict | None:
                   file=sys.stderr)
             return None
 
-    ok = sb_delete_archived(table, age_col, threshold_iso)
+    ok = sb_delete_ids(table, ids)
     if not ok:
-        print(f"  [{table}] DELETE failed — rows stamped but not removed", file=sys.stderr)
+        # Must surface as had_error. These rows now have archived_at set, so the next
+        # run's fetch excludes them — only sb_delete_stamped() above can reach them.
+        print(f"  [{table}] DELETE failed — rows stamped but not removed; "
+              f"next run's orphan sweep will retry", file=sys.stderr)
+        return None
         # Don't return None here: upload succeeded and rows are stamped, so
         # report success to avoid masking the Telegram digest. The next run
         # will skip stamped rows because they already have archived_at set,

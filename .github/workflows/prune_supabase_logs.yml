@@ -1,7 +1,19 @@
 # .github/workflows/prune_supabase_logs.yml
 name: prune_supabase_logs
 
-# Weekly trim of the three append-only log tables archive_agent never covered.
+# Weekly trim of the three append-only log tables. THIS is the thing that actually
+# deletes them on a schedule.
+#
+# The three tables are ALSO in agents/archive_agent.py TABLES now (with "archive": False),
+# so archive_agent prunes them on a manual live dispatch. But archive_agent CANNOT own the
+# weekly job: .github/workflows/archive_agent.yml:53 sets
+#     DRY_RUN: ${{ github.event.inputs.dry_run || 'true' }}
+# and on a `schedule:` event `github.event.inputs` is null, so the Sunday 03:00 run is a
+# DRY RUN by design -- documented in that workflow's own header, and confirmed by the live
+# database, where all six archive tables have zero rows with archived_at set. archive_agent
+# has never deleted a row on its schedule. Making it do so would switch on live deletion
+# for the six EXPORT tables for the first time ever, which is a separate decision and must
+# not ride along on a log-pruning change.
 #
 # On 2026-09-23 the database hit 118% of the 0.5 GB free tier with the grace period
 # expired (402s imminent). Those three tables were 268 MB = 45% of it. A one-off prune
@@ -48,9 +60,10 @@ jobs:
         env:
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
           SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
-          # On a schedule `inputs` is null, so APPLY is empty -> the scheduled run APPLIES.
-          # That is deliberate: a weekly dry run would report the problem forever and never
-          # fix it. A manual dispatch defaults to false so a human poking at it is safe.
+          # The SCHEDULED run applies; a manual dispatch defaults to a dry run. Deliberate:
+          # a weekly dry run would report the problem forever and never fix it, while a
+          # human poking at it should be safe by default. (archive_agent.yml takes the
+          # opposite convention, which is exactly why it prunes nothing on its schedule.)
           APPLY: ${{ github.event_name == 'schedule' && 'true' || inputs.apply }}
           DAYS: ${{ inputs.days }}
         run: |

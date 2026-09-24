@@ -20,9 +20,10 @@ external infrastructure, and what to do when something breaks.
 
 | Cadence | Workflows | Purpose |
 |---|---|---|
-| `*/5 * * * *` | `filing_agent`, `news_agent`, `truth_social_agent`, `thesis_agent` | Hot path: ingest + score |
+| `*/15 * * * *` | `filing_agent`, `news_agent`, `truth_social_agent`, `thesis_agent` | Hot path: ingest + score (cut from `*/5` for egress) |
 | `5 * * * *` | `event_paper_agent` | Open 4 paper trades per fresh event |
-| `*/15 * * * *` | `site_generator`, `paper_trade_agent` | Refresh dashboard + Codex paper path |
+| `*/15 * * * *` | `paper_trade_agent` | Probability-calibrated paper forecasts |
+| `0 22 * * *` | `site_generator` | Dashboard build → Cloudflare Pages. **Daily, not `*/15`** — the every-15-min cadence was ~85% of all Supabase read egress (CLAUDE.md rule #9) |
 | `*/15 13-21 * * 1-5` | `intraday_alert_agent` | Fast-twitch spike detection during US market hours |
 | `*/30 * * * *` | `trade_setup_agent`, `risk_agent` | Layer 3+4 — signal → setup → risk decision |
 | `15 */2 * * *` | `activist_insider_agent` | 13D + Form 4 cluster detection |
@@ -261,7 +262,7 @@ of each other and address different failure modes.
 
 GitHub Actions `schedule:` triggers are documented as **best-effort**. Observed
 behavior: under runner-pool load, scheduled workflows can be delayed 30–60 min or
-silently dropped. On 2026-05-18 we observed `site_generator` (`*/15 * * * *`) sit
+silently dropped. On 2026-05-18 we observed `site_generator` (then `*/15 * * * *`, now daily) sit
 idle for ~90 min, leaving the dashboard frozen even though all upstream agents had
 produced fresh data.
 
@@ -269,11 +270,11 @@ For the seven tightest-cadence workflows, this matters:
 
 | Workflow | GHA cron | Why frequent runs matter |
 |---|---|---|
-| `filing_agent` | `*/5 * * * *` | EDGAR Form 4 / 8-K freshness for intraday alerts |
-| `news_agent` | `*/5 * * * *` | Catalyst freshness — late news = late signal |
-| `thesis_agent` | `*/5 * * * *` | Cluster scoring; downstream of all ingest agents |
-| `truth_social_agent` | `*/5 * * * *` | DJT-driven momentum is minute-sensitive |
-| `site_generator` | `*/15 * * * *` | Dashboard staleness is operator-visible |
+| `filing_agent` | `*/15 * * * *` | EDGAR Form 4 / 8-K freshness for intraday alerts |
+| `news_agent` | `*/15 * * * *` | Catalyst freshness — late news = late signal |
+| `thesis_agent` | `*/15 * * * *` | Cluster scoring; downstream of all ingest agents |
+| `truth_social_agent` | `*/15 * * * *` | DJT-driven reaction is minute-sensitive |
+| `site_generator` | `0 22 * * *` | Dashboard staleness is operator-visible |
 | `paper_trade_agent` | `*/15 * * * *` | Forecast freshness |
 | `intraday_alert_agent` | `*/15 13-21 * * 1-5` | Market-hours-only fast-twitch alerter |
 
@@ -309,8 +310,9 @@ Staggering schedule per workflow:
 
 | Workflow | GHA cron | Pinger cron |
 |---|---|---|
-| `filing_agent`, `news_agent`, `thesis_agent`, `truth_social_agent` | `:00,:05,:10,…,:55` | `:02,:07,:12,…,:57` |
-| `site_generator`, `paper_trade_agent` | `:00,:15,:30,:45` | `:07,:22,:37,:52` |
+| `filing_agent`, `news_agent`, `thesis_agent`, `truth_social_agent` | `:00,:15,:30,:45` | `:07,:22,:37,:52` |
+| `paper_trade_agent` | `:00,:15,:30,:45` | `:07,:22,:37,:52` |
+| `site_generator` | `22:00` daily | `23:07` daily |
 | `intraday_alert_agent` | `:00,:15,:30,:45` (UTC 13-21 Mon-Fri) | `:07,:22,:37,:52` (same window) |
 
 ### 8.3 Bootstrap / rotation procedure
