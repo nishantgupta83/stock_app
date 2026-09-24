@@ -46,7 +46,9 @@ from __future__ import annotations
 
 import argparse
 import os
+import re
 import sys
+import time
 from datetime import datetime, timedelta, timezone
 
 import urllib.error
@@ -54,7 +56,8 @@ import urllib.parse
 import urllib.request
 
 MIN_RETENTION_DAYS = 14
-MAX_DELETE_BATCHES = 400          # hard cap per run, so a bad filter cannot run away
+MAX_DELETE_BATCHES = 2000         # hard cap per run, so a bad filter cannot run away
+DELETE_CHUNK = 500                # ids per DELETE statement; keeps it under the timeout
 HTTP_TIMEOUT = 45
 
 # table -> (age column, retention days, what it is)
@@ -111,12 +114,29 @@ def count(url: str, key: str, table: str, where: str = "") -> int | None:
         return None
 
 
-def delete_batch(url: str, key: str, table: str, where: str) -> int:
-    """One bounded DELETE. Returns rows removed (PostgREST returns them with return=representation)."""
-    q = f"{url}/rest/v1/{table}?{where}"
-    with _req("DELETE", q, key, {"Prefer": "return=representation", "Range": "0-999"}) as r:
+def fetch_ids(url: str, key: str, table: str, where: str, limit: int) -> list:
+    """The oldest `limit` ids matching the filter, ascending."""
+    q = (f"{url}/rest/v1/{table}?{where}&select=id&order=id.asc&limit={limit}")
+    with _req("GET", q, key) as r:
         body = r.read().decode("utf-8", "ignore")
-    return body.count('"id"') if body and body != "[]" else 0
+    return [int(m) for m in re.findall(r'"id"\s*:\s*(\d+)', body)]
+
+
+def delete_ids(url: str, key: str, table: str, ids: list) -> int:
+    """DELETE exactly these ids, nothing else.
+
+    A filtered PostgREST DELETE removes EVERY matching row -- the Range header bounds the
+    RESPONSE, not the statement. The first version of this relied on Range to chunk, so
+    each call tried to delete all 156,965 stock_job_runs rows at once AND serialize them
+    back through `return=representation`; Postgres returned 500 (statement timeout) after
+    stock_health_pulse had already succeeded. Deleting an explicit id list is the only
+    way to make the statement genuinely bounded.
+    """
+    if not ids:
+        return 0
+    q = f"{url}/rest/v1/{table}?id=in.({','.join(str(i) for i in ids)})"
+    _req("DELETE", q, key, {"Prefer": "return=minimal"}).close()
+    return len(ids)
 
 
 def prune(url: str, key: str, table: str, apply: bool, days_override: int | None = None) -> dict:
@@ -151,11 +171,27 @@ def prune(url: str, key: str, table: str, apply: bool, days_override: int | None
 
     removed = 0
     for i in range(MAX_DELETE_BATCHES):
-        n = delete_batch(url, key, table, where)
-        if n == 0:
+        try:
+            ids = fetch_ids(url, key, table, where, DELETE_CHUNK)
+        except urllib.error.HTTPError as e:
+            print(f"    id fetch failed ({e.code}) — stopping with {removed:,} deleted")
             break
-        removed += n
-        if i % 20 == 0:
+        if not ids:
+            break
+        for attempt in range(4):
+            try:
+                removed += delete_ids(url, key, table, ids)
+                break
+            except urllib.error.HTTPError as e:
+                if attempt == 3:
+                    print(f"    DELETE failed after 4 tries ({e.code}); "
+                          f"stopping with {removed:,} deleted. Re-run to continue.")
+                    ids = None
+                    break
+                time.sleep(2 ** attempt)
+        if ids is None:
+            break
+        if removed % (DELETE_CHUNK * 20) == 0:
             print(f"    deleted {removed:,} ...")
     after = count(url, key, table)
     print(f"  DELETED {removed:,}  ·  rows now {after:,} (was {total:,})")
