@@ -93,6 +93,33 @@ padding-top:13px;border-top:1px solid var(--hair);font-size:13px}
 .kv span:first-child{color:var(--muted)}
 .kv span:last-child{font-family:"IBM Plex Mono",monospace;font-weight:600}
 tr.live td{background:var(--go-bg)}
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:10px;margin:4px 0 14px}
+.stat{background:var(--card);border:1px solid var(--hair);border-radius:3px;padding:10px 12px}
+.stat span{display:block;font-size:10.5px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);font-weight:600;line-height:1.3}
+.stat b{display:block;font-family:"Bricolage Grotesque",system-ui,sans-serif;font-size:22px;margin-top:4px;letter-spacing:-.01em}
+.cwrap{background:var(--card);border:1px solid var(--hair);border-radius:3px;padding:10px 12px 8px;margin-bottom:14px}
+.cl{font-size:11px;color:var(--muted);letter-spacing:.04em;margin-bottom:6px} .cl i{font-style:normal;opacity:.75}
+.cn{font-size:11.5px;color:var(--ink2);margin-top:6px}
+.cbars{display:block;height:64px}
+.cbars .zero{stroke:var(--hair);stroke-width:1}
+.bar-up{fill:var(--go)} .bar-dn{fill:var(--no)}
+.spark{display:block;margin-left:auto}
+table.tsoxx{min-width:0}
+.tsoxx td.tk .pill{font-size:8px;padding:1px 4px;letter-spacing:0}
+.tsoxx th,.tsoxx td{padding:7px 6px}
+@media(max-width:560px){.hide-sm{display:none} .tsoxx .spark{width:56px;height:auto}
+.tsoxx th{font-size:9px;letter-spacing:.03em} .pill{font-size:9px;padding:2px 5px}}
+.sp-up polyline{stroke:var(--go)} .sp-dn polyline{stroke:var(--no)}
+.stat b.sm{font-size:14px;line-height:1.3;font-family:"IBM Plex Mono",monospace}
+.cn.warn{color:var(--warn);margin:0 0 12px}
+.p-live{background:var(--go-bg);color:var(--go);margin-right:4px}
+.p-st{background:var(--warn-bg);color:var(--warn);margin-right:4px}
+.pill{display:inline-block;font-size:10px;font-weight:600;letter-spacing:.04em;padding:2px 7px;border-radius:2px}
+.p-up{background:var(--go-bg);color:var(--go)} .p-dn{background:var(--no-bg);color:var(--no)}
+.readbox{margin-top:14px;padding:12px 14px;background:var(--sunk);border-left:3px solid var(--teal);
+border-radius:3px;font-size:12.5px;line-height:1.55}
+.readbox p{margin:8px 0 0;color:var(--ink2)}
+td.pos{color:var(--go)} td.neg{color:var(--no)} .stat b.pos{color:var(--go)} .stat b.neg{color:var(--no)}
 </style></head><body>
 <header>
 <div class="kick">Nasdaq-100 + the AI / humanoid complex · 146 of 147 resolved</div>
@@ -170,9 +197,9 @@ so a reaction is never mistaken for a setup.</div>
 <td>-25.4%</td><td>-81.8%</td><td>0%</td>
 <td>13.5%</td><td>2.6B</td>
 <td>0% <span class="tiny">4w</span></td>
-<td>-98.7%</td><td>28</td>
+<td>-98.7%</td><td>—</td>
 <td class="vd">leveraged · not rated</td>
-</tr></table></div></div></section><section class="pin"><div class="pinhd"><h2>Mega caps</h2><button type="button" class="refresh" data-tag="megacap">Refresh live</button></div><p class="sub">META, GOOGL, MSFT, AAPL, AMZN, NFLX — tracked every day whether or not they signal.</p><div data-pin="megacap"><div class="tw"><table><tr><th>Ticker</th><th>Close</th><th>1d</th><th>%B</th><th>vs 20d</th><th>vs 200d</th><th>range</th><th>ATR</th><th>$vol/d</th><th>2y pos</th><th>2y p10</th><th>msgs</th><th>Verdict</th></tr><tr class="v-mid">
+</tr></table></div></div></section><section class="pin soxx" id="soxx-movers" data-nightly="2026-09-23"><div class="pinhd"><h2>What is moving SOXX</h2><button type="button" class="refresh-soxx">Refresh live</button></div><p class="sub">The ten holdings behind SOXX, their fund weight, and how much of the day each one contributed (fund weight × its move, so together they explain about 61% of the fund).</p><div class="stats"><div class="stat"><span>Weight above its own 20-day</span><b id="s-above">87%</b></div><div class="stat"><span>Weight that rose today</span><b id="s-breadth">8%</b></div><div class="stat"><span>Top-10 contribution today</span><b id="s-total" class="neg">-0.81%</b></div><div class="stat"><span>Largest mover</span><b id="s-lead" class="sm">MU -0.20% · 23% of gross movement</b></div></div><div class="cn" id="s-note">Tiles are the nightly snapshot, as of 2026-09-23. <b>Refresh live</b> re-prices the rows; the tiles and the chart only update when all ten come back for the same session.</div><div class="cn warn">9 of 10 holdings have a real 1-day return for 2026-09-23 (the tiles cover 93% of the top-10 fund weight); excluded: KLAC (no bar for 2026-09-22 (its 1d would span a gap)).</div><div class="cwrap"><div class="cl">Weighted daily return of the top ten (renormalised to 100%), last 20 sessions <i>· most recent on the right</i></div><svg class="cbars" viewBox="0 0 320 64" width="100%" preserveAspectRatio="none" role="img" aria-label="Daily weighted return of the SOXX top 10, last 20 sessions"><line x1="0" x2="320" y1="32" y2="32" class="zero"/><rect x="1.0" y="31.7" width="14.0" height="1.0" class="bar-up"><title>2026-08-26  +0.05%</title></rect><rect x="17.0" y="19.3" width="14.0" height="12.7" class="bar-up"><title>2026-08-27  +2.31%</title></rect><rect x="33.0" y="32.0" width="14.0" height="18.3" class="bar-dn"><title>2026-08-28  -3.32%</title></rect><rect x="49.0" y="29.0" width="14.0" height="3.0" class="bar-up"><title>2026-08-31  +0.55%</title></rect><rect x="65.0" y="32.0" width="14.0" height="9.8" class="bar-dn"><title>2026-09-01  -1.78%</title></rect><rect x="81.0" y="28.5" width="14.0" height="3.5" class="bar-up"><title>2026-09-02  +0.63%</title></rect><rect x="97.0" y="30.4" width="14.0" height="1.6" class="bar-up"><title>2026-09-03  +0.30%</title></rect><rect x="113.0" y="10.2" width="14.0" height="21.8" class="bar-up"><title>2026-09-04  +3.96%</title></rect><rect x="129.0" y="19.3" width="14.0" height="12.7" class="bar-up"><title>2026-09-08  +2.31%</title></rect><rect x="145.0" y="29.0" width="14.0" height="3.0" class="bar-up"><title>2026-09-09  +0.55%</title></rect><rect x="161.0" y="32.0" width="14.0" height="18.3" class="bar-dn"><title>2026-09-10  -3.31%</title></rect><rect x="177.0" y="25.8" width="14.0" height="6.2" class="bar-up"><title>2026-09-11  +1.13%</title></rect><rect x="193.0" y="32.0" width="14.0" height="29.0" class="bar-dn"><title>2026-09-14  -5.27%</title></rect><rect x="209.0" y="31.4" width="14.0" height="1.0" class="bar-up"><title>2026-09-15  +0.10%</title></rect><rect x="225.0" y="27.2" width="14.0" height="4.8" class="bar-up"><title>2026-09-16  +0.87%</title></rect><rect x="241.0" y="11.9" width="14.0" height="20.1" class="bar-up"><title>2026-09-17  +3.65%</title></rect><rect x="257.0" y="15.7" width="14.0" height="16.3" class="bar-up"><title>2026-09-18  +2.96%</title></rect><rect x="273.0" y="5.5" width="14.0" height="26.5" class="bar-up"><title>2026-09-21  +4.81%</title></rect><rect x="289.0" y="21.3" width="14.0" height="10.7" class="bar-up"><title>2026-09-22  +1.93%</title></rect><rect x="305.0" y="32.0" width="14.0" height="7.8" class="bar-dn"><title>2026-09-23  -1.42%</title></rect></svg><div class="cn">Last 5 sessions — return: +3.6%, +3.0%, +4.8%, +1.9%, -1.4% · weight rising: 100%, 92%, 100%, 100%, 8%</div></div><div class="tw"><table class="tsoxx"><tr><th>Ticker</th><th>Fund wt</th><th>1d</th><th>Contrib</th><th class="hide-sm">5d</th><th class="hide-sm">20d</th><th>Trend</th><th>vs 20d</th></tr><tr data-tk="NVDA" data-w="9.43"><td class="tk"><b>NVDA</b></td><td>9.43%</td><td class="c-1d neg">-1.47%</td><td class="c-ctr neg"><b>-0.138%</b></td><td class="c-5d hide-sm">+5.4%</td><td class="c-20d hide-sm">+6.0%</td><td class="c-spark"><svg class="spark sp-up" viewBox="0 0 88 24" width="88" height="24" role="img" aria-label="20-day trend"><polyline points="1.0,18.7 5.3,22.0 9.6,4.3 13.9,14.4 18.2,11.3 22.5,14.5 26.8,7.7 31.1,3.8 35.4,2.0 39.7,6.5 44.0,8.5 48.3,13.4 52.6,13.4 56.9,20.5 61.2,19.3 65.5,17.7 69.8,12.4 74.1,9.6 78.4,4.6 82.7,3.2 87.0,6.4" fill="none" stroke-width="1.7" stroke-linejoin="round" stroke-linecap="round"/></svg></td><td class="c-vs20"><span class="pill p-up">above 20d</span></td></tr><tr data-tk="MU" data-w="8.91"><td class="tk"><b>MU</b></td><td>8.91%</td><td class="c-1d neg">-2.22%</td><td class="c-ctr neg"><b>-0.197%</b></td><td class="c-5d hide-sm">+15.7%</td><td class="c-20d hide-sm">+14.9%</td><td class="c-spark"><svg class="spark sp-up" viewBox="0 0 88 24" width="88" height="24" role="img" aria-label="20-day trend"><polyline points="1.0,21.0 5.3,20.3 9.6,20.7 13.9,21.0 18.2,18.0 22.5,20.9 26.8,18.3 31.1,18.0 35.4,11.2 39.7,13.1 44.0,9.9 48.3,15.8 52.6,16.0 56.9,22.0 61.2,21.6 65.5,21.7 69.8,15.8 74.1,11.3 78.4,8.1 82.7,2.0 87.0,4.8" fill="none" stroke-width="1.7" stroke-linejoin="round" stroke-linecap="round"/></svg></td><td class="c-vs20"><span class="pill p-up">above 20d</span></td></tr><tr data-tk="AMD" data-w="8.23"><td class="tk"><b>AMD</b></td><td>8.23%</td><td class="c-1d neg">-1.47%</td><td class="c-ctr neg"><b>-0.121%</b></td><td class="c-5d hide-sm">+19.9%</td><td class="c-20d hide-sm">+28.3%</td><td class="c-spark"><svg class="spark sp-up" viewBox="0 0 88 24" width="88" height="24" role="img" aria-label="20-day trend"><polyline points="1.0,19.3 5.3,19.0 9.6,19.6 13.9,20.9 18.2,20.3 22.5,21.6 26.8,21.9 31.1,22.0 35.4,19.4 39.7,16.1 44.0,14.3 48.3,16.3 52.6,14.8 56.9,17.6 61.2,16.3 65.5,15.3 69.8,11.4 74.1,9.6 78.4,3.0 82.7,2.0 87.0,3.1" fill="none" stroke-width="1.7" stroke-linejoin="round" stroke-linecap="round"/></svg></td><td class="c-vs20"><span class="pill p-up">above 20d</span></td></tr><tr data-tk="AVGO" data-w="7.48"><td class="tk"><b>AVGO</b></td><td>7.48%</td><td class="c-1d neg">-2.62%</td><td class="c-ctr neg"><b>-0.196%</b></td><td class="c-5d hide-sm">+4.7%</td><td class="c-20d hide-sm">-0.3%</td><td class="c-spark"><svg class="spark sp-dn" viewBox="0 0 88 24" width="88" height="24" role="img" aria-label="20-day trend"><polyline points="1.0,11.2 5.3,11.9 9.6,2.0 13.9,3.7 18.2,2.7 22.5,3.2 26.8,4.7 31.1,10.9 35.4,10.5 39.7,3.8 44.0,6.4 48.3,8.6 52.6,7.9 56.9,18.6 61.2,22.0 65.5,21.9 69.8,17.0 74.1,10.6 78.4,7.1 82.7,5.9 87.0,11.9" fill="none" stroke-width="1.7" stroke-linejoin="round" stroke-linecap="round"/></svg></td><td class="c-vs20"><span class="pill p-dn">BELOW 20d</span></td></tr><tr data-tk="INTC" data-w="5.09"><td class="tk"><b>INTC</b></td><td>5.09%</td><td class="c-1d neg">-1.02%</td><td class="c-ctr neg"><b>-0.052%</b></td><td class="c-5d hide-sm">+21.3%</td><td class="c-20d hide-sm">+40.1%</td><td class="c-spark"><svg class="spark sp-up" viewBox="0 0 88 24" width="88" height="24" role="img" aria-label="20-day trend"><polyline points="1.0,22.0 5.3,21.6 9.6,19.5 13.9,20.9 18.2,20.9 22.5,21.2 26.8,20.6 31.1,19.7 35.4,17.4 39.7,12.7 44.0,11.7 48.3,14.9 52.6,13.5 56.9,16.7 61.2,16.7 65.5,14.5 69.8,10.3 74.1,10.4 78.4,3.1 82.7,2.0 87.0,2.7" fill="none" stroke-width="1.7" stroke-linejoin="round" stroke-linecap="round"/></svg></td><td class="c-vs20"><span class="pill p-up">above 20d</span></td></tr><tr data-tk="MRVL" data-w="4.66"><td class="tk"><b>MRVL</b></td><td>4.66%</td><td class="c-1d neg">-0.56%</td><td class="c-ctr neg"><b>-0.026%</b></td><td class="c-5d hide-sm">+13.6%</td><td class="c-20d hide-sm">+8.5%</td><td class="c-spark"><svg class="spark sp-up" viewBox="0 0 88 24" width="88" height="24" role="img" aria-label="20-day trend"><polyline points="1.0,9.9 5.3,8.2 9.6,9.5 13.9,18.4 18.2,20.1 22.5,20.6 26.8,22.0 31.1,21.2 35.4,15.9 39.7,15.2 44.0,11.8 48.3,14.7 52.6,11.4 56.9,17.6 61.2,16.6 65.5,13.7 69.8,9.7 74.1,8.5 78.4,3.8 82.7,2.0 87.0,2.5" fill="none" stroke-width="1.7" stroke-linejoin="round" stroke-linecap="round"/></svg></td><td class="c-vs20"><span class="pill p-up">above 20d</span></td></tr><tr data-tk="TSM" data-w="4.65"><td class="tk"><b>TSM</b></td><td>4.65%</td><td class="c-1d neg">-1.20%</td><td class="c-ctr neg"><b>-0.056%</b></td><td class="c-5d hide-sm">+6.9%</td><td class="c-20d hide-sm">+7.3%</td><td class="c-spark"><svg class="spark sp-up" viewBox="0 0 88 24" width="88" height="24" role="img" aria-label="20-day trend"><polyline points="1.0,20.1 5.3,20.0 9.6,15.1 13.9,20.1 18.2,21.2 22.5,21.9 26.8,21.1 31.1,20.3 35.4,14.3 39.7,9.2 44.0,11.0 48.3,14.8 52.6,12.1 56.9,19.8 61.2,22.0 65.5,19.4 69.8,13.0 74.1,10.8 78.4,5.5 82.7,2.0 87.0,4.8" fill="none" stroke-width="1.7" stroke-linejoin="round" stroke-linecap="round"/></svg></td><td class="c-vs20"><span class="pill p-up">above 20d</span></td></tr><tr data-tk="AMAT" data-w="4.59"><td class="tk"><b>AMAT</b></td><td>4.59%</td><td class="c-1d pos">+0.41%</td><td class="c-ctr pos"><b>+0.019%</b></td><td class="c-5d hide-sm">+14.2%</td><td class="c-20d hide-sm">-1.2%</td><td class="c-spark"><svg class="spark sp-dn" viewBox="0 0 88 24" width="88" height="24" role="img" aria-label="20-day trend"><polyline points="1.0,2.7 5.3,2.8 9.6,2.0 13.9,8.2 18.2,9.2 22.5,14.1 26.8,15.1 31.1,15.9 35.4,10.3 39.7,4.9 44.0,6.0 48.3,10.5 52.6,9.7 56.9,19.4 61.2,20.3 65.5,22.0 69.8,21.4 74.1,13.3 78.4,7.4 82.7,5.0 87.0,4.4" fill="none" stroke-width="1.7" stroke-linejoin="round" stroke-linecap="round"/></svg></td><td class="c-vs20"><span class="pill p-up">above 20d</span></td></tr><tr data-tk="LRCX" data-w="4.27"><td class="tk"><b>LRCX</b></td><td>4.27%</td><td class="c-1d neg">-1.08%</td><td class="c-ctr neg"><b>-0.046%</b></td><td class="c-5d hide-sm">+14.3%</td><td class="c-20d hide-sm">-2.2%</td><td class="c-spark"><svg class="spark sp-dn" viewBox="0 0 88 24" width="88" height="24" role="img" aria-label="20-day trend"><polyline points="1.0,4.3 5.3,4.9 9.6,2.7 13.9,9.2 18.2,9.4 22.5,13.8 26.8,14.5 31.1,12.8 35.4,7.0 39.7,2.0 44.0,3.8 48.3,10.8 52.6,10.7 56.9,20.3 61.2,21.4 65.5,22.0 69.8,22.0 74.1,14.6 78.4,9.1 82.7,5.7 87.0,7.0" fill="none" stroke-width="1.7" stroke-linejoin="round" stroke-linecap="round"/></svg></td><td class="c-vs20"><span class="pill p-up">above 20d</span></td></tr><tr data-tk="KLAC" data-w="4.12"><td class="tk"><b>KLAC</b><br><span class="pill p-st" title="no bar for 2026-09-22 (its 1d would span a gap) — excluded from today's tiles">no 1d</span></td><td>4.12%</td><td class="c-1d ">—</td><td class="c-ctr "><b>—</b></td><td class="c-5d hide-sm">+12.2%</td><td class="c-20d hide-sm">+2.5%</td><td class="c-spark"><svg class="spark sp-up" viewBox="0 0 88 24" width="88" height="24" role="img" aria-label="20-day trend"><polyline points="1.0,7.2 5.5,6.8 10.1,6.8 14.6,14.4 19.1,14.5 23.6,18.7 28.2,17.5 32.7,16.8 37.2,5.1 41.7,2.0 46.3,7.6 50.8,12.9 55.3,9.7 59.8,20.4 64.4,21.4 68.9,22.0 73.4,20.5 77.9,13.1 82.5,6.6 87.0,3.0" fill="none" stroke-width="1.7" stroke-linejoin="round" stroke-linecap="round"/></svg></td><td class="c-vs20"><span class="pill p-st">n/a</span></td></tr></table></div><div class="readbox"><b>How to use this for SOXL vs SOXS.</b> SOXX %B <b>1.01</b> is above 1.00 — the stall zone: <b>−0.93 pts</b> vs base at 5 days (n=189, 10 years). That is a <b>stall, not a short</b> — nothing measured here favours SOXS.<p><b>Breadth is context, not a trigger.</b> Reproduce every number here with <code>scripts/soxx_breadth_study.py</code> (8 years of SOXX, entry at the next open). <b>Broad strength has no edge:</b> top-10 weight above its 20-day &gt; 80% was <b>+0.04 pts</b> vs the null at 20 days (n=727; +0.00 at 5d, −0.03 at 1d). <b>Weakness in the holdings</b> (breadth &lt; 20%, or their composite %B &lt; 0.20) pointed the same way as SOXX's own dip signal but smaller (about +0.7 to +0.9 pts vs +1.3) and rests on a few hundred overlapping observations, so treat it as noise-level: it adds nothing you cannot read off SOXX's own %B. Use this table to see <i>why</i> SOXX moved, broad or one name, and take the direction call from SOXX's %B. SOXL and SOXS are daily-reset products and are not rated on this page.</p></div></section><section class="pin"><div class="pinhd"><h2>Mega caps</h2><button type="button" class="refresh" data-tag="megacap">Refresh live</button></div><p class="sub">META, GOOGL, MSFT, AAPL, AMZN, NFLX — tracked every day whether or not they signal.</p><div data-pin="megacap"><div class="tw"><table><tr><th>Ticker</th><th>Close</th><th>1d</th><th>%B</th><th>vs 20d</th><th>vs 200d</th><th>range</th><th>ATR</th><th>$vol/d</th><th>2y pos</th><th>2y p10</th><th>msgs</th><th>Verdict</th></tr><tr class="v-mid">
 <td class="tk"><b>META</b><br><span class="tag">ndx100</span><span class="tag">ai_platform</span><span class="tag">megacap</span></td>
 <td>744.10</td><td>+1.02%</td>
 <td class="pb">0.96</td>
@@ -260,7 +287,7 @@ Cached 10 minutes.</p>
 <td>-4.1%</td><td>+2.8%</td><td>55%</td>
 <td>2.1%</td><td>380M</td>
 <td>99% <span class="tiny">4w</span></td>
-<td>+23.3%</td><td>1</td>
+<td>+23.3%</td><td>—</td>
 <td class="vd">BUY ZONE</td>
 </tr><tr class="v-go">
 <td class="tk"><b>PAYX</b><br><span class="tag">ndx100</span></td>
@@ -269,7 +296,7 @@ Cached 10 minutes.</p>
 <td>-12.8%</td><td>+1.9%</td><td>48%</td>
 <td>3.2%</td><td>312M</td>
 <td>88% <span class="tiny">4w</span></td>
-<td>-2.1%</td><td>1</td>
+<td>-2.1%</td><td>—</td>
 <td class="vd">BUY ZONE<br><span class="sp">SPIKE -9.1% · 3.1x</span></td>
 </tr><tr class="v-go">
 <td class="tk"><b>AEP</b><br><span class="tag">ndx100</span></td>
@@ -278,7 +305,7 @@ Cached 10 minutes.</p>
 <td>-3.3%</td><td>-5.6%</td><td>43%</td>
 <td>1.7%</td><td>470M</td>
 <td>86% <span class="tiny">4w</span></td>
-<td>-2.5%</td><td>0</td>
+<td>-2.5%</td><td>—</td>
 <td class="vd">BUY ZONE</td>
 </tr><tr class="v-go">
 <td class="tk"><b>PCAR</b><br><span class="tag">ndx100</span></td>
@@ -287,7 +314,7 @@ Cached 10 minutes.</p>
 <td>-8.2%</td><td>-6.7%</td><td>45%</td>
 <td>2.6%</td><td>341M</td>
 <td>98% <span class="tiny">4w</span></td>
-<td>+8.1%</td><td>0</td>
+<td>+8.1%</td><td>—</td>
 <td class="vd">BUY ZONE</td>
 </tr><tr class="v-go">
 <td class="tk"><b>XEL</b><br><span class="tag">ndx100</span></td>
@@ -296,7 +323,7 @@ Cached 10 minutes.</p>
 <td>-5.2%</td><td>-8.3%</td><td>4%</td>
 <td>1.9%</td><td>393M</td>
 <td>82% <span class="tiny">4w</span></td>
-<td>-6.9%</td><td>0</td>
+<td>-6.9%</td><td>—</td>
 <td class="vd">BUY ZONE</td>
 </tr><tr class="v-go">
 <td class="tk"><b>CSCO</b><br><span class="tag">ndx100</span></td>
@@ -305,7 +332,7 @@ Cached 10 minutes.</p>
 <td>-2.9%</td><td>+10.6%</td><td>64%</td>
 <td>2.8%</td><td>2.0B</td>
 <td>82% <span class="tiny">4w</span></td>
-<td>-3.2%</td><td>10</td>
+<td>-3.2%</td><td>—</td>
 <td class="vd">BUY ZONE</td>
 </tr><tr class="v-go">
 <td class="tk"><b>TMUS</b><br><span class="tag">ndx100</span></td>
@@ -374,7 +401,7 @@ something happened, and the rule does not know what or which direction it resolv
 <td>-12.8%</td><td>+1.9%</td><td>48%</td>
 <td>3.2%</td><td>312M</td>
 <td>88% <span class="tiny">4w</span></td>
-<td>-2.1%</td><td>1</td>
+<td>-2.1%</td><td>—</td>
 <td class="vd">BUY ZONE<br><span class="sp">SPIKE -9.1% · 3.1x</span></td>
 </tr><tr class="v-warn">
 <td class="tk"><b>ABNB</b><br><span class="tag">ndx100</span></td>
@@ -383,7 +410,7 @@ something happened, and the rule does not know what or which direction it resolv
 <td>-14.7%</td><td>+5.2%</td><td>48%</td>
 <td>3.8%</td><td>624M</td>
 <td>— </td>
-<td>—</td><td>1</td>
+<td>—</td><td>—</td>
 <td class="vd">dip · unmeasured<br><span class="sp">SPIKE -10.3% · 3.0x</span></td>
 </tr></table></div></section>
 
@@ -396,7 +423,7 @@ something happened, and the rule does not know what or which direction it resolv
 <td>-7.1%</td><td>+2.1%</td><td>67%</td>
 <td>3.5%</td><td>382M</td>
 <td>68% <span class="tiny">4w</span></td>
-<td>-49.1%</td><td>0</td>
+<td>-49.1%</td><td>—</td>
 <td class="vd">DIP · FAILS HOLD</td>
 </tr><tr class="v-warn">
 <td class="tk"><b>KHC</b><br><span class="tag">ndx100</span></td>
@@ -405,7 +432,7 @@ something happened, and the rule does not know what or which direction it resolv
 <td>-3.9%</td><td>+2.3%</td><td>49%</td>
 <td>2.8%</td><td>357M</td>
 <td>37% <span class="tiny">4w</span></td>
-<td>-58.1%</td><td>1</td>
+<td>-58.1%</td><td>—</td>
 <td class="vd">DIP · FAILS HOLD</td>
 </tr><tr class="v-warn">
 <td class="tk"><b>INTU</b><br><span class="tag">ndx100</span></td>
@@ -414,7 +441,7 @@ something happened, and the rule does not know what or which direction it resolv
 <td>-13.0%</td><td>-29.5%</td><td>7%</td>
 <td>4.9%</td><td>1.2B</td>
 <td>84% <span class="tiny">4w</span></td>
-<td>-10.2%</td><td>3</td>
+<td>-10.2%</td><td>—</td>
 <td class="vd">DIP · FAILS HOLD</td>
 </tr><tr class="v-warn">
 <td class="tk"><b>TTD</b><br><span class="tag">ndx100</span></td>
@@ -423,7 +450,7 @@ something happened, and the rule does not know what or which direction it resolv
 <td>-9.5%</td><td>-46.1%</td><td>0%</td>
 <td>5.4%</td><td>268M</td>
 <td>70% <span class="tiny">4w</span></td>
-<td>-46.8%</td><td>30</td>
+<td>-46.8%</td><td>—</td>
 <td class="vd">DIP · FAILS HOLD</td>
 </tr><tr class="v-warn">
 <td class="tk"><b>CSGP</b><br><span class="tag">ndx100</span></td>
@@ -432,7 +459,7 @@ something happened, and the rule does not know what or which direction it resolv
 <td>-8.2%</td><td>-32.1%</td><td>2%</td>
 <td>4.4%</td><td>184M</td>
 <td>62% <span class="tiny">4w</span></td>
-<td>-22.7%</td><td>0</td>
+<td>-22.7%</td><td>—</td>
 <td class="vd">DIP · FAILS HOLD</td>
 </tr><tr class="v-warn">
 <td class="tk"><b>PEP</b><br><span class="tag">ndx100</span></td>
@@ -441,7 +468,7 @@ something happened, and the rule does not know what or which direction it resolv
 <td>-4.6%</td><td>-10.3%</td><td>2%</td>
 <td>1.7%</td><td>1.1B</td>
 <td>78% <span class="tiny">4w</span></td>
-<td>-11.1%</td><td>1</td>
+<td>-11.1%</td><td>—</td>
 <td class="vd">DIP · FAILS HOLD</td>
 </tr><tr class="v-warn">
 <td class="tk"><b>NFLX</b><br><span class="tag">ndx100</span><span class="tag">megacap</span></td>
@@ -751,7 +778,7 @@ null at 60 days. Not a short signal; a not-today signal.</p>
 
 · the <b>2y pos</b> column shows the count of INDEPENDENT (non-overlapping) 2-year windows
 behind it — a name with 1-2 is one market cycle, not a distribution · generated
-2026-09-24T13:31:40+00:00 · bars strictly before today, split-corrected,
+2026-09-24T17:02:02+00:00 · bars strictly before today, split-corrected,
 entry measured at the next open. The <b>msgs</b> column is StockTwits message volume in 12h —
 the bull/bear ratio is deliberately not shown, because in a live pull across 20 tickers nine
 of them read 100% bullish. Thresholds were each measured against the unconditional base rate;
@@ -910,6 +937,124 @@ function card(q, a, v, cash, pf) {
       btn.textContent = done ? ('live · ' + done + ' updated') : label;
       setTimeout(function () { btn.textContent = label; }, 6000);
     });
+  });
+})();
+
+// ---- SOXX movers. The two functions below are PURE (no DOM) so they can be tested under node.
+
+// Never print a share above 100%: a share of GROSS movement, or "against the day".
+function leaderText(lead, contrib, gross, total) {
+  if (!lead) return '—';
+  const pt = (contrib >= 0 ? '+' : '') + (contrib * 100).toFixed(2) + '%';
+  if (total !== 0 && (contrib > 0) !== (total > 0)) return lead + ' ' + pt + ' — against the day';
+  return lead + ' ' + pt + (gross > 0 ? ' · ' + Math.round(Math.abs(contrib) / gross * 100) + '% of gross movement' : '');
+}
+
+// May a live fetch rewrite the summary tiles? `got` = one record per ticker that returned,
+// each with `pair` = "previous>latest" session of THAT ticker's last two bars.
+// The pair matters, not just the last date: a ticker missing yesterday but having today
+// carries the same `asof` as its neighbours while its 1d is really a two-session move, and
+// the worker drops null bars so nothing else marks it.
+function refreshVerdict(got, expected) {
+  const pairs = Array.from(new Set(got.map(function (g) { return g.pair; })));
+  if (got.length === 0) return { complete: false, kind: 'none', pairs: pairs };
+  if (got.length !== expected) return { complete: false, kind: 'partial', pairs: pairs };
+  if (pairs.length !== 1) return { complete: false, kind: 'mixed', pairs: pairs };
+  return { complete: true, kind: 'ok', pairs: pairs };
+}
+
+// The (previous, latest) session of the bars `analyse` will actually use. Built from the same
+// filtered bars: a zero close on the previous bar is dropped by analyse(), which turns chg
+// into a two-session move, while a pair built from the UNfiltered bars still read "09-23>09-24"
+// and let it through as a clean complete refresh.
+function livePair(bars) {
+  const fb = bars.filter(function (b) { return b.c > 0; }), n = fb.length;
+  return n > 1 ? fb[n - 2].d + '>' + fb[n - 1].d : (n ? String(fb[n - 1].d) : '');
+}
+// Number.isFinite, NOT isFinite: isFinite(null) is true, so a null chg (a one-bar quote) used
+// to pass the guard and render as a 1d of "—" with contribution "+0.000%" and BELOW 20d.
+function quoteUsable(a, q) {
+  return !!q.as_of && Number.isFinite(a.chg) && Number.isFinite(a.vs20);
+}
+
+// Refresh re-prices the ten holdings. It touches the summary tiles only for a verdict of
+// 'ok'; on anything else it RESTORES the nightly tiles, so a first complete refresh followed
+// by a partial one can never leave stale-live tiles under a note that says "nightly".
+(function () {
+  const btn = document.querySelector('button.refresh-soxx');
+  if (!btn) return;
+  const sec = document.getElementById('soxx-movers'), nightly = sec.dataset.nightly;
+  const W = {};
+  sec.querySelectorAll('tr[data-tk]').forEach(function (tr) { W[tr.dataset.tk] = parseFloat(tr.dataset.w); });
+  const tileIds = ['s-above', 's-breadth', 's-total', 's-lead'], saved = {};
+  tileIds.forEach(function (id) { const el = document.getElementById(id); saved[id] = { t: el.textContent, c: el.className }; });
+  const noteEl = document.getElementById('s-note'), noteNightly = noteEl.innerHTML;
+  const restoreTiles = function () {
+    tileIds.forEach(function (id) { const el = document.getElementById(id); el.textContent = saved[id].t; el.className = saved[id].c; });
+  };
+  const retN = function (cl, n) { return cl.length > n ? cl[cl.length - 1] / cl[cl.length - 1 - n] - 1 : null; };
+  function spark(cl) {
+    const xs = cl.slice(-21); if (xs.length < 3) return '—';
+    const lo = Math.min.apply(null, xs), hi = Math.max.apply(null, xs), w = 88, h = 24;
+    const pts = xs.map(function (c, i) {
+      const x = 1 + i * (w - 2) / (xs.length - 1), y = hi === lo ? h / 2 : h - 2 - (c - lo) / (hi - lo) * (h - 4);
+      return x.toFixed(1) + ',' + y.toFixed(1); }).join(' ');
+    return '<svg class="spark ' + (xs[xs.length-1] >= xs[0] ? 'sp-up' : 'sp-dn') + '" viewBox="0 0 ' + w + ' ' + h +
+      '" width="' + w + '" height="' + h + '"><polyline points="' + pts + '" fill="none" stroke-width="1.7" stroke-linejoin="round" stroke-linecap="round"/></svg>';
+  }
+  btn.addEventListener('click', async function () {
+    const label = btn.textContent; btn.disabled = true; btn.textContent = 'refreshing…';
+    const got = [];
+    for (const tk of Object.keys(W)) {
+      const tr = sec.querySelector('tr[data-tk="' + tk + '"]');
+      try {
+        const q = await quote(tk);
+        // Compute EVERYTHING first. A throw after the first DOM write used to leave a row
+        // half-updated while the note claimed "nothing was changed".
+        const fb = q.bars.filter(function (b) { return b.c > 0; });
+        const cl = fb.map(function (b) { return b.c; });
+        const a = analyse(q.symbol, fb), r1 = a.chg, ctr = W[tk] / 100 * r1;
+        if (!quoteUsable(a, q)) throw new Error('unusable quote');
+        const pair = livePair(q.bars);
+        const sign = r1 > 0 ? 'pos' : r1 < 0 ? 'neg' : '';
+        const cells = {
+          'c-1d': [pcs(r1, 2), sign], 'c-ctr': ['<b>' + pcs(ctr, 3) + '</b>', sign],
+          'c-5d': [pcs(retN(cl, 5))], 'c-20d': [pcs(retN(cl, 20))], 'c-spark': [spark(cl)],
+          'c-vs20': ['<span class="pill ' + (a.vs20 > 0 ? 'p-up' : 'p-dn') + '">' + (a.vs20 > 0 ? 'above 20d' : 'BELOW 20d') + '</span>']
+        };
+        const stamp = '<br><span class="pill p-live" title="live bar, previous bar ' + pair.split('>')[0] + '">' + String(q.as_of).slice(5) + '</span>';
+        Object.keys(cells).forEach(function (c) {
+          const el = tr.querySelector('.' + c); el.innerHTML = cells[c][0];
+          if (cells[c][1] !== undefined) el.className = c + ' ' + cells[c][1];
+        });
+        const tkc = tr.querySelector('td.tk'), gone = tkc.querySelector('.p-st');
+        if (gone) { if (gone.previousSibling && gone.previousSibling.tagName === 'BR') gone.previousSibling.remove(); gone.remove(); }
+        const old = tkc.querySelector('.p-live'); if (old) { if (old.previousSibling && old.previousSibling.tagName === 'BR') old.previousSibling.remove(); old.remove(); }
+        tkc.insertAdjacentHTML('beforeend', stamp);
+        tr.classList.add('live');
+        got.push({ tk: tk, w: W[tk], r1: r1, ctr: ctr, up20: a.vs20 > 0, asof: q.as_of, pair: pair });
+      } catch (e) { /* leave this row on whatever it showed before */ }
+    }
+    const v = refreshVerdict(got, Object.keys(W).length);
+    if (v.complete) {
+      const wSum = got.reduce(function (s, g) { return s + g.w; }, 0);
+      const total = got.reduce(function (s, g) { return s + g.ctr; }, 0);
+      const gross = got.reduce(function (s, g) { return s + Math.abs(g.ctr); }, 0);
+      const lead = got.reduce(function (m, g) { return Math.abs(g.ctr) > Math.abs(m.ctr) ? g : m; }, got[0]);
+      const $ = function (i) { return document.getElementById(i); };
+      $('s-above').textContent = (got.filter(function (g) { return g.up20; }).reduce(function (s, g) { return s + g.w; }, 0) / wSum * 100).toFixed(0) + '%';
+      $('s-breadth').textContent = (got.filter(function (g) { return g.r1 > 0; }).reduce(function (s, g) { return s + g.w; }, 0) / wSum * 100).toFixed(0) + '%';
+      $('s-total').textContent = pcs(total, 2); $('s-total').className = total > 0 ? 'pos' : total < 0 ? 'neg' : '';
+      $('s-lead').textContent = leaderText(lead.tk, lead.ctr, gross, total);
+      noteEl.innerHTML = '<b>Live, all ' + Object.keys(W).length + ' holdings, ' + v.pairs[0].replace('>', ' vs ') + '.</b> The bar chart below is still the nightly snapshot (' + nightly + ') and does not include this session.';
+    } else {
+      restoreTiles();
+      if (v.kind === 'none') noteEl.innerHTML = '<b>Refresh failed for all ' + Object.keys(W).length + '</b> — probably rate-limited by Yahoo. Nothing changed; still the nightly snapshot (' + nightly + ').';
+      else if (v.kind === 'partial') noteEl.innerHTML = '<b>Partial refresh: ' + got.length + '/' + Object.keys(W).length + '.</b> Rows with a green stamp carry their own live session; the rest are the nightly snapshot. The tiles and chart are the nightly snapshot (' + nightly + '), not a mix.';
+      else noteEl.innerHTML = '<b>The rows do not share the same last two sessions</b> (' + v.pairs.join(', ') + '). A name missing its previous bar shows a 1d that spans a gap. Rows are stamped individually; the tiles and chart stay on the nightly snapshot (' + nightly + ').';
+    }
+    btn.disabled = false; btn.textContent = got.length ? ('live · ' + got.length + '/' + Object.keys(W).length) : label;
+    setTimeout(function () { btn.textContent = label; }, 6000);
   });
 })();
 </script>

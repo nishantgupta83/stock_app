@@ -48,7 +48,7 @@ import json
 import math
 import statistics
 import sys
-from datetime import date, datetime, timezone
+from datetime import date, datetime, timedelta, timezone
 from pathlib import Path
 
 REPO = Path(__file__).resolve().parent.parent
@@ -109,6 +109,16 @@ AI_HUMANOID = {
     "leveraged":            ["SOXL", "SOXS"],
     "inverse":              ["SOXS"],
     "megacap":              ["META", "GOOGL", "MSFT", "AAPL", "AMZN", "NFLX"],
+    "soxx_top10":           ["NVDA", "MU", "AMD", "AVGO", "INTC", "MRVL", "TSM",
+                             "AMAT", "LRCX", "KLAC"],
+}
+
+# SOXX top-10 index weights (%), from the fund's own holdings page. They drift slowly;
+# semis_brief.soxx_weights() pulls them live for the morning brief, this is the snapshot
+# the screen attributes with.
+SOXX_WEIGHTS: dict[str, float] = {
+    "NVDA": 9.43, "MU": 8.91, "AMD": 8.23, "AVGO": 7.48, "INTC": 5.09,
+    "MRVL": 4.66, "TSM": 4.65, "AMAT": 4.59, "LRCX": 4.27, "KLAC": 4.12,
 }
 
 # Rendered as their own sections at the top of the page, in this order, whatever their
@@ -303,6 +313,160 @@ def reference_session(bars: dict[str, list[dict]], coverage: float = REFERENCE_C
     return (max(ok) if ok else max(seen, default=None)), seen
 
 
+TREND_DAYS = 20
+
+
+def _trading_axis(end: str, n: int) -> list[str]:
+    """The last `n` market sessions ending at `end` (inclusive), oldest first.
+
+    Built from the MARKET CALENDAR, never from which dates the data happens to contain. The
+    first two versions derived the axis from the data (list position, then "dates >= 80% of
+    holdings have") and both let a thinly-covered session fall off the axis, so every name's
+    "1d" silently became a two-session move. Yahoo fills a session's bars in over hours --
+    2026-09-22 existed for 33% of the universe while 2026-09-23 had 100% -- so this is the
+    common case, not an edge case. A session the data lacks is now a MISSING CELL, not a
+    missing column.
+    """
+    d = date.fromisoformat(end)
+    out: list[str] = []
+    for _ in range(n * 4 + 30):                       # bounded: a calendar always has sessions
+        if sb.is_trading_day(d):
+            out.append(d.isoformat())
+            if len(out) == n:
+                break
+        d -= timedelta(days=1)
+    return out[::-1]
+
+
+def soxx_trend(bars: dict[str, list[dict]], reference: str | None) -> dict | None:
+    """Per-holding trend for the SOXX top-10, plus a weighted roll-up.
+
+    ATTRIBUTION, NOT PREDICTION -- every figure here is reproduced by
+    scripts/soxx_breadth_study.py (8 years of SOXX, entry next open, vs the null):
+
+        breadth > 0.8 (broad strength)   +0.04 pts @20d   (+0.00 @5d, -0.03 @1d)
+        breadth < 0.2 / composite %B<.2  about +0.7..+0.9 @20d   (positive, smaller, noisy)
+        SOXX's OWN %B < 0.20             +1.3..+1.5 @20d          (the strongest, and the
+                                                                  one already on the page)
+
+    Buying strength has no edge; weakness in the holdings points the same way as SOXX's own
+    dip signal, smaller and noisier, so it adds nothing beyond it. This explains WHY SOXX
+    moved (which names, broad or one-name) and is not a signal; the SOXL/SOXS call stays on
+    SOXX's own %B.
+
+    A first version of this docstring quoted "-0.09 pts" for the composite and "+1.55 pts"
+    for SOXX's own %B, from a scratch script no one could rerun. Neither reproduced when the
+    study moved into the repo (+0.67 and +1.28..+1.50), so both were corrected.
+
+    A 1-day return exists for a name only if it has a bar for BOTH consecutive sessions on
+    the calendar axis. A name missing either one gets no return that day -- and none the next
+    -- rather than a two-session move mislabelled as one day, and is left out of that day's
+    average and out of the "today" tiles, with the reason recorded.
+    """
+    hold = {t: w for t, w in SOXX_WEIGHTS.items() if t in bars}
+    if len(hold) < 6:
+        return None
+    closes: dict[str, dict[str, float]] = {}
+    unusable: dict[str, str] = {}
+    for t in SOXX_WEIGHTS:
+        # A holding that is missing or too thin must be ACCOUNTED FOR, not silently dropped:
+        # with NVDA and MU gone the section showed 8 rows, no warning, and still said
+        # "top-10" -- the two largest holdings (18.3% of the fund) simply absent.
+        if t not in bars:
+            unusable[t] = "not resolved (no data)"
+            continue
+        m = {x["date"]: x["close"] for x in bars[t]
+             if (not reference or x["date"] <= reference)
+             and sb.finite(x.get("close")) and x["close"] > 0}
+        if len(m) >= TREND_DAYS + 2:
+            closes[t] = m
+        else:
+            unusable[t] = "only %d usable bars" % len(m)
+    if len(closes) < 6:
+        return None
+
+    end = reference or max(d for m in closes.values() for d in m)
+    # The holiday table is finite (agents/_market_calendar.ALL_HOLIDAYS). Outside it every
+    # weekday looks like a session, so a real holiday becomes a phantom axis day on which
+    # NOBODY has a bar -- the section would blank out and blame the data for a market closure.
+    if not sb.calendar_covered(date.fromisoformat(end)):
+        return {"error": "The market-holiday calendar (agents/_market_calendar.py) does not "
+                         "cover %s, so this section cannot tell a holiday from missing data. "
+                         "Extend ALL_HOLIDAYS." % end[:4]}
+    axis = _trading_axis(end, TREND_DAYS + 1)         # 21 sessions -> 20 daily returns
+    if len(axis) < TREND_DAYS + 1:
+        return None
+    dates = axis[1:]
+
+    series: dict[str, dict] = {}
+    latest: dict[str, dict] = {}
+    stale: dict[str, str] = dict(unusable)
+    for t, m in closes.items():
+        cl = [m.get(d) for d in axis]                 # None where this name has no bar
+        rets = [(cl[i] / cl[i - 1] - 1) if (cl[i] is not None and cl[i - 1] is not None)
+                else None for i in range(1, len(axis))]
+        series[t] = {"w": hold[t],
+                     "closes": [None if c is None else round(c, 4) for c in cl],
+                     "rets": [None if r is None else round(r, 5) for r in rets]}
+        # "fresh" = it has a REAL one-day return for the latest session: bars on both the
+        # latest session and the one before. Nothing to do with which date is its newest bar.
+        fresh = rets[-1] is not None
+        if not fresh:
+            stale[t] = ("no bar for %s" % axis[-1] if cl[-1] is None
+                        else "no bar for %s (its 1d would span a gap)" % axis[-2])
+        own = [m[d] for d in sorted(m) if d <= axis[-1]]
+        s20 = (sum(own[-20:]) / 20) if len(own) >= 20 else None
+        latest[t] = {
+            "above_20d": (own[-1] > s20) if (fresh and s20 is not None) else None,
+            "fresh": fresh,
+            "ret1": rets[-1],
+            "ret5": (cl[-1] / cl[-6] - 1) if (cl[-1] is not None and cl[-6] is not None) else None,
+            "ret20": (cl[-1] / cl[0] - 1) if (cl[-1] is not None and cl[0] is not None) else None,
+        }
+
+    comp: list[float | None] = []
+    up: list[float | None] = []
+    for i in range(len(dates)):
+        have = [(hold[t], series[t]["rets"][i]) for t in series if series[t]["rets"][i] is not None]
+        ws = sum(w for w, _ in have)
+        # renormalised over the names that HAVE a return that day; a day with none is a gap,
+        # not a 0.0% bar
+        comp.append(round(sum(w * r for w, r in have) / ws, 5) if ws else None)
+        up.append(round(sum(w for w, r in have if r > 0) / ws, 3) if ws else None)
+
+    fresh_names = [t for t in series if latest[t]["fresh"]]
+    # Below this the "today" tiles would describe a sliver of the fund; show "—" instead.
+    tiles_ok = len(fresh_names) >= 6
+    fw = sum(hold[t] for t in fresh_names)
+    # contribution to SOXX = FUND weight x move, over the SAME set as the breadth tile.
+    contrib = {t: hold[t] / 100.0 * latest[t]["ret1"] for t in fresh_names} if tiles_ok else {}
+    total = sum(contrib.values())
+    gross = sum(abs(c) for c in contrib.values())
+    lead = max(contrib, key=lambda t: abs(contrib[t])) if contrib else None
+    return {
+        # n is the number of holdings the section is ABOUT (all ten), not how many resolved
+        "n": len(SOXX_WEIGHTS), "n_resolved": len(series),
+        "n_today": len(fresh_names), "dates": dates, "axis_end": axis[-1],
+        "tiles_ok": tiles_ok,
+        "stale_names": sorted(stale), "stale_reasons": stale,
+        "composite": comp, "breadth_up": up,
+        "above_20d_weight": (sum(hold[t] for t in fresh_names if latest[t]["above_20d"]) /
+                             sum(hold[t] for t in fresh_names if latest[t]["above_20d"] is not None)
+                             ) if (tiles_ok and any(latest[t]["above_20d"] is not None for t in fresh_names)) else None,
+        "total_contrib": total if contrib else None,
+        "fund_weight_today": fw,
+        "leader": lead,
+        "leader_contrib": contrib[lead] if lead else None,
+        # share of GROSS movement, always 0..1. The signed total is the wrong denominator:
+        # with names offsetting it can be near zero, and the page once printed
+        # "NVDA carried 320% of the move" for a name that moved AGAINST the day.
+        "leader_share": (abs(contrib[lead]) / gross) if (lead and gross) else None,
+        "leader_against": bool(lead and total and (contrib[lead] > 0) != (total > 0)),
+        "series": series, "latest": latest,
+        "note": "attribution only; broad strength showed no forward edge (+0.04 pts @20d)",
+    }
+
+
 def build(tickers: dict[str, list[str]], bars: dict[str, list[dict]], social: bool) -> dict:
     reference, _coverage = reference_session(bars)
     rows = []
@@ -359,6 +523,7 @@ def build(tickers: dict[str, list[str]], bars: dict[str, list[dict]], social: bo
         "generated_at": datetime.now(timezone.utc).isoformat(timespec="seconds"),
         "as_of": freshest,
         "n_stale": sum(1 for r in rows if r["stale"]),
+        "soxx_trend": soxx_trend(bars, reference),
         "n_universe": len(tickers), "n_resolved": len(rows),
         "thresholds": {"dip_pct_b": DIP_PCT_B, "extended_pct_b": EXTENDED_PCT_B,
                        "spike_move": SPIKE_MOVE, "spike_vol": SPIKE_VOL,

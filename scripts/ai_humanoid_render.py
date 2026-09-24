@@ -175,6 +175,124 @@ function card(q, a, v, cash, pf) {
     });
   });
 })();
+
+// ---- SOXX movers. The two functions below are PURE (no DOM) so they can be tested under node.
+
+// Never print a share above 100%: a share of GROSS movement, or "against the day".
+function leaderText(lead, contrib, gross, total) {
+  if (!lead) return '—';
+  const pt = (contrib >= 0 ? '+' : '') + (contrib * 100).toFixed(2) + '%';
+  if (total !== 0 && (contrib > 0) !== (total > 0)) return lead + ' ' + pt + ' — against the day';
+  return lead + ' ' + pt + (gross > 0 ? ' · ' + Math.round(Math.abs(contrib) / gross * 100) + '% of gross movement' : '');
+}
+
+// May a live fetch rewrite the summary tiles? `got` = one record per ticker that returned,
+// each with `pair` = "previous>latest" session of THAT ticker's last two bars.
+// The pair matters, not just the last date: a ticker missing yesterday but having today
+// carries the same `asof` as its neighbours while its 1d is really a two-session move, and
+// the worker drops null bars so nothing else marks it.
+function refreshVerdict(got, expected) {
+  const pairs = Array.from(new Set(got.map(function (g) { return g.pair; })));
+  if (got.length === 0) return { complete: false, kind: 'none', pairs: pairs };
+  if (got.length !== expected) return { complete: false, kind: 'partial', pairs: pairs };
+  if (pairs.length !== 1) return { complete: false, kind: 'mixed', pairs: pairs };
+  return { complete: true, kind: 'ok', pairs: pairs };
+}
+
+// The (previous, latest) session of the bars `analyse` will actually use. Built from the same
+// filtered bars: a zero close on the previous bar is dropped by analyse(), which turns chg
+// into a two-session move, while a pair built from the UNfiltered bars still read "09-23>09-24"
+// and let it through as a clean complete refresh.
+function livePair(bars) {
+  const fb = bars.filter(function (b) { return b.c > 0; }), n = fb.length;
+  return n > 1 ? fb[n - 2].d + '>' + fb[n - 1].d : (n ? String(fb[n - 1].d) : '');
+}
+// Number.isFinite, NOT isFinite: isFinite(null) is true, so a null chg (a one-bar quote) used
+// to pass the guard and render as a 1d of "—" with contribution "+0.000%" and BELOW 20d.
+function quoteUsable(a, q) {
+  return !!q.as_of && Number.isFinite(a.chg) && Number.isFinite(a.vs20);
+}
+
+// Refresh re-prices the ten holdings. It touches the summary tiles only for a verdict of
+// 'ok'; on anything else it RESTORES the nightly tiles, so a first complete refresh followed
+// by a partial one can never leave stale-live tiles under a note that says "nightly".
+(function () {
+  const btn = document.querySelector('button.refresh-soxx');
+  if (!btn) return;
+  const sec = document.getElementById('soxx-movers'), nightly = sec.dataset.nightly;
+  const W = {};
+  sec.querySelectorAll('tr[data-tk]').forEach(function (tr) { W[tr.dataset.tk] = parseFloat(tr.dataset.w); });
+  const tileIds = ['s-above', 's-breadth', 's-total', 's-lead'], saved = {};
+  tileIds.forEach(function (id) { const el = document.getElementById(id); saved[id] = { t: el.textContent, c: el.className }; });
+  const noteEl = document.getElementById('s-note'), noteNightly = noteEl.innerHTML;
+  const restoreTiles = function () {
+    tileIds.forEach(function (id) { const el = document.getElementById(id); el.textContent = saved[id].t; el.className = saved[id].c; });
+  };
+  const retN = function (cl, n) { return cl.length > n ? cl[cl.length - 1] / cl[cl.length - 1 - n] - 1 : null; };
+  function spark(cl) {
+    const xs = cl.slice(-21); if (xs.length < 3) return '—';
+    const lo = Math.min.apply(null, xs), hi = Math.max.apply(null, xs), w = 88, h = 24;
+    const pts = xs.map(function (c, i) {
+      const x = 1 + i * (w - 2) / (xs.length - 1), y = hi === lo ? h / 2 : h - 2 - (c - lo) / (hi - lo) * (h - 4);
+      return x.toFixed(1) + ',' + y.toFixed(1); }).join(' ');
+    return '<svg class="spark ' + (xs[xs.length-1] >= xs[0] ? 'sp-up' : 'sp-dn') + '" viewBox="0 0 ' + w + ' ' + h +
+      '" width="' + w + '" height="' + h + '"><polyline points="' + pts + '" fill="none" stroke-width="1.7" stroke-linejoin="round" stroke-linecap="round"/></svg>';
+  }
+  btn.addEventListener('click', async function () {
+    const label = btn.textContent; btn.disabled = true; btn.textContent = 'refreshing…';
+    const got = [];
+    for (const tk of Object.keys(W)) {
+      const tr = sec.querySelector('tr[data-tk="' + tk + '"]');
+      try {
+        const q = await quote(tk);
+        // Compute EVERYTHING first. A throw after the first DOM write used to leave a row
+        // half-updated while the note claimed "nothing was changed".
+        const fb = q.bars.filter(function (b) { return b.c > 0; });
+        const cl = fb.map(function (b) { return b.c; });
+        const a = analyse(q.symbol, fb), r1 = a.chg, ctr = W[tk] / 100 * r1;
+        if (!quoteUsable(a, q)) throw new Error('unusable quote');
+        const pair = livePair(q.bars);
+        const sign = r1 > 0 ? 'pos' : r1 < 0 ? 'neg' : '';
+        const cells = {
+          'c-1d': [pcs(r1, 2), sign], 'c-ctr': ['<b>' + pcs(ctr, 3) + '</b>', sign],
+          'c-5d': [pcs(retN(cl, 5))], 'c-20d': [pcs(retN(cl, 20))], 'c-spark': [spark(cl)],
+          'c-vs20': ['<span class="pill ' + (a.vs20 > 0 ? 'p-up' : 'p-dn') + '">' + (a.vs20 > 0 ? 'above 20d' : 'BELOW 20d') + '</span>']
+        };
+        const stamp = '<br><span class="pill p-live" title="live bar, previous bar ' + pair.split('>')[0] + '">' + String(q.as_of).slice(5) + '</span>';
+        Object.keys(cells).forEach(function (c) {
+          const el = tr.querySelector('.' + c); el.innerHTML = cells[c][0];
+          if (cells[c][1] !== undefined) el.className = c + ' ' + cells[c][1];
+        });
+        const tkc = tr.querySelector('td.tk'), gone = tkc.querySelector('.p-st');
+        if (gone) { if (gone.previousSibling && gone.previousSibling.tagName === 'BR') gone.previousSibling.remove(); gone.remove(); }
+        const old = tkc.querySelector('.p-live'); if (old) { if (old.previousSibling && old.previousSibling.tagName === 'BR') old.previousSibling.remove(); old.remove(); }
+        tkc.insertAdjacentHTML('beforeend', stamp);
+        tr.classList.add('live');
+        got.push({ tk: tk, w: W[tk], r1: r1, ctr: ctr, up20: a.vs20 > 0, asof: q.as_of, pair: pair });
+      } catch (e) { /* leave this row on whatever it showed before */ }
+    }
+    const v = refreshVerdict(got, Object.keys(W).length);
+    if (v.complete) {
+      const wSum = got.reduce(function (s, g) { return s + g.w; }, 0);
+      const total = got.reduce(function (s, g) { return s + g.ctr; }, 0);
+      const gross = got.reduce(function (s, g) { return s + Math.abs(g.ctr); }, 0);
+      const lead = got.reduce(function (m, g) { return Math.abs(g.ctr) > Math.abs(m.ctr) ? g : m; }, got[0]);
+      const $ = function (i) { return document.getElementById(i); };
+      $('s-above').textContent = (got.filter(function (g) { return g.up20; }).reduce(function (s, g) { return s + g.w; }, 0) / wSum * 100).toFixed(0) + '%';
+      $('s-breadth').textContent = (got.filter(function (g) { return g.r1 > 0; }).reduce(function (s, g) { return s + g.w; }, 0) / wSum * 100).toFixed(0) + '%';
+      $('s-total').textContent = pcs(total, 2); $('s-total').className = total > 0 ? 'pos' : total < 0 ? 'neg' : '';
+      $('s-lead').textContent = leaderText(lead.tk, lead.ctr, gross, total);
+      noteEl.innerHTML = '<b>Live, all ' + Object.keys(W).length + ' holdings, ' + v.pairs[0].replace('>', ' vs ') + '.</b> The bar chart below is still the nightly snapshot (' + nightly + ') and does not include this session.';
+    } else {
+      restoreTiles();
+      if (v.kind === 'none') noteEl.innerHTML = '<b>Refresh failed for all ' + Object.keys(W).length + '</b> — probably rate-limited by Yahoo. Nothing changed; still the nightly snapshot (' + nightly + ').';
+      else if (v.kind === 'partial') noteEl.innerHTML = '<b>Partial refresh: ' + got.length + '/' + Object.keys(W).length + '.</b> Rows with a green stamp carry their own live session; the rest are the nightly snapshot. The tiles and chart are the nightly snapshot (' + nightly + '), not a mix.';
+      else noteEl.innerHTML = '<b>The rows do not share the same last two sessions</b> (' + v.pairs.join(', ') + '). A name missing its previous bar shows a 1d that spans a gap. Rows are stamped individually; the tiles and chart stay on the nightly snapshot (' + nightly + ').';
+    }
+    btn.disabled = false; btn.textContent = got.length ? ('live · ' + got.length + '/' + Object.keys(W).length) : label;
+    setTimeout(function () { btn.textContent = label; }, 6000);
+  });
+})();
 </script>
 """
 
@@ -237,6 +355,180 @@ def _by_tag(rows, tag):
     return out
 
 
+# ----------------------------------------------------------------- SOXX movers section
+# Built by plain string assembly, deliberately OUTSIDE the page f-string: every literal
+# brace in CSS/JS would need doubling there, and the last attempt to inline this produced a
+# mangled f-string.
+
+def _spark(closes, w=88, h=24):
+    """Inline SVG trend line for the last ~20 sessions. Colour follows first-vs-last."""
+    xs = [c for c in (closes or []) if c is not None]
+    if len(xs) < 3:
+        return '<span class="none">—</span>'
+    lo, hi = min(xs), max(xs)
+    n = len(xs)
+    pts = []
+    for i, c in enumerate(xs):
+        x = 1 + i * (w - 2) / (n - 1)
+        y = (h / 2) if hi == lo else (h - 2 - (c - lo) / (hi - lo) * (h - 4))
+        pts.append("%.1f,%.1f" % (x, y))
+    cls = "sp-up" if xs[-1] >= xs[0] else "sp-dn"
+    return ('<svg class="spark ' + cls + '" viewBox="0 0 %d %d" width="%d" height="%d" role="img" '
+            'aria-label="20-day trend"><polyline points="%s" fill="none" stroke-width="1.7" '
+            'stroke-linejoin="round" stroke-linecap="round"/></svg>') % (w, h, w, h, " ".join(pts))
+
+
+def _composite_bars(dates, vals, w=320, h=64):
+    """Daily weighted return of the top-10, one bar per session, zero line in the middle."""
+    if not vals:
+        return ""
+    m = max((abs(v) for v in vals if v is not None), default=0) or 1e-9
+    n = len(vals)
+    bw = w / n
+    out = ['<svg class="cbars" viewBox="0 0 %d %d" width="100%%" preserveAspectRatio="none" '
+           'role="img" aria-label="Daily weighted return of the SOXX top 10, last %d sessions">'
+           % (w, h, n), '<line x1="0" x2="%d" y1="%d" y2="%d" class="zero"/>' % (w, h / 2, h / 2)]
+    for i, v in enumerate(vals):
+        if v is None:
+            continue                                   # no data that day: leave a gap
+        bh = abs(v) / m * (h / 2 - 3)
+        y = h / 2 - bh if v >= 0 else h / 2
+        out.append('<rect x="%.1f" y="%.1f" width="%.1f" height="%.1f" class="%s"><title>%s  %+.2f%%'
+                   '</title></rect>' % (i * bw + 1, y, max(bw - 2, 1), max(bh, 1),
+                                        "bar-up" if v >= 0 else "bar-dn", dates[i], v * 100))
+    out.append("</svg>")
+    return "".join(out)
+
+
+def _leader_text(lead, contrib, share, against):
+    """Who moved SOXX most, without ever printing a share above 100%."""
+    if not lead or contrib is None:
+        return "—"
+    pt = "%+.2f%%" % (contrib * 100)
+    if against:
+        return "%s %s — against the day" % (lead, pt)
+    if share is None:
+        return "%s %s" % (lead, pt)
+    return "%s %s · %d%% of gross movement" % (lead, pt, round(share * 100))
+
+
+def _soxx_section(data):
+    from ai_humanoid_screen import SOXX_WEIGHTS
+    t = data.get("soxx_trend")
+    if t and t.get("error"):
+        return ('<section class="pin" id="soxx-movers"><h2>What is moving SOXX</h2>'
+                '<p class="cn warn">%s</p></section>' % html.escape(t["error"]))
+    if not t:
+        return ('<section class="pin"><h2>What is moving SOXX</h2><p class="none">Not enough of '
+                'the top-10 resolved to build the trend.</p></section>')
+    th = data.get("thresholds", {})
+    dip, ext = th.get("dip_pct_b", 0.20), th.get("extended_pct_b", 1.00)
+    rows = {r["ticker"]: r for r in data["rows"]}
+    soxx = rows.get("SOXX") or {}
+    order = sorted(SOXX_WEIGHTS, key=lambda k: -SOXX_WEIGHTS[k])          # all ten, always
+    ser, lat = t["series"], t["latest"]
+    fund_share = sum(SOXX_WEIGHTS.values())
+
+    body = []
+    for k in order:
+        w = SOXX_WEIGHTS[k]
+        if k not in ser:                                   # unresolved: say so, keep the row
+            body.append(
+                '<tr data-tk="%s" data-w="%.2f"><td class="tk"><b>%s</b><br><span class="pill p-st" '
+                'title="%s">no data</span></td><td>%.2f%%</td><td class="c-1d">—</td>'
+                '<td class="c-ctr"><b>—</b></td><td class="c-5d hide-sm">—</td>'
+                '<td class="c-20d hide-sm">—</td><td class="c-spark">—</td>'
+                '<td class="c-vs20"><span class="pill p-st">n/a</span></td></tr>'
+                % (k, w, html.escape(k), html.escape(t["stale_reasons"].get(k, "no data")), w))
+            continue
+        L = lat[k]
+        r1 = L["ret1"] if L["fresh"] else None          # a stale name has NO honest "today"
+        reason = t.get("stale_reasons", {}).get(k, "no bar")
+        ctr = (w / 100 * r1) if r1 is not None else None
+        cls = "pos" if (r1 or 0) > 0 else "neg" if (r1 or 0) < 0 else ""
+        above = L["above_20d"]
+        stale_pill = ('' if L["fresh"] else '<br><span class="pill p-st" title="%s — excluded from '
+                      'today\'s tiles">no 1d</span>' % html.escape(reason))
+        body.append(
+            '<tr data-tk="%s" data-w="%.2f"><td class="tk"><b>%s</b>%s</td><td>%.2f%%</td>'
+            '<td class="c-1d %s">%s</td><td class="c-ctr %s"><b>%s</b></td>'
+            '<td class="c-5d hide-sm">%s</td><td class="c-20d hide-sm">%s</td><td class="c-spark">%s</td>'
+            '<td class="c-vs20"><span class="pill %s">%s</span></td></tr>'
+            % (k, w, html.escape(k), stale_pill, w, cls, _p(r1, 2), cls, _p(ctr, 3), _p(L["ret5"]),
+               _p(L["ret20"]), _spark(ser[k]["closes"]), "p-st" if above is None else ("p-up" if above else "p-dn"),
+               "n/a" if above is None else ("above 20d" if above else "BELOW 20d")))
+
+    total = t.get("total_contrib")
+    last5 = t["breadth_up"][-5:]
+    comp5 = t["composite"][-5:]
+    pb = soxx.get("pct_b")
+    sox = "SOXX %%B <b>%s</b>" % ("n/a" if pb is None else "%.2f" % pb)
+    if pb is None:
+        read = "SOXX's own %B is unavailable."
+    elif pb < dip:
+        read = ("%s is under %.2f — in the measured dip band: <b>+1.3 to +1.5 pts</b> vs the null at "
+                "20 days on SOXX (8- and 10-year windows, n≈310–370). That is a long-SOXX result; it "
+                "says nothing about SOXS." % (sox, dip))
+    elif pb > ext:
+        read = ("%s is above %.2f — the stall zone: <b>−0.93 pts</b> vs base at 5 days (n=189, 10 years). That is a "
+                "<b>stall, not a short</b> — nothing measured here favours SOXS." % (sox, ext))
+    else:
+        read = "%s sits in the middle, where the measured edge is zero either way." % sox
+
+    n_today, n = t["n_today"], t["n"]
+    covered = t["fund_weight_today"] / fund_share * 100 if fund_share else 0
+    partial = ('<div class="cn warn">%d of %d holdings have a real 1-day return for %s (the tiles cover '
+               '%.0f%% of the top-10 fund weight); excluded: %s.</div>'
+               % (n_today, n, t["axis_end"], covered,
+                  "; ".join("%s (%s)" % (k, v) for k, v in sorted(t.get("stale_reasons", {}).items())))
+               if t["stale_names"] else "")
+    if not t.get("tiles_ok", True):
+        partial += ('<div class="cn warn">Fewer than 6 holdings have a 1-day return, so the tiles '
+                    'below would describe a sliver of the fund and are not shown.</div>')
+    aw = t.get("above_20d_weight")
+    return (
+        '<section class="pin soxx" id="soxx-movers" data-nightly="%s"><div class="pinhd"><h2>What is moving SOXX</h2>'
+        '<button type="button" class="refresh-soxx">Refresh live</button></div>'
+        '<p class="sub">The ten holdings behind SOXX, their fund weight, and how much of the day each '
+        'one contributed (fund weight × its move, so together they explain about %.0f%% of the fund).</p>'
+        '<div class="stats">'
+        '<div class="stat"><span>Weight above its own 20-day</span><b id="s-above">%s</b></div>'
+        '<div class="stat"><span>Weight that rose today</span><b id="s-breadth">%s</b></div>'
+        '<div class="stat"><span>Top-10 contribution today</span><b id="s-total" class="%s">%s</b></div>'
+        '<div class="stat"><span>Largest mover</span><b id="s-lead" class="sm">%s</b></div></div>'
+        '<div class="cn" id="s-note">Tiles are the nightly snapshot, as of %s. '
+        '<b>Refresh live</b> re-prices the rows; the tiles and the chart only update when all ten '
+        'come back for the same session.</div>%s'
+        '<div class="cwrap"><div class="cl">Weighted daily return of the top ten (renormalised to 100%%), '
+        'last %d sessions <i>· most recent on the right</i></div>%s'
+        '<div class="cn">Last 5 sessions — return: %s · weight rising: %s</div></div>'
+        '<div class="tw"><table class="tsoxx"><tr><th>Ticker</th><th>Fund wt</th><th>1d</th><th>Contrib</th>'
+        '<th class="hide-sm">5d</th><th class="hide-sm">20d</th><th>Trend</th><th>vs 20d</th></tr>%s</table></div>'
+        '<div class="readbox"><b>How to use this for SOXL vs SOXS.</b> %s'
+        '<p><b>Breadth is context, not a trigger.</b> Reproduce every number here with '
+        '<code>scripts/soxx_breadth_study.py</code> (8 years of SOXX, entry at the next open). '
+        '<b>Broad strength has no edge:</b> top-10 weight above its 20-day &gt; 80%% was <b>+0.04 pts</b> '
+        'vs the null at 20 days (n=727; +0.00 at 5d, −0.03 at 1d). <b>Weakness in the holdings</b> '
+        '(breadth &lt; 20%%, or their composite %%B &lt; 0.20) pointed the same way as SOXX\'s own dip '
+        'signal but smaller (about +0.7 to +0.9 pts vs +1.3) and rests on a few hundred overlapping observations, so treat it as noise-level: it adds nothing you '
+        'cannot read off SOXX\'s own %%B. Use this table to see <i>why</i> SOXX moved, broad or one '
+        'name, and take the direction call from SOXX\'s %%B. SOXL and SOXS are daily-reset products '
+        'and are not rated on this page.</p></div>'
+        '</section>'
+    ) % (html.escape(str(t["axis_end"])), fund_share,
+         "—" if aw is None else "%.0f%%" % (aw * 100),
+         ("—" if (not t.get("tiles_ok", True) or not t["breadth_up"] or t["breadth_up"][-1] is None)
+          else "%.0f%%" % (t["breadth_up"][-1] * 100)),
+         "pos" if (total or 0) > 0 else "neg" if (total or 0) < 0 else "", _p(total, 2),
+         html.escape(_leader_text(t.get("leader"), t.get("leader_contrib"),
+                                  t.get("leader_share"), t.get("leader_against"))),
+         html.escape(str(t["axis_end"])), partial, len(t["composite"]),
+         _composite_bars(t["dates"], t["composite"]),
+         ", ".join(_p(x, 1) for x in comp5),
+         ", ".join("—" if x is None else "%.0f%%" % (x * 100) for x in last5),
+         "".join(body), read)
+
+
 def render(data: dict) -> str:
     from ai_humanoid_screen import PINNED, AI_HUMANOID
     script = (SCRIPT
@@ -255,6 +547,15 @@ def render(data: dict) -> str:
     def table(rs):
         return f'<div class="tw"><table>{th}{"".join(_row(r) for r in rs)}</table></div>' if rs \
             else '<p class="none">Nothing in this group today.</p>'
+
+    pinned_html = ""
+    for tag, ttl, sub in PINNED:
+        pinned_html += (
+            '<section class="pin"><div class="pinhd"><h2>' + ttl + '</h2><button type="button" '
+            'class="refresh" data-tag="' + tag + '">Refresh live</button></div><p class="sub">' + sub
+            + '</p><div data-pin="' + tag + '">' + table(_by_tag(rows, tag)) + '</div></section>')
+        if tag == "semis_etf":
+            pinned_html += _soxx_section(data)
 
     return f"""<!doctype html><html lang="en"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
@@ -351,6 +652,33 @@ padding-top:13px;border-top:1px solid var(--hair);font-size:13px}}
 .kv span:first-child{{color:var(--muted)}}
 .kv span:last-child{{font-family:"IBM Plex Mono",monospace;font-weight:600}}
 tr.live td{{background:var(--go-bg)}}
+.stats{{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:10px;margin:4px 0 14px}}
+.stat{{background:var(--card);border:1px solid var(--hair);border-radius:3px;padding:10px 12px}}
+.stat span{{display:block;font-size:10.5px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);font-weight:600;line-height:1.3}}
+.stat b{{display:block;font-family:"Bricolage Grotesque",system-ui,sans-serif;font-size:22px;margin-top:4px;letter-spacing:-.01em}}
+.cwrap{{background:var(--card);border:1px solid var(--hair);border-radius:3px;padding:10px 12px 8px;margin-bottom:14px}}
+.cl{{font-size:11px;color:var(--muted);letter-spacing:.04em;margin-bottom:6px}} .cl i{{font-style:normal;opacity:.75}}
+.cn{{font-size:11.5px;color:var(--ink2);margin-top:6px}}
+.cbars{{display:block;height:64px}}
+.cbars .zero{{stroke:var(--hair);stroke-width:1}}
+.bar-up{{fill:var(--go)}} .bar-dn{{fill:var(--no)}}
+.spark{{display:block;margin-left:auto}}
+table.tsoxx{{min-width:0}}
+.tsoxx td.tk .pill{{font-size:8px;padding:1px 4px;letter-spacing:0}}
+.tsoxx th,.tsoxx td{{padding:7px 6px}}
+@media(max-width:560px){{.hide-sm{{display:none}} .tsoxx .spark{{width:56px;height:auto}}
+.tsoxx th{{font-size:9px;letter-spacing:.03em}} .pill{{font-size:9px;padding:2px 5px}}}}
+.sp-up polyline{{stroke:var(--go)}} .sp-dn polyline{{stroke:var(--no)}}
+.stat b.sm{{font-size:14px;line-height:1.3;font-family:"IBM Plex Mono",monospace}}
+.cn.warn{{color:var(--warn);margin:0 0 12px}}
+.p-live{{background:var(--go-bg);color:var(--go);margin-right:4px}}
+.p-st{{background:var(--warn-bg);color:var(--warn);margin-right:4px}}
+.pill{{display:inline-block;font-size:10px;font-weight:600;letter-spacing:.04em;padding:2px 7px;border-radius:2px}}
+.p-up{{background:var(--go-bg);color:var(--go)}} .p-dn{{background:var(--no-bg);color:var(--no)}}
+.readbox{{margin-top:14px;padding:12px 14px;background:var(--sunk);border-left:3px solid var(--teal);
+border-radius:3px;font-size:12.5px;line-height:1.55}}
+.readbox p{{margin:8px 0 0;color:var(--ink2)}}
+td.pos{{color:var(--go)}} td.neg{{color:var(--no)}} .stat b.pos{{color:var(--go)}} .stat b.neg{{color:var(--no)}}
 </style></head><body>
 <header>
 <div class="kick">Nasdaq-100 + the AI / humanoid complex · {data['n_resolved']} of {data['n_universe']} resolved{f" · {data['n_stale']} on an older bar" if data.get('n_stale') else ""}</div>
@@ -403,7 +731,7 @@ The dip rule caught it by accident — it was buying a drawdown, not predicting 
 The spike rule reacts to the catalyst, late but not uselessly. They are labelled separately
 so a reaction is never mistaken for a setup.</div>
 
-{"".join(f'<section class="pin"><div class="pinhd"><h2>{ttl}</h2><button type="button" class="refresh" data-tag="{tag}">Refresh live</button></div><p class="sub">{sub}</p><div data-pin="{tag}">{table(_by_tag(rows, tag))}</div></section>' for tag, ttl, sub in PINNED)}
+{pinned_html}
 
 <section id="tools">
 <h2>Live lookup &amp; sizing</h2>

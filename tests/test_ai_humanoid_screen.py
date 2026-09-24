@@ -1,6 +1,10 @@
 """Pure-function tests for the AI/humanoid screen. No network, no clock."""
+from datetime import date, timedelta
 from pathlib import Path
+import json
 import math
+import shutil
+import subprocess
 import sys
 
 import pytest
@@ -8,6 +12,7 @@ import pytest
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "scripts"))
 import ai_humanoid_screen as ah  # noqa: E402
 import ai_humanoid_render as ar  # noqa: E402
+import semis_brief as sb  # noqa: E402
 
 
 def _bars(closes, vols=None, hl=0.01):
@@ -300,3 +305,461 @@ def test_build_never_renders_a_row_ahead_of_as_of():
     assert data["as_of"] == common[-1]
     assert all(r["as_of"] == data["as_of"] for r in data["rows"])
     assert data["n_stale"] == 0
+
+
+# ------------------------------------------------------------ SOXX movers / trend
+
+def _tdays(n, end="2026-09-23"):
+    """The last n real trading days ending at `end`. The trend axis is the MARKET CALENDAR, so
+    synthetic bars on weekends would (correctly) fall off it."""
+    d, out = date.fromisoformat(end), []
+    while len(out) < n:
+        if sb.is_trading_day(d):
+            out.append(d.isoformat())
+        d -= timedelta(days=1)
+    return out[::-1]
+
+
+def _series(n, start=100.0, step=0.5):
+    return [{"date": dt, "open": start + i * step, "high": start + i * step + 1,
+             "low": start + i * step - 1, "close": start + i * step, "volume": 1e6}
+            for i, dt in enumerate(_tdays(n))]
+
+
+def _top10_bars(n=30, **overrides):
+    bars = {t: _series(n) for t in ah.SOXX_WEIGHTS}
+    bars.update(overrides)
+    return bars
+
+
+def test_soxx_weights_and_universe_agree():
+    """The weights table and the universe's soxx_top10 group are two lists of the same ten
+    names; drift between them would silently drop a holding from the attribution."""
+    assert set(ah.SOXX_WEIGHTS) == set(ah.AI_HUMANOID["soxx_top10"])
+    assert all(0 < w < 20 for w in ah.SOXX_WEIGHTS.values())
+
+
+def test_soxx_trend_needs_most_of_the_top_ten():
+    few = {t: _series(30) for t in list(ah.SOXX_WEIGHTS)[:5]}
+    assert ah.soxx_trend(few, None) is None
+    assert ah.soxx_trend({}, None) is None
+
+
+def test_soxx_trend_composite_is_the_weighted_return():
+    t = ah.soxx_trend(_top10_bars(), None)
+    assert t and t["n"] == 10 and len(t["composite"]) == ah.TREND_DAYS
+    # every name rises 0.5/day off ~100-115, so the composite must be positive every day
+    assert all(x > 0 for x in t["composite"]) and all(b == 1.0 for b in t["breadth_up"])
+    assert t["above_20d_weight"] == pytest.approx(1.0)
+
+
+def test_soxx_trend_flags_a_name_below_its_own_20d_and_names_the_leader():
+    bars = _top10_bars()
+    falling = _series(30, start=120.0, step=-1.5)         # AVGO collapsing
+    bars["AVGO"] = falling
+    t = ah.soxx_trend(bars, None)
+    assert t["latest"]["AVGO"]["above_20d"] is False
+    assert t["latest"]["NVDA"]["above_20d"] is True
+    assert 0 < t["above_20d_weight"] < 1
+    assert t["leader"] == "AVGO"                           # biggest |weight x move| today
+    assert t["breadth_up"][-1] < 1.0
+
+
+def test_soxx_trend_never_reads_past_the_reference_session():
+    bars = _top10_bars(n=30)
+    ref = bars["NVDA"][-3]["date"]                         # pretend two sessions are not yet published
+    t = ah.soxx_trend(bars, ref)
+    assert t["dates"][-1] == ref
+
+
+def test_soxx_trend_is_finite_when_prices_are_flat():
+    flat = {t: [dict(b, close=100.0, open=100.0) for b in _series(30)] for t in ah.SOXX_WEIGHTS}
+    t = ah.soxx_trend(flat, None)
+    assert all(math.isfinite(x) for x in t["composite"])
+    assert t["leader_share"] is None or math.isfinite(t["leader_share"])
+
+
+def test_spark_and_composite_bars_never_divide_by_zero():
+    assert "—" in ar._spark([1.0, 2.0])                    # too short -> placeholder
+    assert "<svg" in ar._spark([5.0] * 21)                 # flat: hi == lo
+    assert "sp-up" in ar._spark([1.0, 2.0, 3.0]) and "sp-dn" in ar._spark([3.0, 2.0, 1.0])
+    assert ar._composite_bars([], []) == ""
+    assert "<svg" in ar._composite_bars(["d1", "d2"], [0.0, 0.0])      # all-zero max guard
+
+
+def _trend_data(**over):
+    bars = _top10_bars()
+    bars["AVGO"] = _series(30, start=120.0, step=-1.5)
+    data = _data([_full(ticker="SOXX", tags=["semis_etf"], pct_b=1.01)])
+    data["soxx_trend"] = ah.soxx_trend(bars, None)
+    data.update(over)
+    return data
+
+
+def test_movers_section_shows_every_holding_and_the_below_20d_flag():
+    html = ar._soxx_section(_trend_data())
+    for tk in ah.SOXX_WEIGHTS:
+        assert 'data-tk="%s"' % tk in html
+    assert "BELOW 20d" in html and "above 20d" in html
+    assert "refresh-soxx" in html and "cbars" in html
+
+
+def test_movers_section_states_that_breadth_is_not_a_signal():
+    """The section exists to explain a move, not to call SOXL vs SOXS. The measured numbers
+    that justify that must be on the page, or the table reads as a signal."""
+    html = ar._soxx_section(_trend_data())
+    assert "+0.04 pts" in html and "context, not a trigger" in html
+    assert "soxx_breadth_study.py" in html                 # every quoted number is reproducible
+    assert "−0.09 pts</b>." not in html                    # the retracted claim must not return
+
+
+def test_movers_read_follows_soxx_own_pct_b():
+    assert "stall zone" in ar._soxx_section(_trend_data())
+    low = _data([_full(ticker="SOXX", tags=["semis_etf"], pct_b=0.10)])
+    low["soxx_trend"] = _trend_data()["soxx_trend"]
+    assert "dip band" in ar._soxx_section(low)
+    mid = _data([_full(ticker="SOXX", tags=["semis_etf"], pct_b=0.55)])
+    mid["soxx_trend"] = _trend_data()["soxx_trend"]
+    assert "middle" in ar._soxx_section(mid)
+
+
+def test_movers_section_degrades_without_data():
+    d = _data([])
+    d["soxx_trend"] = None
+    assert "Not enough" in ar._soxx_section(d)
+    assert "What is moving SOXX" in ar.render(d)           # and the page still renders
+
+
+def test_movers_sits_between_the_semis_and_megacap_sections():
+    html = ar.render(_trend_data())
+    assert html.index("Semis —") < html.index("What is moving SOXX") < html.index("Mega caps")
+
+
+# ---- regressions from the SOXX movers review (each one reproduced against live data first)
+
+def _drop(bars, date):
+    return [b for b in bars if b["date"] != date]
+
+
+def test_a_ticker_missing_a_session_is_not_misdated_into_the_composite():
+    """C1. KLAC had no 2026-09-22 bar; lined up by list position, its '1d +2.11%' was really a
+    two-session move and every earlier composite bar averaged its PREVIOUS session under
+    NVDA's date. Returns must be keyed on calendar dates."""
+    bars = _top10_bars(n=30)
+    gap = bars["KLAC"][-2]["date"]                       # KLAC lacks the second-to-last session
+    bars["KLAC"] = _drop(bars["KLAC"], gap)
+    t = ah.soxx_trend(bars, None)
+    i = t["dates"].index(gap)
+    assert t["series"]["KLAC"]["rets"][i] is None                    # no return on the missing day
+    assert t["series"]["KLAC"]["rets"][i + 1] is None                # ...nor across the gap
+    assert all(t["series"][k]["rets"][i] is not None for k in t["series"] if k != "KLAC")
+    # that day's composite is averaged over the NINE names that have it, not nine plus a misdated tenth
+    others = [k for k in t["series"] if k != "KLAC"]
+    ws = sum(ah.SOXX_WEIGHTS[k] for k in others)
+    expect = sum(ah.SOXX_WEIGHTS[k] * t["series"][k]["rets"][i] for k in others) / ws
+    assert t["composite"][i] == pytest.approx(expect, abs=1e-5)
+
+
+def test_a_stale_ticker_has_no_fake_today_and_is_left_out_of_the_tiles():
+    """C1b. A ticker whose last bar is older than the reference session must not have its
+    PREVIOUS session's return reported as today's."""
+    bars = _top10_bars(n=30)
+    bars["MU"] = bars["MU"][:-1]                          # MU has no bar for the latest session
+    t = ah.soxx_trend(bars, None)
+    assert t["latest"]["MU"]["fresh"] is False and t["latest"]["MU"]["ret1"] is None
+    assert "MU" in t["stale_names"] and t["n_today"] == t["n"] - 1
+    assert t["fund_weight_today"] == pytest.approx(sum(ah.SOXX_WEIGHTS.values()) - ah.SOXX_WEIGHTS["MU"])
+    html = ar._soxx_section(dict(_trend_data(), soxx_trend=t))
+    assert 'class="pill p-st"' in html and "MU (no bar for" in html.replace("\n", " ")
+
+
+def test_leader_share_is_a_share_of_gross_movement_never_above_100_percent():
+    """C2. Nine names +1% and NVDA -4.2% gave a signed total of +0.13%, and the page printed
+    'NVDA carried 320% of the move' for a name that moved AGAINST the day."""
+    bars = {t: _series(30, start=100.0, step=1.0) for t in ah.SOXX_WEIGHTS}
+    # prior close 128, last close 124 (-3.1%): big enough to lead, small enough that the nine
+    # risers keep the SIGNED total positive -- the case where the old ratio blew past 100%
+    bars["NVDA"][-1] = dict(bars["NVDA"][-1], close=124.0)
+    t = ah.soxx_trend(bars, None)
+    assert t["leader"] == "NVDA" and t["leader_against"] is True
+    assert 0.0 <= t["leader_share"] <= 1.0
+    txt = ar._leader_text(t["leader"], t["leader_contrib"], t["leader_share"], t["leader_against"])
+    assert "against the day" in txt and "%" in txt
+    assert not any(int(x) > 100 for x in __import__("re").findall(r"(\d+)% of", txt))
+
+
+def test_leader_text_with_a_same_direction_leader_reports_gross_share():
+    txt = ar._leader_text("MU", -0.00197, 0.24, False)
+    assert txt.startswith("MU -0.20%") and "24% of gross movement" in txt
+    assert ar._leader_text(None, None, None, False) == "—"
+
+
+needs_node = pytest.mark.skipif(shutil.which("node") is None, reason="node not installed")
+
+
+def _js_fn(name):
+    """Pull a TOP-LEVEL function out of the shipped page script, verbatim."""
+    import re
+    m = re.search(r"^function %s\(.*?^}\n" % name, ar.SCRIPT, re.S | re.M)
+    assert m, "function %s is no longer a top-level pure function in the page script" % name
+    return m.group(0)
+
+
+def _node(names, expr):
+    src = "\n".join(_js_fn(n) for n in names) + "\nconsole.log(JSON.stringify(%s));" % expr
+    r = subprocess.run(["node", "-e", src], capture_output=True, text=True, timeout=30)
+    assert r.returncode == 0, r.stderr
+    return json.loads(r.stdout)
+
+
+def _rec(tk, pair="2026-09-23>2026-09-24"):
+    return {"tk": tk, "asof": pair.split(">")[1], "pair": pair}
+
+
+@needs_node
+def test_refresh_lets_a_complete_same_session_fetch_update_the_tiles():
+    got = [_rec(t) for t in ah.SOXX_WEIGHTS]
+    v = _node(["refreshVerdict"], "refreshVerdict(%s, 10)" % json.dumps(got))
+    assert v["complete"] is True and v["kind"] == "ok"
+
+
+@needs_node
+def test_refresh_refuses_when_one_ticker_is_missing_its_previous_bar():
+    """F2. KLAC has today's bar but not yesterday's: its as_of equals its neighbours', so a
+    last-date-only guard passes it, while its 1d is really a two-session move. The guard must
+    compare the (previous, latest) PAIR."""
+    got = [_rec(t) for t in ah.SOXX_WEIGHTS]
+    got[-1] = _rec("KLAC", "2026-09-22>2026-09-24")          # same latest date, different previous
+    assert len({g["asof"] for g in got}) == 1                # the old guard could not see this
+    v = _node(["refreshVerdict"], "refreshVerdict(%s, 10)" % json.dumps(got))
+    assert v["complete"] is False and v["kind"] == "mixed" and len(v["pairs"]) == 2
+
+
+@needs_node
+def test_refresh_refuses_partial_mixed_and_empty_fetches():
+    ten = [_rec(t) for t in ah.SOXX_WEIGHTS]
+    run = lambda got: _node(["refreshVerdict"], "refreshVerdict(%s, 10)" % json.dumps(got))
+    assert run(ten[:9])["kind"] == "partial" and run(ten[:9])["complete"] is False
+    assert run([])["kind"] == "none"
+    mixed = ten[:9] + [_rec("KLAC", "2026-09-23>2026-09-25")]
+    assert run(mixed)["kind"] == "mixed"
+
+
+@needs_node
+def test_a_complete_refresh_then_a_partial_one_is_not_treated_as_complete():
+    """F4. After a complete refresh a partial second click must NOT be complete, which is the
+    branch that restores the nightly tiles instead of leaving click 1's numbers under a note
+    that says 'nightly'. The verdict half is executed under node; the restore half is only a
+    STRUCTURAL check (the DOM behaviour was verified by hand under jsdom during review, and no
+    DOM harness lives in the repo)."""
+    ten = [_rec(t) for t in ah.SOXX_WEIGHTS]
+    first = _node(["refreshVerdict"], "refreshVerdict(%s, 10)" % json.dumps(ten))
+    second = _node(["refreshVerdict"], "refreshVerdict(%s, 10)" % json.dumps(ten[:8]))
+    assert first["complete"] and not second["complete"]
+    html = ar.render(_trend_data())
+    # structural: the restore writes BOTH the text and the class (pos/neg colour) back
+    assert "restoreTiles()" in html and "el.textContent = saved[id].t; el.className = saved[id].c" in html
+
+
+@needs_node
+def test_js_and_python_leader_text_agree():
+    """The same sentence is produced twice (server-side and in the refresh). They must match."""
+    cases = [("MU", -0.00197, 0.24, False), ("NVDA", -0.0039, 0.42, True),
+             ("KLAC", 0.00087, 0.31, False), ("AVGO", 0.0, None, False)]
+    for lead, contrib, share, against in cases:
+        # reconstruct the JS inputs from the same facts: gross from share, total from `against`
+        gross = (abs(contrib) / share) if share else 0
+        total = (-contrib if against else contrib)
+        if against and total == 0:
+            continue
+        js = _node(["leaderText"], "leaderText(%s, %r, %r, %r)" % (json.dumps(lead), contrib, gross, total))
+        assert js == ar._leader_text(lead, contrib, share, against), (js, lead)
+
+
+def test_soxs_is_never_presented_as_favoured_by_a_stall():
+    """C4. Under a 'SOXL vs SOXS' heading a bold negative number reads as a SOXS cue."""
+    html = ar._soxx_section(_trend_data())                # SOXX %B 1.01 -> stall branch
+    assert "stall, not a short" in html and "nothing measured here favours SOXS" in html
+    assert "not rated on this page" in html
+
+
+def test_tile_labels_state_their_weighting_basis():
+    """P2. The contribution tile uses FUND weights, the bar chart renormalises to 100% — the
+    same session shows -0.73% and -1.18% and both are right, so each must say why."""
+    html = ar._soxx_section(_trend_data())
+    assert "fund weight × its move" in html and "renormalised to 100%" in html
+
+
+def test_thresholds_in_the_movers_copy_come_from_the_data():
+    d = _trend_data()
+    d["thresholds"] = dict(d["thresholds"], dip_pct_b=0.15, extended_pct_b=1.20)
+    d["rows"] = [_full(ticker="SOXX", tags=["semis_etf"], pct_b=0.17)]     # inside the OLD dip band only
+    html = ar._soxx_section(d)
+    assert "middle" in html and "dip band" not in html
+
+
+def test_the_vs20_cell_holds_exactly_one_pill_so_it_cannot_push_the_table_off_a_phone():
+    """A 'no bar today' pill inside the LAST column widened it enough to scroll the whole
+    column out of view at 430px -- hiding AVGO's BELOW 20d flag, the most useful cell in the
+    table. Nothing but a screenshot noticed. Markers belong in the ticker cell."""
+    import re
+    bars = _top10_bars()
+    bars["AVGO"] = _series(30, start=120.0, step=-1.5)
+    bars["MU"] = bars["MU"][:-1]                                # a stale name too
+    html = ar._soxx_section(dict(_trend_data(), soxx_trend=ah.soxx_trend(bars, None)))
+    cells = re.findall(r'<td class="c-vs20">(.*?)</td>', html)
+    assert len(cells) == 10
+    assert all(c.count('class="pill') == 1 for c in cells), cells
+    stale_row = re.search(r'<tr data-tk="MU".*?</tr>', html, re.S).group(0)
+    assert 'p-st' in stale_row.split('c-vs20')[0]               # marker sits before that column
+
+
+# ---- regressions from the SECOND review: the axis itself must not skip a session
+
+def _dropped(bars, date_):
+    return [b for b in bars if b["date"] != date_]
+
+
+def test_a_thinly_covered_session_stays_on_the_axis_so_no_1d_becomes_a_two_session_move():
+    """F1. Yahoo fills a session's bars in over hours: 2026-09-22 existed for 33% of the
+    universe while 2026-09-23 had 100%. Deriving the axis from 'dates >= 80% of holdings have'
+    dropped that session, so every name's '1d' silently spanned two sessions and all ten still
+    counted as fresh with no warning."""
+    D = _tdays(30)
+    bars = {t: _series(30) for t in ah.SOXX_WEIGHTS}
+    thin = list(ah.SOXX_WEIGHTS)[:7]                         # 7 of 10 lack the second-to-last day
+    for t in thin:
+        bars[t] = _dropped(bars[t], D[-2])
+    t = ah.soxx_trend(bars, None)
+    assert D[-2] in t["dates"]                              # the calendar, not the data, defines the axis
+    # the seven that lack D[-2] have NO 1d today (it would span D[-3] -> D[-1])
+    for name in thin:
+        assert t["latest"][name]["ret1"] is None and name in t["stale_names"]
+        assert "span a gap" in t["stale_reasons"][name]
+    assert t["n_today"] == 3                                # only the three with both sessions
+    real = [n for n in ah.SOXX_WEIGHTS if n not in thin]
+    for name in real:
+        assert t["latest"][name]["ret1"] == pytest.approx(
+            bars[name][-1]["close"] / bars[name][-2]["close"] - 1)
+    # 3 of 10 is a sliver of the fund: the tiles must not pretend otherwise
+    assert t["tiles_ok"] is False and t["total_contrib"] is None and t["leader"] is None
+
+
+def test_a_name_that_lacks_the_latest_session_is_the_stale_one_not_the_others():
+    """F3. With the reference session ahead of the holdings, `fresh` was defined by 'is my
+    newest bar the axis end', so the seven names that DID have the latest bar were listed as
+    stale and the tiles were built from the three laggards."""
+    D = _tdays(30)
+    bars = {t: _series(30) for t in ah.SOXX_WEIGHTS}
+    lag = list(ah.SOXX_WEIGHTS)[:3]
+    for t in lag:
+        bars[t] = bars[t][:-1]                              # NVDA, MU, AMD lack the latest session
+    t = ah.soxx_trend(bars, D[-1])
+    assert sorted(t["stale_names"]) == sorted(lag)          # exactly the three that lack it
+    assert t["n_today"] == 7
+    assert all("no bar for %s" % D[-1] in t["stale_reasons"][n] for n in lag)
+    assert t["fund_weight_today"] == pytest.approx(
+        sum(w for k, w in ah.SOXX_WEIGHTS.items() if k not in lag))
+    # the breadth tile and the contribution tile are over the SAME set of names
+    assert t["breadth_up"][-1] is not None and t["total_contrib"] is not None
+
+
+def test_a_day_with_no_data_is_a_gap_in_the_chart_not_a_zero_bar():
+    D = _tdays(30)
+    bars = {t: _dropped(_series(30), D[-5]) for t in ah.SOXX_WEIGHTS}     # nobody has D[-5]
+    t = ah.soxx_trend(bars, None)
+    i = t["dates"].index(D[-5])
+    assert t["composite"][i] is None and t["breadth_up"][i] is None
+    svg = ar._composite_bars(t["dates"], t["composite"])
+    assert svg.count("<rect") == len(t["dates"]) - 2        # that day and the next have no return
+    html = ar._soxx_section(dict(_trend_data(), soxx_trend=t))     # and the section still renders
+    assert "What is moving SOXX" in html and "nan" not in html.lower()
+
+
+def test_the_trading_axis_is_the_market_calendar():
+    ax = ah._trading_axis("2026-09-23", 6)
+    assert ax == ["2026-09-16", "2026-09-17", "2026-09-18", "2026-09-21", "2026-09-22", "2026-09-23"]
+    assert all(sb.is_trading_day(date.fromisoformat(d)) for d in ax)
+    # a holiday and a weekend are skipped: 2026-09-07 is Labor Day
+    assert "2026-09-07" not in ah._trading_axis("2026-09-10", 8)
+
+
+# ---- regressions from the THIRD review
+
+def test_a_missing_holding_is_accounted_for_not_silently_dropped():
+    """With NVDA and MU unresolved the section showed 8 rows, no warning, still said 'top-10',
+    and the two largest holdings (18.3% of the fund) were simply absent."""
+    bars = {t: _series(30) for t in ah.SOXX_WEIGHTS}
+    del bars["NVDA"], bars["MU"]
+    t = ah.soxx_trend(bars, None)
+    assert t["n"] == 10 and t["n_resolved"] == 8                  # the section is ABOUT ten
+    assert {"NVDA", "MU"} <= set(t["stale_names"])
+    assert "not resolved" in t["stale_reasons"]["NVDA"]
+    assert t["fund_weight_today"] == pytest.approx(
+        sum(ah.SOXX_WEIGHTS.values()) - ah.SOXX_WEIGHTS["NVDA"] - ah.SOXX_WEIGHTS["MU"])
+    html = ar._soxx_section(dict(_trend_data(), soxx_trend=t))
+    assert html.count("<tr data-tk=") == 10                       # every holding still has a row
+    assert "NVDA (not resolved" in html and "no data" in html
+    assert "of the top-10 fund weight" in html                    # the coverage is stated
+
+
+def test_a_too_thin_holding_is_reported_with_its_bar_count():
+    bars = {t: _series(30) for t in ah.SOXX_WEIGHTS}
+    bars["AVGO"] = bars["AVGO"][-10:]
+    t = ah.soxx_trend(bars, None)
+    assert "AVGO" in t["stale_names"] and "only 10 usable bars" in t["stale_reasons"]["AVGO"]
+
+
+def test_outside_the_holiday_calendar_the_section_fails_loud():
+    """agents/_market_calendar.ALL_HOLIDAYS ends at 2027. Beyond it every weekday looks like a
+    session, so MLK Day 2028 became a phantom axis day, every name 'lacked' it, and the section
+    blanked out blaming the data for a market closure."""
+    d = date(2028, 1, 18)
+    bars = {t: [{"date": (d - timedelta(days=i)).isoformat(), "open": 100.0, "high": 101.0,
+                 "low": 99.0, "close": 100.0 + i, "volume": 1e6}
+                for i in range(45, -1, -1) if (d - timedelta(days=i)).weekday() < 5]
+            for t in ah.SOXX_WEIGHTS}
+    t = ah.soxx_trend(bars, None)
+    assert t and "error" in t and "does not cover 2028" in t["error"]
+    html = ar._soxx_section(dict(_trend_data(), soxx_trend=t))
+    assert "does not cover 2028" in html and "Extend ALL_HOLIDAYS" in html
+    assert "<tr data-tk=" not in html                               # no half-built table
+
+
+def test_build_no_longer_writes_list_position_contribution_fields():
+    """soxx_weight / soxx_contrib were derived from a row's list-position `chg`, read by
+    nothing, and could disagree with the section. Dead data that can lie is worse than none."""
+    rows = {"AAA": _series(40)}
+    data = ah.build({"AAA": ["ndx100"]}, rows, social=False)
+    assert all("soxx_contrib" not in r and "soxx_weight" not in r for r in data["rows"])
+
+
+@needs_node
+def test_quote_usable_rejects_null_and_nan_because_isfinite_null_is_true():
+    """isFinite(null) is TRUE in JavaScript, so a one-bar quote (chg: null) passed the guard and
+    rendered a 1d of dash, a contribution of +0.000%, and BELOW 20d, with a green live stamp."""
+    ok = {"as_of": "2026-09-24"}
+    run = lambda a: _node(["quoteUsable"], "quoteUsable(%s, %s)" % (json.dumps(a), json.dumps(ok)))
+    assert run({"chg": 0.01, "vs20": 0.02}) is True
+    assert run({"chg": None, "vs20": 0.02}) is False
+    assert run({"chg": 0.01, "vs20": None}) is False
+    assert _node(["quoteUsable"], "quoteUsable({chg: NaN, vs20: 0.02}, {as_of: 'x'})") is False
+    assert _node(["quoteUsable"], "quoteUsable({chg: 0.01, vs20: 0.02}, {})") is False
+
+
+@needs_node
+def test_live_pair_is_built_from_the_same_bars_analyse_uses():
+    """A zero close on the previous bar is dropped by analyse(), so chg becomes a TWO-session
+    move; a pair built from the unfiltered bars still read '09-23>09-24' and slipped through as
+    a clean complete refresh."""
+    clean = [{"d": "2026-09-22", "c": 100.0}, {"d": "2026-09-23", "c": 101.0}, {"d": "2026-09-24", "c": 102.0}]
+    assert _node(["livePair"], "livePair(%s)" % json.dumps(clean)) == "2026-09-23>2026-09-24"
+    zero = [dict(b) for b in clean]
+    zero[1]["c"] = 0.0                                         # previous bar is bad
+    pair = _node(["livePair"], "livePair(%s)" % json.dumps(zero))
+    assert pair == "2026-09-22>2026-09-24"                     # spans the gap, and SAYS so
+    v = _node(["refreshVerdict"], "refreshVerdict(%s, 2)" % json.dumps(
+        [{"tk": "A", "pair": "2026-09-23>2026-09-24"}, {"tk": "B", "pair": pair}]))
+    assert v["complete"] is False and v["kind"] == "mixed"     # so the tiles are protected
+    assert _node(["livePair"], "livePair([{d:'2026-09-24', c: 5}])") == "2026-09-24"
+    assert _node(["livePair"], "livePair([])") == ""
