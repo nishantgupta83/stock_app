@@ -194,7 +194,7 @@ def test_v2_dip_set_is_exactly_dip_and_above_sma_and_gapped_names_are_excluded()
     k = 12
     victim = "T3"
     i = cal.index(base[k]["decision"])
-    for d in cal[i - 40: i - 10]:                       # 30 missing sessions in the 200 window
+    for d in cal[i - 150: i - 120]:                       # 30 missing sessions in the 200 window
         bars[victim].pop(d, None)
     cohorts = build_cohorts(bars, cal, cal[-1], cfg2)
     assert cohorts[k]["names"][victim]["above_sma"] is None
