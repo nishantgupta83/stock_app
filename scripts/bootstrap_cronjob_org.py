@@ -21,6 +21,7 @@ from __future__ import annotations
 
 import json
 import os
+import time
 import sys
 import urllib.error
 import urllib.request
@@ -250,6 +251,9 @@ WORKFLOWS = {
 
 CRONJOB_API = "https://api.cron-job.org"
 GITHUB_API = "https://api.github.com"
+RATE_LIMIT_RETRIES = 6        # cron-job.org 429s on rapid writes
+RATE_LIMIT_BACKOFF = 5        # seconds, doubling: 5, 10, 20, 40, 80
+INTER_JOB_PAUSE = 2.0         # polite gap between provisioning calls
 
 
 def fail(msg: str) -> "te.NoReturn":  # type: ignore[name-defined]
@@ -366,15 +370,31 @@ def upsert_job(
         "Content-Type": "application/json",
     }
 
+    # cron-job.org rate-limits writes. On 2026-09-24 a fresh bootstrap created two jobs
+    # and the third PUT returned 429 with an empty body, aborting the run -- the script is
+    # idempotent so a re-run resumes, but it would just hit the limit again at the same
+    # point. Back off and retry instead of failing the whole provisioning pass.
+    def write(method: str, url: str, ok_status: tuple[int, ...]) -> tuple[int, dict]:
+        delay = RATE_LIMIT_BACKOFF
+        for attempt in range(RATE_LIMIT_RETRIES):
+            status, payload = http(method, url, headers, job_body)
+            if status != 429:
+                return status, payload
+            if attempt == RATE_LIMIT_RETRIES - 1:
+                break
+            print(f"    429 rate-limited — waiting {delay}s "
+                  f"(attempt {attempt + 1}/{RATE_LIMIT_RETRIES})")
+            time.sleep(delay)
+            delay *= 2
+        return status, payload
+
     if existing_id is None:
-        status, payload = http("PUT", f"{CRONJOB_API}/jobs", headers, job_body)
+        status, payload = write("PUT", f"{CRONJOB_API}/jobs", (200, 201))
         if status not in (200, 201):
             fail(f"PUT new job '{title}' returned {status}: {payload}")
         return int(payload["jobId"])
     else:
-        status, payload = http(
-            "PATCH", f"{CRONJOB_API}/jobs/{existing_id}", headers, job_body
-        )
+        status, payload = write("PATCH", f"{CRONJOB_API}/jobs/{existing_id}", (200, 204))
         if status not in (200, 204):
             fail(f"PATCH existing job '{title}' ({existing_id}) returned {status}: {payload}")
         return existing_id
@@ -419,6 +439,7 @@ def main() -> int:
                 existing_id=existing.get(entry["title"]),
             )
             print(f"  {action} {entry['title']} -> jobId={new_id} (workflow_id={wf_id})")
+            time.sleep(INTER_JOB_PAUSE)
         print()
 
     print("Done. Visit https://console.cron-job.org/jobs to verify schedules.")
