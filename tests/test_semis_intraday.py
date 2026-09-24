@@ -1,6 +1,7 @@
 """Pure-function tests for the intraday checkpoint pings. No network, no clock."""
 from datetime import date, datetime, time, timezone
 from pathlib import Path
+import re
 import sys
 
 import pytest
@@ -52,10 +53,12 @@ def test_slot_rejects_weekends_and_market_holidays():
 def test_every_utc_cron_maps_to_exactly_one_slot_in_both_dst_states():
     """The five workflow crons must cover all three slots exactly once per day, in PDT and
     in PST, with no cron serving two slots. 15:00Z deliberately serves 08:00 PDT / 07:00 PST."""
-    import yaml
-    wf = yaml.safe_load(open(Path(__file__).resolve().parent.parent
-                             / ".github/workflows/semis_intraday.yml"))
-    crons = [c["cron"] for c in wf[True]["schedule"]]
+    # Parsed with a regex, not PyYAML: this test guards a real invariant and must RUN in
+    # CI. Importing yaml here made it ModuleNotFoundError on every CI run from 2026-09-22
+    # onward while passing locally, because requirements-dev.txt has no pyyaml.
+    wf = (Path(__file__).resolve().parent.parent
+          / ".github/workflows/semis_intraday.yml").read_text()
+    crons = re.findall(r'^\s*-\s*cron:\s*"([^"]+)"', wf, re.M)
     assert len(crons) == 5
     for day, label in ((date(2026, 9, 24), "PDT"), (date(2026, 12, 3), "PST")):
         hit = []
