@@ -86,7 +86,12 @@ def hold_gate(stats: HoldStats, cfg: RotationConfig) -> bool:
 
 
 def quarterly_dates(dates: Sequence[str]) -> list[str]:
-    """Return the last available observation in each calendar quarter."""
+    """Return the last available observation in each calendar quarter.
+
+    LOW-LEVEL: it trusts whatever dates it is given. Feed it ONE shared calendar, never a
+    single asset's own dates (a vendor dropping a session would give assets different
+    "quarter-ends"), and use `rebalance_dates` when the newest quarter may be unfinished.
+    """
     if not dates:
         return []
     chosen: dict[tuple[int, int], str] = {}
@@ -104,3 +109,32 @@ def next_open_entry(rebalance_date: str, sessions: Sequence[str]) -> str | None:
         if d[:10] > target:
             return d[:10]
     return None
+
+
+def rebalance_dates(calendar: Sequence[str], as_of: str) -> list[str]:
+    """Quarter-end decision dates from ONE shared market calendar, complete quarters only.
+
+    A quarter is complete when its calendar end (Mar 31 / Jun 30 / Sep 30 / Dec 31) is on or
+    before `as_of`. Without this the current, unfinished quarter is returned as if it had
+    closed -- `quarterly_dates` on a calendar ending 2026-09-24 yields 2026-09-24 as a "Q3
+    end".
+    """
+    as_of = as_of[:10]
+    out = []
+    for d in quarterly_dates(calendar):
+        y, m = int(d[:4]), int(d[5:7])
+        q_end_month = ((m - 1) // 3 + 1) * 3
+        q_end = f"{y}-{q_end_month:02d}-{'30' if q_end_month in (6, 9) else '31'}"
+        if q_end <= as_of:
+            out.append(d)
+    return out
+
+
+def durability_measurable(prior_sessions: int, cfg: RotationConfig | None = None) -> bool:
+    """Whether the hold-period gate can be evaluated point-in-time with `prior_sessions` of
+    history strictly before the decision date. The gate needs `hold_horizon x
+    min_independent_windows` sessions (2016 by default); a 10-year download is ~2513
+    sessions, so it becomes measurable only for the last ~2 years of a backtest. Any earlier
+    "pass" would be computed with future data."""
+    cfg = cfg or RotationConfig()
+    return prior_sessions >= cfg.hold_horizon * cfg.min_independent_windows
