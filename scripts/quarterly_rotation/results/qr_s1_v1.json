@@ -1,0 +1,191 @@
+{
+ "calendar_sessions": 2513,
+ "config_hash": "1774730074739b66",
+ "configurations_tried": 1,
+ "data_as_of": "2026-09-24",
+ "durability_measurable_name_quarters": 156,
+ "eligible_name_quarters": 1022,
+ "experiment_id": "qr_s1_v1",
+ "first_half_mean": 0.04207741204720638,
+ "hit_rate": 0.5217391304347826,
+ "mean_dips_per_signal_quarter": 6.826086956521739,
+ "mean_excess_ex_best_quarter": 0.009929433635543298,
+ "mean_gross_excess": 0.0441329556476829,
+ "mean_net_excess": 0.0421329556476829,
+ "mean_universe": 29.52173913043478,
+ "no_signal_quarters": 12,
+ "null_mean": -0.0011497137019769014,
+ "null_p95": 0.04844608284183893,
+ "null_percentile": 0.9295,
+ "p_value": 0.07096451774112944,
+ "per_quarter": [
+  {
+   "decision": "2017-12-29",
+   "excess": -0.087031,
+   "n_dips": 4
+  },
+  {
+   "decision": "2018-03-29",
+   "excess": 0.043006,
+   "n_dips": 11
+  },
+  {
+   "decision": "2018-06-29",
+   "excess": -0.045551,
+   "n_dips": 14
+  },
+  {
+   "decision": "2018-09-28",
+   "excess": 0.084906,
+   "n_dips": 1
+  },
+  {
+   "decision": "2018-12-31",
+   "excess": 0.217414,
+   "n_dips": 1
+  },
+  {
+   "decision": "2019-09-30",
+   "excess": 0.107927,
+   "n_dips": 6
+  },
+  {
+   "decision": "2020-06-30",
+   "excess": -0.18049,
+   "n_dips": 2
+  },
+  {
+   "decision": "2020-12-31",
+   "excess": 0.13989,
+   "n_dips": 1
+  },
+  {
+   "decision": "2021-09-30",
+   "excess": -0.000289,
+   "n_dips": 21
+  },
+  {
+   "decision": "2021-12-31",
+   "excess": -0.109567,
+   "n_dips": 1
+  },
+  {
+   "decision": "2022-03-31",
+   "excess": 0.292637,
+   "n_dips": 1
+  },
+  {
+   "decision": "2022-06-30",
+   "excess": 0.032847,
+   "n_dips": 9
+  },
+  {
+   "decision": "2022-09-30",
+   "excess": -0.005409,
+   "n_dips": 22
+  },
+  {
+   "decision": "2022-12-30",
+   "excess": 0.155758,
+   "n_dips": 4
+  },
+  {
+   "decision": "2023-06-30",
+   "excess": 0.076449,
+   "n_dips": 1
+  },
+  {
+   "decision": "2023-09-29",
+   "excess": -0.032698,
+   "n_dips": 1
+  },
+  {
+   "decision": "2024-03-28",
+   "excess": -0.042433,
+   "n_dips": 2
+  },
+  {
+   "decision": "2024-06-28",
+   "excess": 0.123392,
+   "n_dips": 4
+  },
+  {
+   "decision": "2024-12-31",
+   "excess": 0.056726,
+   "n_dips": 17
+  },
+  {
+   "decision": "2025-03-31",
+   "excess": -0.007228,
+   "n_dips": 26
+  },
+  {
+   "decision": "2025-09-30",
+   "excess": -0.25594,
+   "n_dips": 1
+  },
+  {
+   "decision": "2025-12-31",
+   "excess": -0.345866,
+   "n_dips": 2
+  },
+  {
+   "decision": "2026-03-31",
+   "excess": 0.75061,
+   "n_dips": 5
+  }
+ ],
+ "quarters_total": 39,
+ "second_half_mean": 0.04218387061478637,
+ "signal_quarters": 23,
+ "thin_universe_quarters": 4,
+ "tickers_loaded": [
+  "ALAB",
+  "AMAT",
+  "AMD",
+  "ANET",
+  "ARM",
+  "ASML",
+  "AVGO",
+  "CEG",
+  "CIEN",
+  "COHR",
+  "CRDO",
+  "ENTG",
+  "ETN",
+  "GEV",
+  "GOOGL",
+  "KLAC",
+  "LITE",
+  "LRCX",
+  "META",
+  "MRVL",
+  "MSFT",
+  "MU",
+  "NOW",
+  "NVDA",
+  "ONTO",
+  "ORCL",
+  "PLTR",
+  "PWR",
+  "SMCI",
+  "SNDK",
+  "STX",
+  "TER",
+  "TSM",
+  "VRT",
+  "WDC"
+ ],
+ "tickers_missing": [],
+ "verdict": {
+  "checks": {
+   "P1_p_value": false,
+   "P2_mean_net_excess": true,
+   "P3_signal_quarters": true,
+   "P4_hit_rate": false,
+   "P5_ex_best_quarter_positive": true,
+   "P6_both_halves_nonneg": true
+  },
+  "promote": false
+ }
+}
