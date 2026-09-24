@@ -57,7 +57,16 @@ def _row(r):
 </tr>"""
 
 
+def _by_tag(rows, tag):
+    """Rows carrying `tag`, in the order the universe lists them, not by %B."""
+    from ai_humanoid_screen import AI_HUMANOID
+    order = {t: i for i, t in enumerate(AI_HUMANOID.get(tag, []))}
+    return sorted((r for r in rows if tag in r["tags"]),
+                  key=lambda r: order.get(r["ticker"], 99))
+
+
 def render(data: dict) -> str:
+    from ai_humanoid_screen import PINNED
     rows = data["rows"]
     buys = [r for r in rows if r["verdict"] == "buy_zone"]
     spikes = [r for r in rows if r.get("spike")]
@@ -116,6 +125,16 @@ padding:1px 4px;border-radius:2px;margin-left:5px;letter-spacing:.03em}}
 .tag{{display:inline-block;background:var(--sunk);color:var(--muted);font-size:9.5px;
 padding:1px 5px;border-radius:2px;margin:2px 3px 0 0;letter-spacing:.03em}}
 .none{{color:var(--muted);font-size:13px;padding:12px;background:var(--sunk);border-radius:3px}}
+section.pin h2{{border-left:4px solid var(--teal);padding-left:10px}}
+.rules{{display:grid;gap:10px;margin-bottom:26px}}
+@media(min-width:720px){{.rules{{grid-template-columns:repeat(3,1fr)}}}}
+.rule{{background:var(--card);border:1px solid var(--hair);border-left:3px solid var(--go);
+padding:12px 14px;border-radius:3px;font-size:13px}}
+.rule b{{display:block;font-family:"Bricolage Grotesque",system-ui,sans-serif;font-size:15px;margin-bottom:2px}}
+.rule .th{{font-family:"IBM Plex Mono",monospace;color:var(--go);font-weight:600;font-size:14px;display:block;margin:4px 0 6px}}
+.rule p{{color:var(--ink2);margin:0}}
+.exit{{background:var(--sunk);border-left:3px solid var(--warn);padding:12px 14px;
+border-radius:3px;font-size:13px;margin-bottom:26px}}
 .ev{{background:var(--sunk);border-left:3px solid var(--teal);padding:14px 16px;margin-bottom:26px;font-size:13px}}
 .ev b{{color:var(--teal)}}
 .ev table{{min-width:0;margin-top:8px;font-size:12px}}
@@ -133,6 +152,27 @@ holding by <b>+3.47 pts</b>, while buying strength lost <b>2.65 pts</b> and top-
 which is roughly five times what the timing overlay adds.</p>
 </header>
 
+<div class="rules">
+<div class="rule"><b>1. Is it on sale?</b><span class="th">%B &lt; 0.20</span>
+<p>%B says where price sits inside its normal trading channel. Below 0.20 means it has
+pulled back to the bottom of that channel — on sale. Above 1.00 is <i>extended</i>: too
+stretched to buy, and it returned <b>2.65 pts below</b> simply holding.</p></div>
+<div class="rule"><b>2. Healthy dip or falling knife?</b><span class="th">vs 200d &gt; 0%</span>
+<p>Buy dips in stocks still above their 200-day average. Measured on 46 large caps over 15
+years, this lifts the <b>hit rate to 71% from 68%</b> at 60 days (66% vs 61% at 20 days).
+It does <i>not</i> raise the average return — below-200d dips actually averaged slightly
+more. You are buying better odds, not a bigger number.</p></div>
+<div class="rule"><b>3. Does it survive bad timing?</b><span class="th">2y p10 near 0% or positive</span>
+<p>The 10th-percentile outcome across past 2-year holds — your unlucky-but-realistic case.
+Near zero means even bad timing historically got your money back. Avoid the big negatives
+(a −50% p10 means one in ten 2-year holds halved).</p></div>
+</div>
+
+<div class="exit"><b>The exit is a rule, not a guess.</b> Once you buy, hold until price
+closes back above the <b>20-day middle band</b> — the average-price line between the two
+bands — then take the profit. That is the same rule the record in these tables was measured
+with; changing the exit invalidates the numbers.</div>
+
 <div class="ev"><b>Why there are two signals.</b> Meta launched Muse on 2026-09-08 and ran
 +20.3% before the first analyst upgrade on 09-21 — following that upgrade captured 2% of
 the move. Replaying these rules over those sessions:
@@ -144,6 +184,8 @@ the move. Replaying these rules over those sessions:
 The dip rule caught it by accident — it was buying a drawdown, not predicting a product.
 The spike rule reacts to the catalyst, late but not uselessly. They are labelled separately
 so a reaction is never mistaken for a setup.</div>
+
+{"".join(f'<section class="pin"><h2>{ttl}</h2><p class="sub">{sub}</p>{table(_by_tag(rows, tag))}</section>' for tag, ttl, sub in PINNED)}
 
 <section><h2>Buy zone</h2>
 <p class="sub">%B below {data['thresholds']['dip_pct_b']}, liquid, and passes the 1–3 year hold gate

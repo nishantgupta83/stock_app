@@ -93,8 +93,22 @@ AI_HUMANOID = {
     "humanoid_oem":         ["TSLA", "CCXI", "SYM"],
     "humanoid_materials":   ["MP", "USAR", "ALB", "FCX"],
     "humanoid_etf":         ["KOID", "BOTT", "BOTZ", "ARKQ"],
-    "benchmark":            ["VTI", "QQQ", "SPY", "SMH", "SOXX"],
+    "benchmark":            ["VTI", "QQQ", "SPY", "SMH"],
+    # Pinned sections the operator reads first, every day, regardless of verdict.
+    "semis_etf":            ["SOXX", "SOXL", "SOXS"],
+    "megacap":              ["META", "GOOGL", "MSFT", "AAPL", "AMZN", "NFLX"],
 }
+
+# Rendered as their own sections at the top of the page, in this order, whatever their
+# verdict is -- the operator tracks these daily and should not have to hunt for them
+# across the verdict groups.
+PINNED: list[tuple[str, str, str]] = [
+    ("semis_etf", "Semis — SOXX / SOXL / SOXS",
+     "The 3x pair moves with SOXX, so read SOXX's %B and size with SOXL/SOXS's ATR. "
+     "SOXS is inverse: its %B means the opposite."),
+    ("megacap", "Mega caps",
+     "META, GOOGL, MSFT, AAPL, AMZN, NFLX — tracked every day whether or not they signal."),
+]
 
 
 def universe() -> dict[str, list[str]]:

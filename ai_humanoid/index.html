@@ -43,6 +43,16 @@ padding:1px 4px;border-radius:2px;margin-left:5px;letter-spacing:.03em}
 .tag{display:inline-block;background:var(--sunk);color:var(--muted);font-size:9.5px;
 padding:1px 5px;border-radius:2px;margin:2px 3px 0 0;letter-spacing:.03em}
 .none{color:var(--muted);font-size:13px;padding:12px;background:var(--sunk);border-radius:3px}
+section.pin h2{border-left:4px solid var(--teal);padding-left:10px}
+.rules{display:grid;gap:10px;margin-bottom:26px}
+@media(min-width:720px){.rules{grid-template-columns:repeat(3,1fr)}}
+.rule{background:var(--card);border:1px solid var(--hair);border-left:3px solid var(--go);
+padding:12px 14px;border-radius:3px;font-size:13px}
+.rule b{display:block;font-family:"Bricolage Grotesque",system-ui,sans-serif;font-size:15px;margin-bottom:2px}
+.rule .th{font-family:"IBM Plex Mono",monospace;color:var(--go);font-weight:600;font-size:14px;display:block;margin:4px 0 6px}
+.rule p{color:var(--ink2);margin:0}
+.exit{background:var(--sunk);border-left:3px solid var(--warn);padding:12px 14px;
+border-radius:3px;font-size:13px;margin-bottom:26px}
 .ev{background:var(--sunk);border-left:3px solid var(--teal);padding:14px 16px;margin-bottom:26px;font-size:13px}
 .ev b{color:var(--teal)}
 .ev table{min-width:0;margin-top:8px;font-size:12px}
@@ -51,7 +61,7 @@ position:static;text-transform:none;letter-spacing:0;font-size:12px}
 footer{border-top:1px solid var(--hair);padding-top:16px;color:var(--muted);font-size:12px}
 </style></head><body>
 <header>
-<div class="kick">Nasdaq-100 + the AI / humanoid complex · 144 of 145 resolved · 98 on an older bar</div>
+<div class="kick">Nasdaq-100 + the AI / humanoid complex · 146 of 147 resolved · 98 on an older bar</div>
 <h1>AI &amp; Humanoid Screen</h1>
 <p class="lede">Ranked by <b>%B ascending</b> — which names are on sale — not by momentum.
 Measured on the AI complex over the 2023+ wave, forward 60 days: buying dips beat simply
@@ -59,6 +69,27 @@ holding by <b>+3.47 pts</b>, while buying strength lost <b>2.65 pts</b> and top-
 12-month momentum lost <b>3.01 pts</b>. Owning the complex at all was worth <b>+17.95%</b>,
 which is roughly five times what the timing overlay adds.</p>
 </header>
+
+<div class="rules">
+<div class="rule"><b>1. Is it on sale?</b><span class="th">%B &lt; 0.20</span>
+<p>%B says where price sits inside its normal trading channel. Below 0.20 means it has
+pulled back to the bottom of that channel — on sale. Above 1.00 is <i>extended</i>: too
+stretched to buy, and it returned <b>2.65 pts below</b> simply holding.</p></div>
+<div class="rule"><b>2. Healthy dip or falling knife?</b><span class="th">vs 200d &gt; 0%</span>
+<p>Buy dips in stocks still above their 200-day average. Measured on 46 large caps over 15
+years, this lifts the <b>hit rate to 71% from 68%</b> at 60 days (66% vs 61% at 20 days).
+It does <i>not</i> raise the average return — below-200d dips actually averaged slightly
+more. You are buying better odds, not a bigger number.</p></div>
+<div class="rule"><b>3. Does it survive bad timing?</b><span class="th">2y p10 near 0% or positive</span>
+<p>The 10th-percentile outcome across past 2-year holds — your unlucky-but-realistic case.
+Near zero means even bad timing historically got your money back. Avoid the big negatives
+(a −50% p10 means one in ten 2-year holds halved).</p></div>
+</div>
+
+<div class="exit"><b>The exit is a rule, not a guess.</b> Once you buy, hold until price
+closes back above the <b>20-day middle band</b> — the average-price line between the two
+bands — then take the profit. That is the same rule the record in these tables was measured
+with; changing the exit invalidates the numbers.</div>
 
 <div class="ev"><b>Why there are two signals.</b> Meta launched Muse on 2026-09-08 and ran
 +20.3% before the first analyst upgrade on 09-21 — following that upgrade captured 2% of
@@ -71,6 +102,89 @@ the move. Replaying these rules over those sessions:
 The dip rule caught it by accident — it was buying a drawdown, not predicting a product.
 The spike rule reacts to the catalyst, late but not uselessly. They are labelled separately
 so a reaction is never mistaken for a setup.</div>
+
+<section class="pin"><h2>Semis — SOXX / SOXL / SOXS</h2><p class="sub">The 3x pair moves with SOXX, so read SOXX's %B and size with SOXL/SOXS's ATR. SOXS is inverse: its %B means the opposite.</p><div class="tw"><table><tr><th>Ticker</th><th>Close</th><th>1d</th><th>%B</th><th>vs 20d</th><th>vs 200d</th><th>range</th><th>ATR</th><th>$vol/d</th><th>2y pos</th><th>2y p10</th><th>msgs</th><th>Verdict</th></tr><tr class="v-warn">
+<td class="tk"><b>SOXX</b><br><span class="tag">semis_etf</span></td>
+<td>572.78</td><td>+2.40%</td>
+<td class="pb">1.20</td>
+<td>+10.3%</td><td>+29.0%</td><td>79%</td>
+<td>3.2%</td><td>4.3B</td>
+<td>95% <span class="tiny">4w</span></td>
+<td>+7.3%</td><td>—</td>
+<td class="vd">extended</td>
+</tr><tr class="v-warn">
+<td class="tk"><b>SOXL</b><br><span class="tag">semis_etf</span></td>
+<td>151.95</td><td>+7.13%</td>
+<td class="pb">1.20</td>
+<td>+29.8%</td><td>+34.1%</td><td>45%</td>
+<td>8.5%</td><td>8.1B</td>
+<td>76% <span class="tiny">4w</span></td>
+<td>-52.2%</td><td>—</td>
+<td class="vd">extended</td>
+</tr><tr class="v-warn">
+<td class="tk"><b>SOXS</b><br><span class="tag">semis_etf</span></td>
+<td>32.42</td><td>-7.09%</td>
+<td class="pb">-0.16</td>
+<td>-29.3%</td><td>-82.7%</td><td>0%</td>
+<td>14.5%</td><td>2.6B</td>
+<td>0% <span class="tiny">4w</span></td>
+<td>-98.7%</td><td>—</td>
+<td class="vd">DIP · FAILS HOLD</td>
+</tr></table></div></section><section class="pin"><h2>Mega caps</h2><p class="sub">META, GOOGL, MSFT, AAPL, AMZN, NFLX — tracked every day whether or not they signal.</p><div class="tw"><table><tr><th>Ticker</th><th>Close</th><th>1d</th><th>%B</th><th>vs 20d</th><th>vs 200d</th><th>range</th><th>ATR</th><th>$vol/d</th><th>2y pos</th><th>2y p10</th><th>msgs</th><th>Verdict</th></tr><tr class="v-mid">
+<td class="tk"><b>META</b><br><span class="tag">ndx100</span><span class="tag">ai_platform</span><span class="tag">megacap</span></td>
+<td>736.60</td><td>-0.63%</td>
+<td class="pb">1.00</td>
+<td>+16.4%</td><td>+18.0%</td><td>89%</td>
+<td>3.5%</td><td>10.3B</td>
+<td>79% <span class="tiny">4w</span></td>
+<td>-28.1%</td><td>—</td>
+<td class="vd">neutral</td>
+</tr><tr class="v-mid">
+<td class="tk"><b>GOOGL</b><br><span class="tag">ndx100</span><span class="tag">ai_platform</span><span class="tag">megacap</span></td>
+<td>351.16</td><td>-1.07%</td>
+<td class="pb">0.85</td>
+<td>+2.6%</td><td>+4.1%</td><td>69%</td>
+<td>2.5%</td><td>8.8B</td>
+<td>90% <span class="tiny">4w</span></td>
+<td>-0.1%</td><td>—</td>
+<td class="vd">neutral</td>
+</tr><tr class="v-mid">
+<td class="tk"><b>MSFT</b><br><span class="tag">ndx100</span><span class="tag">ai_platform</span><span class="tag">megacap</span></td>
+<td>498.00</td><td>-0.72%</td>
+<td class="pb">0.46</td>
+<td>-0.2%</td><td>+15.7%</td><td>79%</td>
+<td>2.2%</td><td>11.6B</td>
+<td>96% <span class="tiny">4w</span></td>
+<td>+10.0%</td><td>—</td>
+<td class="vd">neutral</td>
+</tr><tr class="v-mid">
+<td class="tk"><b>AAPL</b><br><span class="tag">ndx100</span><span class="tag">megacap</span></td>
+<td>339.75</td><td>+0.23%</td>
+<td class="pb">0.89</td>
+<td>+4.3%</td><td>+18.6%</td><td>100%</td>
+<td>2.1%</td><td>13.8B</td>
+<td>99% <span class="tiny">4w</span></td>
+<td>+16.2%</td><td>—</td>
+<td class="vd">neutral</td>
+</tr><tr class="v-mid">
+<td class="tk"><b>AMZN</b><br><span class="tag">ndx100</span><span class="tag">megacap</span></td>
+<td>254.98</td><td>-1.34%</td>
+<td class="pb">0.46</td>
+<td>-0.3%</td><td>+6.0%</td><td>66%</td>
+<td>2.3%</td><td>8.9B</td>
+<td>79% <span class="tiny">4w</span></td>
+<td>-25.5%</td><td>—</td>
+<td class="vd">neutral</td>
+</tr><tr class="v-warn">
+<td class="tk"><b>NFLX</b><br><span class="tag">ndx100</span><span class="tag">megacap</span></td>
+<td>72.16</td><td>-1.64%</td>
+<td class="pb">0.05</td>
+<td>-7.7%</td><td>-15.2%</td><td>8%</td>
+<td>3.3%</td><td>2.5B</td>
+<td>77% <span class="tiny">4w</span></td>
+<td>-39.2%</td><td>—</td>
+<td class="vd">DIP · FAILS HOLD</td>
+</tr></table></div></section>
 
 <section><h2>Buy zone</h2>
 <p class="sub">%B below 0.2, liquid, and passes the 1–3 year hold gate
@@ -258,6 +372,15 @@ something happened, and the rule does not know what or which direction it resolv
 <section><h2>Near the band / neutral</h2>
 <p class="sub">Dips that fail the hold gate, plus names with no measured edge either way.</p>
 <div class="tw"><table><tr><th>Ticker</th><th>Close</th><th>1d</th><th>%B</th><th>vs 20d</th><th>vs 200d</th><th>range</th><th>ATR</th><th>$vol/d</th><th>2y pos</th><th>2y p10</th><th>msgs</th><th>Verdict</th></tr><tr class="v-warn">
+<td class="tk"><b>SOXS</b><br><span class="tag">semis_etf</span></td>
+<td>32.42</td><td>-7.09%</td>
+<td class="pb">-0.16</td>
+<td>-29.3%</td><td>-82.7%</td><td>0%</td>
+<td>14.5%</td><td>2.6B</td>
+<td>0% <span class="tiny">4w</span></td>
+<td>-98.7%</td><td>—</td>
+<td class="vd">DIP · FAILS HOLD</td>
+</tr><tr class="v-warn">
 <td class="tk"><b>FANG</b><span class="stale">2026-09-21</span><br><span class="tag">ndx100</span></td>
 <td>189.27</td><td>-1.64%</td>
 <td class="pb">-0.08</td>
@@ -321,7 +444,7 @@ something happened, and the rule does not know what or which direction it resolv
 <td>-26.8%</td><td>—</td>
 <td class="vd">DIP · FAILS HOLD</td>
 </tr><tr class="v-warn">
-<td class="tk"><b>NFLX</b><br><span class="tag">ndx100</span></td>
+<td class="tk"><b>NFLX</b><br><span class="tag">ndx100</span><span class="tag">megacap</span></td>
 <td>72.16</td><td>-1.64%</td>
 <td class="pb">0.05</td>
 <td>-7.7%</td><td>-15.2%</td><td>8%</td>
@@ -473,15 +596,6 @@ something happened, and the rule does not know what or which direction it resolv
 <td>77% <span class="tiny">4w</span></td>
 <td>-13.7%</td><td>—</td>
 <td class="vd">neutral</td>
-</tr><tr class="v-mid">
-<td class="tk"><b>PDD</b><span class="stale">2026-09-21</span><br><span class="tag">ndx100</span></td>
-<td>79.30</td><td>+0.51%</td>
-<td class="pb">0.33</td>
-<td>-2.8%</td><td>-17.5%</td><td>9%</td>
-<td>2.5%</td><td>517M</td>
-<td>63% <span class="tiny">4w</span></td>
-<td>-43.0%</td><td>—</td>
-<td class="vd">neutral</td>
 </tr></table></div></section>
 
 <section><h2>Extended</h2>
@@ -625,10 +739,10 @@ null at 60 days. Not a short signal; a not-today signal.</p>
 </tr></table></div></section>
 
 <footer><b>as of 2026-09-22</b>
-— but 98 of 144 rows carry an OLDER bar, tagged with their own date beside the ticker. yfinance drops whole trading days per-ticker, so one header date cannot speak for the table.
+— but 98 of 146 rows carry an OLDER bar, tagged with their own date beside the ticker. yfinance drops whole trading days per-ticker, so one header date cannot speak for the table.
 · the <b>2y pos</b> column shows the count of INDEPENDENT (non-overlapping) 2-year windows
 behind it — a name with 1-2 is one market cycle, not a distribution · generated
-2026-09-23T23:46:07+00:00 · bars strictly before today, split-corrected,
+2026-09-24T05:16:31+00:00 · bars strictly before today, split-corrected,
 entry measured at the next open. The <b>msgs</b> column is StockTwits message volume in 12h —
 the bull/bear ratio is deliberately not shown, because in a live pull across 20 tickers nine
 of them read 100% bullish. Thresholds were each measured against the unconditional base rate;
