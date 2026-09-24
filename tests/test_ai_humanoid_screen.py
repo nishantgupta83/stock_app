@@ -763,3 +763,17 @@ def test_live_pair_is_built_from_the_same_bars_analyse_uses():
     assert v["complete"] is False and v["kind"] == "mixed"     # so the tiles are protected
     assert _node(["livePair"], "livePair([{d:'2026-09-24', c: 5}])") == "2026-09-24"
     assert _node(["livePair"], "livePair([])") == ""
+
+
+def test_rotation_section_quotes_the_stored_results():
+    import json
+    from pathlib import Path
+    import ai_humanoid_render as r
+    html_ = r._rotation_section()
+    base = Path(r.__file__).resolve().parent / "quarterly_rotation" / "results"
+    for name in ("qr_s1_v1", "qr_s1_v2"):
+        res = json.loads((base / f"{name}.json").read_text())
+        assert f"{res['p_value']:.3f}" in html_
+        assert f"{res['mean_net_excess']*100:+.1f} pts" in html_
+        assert ("promoted" in html_) and res["verdict"]["promote"] is False
+    assert "not promoted" in html_

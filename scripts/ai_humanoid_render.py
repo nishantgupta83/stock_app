@@ -529,6 +529,43 @@ def _soxx_section(data):
          "".join(body), read)
 
 
+def _rotation_section() -> str:
+    """Quarterly-rotation research results, read from the committed result files so every
+    figure on the page is the stored one. Empty string if the files are absent."""
+    from pathlib import Path
+    base = Path(__file__).resolve().parent / "quarterly_rotation" / "results"
+    rows = []
+    for name, label in (("qr_s1_v1", "v1 · dip (%B &lt; 0.20)"),
+                        ("qr_s1_v2", "v2 · dip + above 200-day")):
+        try:
+            r = json.loads((base / f"{name}.json").read_text())
+        except (OSError, ValueError):
+            continue
+        ok = r["verdict"]["promote"]
+        fails = ", ".join(k.split("_")[0] for k, v in r["verdict"]["checks"].items() if not v) or "none"
+        rows.append(
+            f"<tr><td><b>{label}</b></td><td>{r['signal_quarters']}</td>"
+            f"<td>{r['mean_net_excess']*100:+.1f} pts</td><td>{r['hit_rate']*100:.0f}%</td>"
+            f"<td>{r['mean_excess_ex_best_quarter']*100:+.1f} pts</td><td>{r['p_value']:.3f}</td>"
+            f"<td>{'promoted' if ok else 'not promoted'} <span class='sub'>(failed: {fails})</span></td></tr>")
+    if not rows:
+        return ""
+    return (
+        '<section id="rotation"><h2>Does the dip rule hold up as a quarterly rotation?</h2>'
+        '<p class="sub">Buy the dip names at each quarter-end, hold to the next, versus the same number '
+        'of names drawn at random from the same list (2000 draws), after 0.20% costs. Thresholds were '
+        'written before each run. Neither variant cleared them, so nothing here changes the '
+        'verdicts above. The universe is today\'s AI leaders, which flatters dip entries; the mean '
+        'is carried by one quarter (2026-03-31) in v1.</p>'
+        '<div class="tw"><table><tr><th>Test</th><th>signal qtrs</th><th>mean net excess</th>'
+        '<th>qtrs positive</th><th>ex best qtr</th><th>p vs random</th><th>result</th></tr>'
+        + "".join(rows) +
+        '</table></div><p class="sub">The 1–3 year durability gate cannot be tested point-in-time on '
+        '10 years of data (needs 2016 prior sessions); it is judged forward only. '
+        'Method and thresholds: <code>docs/experiments/2026-09-24-preregistration-qr-s1-v{1,2}.md</code>.</p>'
+        '</section>')
+
+
 def render(data: dict) -> str:
     from ai_humanoid_screen import PINNED, AI_HUMANOID
     script = (SCRIPT
@@ -548,6 +585,7 @@ def render(data: dict) -> str:
         return f'<div class="tw"><table>{th}{"".join(_row(r) for r in rs)}</table></div>' if rs \
             else '<p class="none">Nothing in this group today.</p>'
 
+    rotation_html = _rotation_section()
     pinned_html = ""
     for tag, ttl, sub in PINNED:
         pinned_html += (
@@ -774,6 +812,8 @@ something happened, and the rule does not know what or which direction it resolv
 <p class="sub">%B above {data['thresholds']['extended_pct_b']:.2f} — the stall zone, −2.65 pts vs the
 null at 60 days. Not a short signal; a not-today signal.</p>
 {table(ext)}</section>
+
+{rotation_html}
 
 <footer><b>as of {html.escape(str(data.get('as_of')))}</b>
 {f"— but {data['n_stale']} of {data['n_resolved']} rows carry an OLDER bar, tagged with their own date beside the ticker. yfinance drops whole trading days per-ticker, so one header date cannot speak for the table." if data.get('n_stale') else ""}
