@@ -83,6 +83,87 @@
     ]
    },
    "sent": "telegram"
+  },
+  "t1000et": {
+   "at": "2026-09-25T07:00:32-07:00",
+   "late_min": 0,
+   "per": {
+    "SOXL": {
+     "price": 152.74569702148438,
+     "vwap": 150.63166165216842,
+     "vs_vwap": 0.014034468890063767,
+     "above_vwap": true,
+     "session_open": 149.24000549316406,
+     "from_open": 0.023490293482204994,
+     "vwap_events": {
+      "n_below": 0,
+      "first_below": null,
+      "last_below": null,
+      "n_bars": 7
+     },
+     "opening_range": {
+      "high": 153.04400634765625,
+      "low": 147.94000244140625,
+      "complete": true
+     },
+     "or_break": "inside",
+     "atr": 12.22286248637053,
+     "atr_pct": 0.08002099387880844,
+     "noise_dollars": 305.5715621592633,
+     "anchors": {
+      "peak": {
+       "date": "2026-06-22",
+       "px": 300.7699890136719,
+       "avwap": 143.22098719674995
+      },
+      "trough": {
+       "date": "2026-07-29",
+       "px": 91.98999786376953,
+       "avwap": 122.24092880039785
+      }
+     }
+    },
+    "SOXS": {
+     "price": 32.150001525878906,
+     "vwap": 32.67082951832946,
+     "vs_vwap": -0.015941682538496704,
+     "above_vwap": false,
+     "session_open": 32.970001220703125,
+     "from_open": -0.024871084757779993,
+     "vwap_events": {
+      "n_below": 7,
+      "first_below": 0,
+      "last_below": 6,
+      "n_bars": 7
+     },
+     "opening_range": {
+      "high": 33.2599983215332,
+      "low": 32.11000061035156,
+      "complete": true
+     },
+     "or_break": "inside",
+     "atr": 4.258562775654152,
+     "atr_pct": 0.13245917802604934,
+     "noise_dollars": 106.4640693913538,
+     "anchors": {
+      "peak": {
+       "date": "2025-09-25",
+       "px": 1041.697373168956,
+       "avwap": 80.9733202188641
+      },
+      "trough": {
+       "date": "2026-09-25",
+       "px": 32.150001525878906,
+       "avwap": 32.50166702270508
+      }
+     }
+    }
+   },
+   "triggers": {
+    "SOXL": [],
+    "SOXS": []
+   },
+   "sent": "telegram"
   }
  },
  "fired": [
