@@ -2,7 +2,7 @@
   "experiment_id": "fwd_prov_long_h7d",
   "config_hash": "47eb4eb5fda8223568f21fae0301f48c6fe0da43261e959002d84a8c3fd72d35",
   "forward_epoch": "2026-08-03",
-  "captured_at": "2026-09-24T00:56:06.408553+00:00",
+  "captured_at": "2026-09-25T00:58:14.182496+00:00",
   "sync_ok": true,
   "n_admitted": 163,
   "n_open": 0,
