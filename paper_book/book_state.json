@@ -4,9 +4,9 @@
 "capital_base": 5000.0,
 "max_concurrent": 5,
 "per_position_size": 1000.0,
-"last_open_scan_at": "2026-09-24T00:40:28.021719+00:00",
-"last_mark_at": "2026-09-24T00:40:28.021728+00:00",
-"setup_cursor": "2026-09-01T12:08:11.941064+00:00",
+"last_open_scan_at": "2026-09-25T00:39:28.484922+00:00",
+"last_mark_at": "2026-09-25T00:39:28.484930+00:00",
+"setup_cursor": "2026-09-24T18:23:15.67271+00:00",
 "forward_epoch": "2026-06-29"
 },
 "book_setups": [
@@ -189,6 +189,54 @@
 "horizon_days": 1,
 "valid_until": "2026-09-01T16:07:40.609881+00:00",
 "raw": "{\"id\": 648, \"signal_id\": 12258, \"ticker\": \"FXI\", \"direction\": \"long\", \"created_at\": \"2026-09-01T12:08:11.941064+00:00\", \"target_pct\": 0.02, \"stop_pct\": 0.015, \"horizon_days\": 1, \"valid_until\": \"2026-09-01T16:07:40.609881+00:00\"}"
+},
+{
+"setup_id": 651,
+"signal_id": 13104,
+"ticker": "FSLR",
+"direction": "long",
+"created_at": "2026-09-24T10:38:05.327056+00:00",
+"target_pct": 0.02,
+"stop_pct": 0.015,
+"horizon_days": 1,
+"valid_until": "2026-09-24T14:37:37.951565+00:00",
+"raw": "{\"id\": 651, \"signal_id\": 13104, \"ticker\": \"FSLR\", \"direction\": \"long\", \"created_at\": \"2026-09-24T10:38:05.327056+00:00\", \"target_pct\": 0.02, \"stop_pct\": 0.015, \"horizon_days\": 1, \"valid_until\": \"2026-09-24T14:37:37.951565+00:00\"}"
+},
+{
+"setup_id": 653,
+"signal_id": 13132,
+"ticker": "FSLR",
+"direction": "long",
+"created_at": "2026-09-24T14:23:37.844676+00:00",
+"target_pct": 0.02,
+"stop_pct": 0.015,
+"horizon_days": 1,
+"valid_until": "2026-09-24T18:23:05.144392+00:00",
+"raw": "{\"id\": 653, \"signal_id\": 13132, \"ticker\": \"FSLR\", \"direction\": \"long\", \"created_at\": \"2026-09-24T14:23:37.844676+00:00\", \"target_pct\": 0.02, \"stop_pct\": 0.015, \"horizon_days\": 1, \"valid_until\": \"2026-09-24T18:23:05.144392+00:00\"}"
+},
+{
+"setup_id": 654,
+"signal_id": 13148,
+"ticker": "FSLR",
+"direction": "long",
+"created_at": "2026-09-24T16:53:15.933164+00:00",
+"target_pct": 0.02,
+"stop_pct": 0.015,
+"horizon_days": 1,
+"valid_until": "2026-09-24T20:52:45.38764+00:00",
+"raw": "{\"id\": 654, \"signal_id\": 13148, \"ticker\": \"FSLR\", \"direction\": \"long\", \"created_at\": \"2026-09-24T16:53:15.933164+00:00\", \"target_pct\": 0.02, \"stop_pct\": 0.015, \"horizon_days\": 1, \"valid_until\": \"2026-09-24T20:52:45.38764+00:00\"}"
+},
+{
+"setup_id": 655,
+"signal_id": 13154,
+"ticker": "FSLR",
+"direction": "long",
+"created_at": "2026-09-24T18:23:15.67271+00:00",
+"target_pct": 0.02,
+"stop_pct": 0.015,
+"horizon_days": 1,
+"valid_until": "2026-09-24T22:22:47.379952+00:00",
+"raw": "{\"id\": 655, \"signal_id\": 13154, \"ticker\": \"FSLR\", \"direction\": \"long\", \"created_at\": \"2026-09-24T18:23:15.67271+00:00\", \"target_pct\": 0.02, \"stop_pct\": 0.015, \"horizon_days\": 1, \"valid_until\": \"2026-09-24T22:22:47.379952+00:00\"}"
 }
 ],
 "book_positions_closed": [
