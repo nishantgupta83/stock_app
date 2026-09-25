@@ -1,6 +1,6 @@
 {
 "experiment_id": "fwd_prov_long_h1d",
-"cursor": "2026-09-18T12:22:34.55488+00:00",
+"cursor": "2026-09-24T21:07:45.630724+00:00",
 "forward_epoch": "2026-08-03",
 "config_hash": "f1b6a019435833a8a180b7609cacb0bb88f94948ae54ed6bd9d36175e615b9cc",
 "candidates": [
@@ -1796,6 +1796,127 @@
 "rule_keys": "[\"news_article:positive:h15d\", \"news_article:positive:h1d\", \"news_article:positive:h30d\", \"news_article:positive:h7d\"]",
 "source_agents": "[\"news\"]",
 "raw": "{\"id\": 430, \"created_at\": \"2026-09-15T17:16:11.884258+00:00\", \"ticker\": \"PLTR\", \"direction\": \"bullish\", \"score\": 43.579, \"recall_floor\": 30.0, \"rule_keys\": [\"news_article:positive:h15d\", \"news_article:positive:h1d\", \"news_article:positive:h30d\", \"news_article:positive:h7d\"], \"source_agents\": [\"news\"]}"
+},
+{
+"experiment_id": "fwd_prov_long_h1d",
+"candidate_id": 433,
+"created_at": "2026-09-24T09:22:52.230077+00:00",
+"ticker": "FSLR",
+"direction": "bullish",
+"score": 68.97,
+"rule_keys": "[\"news_article:positive:h15d\", \"news_article:positive:h1d\", \"news_article:positive:h30d\", \"news_article:positive:h7d\"]",
+"source_agents": "[\"news\"]",
+"raw": "{\"id\": 433, \"created_at\": \"2026-09-24T09:22:52.230077+00:00\", \"ticker\": \"FSLR\", \"direction\": \"bullish\", \"score\": 68.97, \"recall_floor\": 30.0, \"rule_keys\": [\"news_article:positive:h15d\", \"news_article:positive:h1d\", \"news_article:positive:h30d\", \"news_article:positive:h7d\"], \"source_agents\": [\"news\"]}"
+},
+{
+"experiment_id": "fwd_prov_long_h1d",
+"candidate_id": 434,
+"created_at": "2026-09-24T09:22:52.230077+00:00",
+"ticker": "TGT",
+"direction": "bullish",
+"score": 33.335,
+"rule_keys": "[\"news_article:neutral:h15d\", \"news_article:neutral:h1d\", \"news_article:neutral:h30d\", \"news_article:neutral:h7d\", \"news_article:positive:h15d\", \"news_article:positive:h1d\", \"news_article:positive:h30d\", \"news_article:positive:h7d\"]",
+"source_agents": "[\"news\"]",
+"raw": "{\"id\": 434, \"created_at\": \"2026-09-24T09:22:52.230077+00:00\", \"ticker\": \"TGT\", \"direction\": \"bullish\", \"score\": 33.335, \"recall_floor\": 30.0, \"rule_keys\": [\"news_article:neutral:h15d\", \"news_article:neutral:h1d\", \"news_article:neutral:h30d\", \"news_article:neutral:h7d\", \"news_article:positive:h15d\", \"news_article:positive:h1d\", \"news_article:positive:h30d\", \"news_article:positive:h7d\"], \"source_agents\": [\"news\"]}"
+},
+{
+"experiment_id": "fwd_prov_long_h1d",
+"candidate_id": 435,
+"created_at": "2026-09-24T10:37:39.201245+00:00",
+"ticker": "FSLR",
+"direction": "bullish",
+"score": 82.764,
+"rule_keys": "[\"news_article:positive:h15d\", \"news_article:positive:h1d\", \"news_article:positive:h30d\", \"news_article:positive:h7d\"]",
+"source_agents": "[\"news\"]",
+"raw": "{\"id\": 435, \"created_at\": \"2026-09-24T10:37:39.201245+00:00\", \"ticker\": \"FSLR\", \"direction\": \"bullish\", \"score\": 82.764, \"recall_floor\": 30.0, \"rule_keys\": [\"news_article:positive:h15d\", \"news_article:positive:h1d\", \"news_article:positive:h30d\", \"news_article:positive:h7d\"], \"source_agents\": [\"news\"]}"
+},
+{
+"experiment_id": "fwd_prov_long_h1d",
+"candidate_id": 436,
+"created_at": "2026-09-24T12:52:49.372475+00:00",
+"ticker": "FSLR",
+"direction": "bullish",
+"score": 47.13,
+"rule_keys": "[\"news_article:neutral:h15d\", \"news_article:neutral:h1d\", \"news_article:neutral:h30d\", \"news_article:neutral:h7d\", \"news_article:positive:h15d\", \"news_article:positive:h1d\", \"news_article:positive:h30d\", \"news_article:positive:h7d\"]",
+"source_agents": "[\"news\"]",
+"raw": "{\"id\": 436, \"created_at\": \"2026-09-24T12:52:49.372475+00:00\", \"ticker\": \"FSLR\", \"direction\": \"bullish\", \"score\": 47.13, \"recall_floor\": 30.0, \"rule_keys\": [\"news_article:neutral:h15d\", \"news_article:neutral:h1d\", \"news_article:neutral:h30d\", \"news_article:neutral:h7d\", \"news_article:positive:h15d\", \"news_article:positive:h1d\", \"news_article:positive:h30d\", \"news_article:positive:h7d\"], \"source_agents\": [\"news\"]}"
+},
+{
+"experiment_id": "fwd_prov_long_h1d",
+"candidate_id": 437,
+"created_at": "2026-09-24T13:22:46.578389+00:00",
+"ticker": "FSLR",
+"direction": "bullish",
+"score": 78.166,
+"rule_keys": "[\"news_article:neutral:h15d\", \"news_article:neutral:h1d\", \"news_article:neutral:h30d\", \"news_article:neutral:h7d\", \"news_article:positive:h15d\", \"news_article:positive:h1d\", \"news_article:positive:h30d\", \"news_article:positive:h7d\"]",
+"source_agents": "[\"news\"]",
+"raw": "{\"id\": 437, \"created_at\": \"2026-09-24T13:22:46.578389+00:00\", \"ticker\": \"FSLR\", \"direction\": \"bullish\", \"score\": 78.166, \"recall_floor\": 30.0, \"rule_keys\": [\"news_article:neutral:h15d\", \"news_article:neutral:h1d\", \"news_article:neutral:h30d\", \"news_article:neutral:h7d\", \"news_article:positive:h15d\", \"news_article:positive:h1d\", \"news_article:positive:h30d\", \"news_article:positive:h7d\"], \"source_agents\": [\"news\"]}"
+},
+{
+"experiment_id": "fwd_prov_long_h1d",
+"candidate_id": 438,
+"created_at": "2026-09-24T14:07:49.224683+00:00",
+"ticker": "FSLR",
+"direction": "bullish",
+"score": 108.053,
+"rule_keys": "[\"news_article:neutral:h15d\", \"news_article:neutral:h1d\", \"news_article:neutral:h30d\", \"news_article:neutral:h7d\", \"news_article:positive:h15d\", \"news_article:positive:h1d\", \"news_article:positive:h30d\", \"news_article:positive:h7d\"]",
+"source_agents": "[\"news\"]",
+"raw": "{\"id\": 438, \"created_at\": \"2026-09-24T14:07:49.224683+00:00\", \"ticker\": \"FSLR\", \"direction\": \"bullish\", \"score\": 108.053, \"recall_floor\": 30.0, \"rule_keys\": [\"news_article:neutral:h15d\", \"news_article:neutral:h1d\", \"news_article:neutral:h30d\", \"news_article:neutral:h7d\", \"news_article:positive:h15d\", \"news_article:positive:h1d\", \"news_article:positive:h30d\", \"news_article:positive:h7d\"], \"source_agents\": [\"news\"]}"
+},
+{
+"experiment_id": "fwd_prov_long_h1d",
+"candidate_id": 439,
+"created_at": "2026-09-24T15:37:49.162066+00:00",
+"ticker": "FSLR",
+"direction": "bullish",
+"score": 68.97,
+"rule_keys": "[\"news_article:positive:h15d\", \"news_article:positive:h1d\", \"news_article:positive:h30d\", \"news_article:positive:h7d\"]",
+"source_agents": "[\"news\"]",
+"raw": "{\"id\": 439, \"created_at\": \"2026-09-24T15:37:49.162066+00:00\", \"ticker\": \"FSLR\", \"direction\": \"bullish\", \"score\": 68.97, \"recall_floor\": 30.0, \"rule_keys\": [\"news_article:positive:h15d\", \"news_article:positive:h1d\", \"news_article:positive:h30d\", \"news_article:positive:h7d\"], \"source_agents\": [\"news\"]}"
+},
+{
+"experiment_id": "fwd_prov_long_h1d",
+"candidate_id": 440,
+"created_at": "2026-09-24T16:52:47.01713+00:00",
+"ticker": "FSLR",
+"direction": "bullish",
+"score": 96.558,
+"rule_keys": "[\"news_article:positive:h15d\", \"news_article:positive:h1d\", \"news_article:positive:h30d\", \"news_article:positive:h7d\"]",
+"source_agents": "[\"news\"]",
+"raw": "{\"id\": 440, \"created_at\": \"2026-09-24T16:52:47.01713+00:00\", \"ticker\": \"FSLR\", \"direction\": \"bullish\", \"score\": 96.558, \"recall_floor\": 30.0, \"rule_keys\": [\"news_article:positive:h15d\", \"news_article:positive:h1d\", \"news_article:positive:h30d\", \"news_article:positive:h7d\"], \"source_agents\": [\"news\"]}"
+},
+{
+"experiment_id": "fwd_prov_long_h1d",
+"candidate_id": 441,
+"created_at": "2026-09-24T18:22:49.351962+00:00",
+"ticker": "FSLR",
+"direction": "bullish",
+"score": 96.558,
+"rule_keys": "[\"news_article:positive:h15d\", \"news_article:positive:h1d\", \"news_article:positive:h30d\", \"news_article:positive:h7d\"]",
+"source_agents": "[\"news\"]",
+"raw": "{\"id\": 441, \"created_at\": \"2026-09-24T18:22:49.351962+00:00\", \"ticker\": \"FSLR\", \"direction\": \"bullish\", \"score\": 96.558, \"recall_floor\": 30.0, \"rule_keys\": [\"news_article:positive:h15d\", \"news_article:positive:h1d\", \"news_article:positive:h30d\", \"news_article:positive:h7d\"], \"source_agents\": [\"news\"]}"
+},
+{
+"experiment_id": "fwd_prov_long_h1d",
+"candidate_id": 442,
+"created_at": "2026-09-24T19:37:42.100035+00:00",
+"ticker": "FSLR",
+"direction": "bullish",
+"score": 137.94,
+"rule_keys": "[\"news_article:positive:h15d\", \"news_article:positive:h1d\", \"news_article:positive:h30d\", \"news_article:positive:h7d\"]",
+"source_agents": "[\"news\"]",
+"raw": "{\"id\": 442, \"created_at\": \"2026-09-24T19:37:42.100035+00:00\", \"ticker\": \"FSLR\", \"direction\": \"bullish\", \"score\": 137.94, \"recall_floor\": 30.0, \"rule_keys\": [\"news_article:positive:h15d\", \"news_article:positive:h1d\", \"news_article:positive:h30d\", \"news_article:positive:h7d\"], \"source_agents\": [\"news\"]}"
+},
+{
+"experiment_id": "fwd_prov_long_h1d",
+"candidate_id": 443,
+"created_at": "2026-09-24T21:07:45.630724+00:00",
+"ticker": "COST",
+"direction": "bullish",
+"score": 41.382,
+"rule_keys": "[\"news_article:negative:h15d\", \"news_article:negative:h1d\", \"news_article:negative:h30d\", \"news_article:negative:h7d\", \"news_article:positive:h15d\", \"news_article:positive:h1d\", \"news_article:positive:h30d\", \"news_article:positive:h7d\"]",
+"source_agents": "[\"news\"]",
+"raw": "{\"id\": 443, \"created_at\": \"2026-09-24T21:07:45.630724+00:00\", \"ticker\": \"COST\", \"direction\": \"bullish\", \"score\": 41.382, \"recall_floor\": 30.0, \"rule_keys\": [\"news_article:negative:h15d\", \"news_article:negative:h1d\", \"news_article:negative:h30d\", \"news_article:negative:h7d\", \"news_article:positive:h15d\", \"news_article:positive:h1d\", \"news_article:positive:h30d\", \"news_article:positive:h7d\"], \"source_agents\": [\"news\"]}"
 }
 ],
 "positions": [
