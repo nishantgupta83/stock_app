@@ -1,66 +1,87 @@
 {
- "updated": "2026-09-24T13:00:37+00:00",
- "n_graded": 0,
- "n_called": 0,
+ "updated": "2026-09-25T13:00:36+00:00",
+ "n_graded": 1,
+ "n_called": 1,
  "n_no_edge": 0,
  "all": {
   "bias": {
-   "n": 0,
+   "n": 1,
    "hits": 0,
-   "hit_rate": null
+   "hit_rate": 0.0
   },
   "fade_called": {
-   "n": 0,
-   "hits": 0,
-   "hit_rate": null
+   "n": 1,
+   "hits": 1,
+   "hit_rate": 1.0
   },
   "up_day_base_rate": {
-   "n": 0,
-   "hits": 0,
-   "hit_rate": null
+   "n": 1,
+   "hits": 1,
+   "hit_rate": 1.0
   },
-  "follow_compounded": null,
-  "follow_n": 0,
-  "fade_compounded": null,
-  "fade_n": 0
+  "follow_compounded": -0.05233990566022506,
+  "follow_n": 1,
+  "fade_compounded": 0.05576320171199933,
+  "fade_n": 1
  },
  "last20": {
   "bias": {
-   "n": 0,
+   "n": 1,
    "hits": 0,
-   "hit_rate": null
+   "hit_rate": 0.0
   },
   "fade_called": {
-   "n": 0,
-   "hits": 0,
-   "hit_rate": null
+   "n": 1,
+   "hits": 1,
+   "hit_rate": 1.0
   },
   "up_day_base_rate": {
-   "n": 0,
-   "hits": 0,
-   "hit_rate": null
+   "n": 1,
+   "hits": 1,
+   "hit_rate": 1.0
   },
-  "follow_compounded": null,
-  "follow_n": 0,
-  "fade_compounded": null,
-  "fade_n": 0
+  "follow_compounded": -0.05233990566022506,
+  "follow_n": 1,
+  "fade_compounded": 0.05576320171199933,
+  "fade_n": 1
  },
  "fade_gap_null_all_days": {
-  "n": 0,
-  "hits": 0,
-  "hit_rate": null
+  "n": 1,
+  "hits": 1,
+  "hit_rate": 1.0
  },
  "fade_gap_null_last20": {
-  "n": 0,
-  "hits": 0,
-  "hit_rate": null
+  "n": 1,
+  "hits": 1,
+  "hit_rate": 1.0
  },
  "no_edge_days_up_rate": {
   "n": 0,
   "hits": 0,
   "hit_rate": null
  },
- "components": {},
+ "components": {
+  "nasdaq_futures": {
+   "n": 1,
+   "hits": 0,
+   "hit_rate": 0.0
+  },
+  "news_net": {
+   "n": 0,
+   "hits": 0,
+   "hit_rate": null
+  },
+  "overnight_asia_eu": {
+   "n": 1,
+   "hits": 1,
+   "hit_rate": 1.0
+  },
+  "social_skew": {
+   "n": 1,
+   "hits": 1,
+   "hit_rate": 1.0
+  }
+ },
  "mean_soxl_oc_on_lean_soxl": null,
- "mean_soxs_oc_on_lean_soxs": null
+ "mean_soxs_oc_on_lean_soxs": -0.05133990566022506
 }
