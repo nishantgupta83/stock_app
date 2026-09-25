@@ -1,5 +1,5 @@
 {
- "generated_at": "2026-09-25T08:11:14+00:00",
+ "generated_at": "2026-09-25T13:42:07+00:00",
  "as_of": "2026-09-24",
  "n_stale": 0,
  "soxx_trend": {
@@ -50,8 +50,8 @@
    0.0365,
    0.02959,
    0.04815,
-   0.01935,
-   -0.01419,
+   0.01964,
+   -0.01341,
    0.00528
   ],
   "breadth_up": [
@@ -73,7 +73,7 @@
    0.917,
    1.0,
    1.0,
-   0.08,
+   0.075,
    0.438
   ],
   "above_20d_weight": 0.8782353898746541,
@@ -537,7 +537,7 @@
      168.98,
      176.99,
      183.97,
-     null,
+     188.32,
      187.86,
      187.11
     ],
@@ -559,8 +559,8 @@
      0.00968,
      0.0474,
      0.03944,
-     null,
-     null,
+     0.02365,
+     -0.00244,
      -0.00399
     ]
    }
@@ -659,35 +659,35 @@
    "as_of": "2026-09-24",
    "close": 101.58999633789062,
    "chg": -0.02775386721377704,
-   "pct_b": -0.12311124422637286,
+   "pct_b": -0.11348702654570772,
    "band": {
-    "mid": 118.60500030517578,
-    "upper": 132.25826376731266,
-    "lower": 104.95173684303892
+    "mid": 118.08750038146972,
+    "upper": 131.5331832808048,
+    "lower": 104.64181748213464
    },
-   "vs_sma20": -0.14345941506264337,
-   "vs_sma200": -0.00916456462105153,
+   "vs_sma20": -0.13970576047664296,
+   "vs_sma200": -0.009462123685535784,
    "range_pos": 0.41112182981753365,
    "range_n": 252,
-   "atr_pct": 0.03441311618582794,
-   "dollar_volume": 311751472.0703125,
+   "atr_pct": 0.034103491564417034,
+   "dollar_volume": 315493974.6902466,
    "hold": {
-    "n": 2008,
+    "n": 2009,
     "n_independent": 4,
-    "positive": 0.8804780876494024,
-    "p10": -0.022553370097887493,
-    "median": 0.27753294285510743
+    "positive": 0.8800398208063713,
+    "p10": -0.0231738941298536,
+    "median": 0.2769094637454579
    },
    "spike": null,
    "verdict": "buy_zone",
    "why": [
-    "%B -0.12 \u2014 the measured buy band (+3.47 pts vs null @60d on the AI wave)",
+    "%B -0.11 \u2014 the measured buy band (+3.47 pts vs null @60d on the AI wave)",
     "and below its 200-day \u2014 the best-testing bucket (+7.49 pts)"
    ],
    "stale": false,
    "social": {
     "messages_12h": 1,
-    "bull": 1,
+    "bull": 2,
     "bear": 5
    }
   },
@@ -699,29 +699,29 @@
    "as_of": "2026-09-24",
    "close": 69.55999755859375,
    "chg": -0.015567591940353842,
-   "pct_b": -0.08634857932597396,
+   "pct_b": -0.07301587618177363,
    "band": {
-    "mid": 74.19375610351562,
-    "upper": 78.14512454568745,
-    "lower": 70.2423876613438
+    "mid": 73.94381332397461,
+    "upper": 77.76902650531953,
+    "lower": 70.11860014262969
    },
-   "vs_sma20": -0.06245483162298493,
-   "vs_sma200": -0.09699634117577027,
+   "vs_sma20": -0.05928576804896135,
+   "vs_sma200": -0.09683252435911127,
    "range_pos": 0.0,
    "range_n": 252,
-   "atr_pct": 0.0190778838209085,
-   "dollar_volume": 393312134.41085815,
+   "atr_pct": 0.01898770087524829,
+   "dollar_volume": 392173912.0464325,
    "hold": {
-    "n": 2008,
+    "n": 2009,
     "n_independent": 4,
-    "positive": 0.8172310756972112,
-    "p10": -0.069392194633076,
-    "median": 0.20028517872593254
+    "positive": 0.8173220507715281,
+    "p10": -0.0693922539166758,
+    "median": 0.1994001754896686
    },
    "spike": null,
    "verdict": "buy_zone",
    "why": [
-    "%B -0.09 \u2014 the measured buy band (+3.47 pts vs null @60d on the AI wave)",
+    "%B -0.07 \u2014 the measured buy band (+3.47 pts vs null @60d on the AI wave)",
     "and below its 200-day \u2014 the best-testing bucket (+7.49 pts)"
    ],
    "stale": false,
@@ -732,6 +732,46 @@
    }
   },
   {
+   "ticker": "CDW",
+   "tags": [
+    "ndx100"
+   ],
+   "as_of": "2026-09-24",
+   "close": 139.4600067138672,
+   "chg": -0.04584015312240375,
+   "pct_b": -0.06224368884603952,
+   "band": {
+    "mid": 148.35000076293946,
+    "upper": 156.2558200948721,
+    "lower": 140.44418143100683
+   },
+   "vs_sma20": -0.05992581060567914,
+   "vs_sma200": 0.06522095946462825,
+   "range_pos": 0.6558201105091497,
+   "range_n": 252,
+   "atr_pct": 0.04347204044115382,
+   "dollar_volume": 240486856.61239624,
+   "hold": {
+    "n": 2009,
+    "n_independent": 4,
+    "positive": 0.794425087108014,
+    "p10": -0.30394136508781067,
+    "median": 0.40689009258020126
+   },
+   "spike": null,
+   "verdict": "dip_but_fails_hold",
+   "why": [
+    "%B -0.06 \u2014 the measured buy band (+3.47 pts vs null @60d on the AI wave)",
+    "but it FAILS the 1-3 year hold gate"
+   ],
+   "stale": false,
+   "social": {
+    "messages_12h": 0,
+    "bull": 7,
+    "bear": 1
+   }
+  },
+  {
    "ticker": "AEP",
    "tags": [
     "ndx100"
@@ -739,34 +779,34 @@
    "as_of": "2026-09-24",
    "close": 117.56999969482422,
    "chg": -0.0070101505097808214,
-   "pct_b": -0.06297072713914952,
+   "pct_b": -0.037797956018390026,
    "band": {
-    "mid": 122.22950019836426,
-    "upper": 126.36781528200835,
-    "lower": 118.09118511472018
+    "mid": 122.075,
+    "upper": 126.26337618734064,
+    "lower": 117.88662381265937
    },
-   "vs_sma20": -0.03812091594891753,
-   "vs_sma200": -0.0627022434273734,
+   "vs_sma20": -0.03690354540385654,
+   "vs_sma200": -0.06290274780394345,
    "range_pos": 0.39226084517948134,
    "range_n": 252,
-   "atr_pct": 0.016915939456914685,
+   "atr_pct": 0.016815733748852615,
    "dollar_volume": 465559268.1510925,
    "hold": {
-    "n": 2008,
+    "n": 2009,
     "n_independent": 4,
-    "positive": 0.8640438247011952,
-    "p10": -0.025439288520735293,
-    "median": 0.2382032231548208
+    "positive": 0.8641114982578397,
+    "p10": -0.02543946667948771,
+    "median": 0.2381868933143687
    },
    "spike": null,
    "verdict": "buy_zone",
    "why": [
-    "%B -0.06 \u2014 the measured buy band (+3.47 pts vs null @60d on the AI wave)",
+    "%B -0.04 \u2014 the measured buy band (+3.47 pts vs null @60d on the AI wave)",
     "and below its 200-day \u2014 the best-testing bucket (+7.49 pts)"
    ],
    "stale": false,
    "social": {
-    "messages_12h": 1,
+    "messages_12h": 0,
     "bull": 8,
     "bear": 0
    }
@@ -779,29 +819,29 @@
    "as_of": "2026-09-24",
    "close": 110.66999816894531,
    "chg": -0.01266837554945388,
-   "pct_b": -0.0584971749569098,
+   "pct_b": -0.03252199343976922,
    "band": {
-    "mid": 121.15799903869629,
-    "upper": 130.54748330113696,
-    "lower": 111.7685147762556
+    "mid": 120.39149932861328,
+    "upper": 129.51929243333836,
+    "lower": 111.26370622388819
    },
-   "vs_sma20": -0.08656465898220422,
-   "vs_sma200": -0.0789199963467272,
-   "range_pos": 0.42282228511287506,
+   "vs_sma20": -0.08074906628692069,
+   "vs_sma200": -0.07914458548842607,
+   "range_pos": 0.42282237864041483,
    "range_n": 252,
-   "atr_pct": 0.0263872699580225,
+   "atr_pct": 0.026405758353698877,
    "dollar_volume": 345201898.89450073,
    "hold": {
-    "n": 2008,
+    "n": 2009,
     "n_independent": 4,
-    "positive": 0.976593625498008,
-    "p10": 0.0807709022401244,
-    "median": 0.29329572102322854
+    "positive": 0.9766052762568442,
+    "p10": 0.08077064869697859,
+    "median": 0.29297983512040915
    },
    "spike": null,
    "verdict": "buy_zone",
    "why": [
-    "%B -0.06 \u2014 the measured buy band (+3.47 pts vs null @60d on the AI wave)",
+    "%B -0.03 \u2014 the measured buy band (+3.47 pts vs null @60d on the AI wave)",
     "and below its 200-day \u2014 the best-testing bucket (+7.49 pts)"
    ],
    "stale": false,
@@ -809,128 +849,6 @@
     "messages_12h": 1,
     "bull": 10,
     "bear": 2
-   }
-  },
-  {
-   "ticker": "INTU",
-   "tags": [
-    "ndx100"
-   ],
-   "as_of": "2026-09-24",
-   "close": 277.1300048828125,
-   "chg": -0.033716817718753456,
-   "pct_b": -0.04967136531085209,
-   "band": {
-    "mid": 325.71199798583984,
-    "upper": 369.9038516724086,
-    "lower": 281.52014429927107
-   },
-   "vs_sma20": -0.14915628961613936,
-   "vs_sma200": -0.3157675978697462,
-   "range_pos": 0.052997974982027296,
-   "range_n": 252,
-   "atr_pct": 0.051054269167026566,
-   "dollar_volume": 1181281892.376709,
-   "hold": {
-    "n": 2008,
-    "n_independent": 4,
-    "positive": 0.8386454183266933,
-    "p10": -0.10253690695761031,
-    "median": 0.5059517886045537
-   },
-   "spike": null,
-   "verdict": "dip_but_fails_hold",
-   "why": [
-    "%B -0.05 \u2014 the measured buy band (+3.47 pts vs null @60d on the AI wave)",
-    "and below its 200-day \u2014 the best-testing bucket (+7.49 pts)",
-    "but it FAILS the 1-3 year hold gate"
-   ],
-   "stale": false,
-   "social": {
-    "messages_12h": 10,
-    "bull": 6,
-    "bear": 2
-   }
-  },
-  {
-   "ticker": "PEP",
-   "tags": [
-    "ndx100"
-   ],
-   "as_of": "2026-09-24",
-   "close": 128.14999389648438,
-   "chg": -0.015593784709703185,
-   "pct_b": -0.029868890586468938,
-   "band": {
-    "mid": 135.82514343261718,
-    "upper": 143.0676421643674,
-    "lower": 128.58264470086695
-   },
-   "vs_sma20": -0.05650757541765783,
-   "vs_sma200": -0.11685184352678823,
-   "range_pos": 0.0,
-   "range_n": 252,
-   "atr_pct": 0.018121326991069102,
-   "dollar_volume": 1077055591.0224915,
-   "hold": {
-    "n": 2008,
-    "n_independent": 4,
-    "positive": 0.7833665338645418,
-    "p10": -0.1111613774321577,
-    "median": 0.20177933568535922
-   },
-   "spike": null,
-   "verdict": "dip_but_fails_hold",
-   "why": [
-    "%B -0.03 \u2014 the measured buy band (+3.47 pts vs null @60d on the AI wave)",
-    "and below its 200-day \u2014 the best-testing bucket (+7.49 pts)",
-    "but it FAILS the 1-3 year hold gate"
-   ],
-   "stale": false,
-   "social": {
-    "messages_12h": 6,
-    "bull": 4,
-    "bear": 1
-   }
-  },
-  {
-   "ticker": "CDW",
-   "tags": [
-    "ndx100"
-   ],
-   "as_of": "2026-09-24",
-   "close": 139.4600067138672,
-   "chg": -0.04584015312240375,
-   "pct_b": -0.008129884897291799,
-   "band": {
-    "mid": 148.05150146484374,
-    "upper": 156.50553556747593,
-    "lower": 139.59746736221155
-   },
-   "vs_sma20": -0.058030446607910235,
-   "vs_sma200": 0.0653617176694199,
-   "range_pos": 0.6536792461391859,
-   "range_n": 252,
-   "atr_pct": 0.04383262858131303,
-   "dollar_volume": 240486856.61239624,
-   "hold": {
-    "n": 2008,
-    "n_independent": 4,
-    "positive": 0.7948207171314741,
-    "p10": -0.3028993756929158,
-    "median": 0.40733143467856214
-   },
-   "spike": null,
-   "verdict": "dip_but_fails_hold",
-   "why": [
-    "%B -0.01 \u2014 the measured buy band (+3.47 pts vs null @60d on the AI wave)",
-    "but it FAILS the 1-3 year hold gate"
-   ],
-   "stale": false,
-   "social": {
-    "messages_12h": 0,
-    "bull": 7,
-    "bear": 1
    }
   },
   {
@@ -969,37 +887,78 @@
    ],
    "stale": false,
    "social": {
-    "messages_12h": 15,
-    "bull": 6,
-    "bear": 3
+    "messages_12h": 30,
+    "bull": 3,
+    "bear": 6
    }
   },
   {
-   "ticker": "CSGP",
+   "ticker": "INTU",
    "tags": [
     "ndx100"
    ],
    "as_of": "2026-09-24",
-   "close": 27.860000610351562,
-   "chg": -0.014154268056992825,
-   "pct_b": -0.004989503167870284,
+   "close": 277.1300048828125,
+   "chg": -0.033716817718753456,
+   "pct_b": -0.005033220412498626,
    "band": {
-    "mid": 30.523000049591065,
-    "upper": 33.15968796343297,
-    "lower": 27.88631213574916
+    "mid": 323.035498046875,
+    "upper": 368.48349167249035,
+    "lower": 277.5875044212596
    },
-   "vs_sma20": -0.08724566506938691,
-   "vs_sma200": -0.3278478560428022,
-   "range_pos": 0.01237753555728158,
+   "vs_sma20": -0.1421066521840929,
+   "vs_sma200": -0.3125851846100375,
+   "range_pos": 0.0531084157988279,
    "range_n": 252,
-   "atr_pct": 0.044784420100547895,
-   "dollar_volume": 184330344.87934113,
+   "atr_pct": 0.050614357899418747,
+   "dollar_volume": 1181281892.376709,
    "hold": {
-    "n": 2008,
+    "n": 2009,
     "n_independent": 4,
-    "positive": 0.6235059760956175,
-    "p10": -0.22683404839733112,
-    "median": 0.1492116883095962
+    "positive": 0.8382279741164759,
+    "p10": -0.10331760783972199,
+    "median": 0.5052512215005991
+   },
+   "spike": null,
+   "verdict": "dip_but_fails_hold",
+   "why": [
+    "%B -0.01 \u2014 the measured buy band (+3.47 pts vs null @60d on the AI wave)",
+    "and below its 200-day \u2014 the best-testing bucket (+7.49 pts)",
+    "but it FAILS the 1-3 year hold gate"
+   ],
+   "stale": false,
+   "social": {
+    "messages_12h": 15,
+    "bull": 8,
+    "bear": 3
+   }
+  },
+  {
+   "ticker": "PEP",
+   "tags": [
+    "ndx100"
+   ],
+   "as_of": "2026-09-24",
+   "close": 128.14999389648438,
+   "chg": -0.015593784709703185,
+   "pct_b": -0.003524092773674297,
+   "band": {
+    "mid": 135.35029067993165,
+    "upper": 142.5001936208061,
+    "lower": 128.2003877390572
+   },
+   "vs_sma20": -0.05319749774659965,
+   "vs_sma200": -0.11656125608347823,
+   "range_pos": 0.0,
+   "range_n": 252,
+   "atr_pct": 0.01790448994101484,
+   "dollar_volume": 1072006523.0743408,
+   "hold": {
+    "n": 2009,
+    "n_independent": 4,
+    "positive": 0.7829766052762569,
+    "p10": -0.11129725787847056,
+    "median": 0.20168498793296696
    },
    "spike": null,
    "verdict": "dip_but_fails_hold",
@@ -1010,9 +969,9 @@
    ],
    "stale": false,
    "social": {
-    "messages_12h": 0,
-    "bull": 4,
-    "bear": 0
+    "messages_12h": 4,
+    "bull": 3,
+    "bear": 1
    }
   },
   {
@@ -1023,18 +982,18 @@
    "as_of": "2026-09-24",
    "close": 151.38999938964844,
    "chg": 0.012100531731762398,
-   "pct_b": 0.0006666076623196282,
+   "pct_b": 0.018515158009557012,
    "band": {
-    "mid": 173.3282485961914,
-    "upper": 195.29578525925814,
-    "lower": 151.36071193312466
+    "mid": 172.01524810791017,
+    "upper": 193.43362613306005,
+    "lower": 150.5968700827603
    },
-   "vs_sma20": -0.12657053529487416,
-   "vs_sma200": 0.0635164607544858,
+   "vs_sma20": -0.11990360706466507,
+   "vs_sma200": 0.0621178233271904,
    "range_pos": 0.5046859034469965,
    "range_n": 252,
-   "atr_pct": 0.03670678776742527,
-   "dollar_volume": 623699826.8333435,
+   "atr_pct": 0.03620810895298904,
+   "dollar_volume": 629501658.467865,
    "hold": {
     "n": 0,
     "n_independent": 0,
@@ -1049,50 +1008,50 @@
    ],
    "stale": false,
    "social": {
-    "messages_12h": 2,
+    "messages_12h": 0,
     "bull": 2,
     "bear": 5
    }
   },
   {
-   "ticker": "CPRT",
+   "ticker": "CSGP",
    "tags": [
     "ndx100"
    ],
    "as_of": "2026-09-24",
-   "close": 28.040000915527344,
-   "chg": -0.028749563546188406,
-   "pct_b": 0.008289796650491833,
+   "close": 27.860000610351562,
+   "chg": -0.014154268056992825,
+   "pct_b": 0.026216464247791938,
    "band": {
-    "mid": 31.351000213623045,
-    "upper": 34.71782001473895,
-    "lower": 27.984180412507143
+    "mid": 30.354500102996827,
+    "upper": 32.98703089438961,
+    "lower": 27.72196931160404
    },
-   "vs_sma20": -0.10561064321823332,
-   "vs_sma200": -0.17254890356978503,
-   "range_pos": 0.04679940405353176,
+   "vs_sma20": -0.0821789021127377,
+   "vs_sma200": -0.32465106900927054,
+   "range_pos": 0.01248701309355389,
    "range_n": 252,
-   "atr_pct": 0.03771000853005142,
-   "dollar_volume": 299296576.05075836,
+   "atr_pct": 0.044287112009229836,
+   "dollar_volume": 182887263.22956085,
    "hold": {
-    "n": 2008,
+    "n": 2009,
     "n_independent": 4,
-    "positive": 0.8655378486055777,
-    "p10": -0.16063852279880841,
-    "median": 0.5919910198887874
+    "positive": 0.6231956197112991,
+    "p10": -0.2271462674131608,
+    "median": 0.14641146768375246
    },
    "spike": null,
    "verdict": "dip_but_fails_hold",
    "why": [
-    "%B 0.01 \u2014 the measured buy band (+3.47 pts vs null @60d on the AI wave)",
+    "%B 0.03 \u2014 the measured buy band (+3.47 pts vs null @60d on the AI wave)",
     "and below its 200-day \u2014 the best-testing bucket (+7.49 pts)",
     "but it FAILS the 1-3 year hold gate"
    ],
    "stale": false,
    "social": {
     "messages_12h": 0,
-    "bull": 3,
-    "bear": 6
+    "bull": 4,
+    "bear": 0
    }
   },
   {
@@ -1103,37 +1062,78 @@
    "as_of": "2026-09-24",
    "close": 1754.1300048828125,
    "chg": -0.025071688933329228,
-   "pct_b": 0.015112029629104717,
+   "pct_b": 0.037983491787203005,
    "band": {
-    "mid": 1894.2324829101562,
-    "upper": 2038.7013979877752,
-    "lower": 1749.7635678325373
+    "mid": 1888.039483642578,
+    "upper": 2032.957983717135,
+    "lower": 1743.120983568021
    },
-   "vs_sma20": -0.07396266260417039,
-   "vs_sma200": -0.050791676404600916,
+   "vs_sma20": -0.07092514744522993,
+   "vs_sma200": -0.05017531594500646,
    "range_pos": 0.2150265155035236,
    "range_n": 252,
-   "atr_pct": 0.03427761038910233,
-   "dollar_volume": 757163831.0424805,
+   "atr_pct": 0.033994853328940235,
+   "dollar_volume": 764796846.1914062,
    "hold": {
-    "n": 2008,
+    "n": 2009,
     "n_independent": 4,
-    "positive": 0.7838645418326693,
+    "positive": 0.7834743653558984,
     "p10": -0.24027391752930405,
-    "median": 0.858318390278294
+    "median": 0.8577951427355464
    },
    "spike": null,
    "verdict": "dip_but_fails_hold",
    "why": [
-    "%B 0.02 \u2014 the measured buy band (+3.47 pts vs null @60d on the AI wave)",
+    "%B 0.04 \u2014 the measured buy band (+3.47 pts vs null @60d on the AI wave)",
+    "and below its 200-day \u2014 the best-testing bucket (+7.49 pts)",
+    "but it FAILS the 1-3 year hold gate"
+   ],
+   "stale": false,
+   "social": {
+    "messages_12h": 2,
+    "bull": 12,
+    "bear": 0
+   }
+  },
+  {
+   "ticker": "CPRT",
+   "tags": [
+    "ndx100"
+   ],
+   "as_of": "2026-09-24",
+   "close": 28.040000915527344,
+   "chg": -0.028749563546188406,
+   "pct_b": 0.05261649235421806,
+   "band": {
+    "mid": 31.15750026702881,
+    "upper": 34.64164675234109,
+    "lower": 27.673353781716525
+   },
+   "vs_sma20": -0.10005614458103484,
+   "vs_sma200": -0.171336004829181,
+   "range_pos": 0.04679940405353176,
+   "range_n": 252,
+   "atr_pct": 0.03665326127404487,
+   "dollar_volume": 294365399.415493,
+   "hold": {
+    "n": 2009,
+    "n_independent": 4,
+    "positive": 0.8651070184171229,
+    "p10": -0.16295022670621828,
+    "median": 0.5913979066133437
+   },
+   "spike": null,
+   "verdict": "dip_but_fails_hold",
+   "why": [
+    "%B 0.05 \u2014 the measured buy band (+3.47 pts vs null @60d on the AI wave)",
     "and below its 200-day \u2014 the best-testing bucket (+7.49 pts)",
     "but it FAILS the 1-3 year hold gate"
    ],
    "stale": false,
    "social": {
     "messages_12h": 0,
-    "bull": 11,
-    "bear": 0
+    "bull": 3,
+    "bear": 6
    }
   },
   {
@@ -1153,17 +1153,17 @@
     "lower": 32.00939117818622
    },
    "vs_sma20": -0.24340091973285405,
-   "vs_sma200": -0.8157027444759211,
-   "range_pos": 0.0020396355696342522,
+   "vs_sma200": -0.8157027361181028,
+   "range_pos": 0.002039635666611185,
    "range_n": 252,
-   "atr_pct": 0.13099628353276785,
+   "atr_pct": 0.13099628337874095,
    "dollar_volume": 2631064785.193062,
    "hold": {
     "n": 2009,
     "n_independent": 4,
     "positive": 0.0,
-    "p10": -0.9866683632671651,
-    "median": -0.9228609563940203
+    "p10": -0.9866683648162702,
+    "median": -0.9228609673458059
    },
    "spike": null,
    "verdict": "leveraged",
@@ -1172,9 +1172,9 @@
    ],
    "stale": false,
    "social": {
-    "messages_12h": 15,
-    "bull": 2,
-    "bear": 2
+    "messages_12h": 30,
+    "bull": 3,
+    "bear": 6
    }
   },
   {
@@ -1185,134 +1185,24 @@
    "as_of": "2026-09-24",
    "close": 23.860000610351562,
    "chg": 0.0029423998373421245,
-   "pct_b": 0.06592660617010598,
+   "pct_b": 0.09271367790845769,
    "band": {
-    "mid": 24.714292144775392,
-    "upper": 25.698332570389006,
-    "lower": 23.730251719161778
+    "mid": 24.694296455383302,
+    "upper": 25.718509398193866,
+    "lower": 23.670083512572738
    },
-   "vs_sma20": -0.03456670049133603,
-   "vs_sma200": 0.02563997240018967,
+   "vs_sma20": -0.03378496109573781,
+   "vs_sma200": 0.025450889132757837,
    "range_pos": 0.5022454453004956,
    "range_n": 252,
-   "atr_pct": 0.027043129741445873,
+   "atr_pct": 0.026444583380979117,
    "dollar_volume": 357013101.98459625,
    "hold": {
-    "n": 2008,
+    "n": 2009,
     "n_independent": 4,
-    "positive": 0.3715139442231076,
-    "p10": -0.5814412561234872,
-    "median": -0.11649185414312813
-   },
-   "spike": null,
-   "verdict": "dip_but_fails_hold",
-   "why": [
-    "%B 0.07 \u2014 the measured buy band (+3.47 pts vs null @60d on the AI wave)",
-    "but it FAILS the 1-3 year hold gate"
-   ],
-   "stale": false,
-   "social": {
-    "messages_12h": 1,
-    "bull": 11,
-    "bear": 2
-   }
-  },
-  {
-   "ticker": "VRSK",
-   "tags": [
-    "ndx100"
-   ],
-   "as_of": "2026-09-24",
-   "close": 168.64999389648438,
-   "chg": -0.01833532653852421,
-   "pct_b": 0.07491275151604822,
-   "band": {
-    "mid": 181.7820686340332,
-    "upper": 197.22839733994428,
-    "lower": 166.33573992812214
-   },
-   "vs_sma20": -0.07224075969773758,
-   "vs_sma200": -0.11581049830210888,
-   "range_pos": 0.13605665601361508,
-   "range_n": 252,
-   "atr_pct": 0.03701972556084644,
-   "dollar_volume": 257647099.6734619,
-   "hold": {
-    "n": 2008,
-    "n_independent": 4,
-    "positive": 0.8316733067729084,
-    "p10": -0.09267516497371853,
-    "median": 0.34935950496238277
-   },
-   "spike": null,
-   "verdict": "buy_zone",
-   "why": [
-    "%B 0.07 \u2014 the measured buy band (+3.47 pts vs null @60d on the AI wave)",
-    "and below its 200-day \u2014 the best-testing bucket (+7.49 pts)"
-   ],
-   "stale": false
-  },
-  {
-   "ticker": "TMUS",
-   "tags": [
-    "ndx100"
-   ],
-   "as_of": "2026-09-24",
-   "close": 165.35000610351562,
-   "chg": -0.001871287889296691,
-   "pct_b": 0.07804506467411654,
-   "band": {
-    "mid": 177.25896759033202,
-    "upper": 191.37061849165266,
-    "lower": 163.14731668901138
-   },
-   "vs_sma20": -0.06718397183909763,
-   "vs_sma200": -0.13238564896159777,
-   "range_pos": 0.001155003801180734,
-   "range_n": 252,
-   "atr_pct": 0.03185576067386041,
-   "dollar_volume": 796845561.0687256,
-   "hold": {
-    "n": 2008,
-    "n_independent": 4,
-    "positive": 0.9467131474103586,
-    "p10": 0.08907960678671922,
-    "median": 0.3450195431720011
-   },
-   "spike": null,
-   "verdict": "buy_zone",
-   "why": [
-    "%B 0.08 \u2014 the measured buy band (+3.47 pts vs null @60d on the AI wave)",
-    "and below its 200-day \u2014 the best-testing bucket (+7.49 pts)"
-   ],
-   "stale": false
-  },
-  {
-   "ticker": "FANG",
-   "tags": [
-    "ndx100"
-   ],
-   "as_of": "2026-09-24",
-   "close": 189.00999450683594,
-   "chg": 0.018098576465480853,
-   "pct_b": 0.09286641238732134,
-   "band": {
-    "mid": 199.2484992980957,
-    "upper": 211.8223879464084,
-    "lower": 186.674610649783
-   },
-   "vs_sma20": -0.0513856055494899,
-   "vs_sma200": 0.03835515880686069,
-   "range_pos": 0.7093035142486228,
-   "range_n": 252,
-   "atr_pct": 0.03396061371277586,
-   "dollar_volume": 381854354.7035217,
-   "hold": {
-    "n": 2008,
-    "n_independent": 4,
-    "positive": 0.6817729083665338,
-    "p10": -0.4912476908980514,
-    "median": 0.1357538006210035
+    "positive": 0.3713290194126431,
+    "p10": -0.5814412441307157,
+    "median": -0.11659528107072392
    },
    "spike": null,
    "verdict": "dip_but_fails_hold",
@@ -1320,7 +1210,12 @@
     "%B 0.09 \u2014 the measured buy band (+3.47 pts vs null @60d on the AI wave)",
     "but it FAILS the 1-3 year hold gate"
    ],
-   "stale": false
+   "stale": false,
+   "social": {
+    "messages_12h": 2,
+    "bull": 12,
+    "bear": 2
+   }
   },
   {
    "ticker": "CMCSA",
@@ -1337,17 +1232,17 @@
     "lower": 21.448883941813254
    },
    "vs_sma20": -0.10827258234086434,
-   "vs_sma200": -0.16156654538932302,
-   "range_pos": 0.021527136216327188,
+   "vs_sma200": -0.16156654720695995,
+   "range_pos": 0.021527132007267216,
    "range_n": 252,
-   "atr_pct": 0.03336294236940789,
+   "atr_pct": 0.03336294236957212,
    "dollar_volume": 666528881.9826126,
    "hold": {
     "n": 2009,
     "n_independent": 4,
     "positive": 0.5689397710303634,
-    "p10": -0.2685015547868793,
-    "median": 0.05608045555229424
+    "p10": -0.26850143264825077,
+    "median": 0.05608076559119102
    },
    "spike": null,
    "verdict": "dip_but_fails_hold",
@@ -1359,37 +1254,37 @@
    "stale": false
   },
   {
-   "ticker": "KDP",
+   "ticker": "VRSK",
    "tags": [
     "ndx100"
    ],
    "as_of": "2026-09-24",
-   "close": 30.8799991607666,
-   "chg": -0.027707841995384563,
-   "pct_b": 0.10663034039277008,
+   "close": 168.64999389648438,
+   "chg": -0.01833532653852421,
+   "pct_b": 0.10860548844004514,
    "band": {
-    "mid": 31.80399990081787,
-    "upper": 32.97846864476455,
-    "lower": 30.629531156871195
+    "mid": 181.01068115234375,
+    "upper": 196.8012542068741,
+    "lower": 165.2201080978134
    },
-   "vs_sma20": -0.029052972674280086,
-   "vs_sma200": 0.06082920079699772,
-   "range_pos": 0.7023858788557661,
+   "vs_sma20": -0.06828706006280516,
+   "vs_sma200": -0.11471751701165067,
+   "range_pos": 0.13605663369312326,
    "range_n": 252,
-   "atr_pct": 0.025289127917688656,
-   "dollar_volume": 355668674.5517731,
+   "atr_pct": 0.03596789826815168,
+   "dollar_volume": 255012040.87371826,
    "hold": {
-    "n": 2008,
+    "n": 2009,
     "n_independent": 4,
-    "positive": 0.6992031872509961,
-    "p10": -0.0920876528818777,
-    "median": 0.21640102307252018
+    "positive": 0.8312593330014932,
+    "p10": -0.09324248132568458,
+    "median": 0.34788501292968466
    },
    "spike": null,
-   "verdict": "dip_but_fails_hold",
+   "verdict": "buy_zone",
    "why": [
     "%B 0.11 \u2014 the measured buy band (+3.47 pts vs null @60d on the AI wave)",
-    "but it FAILS the 1-3 year hold gate"
+    "and below its 200-day \u2014 the best-testing bucket (+7.49 pts)"
    ],
    "stale": false
   },
@@ -1408,17 +1303,17 @@
     "lower": 136.72848833972978
    },
    "vs_sma20": -0.06585042933025764,
-   "vs_sma200": -0.15027579695481252,
+   "vs_sma200": -0.1502758001129958,
    "range_pos": 0.12588465110070637,
    "range_n": 252,
-   "atr_pct": 0.05257101494749044,
+   "atr_pct": 0.05257101494817315,
    "dollar_volume": 4317882288.983917,
    "hold": {
     "n": 2009,
     "n_independent": 4,
     "positive": 0.982080637132902,
-    "p10": 0.1460124089030692,
-    "median": 0.37575112800359434
+    "p10": 0.14601249717742748,
+    "median": 0.37575088711627536
    },
    "spike": null,
    "verdict": "buy_zone",
@@ -1429,72 +1324,71 @@
    "stale": false
   },
   {
-   "ticker": "ADP",
+   "ticker": "KDP",
    "tags": [
     "ndx100"
    ],
    "as_of": "2026-09-24",
-   "close": 263.1099853515625,
-   "chg": -0.0021617390020168825,
-   "pct_b": 0.12064478161683695,
+   "close": 30.8799991607666,
+   "chg": -0.027707841995384563,
+   "pct_b": 0.11867535499961003,
    "band": {
-    "mid": 274.0661331176758,
-    "upper": 288.50661954726695,
-    "lower": 259.62564668808466
+    "mid": 31.76899995803833,
+    "upper": 32.93467441539056,
+    "lower": 30.603325500686093
    },
-   "vs_sma20": -0.03997629200470776,
-   "vs_sma200": 0.12083721404279979,
-   "range_pos": 0.7733912075900216,
+   "vs_sma20": -0.027983279248511184,
+   "vs_sma200": 0.060191068823430394,
+   "range_pos": 0.7023858788557661,
    "range_n": 252,
-   "atr_pct": 0.02150851344356699,
-   "dollar_volume": 579538871.0891724,
+   "atr_pct": 0.02443656183170376,
+   "dollar_volume": 354406750.819397,
    "hold": {
-    "n": 2008,
+    "n": 2009,
     "n_independent": 4,
-    "positive": 0.9327689243027888,
-    "p10": 0.04219546591699208,
-    "median": 0.274453473059205
-   },
-   "spike": null,
-   "verdict": "buy_zone",
-   "why": [
-    "%B 0.12 \u2014 the measured buy band (+3.47 pts vs null @60d on the AI wave)"
-   ],
-   "stale": false
-  },
-  {
-   "ticker": "TTWO",
-   "tags": [
-    "ndx100"
-   ],
-   "as_of": "2026-09-24",
-   "close": 202.97999572753906,
-   "chg": -0.016188500766341485,
-   "pct_b": 0.12666622521804224,
-   "band": {
-    "mid": 216.0979995727539,
-    "upper": 233.66673394841587,
-    "lower": 198.52926519709195
-   },
-   "vs_sma20": -0.06070395779299376,
-   "vs_sma200": -0.10198220166464012,
-   "range_pos": 0.18305774337241068,
-   "range_n": 252,
-   "atr_pct": 0.03707246871131841,
-   "dollar_volume": 501727736.15112305,
-   "hold": {
-    "n": 2008,
-    "n_independent": 4,
-    "positive": 0.7619521912350598,
-    "p10": -0.2499378831938608,
-    "median": 0.3260011507597258
+    "positive": 0.6988551518168243,
+    "p10": -0.09209893997569307,
+    "median": 0.2158985760508405
    },
    "spike": null,
    "verdict": "dip_but_fails_hold",
    "why": [
-    "%B 0.13 \u2014 the measured buy band (+3.47 pts vs null @60d on the AI wave)",
-    "and below its 200-day \u2014 the best-testing bucket (+7.49 pts)",
+    "%B 0.12 \u2014 the measured buy band (+3.47 pts vs null @60d on the AI wave)",
     "but it FAILS the 1-3 year hold gate"
+   ],
+   "stale": false
+  },
+  {
+   "ticker": "MNST",
+   "tags": [
+    "ndx100"
+   ],
+   "as_of": "2026-09-24",
+   "close": 42.66999816894531,
+   "chg": -0.02823961928435026,
+   "pct_b": 0.12508140426453096,
+   "band": {
+    "mid": 44.33700008392334,
+    "upper": 46.560151901330414,
+    "lower": 42.11384826651627
+   },
+   "vs_sma20": -0.03759843723803247,
+   "vs_sma200": 0.010261197478254491,
+   "range_pos": 0.5869871688066377,
+   "range_n": 252,
+   "atr_pct": 0.02314804967077245,
+   "dollar_volume": 448435090.15083313,
+   "hold": {
+    "n": 2009,
+    "n_independent": 4,
+    "positive": 0.9502239920358387,
+    "p10": 0.037504965092809206,
+    "median": 0.23704237318617571
+   },
+   "spike": null,
+   "verdict": "buy_zone",
+   "why": [
+    "%B 0.13 \u2014 the measured buy band (+3.47 pts vs null @60d on the AI wave)"
    ],
    "stale": false
   },
@@ -1536,113 +1430,6 @@
    "stale": false
   },
   {
-   "ticker": "MDLZ",
-   "tags": [
-    "ndx100"
-   ],
-   "as_of": "2026-09-24",
-   "close": 60.86000061035156,
-   "chg": -0.009440072091819518,
-   "pct_b": 0.12750374172997306,
-   "band": {
-    "mid": 61.89149971008301,
-    "upper": 63.27607616800773,
-    "lower": 60.506923252158295
-   },
-   "vs_sma20": -0.0166662482661315,
-   "vs_sma200": 0.034077972953706626,
-   "range_pos": 0.7121280931524683,
-   "range_n": 252,
-   "atr_pct": 0.02096358961325225,
-   "dollar_volume": 476597959.664917,
-   "hold": {
-    "n": 2008,
-    "n_independent": 4,
-    "positive": 0.7913346613545816,
-    "p10": -0.0762073243365492,
-    "median": 0.19217549281172053
-   },
-   "spike": null,
-   "verdict": "dip_but_fails_hold",
-   "why": [
-    "%B 0.13 \u2014 the measured buy band (+3.47 pts vs null @60d on the AI wave)",
-    "but it FAILS the 1-3 year hold gate"
-   ],
-   "stale": false
-  },
-  {
-   "ticker": "SBUX",
-   "tags": [
-    "ndx100"
-   ],
-   "as_of": "2026-09-24",
-   "close": 93.6500015258789,
-   "chg": -0.005204991150907223,
-   "pct_b": 0.1275806569442962,
-   "band": {
-    "mid": 101.06000022888183,
-    "upper": 111.00846134022453,
-    "lower": 91.11153911753914
-   },
-   "vs_sma20": -0.07332276554740425,
-   "vs_sma200": -0.03915468872233463,
-   "range_pos": 0.5359948969429129,
-   "range_n": 252,
-   "atr_pct": 0.025143144020646817,
-   "dollar_volume": 656673542.0562744,
-   "hold": {
-    "n": 2008,
-    "n_independent": 4,
-    "positive": 0.7539840637450199,
-    "p10": -0.0856753792674615,
-    "median": 0.15039633842504196
-   },
-   "spike": null,
-   "verdict": "dip_but_fails_hold",
-   "why": [
-    "%B 0.13 \u2014 the measured buy band (+3.47 pts vs null @60d on the AI wave)",
-    "and below its 200-day \u2014 the best-testing bucket (+7.49 pts)",
-    "but it FAILS the 1-3 year hold gate"
-   ],
-   "stale": false
-  },
-  {
-   "ticker": "ROP",
-   "tags": [
-    "ndx100"
-   ],
-   "as_of": "2026-09-24",
-   "close": 364.0199890136719,
-   "chg": -0.0063871504297751125,
-   "pct_b": 0.12778568470870652,
-   "band": {
-    "mid": 395.5644989013672,
-    "upper": 437.93862127090676,
-    "lower": 353.1903765318276
-   },
-   "vs_sma20": -0.07974555344401835,
-   "vs_sma200": -0.01911196697479345,
-   "range_pos": 0.24745090180300283,
-   "range_n": 252,
-   "atr_pct": 0.02800623254121025,
-   "dollar_volume": 284682192.3812866,
-   "hold": {
-    "n": 2008,
-    "n_independent": 4,
-    "positive": 0.848605577689243,
-    "p10": -0.1522904185672742,
-    "median": 0.26021219756503133
-   },
-   "spike": null,
-   "verdict": "dip_but_fails_hold",
-   "why": [
-    "%B 0.13 \u2014 the measured buy band (+3.47 pts vs null @60d on the AI wave)",
-    "and below its 200-day \u2014 the best-testing bucket (+7.49 pts)",
-    "but it FAILS the 1-3 year hold gate"
-   ],
-   "stale": false
-  },
-  {
    "ticker": "BKNG",
    "tags": [
     "ndx100"
@@ -1657,17 +1444,17 @@
     "lower": 149.74614803844
    },
    "vs_sma20": -0.12328056359307749,
-   "vs_sma200": -0.14113186311298742,
+   "vs_sma200": -0.14113186275545886,
    "range_pos": 0.059688578777720096,
    "range_n": 252,
-   "atr_pct": 0.041860623787824555,
+   "atr_pct": 0.041860623788407374,
    "dollar_volume": 1088025675.126648,
    "hold": {
     "n": 2009,
     "n_independent": 4,
     "positive": 0.840716774514684,
-    "p10": -0.04950442541661848,
-    "median": 0.20393166905627624
+    "p10": -0.049504322915181365,
+    "median": 0.2039314588712695
    },
    "spike": null,
    "verdict": "buy_zone",
@@ -1678,38 +1465,36 @@
    "stale": false
   },
   {
-   "ticker": "ALB",
+   "ticker": "ADP",
    "tags": [
-    "humanoid_materials"
+    "ndx100"
    ],
    "as_of": "2026-09-24",
-   "close": 108.25,
-   "chg": -0.04600335916582954,
-   "pct_b": 0.1333664022419817,
+   "close": 263.1099853515625,
+   "chg": -0.0021617390020168825,
+   "pct_b": 0.13507807953224646,
    "band": {
-    "mid": 123.15624694824218,
-    "upper": 143.4847807206441,
-    "lower": 102.82771317584027
+    "mid": 273.56810302734374,
+    "upper": 287.89735688852056,
+    "lower": 259.2388491661669
    },
-   "vs_sma20": -0.12103524845561997,
-   "vs_sma200": -0.3025769014683515,
-   "range_pos": 0.21487982032313901,
+   "vs_sma20": -0.03822857109454725,
+   "vs_sma200": 0.12046994027145552,
+   "range_pos": 0.7733911728297533,
    "range_n": 252,
-   "atr_pct": 0.04793482478425632,
-   "dollar_volume": 268565619.24705505,
+   "atr_pct": 0.021747757050525705,
+   "dollar_volume": 574689235.5010986,
    "hold": {
-    "n": 2008,
+    "n": 2009,
     "n_independent": 4,
-    "positive": 0.4860557768924303,
-    "p10": -0.6237750050142341,
-    "median": -0.017516724942993722
+    "positive": 0.9328023892483823,
+    "p10": 0.041639945725772565,
+    "median": 0.27374839518214755
    },
    "spike": null,
-   "verdict": "dip_but_fails_hold",
+   "verdict": "buy_zone",
    "why": [
-    "%B 0.13 \u2014 the measured buy band (+3.47 pts vs null @60d on the AI wave)",
-    "and below its 200-day \u2014 the best-testing bucket (+7.49 pts)",
-    "but it FAILS the 1-3 year hold gate"
+    "%B 0.14 \u2014 the measured buy band (+3.47 pts vs null @60d on the AI wave)"
    ],
    "stale": false
   },
@@ -1728,17 +1513,17 @@
     "lower": 106.07272025938545
    },
    "vs_sma20": -0.021617329697667165,
-   "vs_sma200": 0.10960082116607728,
+   "vs_sma200": 0.1096008198488736,
    "range_pos": 0.6458405092084905,
    "range_n": 252,
-   "atr_pct": 0.026993040898127717,
+   "atr_pct": 0.0269930408981275,
    "dollar_volume": 2048080401.8318176,
    "hold": {
     "n": 2009,
     "n_independent": 4,
     "positive": 0.8208063713290195,
-    "p10": -0.03223149999289732,
-    "median": 0.23140892997666196
+    "p10": -0.03223160702424399,
+    "median": 0.23140840328486156
    },
    "spike": null,
    "verdict": "buy_zone",
@@ -1748,36 +1533,251 @@
    "stale": false
   },
   {
-   "ticker": "MNST",
+   "ticker": "TTWO",
    "tags": [
     "ndx100"
    ],
    "as_of": "2026-09-24",
-   "close": 42.66999816894531,
-   "chg": -0.02823961928435026,
-   "pct_b": 0.15706946543508607,
+   "close": 202.97999572753906,
+   "chg": -0.016188500766341485,
+   "pct_b": 0.138583682133217,
    "band": {
-    "mid": 44.51400012969971,
-    "upper": 47.20259413765811,
-    "lower": 41.82540612174131
+    "mid": 214.70199966430664,
+    "upper": 230.9187604430608,
+    "lower": 198.4852388855525
    },
-   "vs_sma20": -0.041425213536899874,
-   "vs_sma200": 0.011146980091238934,
-   "range_pos": 0.5882682887629085,
+   "vs_sma20": -0.05459662208593907,
+   "vs_sma200": -0.1011401336395622,
+   "range_pos": 0.18305774337241068,
    "range_n": 252,
-   "atr_pct": 0.023271342767402076,
-   "dollar_volume": 450017759.90371704,
+   "atr_pct": 0.03667655751050227,
+   "dollar_volume": 501727736.15112305,
    "hold": {
-    "n": 2008,
+    "n": 2009,
     "n_independent": 4,
-    "positive": 0.950199203187251,
-    "p10": 0.037504965092809206,
-    "median": 0.23704237318617571
+    "positive": 0.7620706819313091,
+    "p10": -0.2499378831938608,
+    "median": 0.3260011507597258
+   },
+   "spike": null,
+   "verdict": "dip_but_fails_hold",
+   "why": [
+    "%B 0.14 \u2014 the measured buy band (+3.47 pts vs null @60d on the AI wave)",
+    "and below its 200-day \u2014 the best-testing bucket (+7.49 pts)",
+    "but it FAILS the 1-3 year hold gate"
+   ],
+   "stale": false
+  },
+  {
+   "ticker": "TMUS",
+   "tags": [
+    "ndx100"
+   ],
+   "as_of": "2026-09-24",
+   "close": 165.35000610351562,
+   "chg": -0.001871287889296691,
+   "pct_b": 0.1419373165926723,
+   "band": {
+    "mid": 176.45050125122071,
+    "upper": 191.95127201302236,
+    "lower": 160.94973048941907
+   },
+   "vs_sma20": -0.06290996664215087,
+   "vs_sma200": -0.13138521849589524,
+   "range_pos": 0.0408233313953784,
+   "range_n": 252,
+   "atr_pct": 0.031801959718194286,
+   "dollar_volume": 796845561.0687256,
+   "hold": {
+    "n": 2009,
+    "n_independent": 4,
+    "positive": 0.9462419113987058,
+    "p10": 0.08711937374454637,
+    "median": 0.3449787091308376
    },
    "spike": null,
    "verdict": "buy_zone",
    "why": [
-    "%B 0.16 \u2014 the measured buy band (+3.47 pts vs null @60d on the AI wave)"
+    "%B 0.14 \u2014 the measured buy band (+3.47 pts vs null @60d on the AI wave)",
+    "and below its 200-day \u2014 the best-testing bucket (+7.49 pts)"
+   ],
+   "stale": false
+  },
+  {
+   "ticker": "ALB",
+   "tags": [
+    "humanoid_materials"
+   ],
+   "as_of": "2026-09-24",
+   "close": 108.25,
+   "chg": -0.04600335916582954,
+   "pct_b": 0.14651371244504013,
+   "band": {
+    "mid": 122.29332962036133,
+    "upper": 142.15736694624752,
+    "lower": 102.42929229447513
+   },
+   "vs_sma20": -0.11483316108864194,
+   "vs_sma200": -0.30242025563168407,
+   "range_pos": 0.2093266176507043,
+   "range_n": 252,
+   "atr_pct": 0.048659196735070895,
+   "dollar_volume": 268565619.24705505,
+   "hold": {
+    "n": 2009,
+    "n_independent": 4,
+    "positive": 0.48631159780985567,
+    "p10": -0.6237749766210627,
+    "median": -0.017516991686156058
+   },
+   "spike": null,
+   "verdict": "dip_but_fails_hold",
+   "why": [
+    "%B 0.15 \u2014 the measured buy band (+3.47 pts vs null @60d on the AI wave)",
+    "and below its 200-day \u2014 the best-testing bucket (+7.49 pts)",
+    "but it FAILS the 1-3 year hold gate"
+   ],
+   "stale": false
+  },
+  {
+   "ticker": "MDLZ",
+   "tags": [
+    "ndx100"
+   ],
+   "as_of": "2026-09-24",
+   "close": 60.86000061035156,
+   "chg": -0.009440072091819518,
+   "pct_b": 0.14773906519076785,
+   "band": {
+    "mid": 61.79499988555908,
+    "upper": 63.122140057536804,
+    "lower": 60.467859713581355
+   },
+   "vs_sma20": -0.0151306623017895,
+   "vs_sma200": 0.033411937692135574,
+   "range_pos": 0.7121280931524683,
+   "range_n": 252,
+   "atr_pct": 0.020141100689479906,
+   "dollar_volume": 476597959.664917,
+   "hold": {
+    "n": 2009,
+    "n_independent": 4,
+    "positive": 0.7909407665505227,
+    "p10": -0.07645961488278907,
+    "median": 0.1919272273209296
+   },
+   "spike": null,
+   "verdict": "dip_but_fails_hold",
+   "why": [
+    "%B 0.15 \u2014 the measured buy band (+3.47 pts vs null @60d on the AI wave)",
+    "but it FAILS the 1-3 year hold gate"
+   ],
+   "stale": false
+  },
+  {
+   "ticker": "SBUX",
+   "tags": [
+    "ndx100"
+   ],
+   "as_of": "2026-09-24",
+   "close": 93.6500015258789,
+   "chg": -0.005204991150907223,
+   "pct_b": 0.1509103263340778,
+   "band": {
+    "mid": 100.39100036621093,
+    "upper": 110.0461109994506,
+    "lower": 90.73588973297126
+   },
+   "vs_sma20": -0.06714744166052633,
+   "vs_sma200": -0.03972162032648252,
+   "range_pos": 0.5359947862545671,
+   "range_n": 252,
+   "atr_pct": 0.024514478318597092,
+   "dollar_volume": 656673542.0562744,
+   "hold": {
+    "n": 2009,
+    "n_independent": 4,
+    "positive": 0.7541065206570433,
+    "p10": -0.08567559705800787,
+    "median": 0.1503465613812618
+   },
+   "spike": null,
+   "verdict": "dip_but_fails_hold",
+   "why": [
+    "%B 0.15 \u2014 the measured buy band (+3.47 pts vs null @60d on the AI wave)",
+    "and below its 200-day \u2014 the best-testing bucket (+7.49 pts)",
+    "but it FAILS the 1-3 year hold gate"
+   ],
+   "stale": false
+  },
+  {
+   "ticker": "FANG",
+   "tags": [
+    "ndx100"
+   ],
+   "as_of": "2026-09-24",
+   "close": 189.00999450683594,
+   "chg": 0.018098576465480853,
+   "pct_b": 0.1644458220463196,
+   "band": {
+    "mid": 198.48149948120118,
+    "upper": 212.59472708594387,
+    "lower": 184.3682718764585
+   },
+   "vs_sma20": -0.047719837864598214,
+   "vs_sma200": 0.037541109791868976,
+   "range_pos": 0.7093035715059509,
+   "range_n": 252,
+   "atr_pct": 0.03308169993736871,
+   "dollar_volume": 381854354.7035217,
+   "hold": {
+    "n": 2009,
+    "n_independent": 4,
+    "positive": 0.6819313091090095,
+    "p10": -0.4912476918070797,
+    "median": 0.13538939274635964
+   },
+   "spike": null,
+   "verdict": "dip_but_fails_hold",
+   "why": [
+    "%B 0.16 \u2014 the measured buy band (+3.47 pts vs null @60d on the AI wave)",
+    "but it FAILS the 1-3 year hold gate"
+   ],
+   "stale": false
+  },
+  {
+   "ticker": "ROP",
+   "tags": [
+    "ndx100"
+   ],
+   "as_of": "2026-09-24",
+   "close": 364.0199890136719,
+   "chg": -0.0063871504297751125,
+   "pct_b": 0.1673426674031887,
+   "band": {
+    "mid": 393.09299926757814,
+    "upper": 436.7911345633713,
+    "lower": 349.39486397178496
+   },
+   "vs_sma20": -0.07395962357018804,
+   "vs_sma200": -0.018046369485796965,
+   "range_pos": 0.24745090180300283,
+   "range_n": 252,
+   "atr_pct": 0.02822809569070102,
+   "dollar_volume": 284682192.3812866,
+   "hold": {
+    "n": 2009,
+    "n_independent": 4,
+    "positive": 0.8481831757093081,
+    "p10": -0.15407845360596284,
+    "median": 0.2602008551684485
+   },
+   "spike": null,
+   "verdict": "dip_but_fails_hold",
+   "why": [
+    "%B 0.17 \u2014 the measured buy band (+3.47 pts vs null @60d on the AI wave)",
+    "and below its 200-day \u2014 the best-testing bucket (+7.49 pts)",
+    "but it FAILS the 1-3 year hold gate"
    ],
    "stale": false
   },
@@ -1818,40 +1818,6 @@
    "stale": false
   },
   {
-   "ticker": "DASH",
-   "tags": [
-    "ndx100"
-   ],
-   "as_of": "2026-09-24",
-   "close": 187.52999877929688,
-   "chg": -0.009193244855953298,
-   "pct_b": 0.1763576882185671,
-   "band": {
-    "mid": 209.014249420166,
-    "upper": 242.2055996527929,
-    "lower": 175.82289918753912
-   },
-   "vs_sma20": -0.10278844959360123,
-   "vs_sma200": -0.0030024829590140634,
-   "range_pos": 0.3028710780086205,
-   "range_n": 252,
-   "atr_pct": 0.04024046263352988,
-   "dollar_volume": 774448137.5686646,
-   "hold": {
-    "n": 0,
-    "n_independent": 0,
-    "positive": null,
-    "p10": null,
-    "median": null
-   },
-   "spike": null,
-   "verdict": "no_hold_data",
-   "why": [
-    "hold gate not measurable \u2014 under 4 independent 2-year windows of history"
-   ],
-   "stale": false
-  },
-  {
    "ticker": "CCEP",
    "tags": [
     "ndx100"
@@ -1859,52 +1825,52 @@
    "as_of": "2026-09-24",
    "close": 100.30999755859375,
    "chg": 0.006219230635006845,
-   "pct_b": 0.1776053794894083,
+   "pct_b": 0.1906085539783749,
    "band": {
-    "mid": 104.54649963378907,
-    "upper": 111.11686682615377,
-    "lower": 97.97613244142437
+    "mid": 104.21249961853027,
+    "upper": 110.51923839576162,
+    "lower": 97.90576084129893
    },
-   "vs_sma20": -0.04052265824331913,
-   "vs_sma200": 0.02528142313999182,
+   "vs_sma20": -0.037447542993610416,
+   "vs_sma200": 0.024620690439639548,
    "range_pos": 0.5892160134774402,
    "range_n": 252,
-   "atr_pct": 0.0212531905226976,
+   "atr_pct": 0.021383384193607607,
    "dollar_volume": 179401797.26409912,
    "hold": {
-    "n": 2008,
+    "n": 2009,
     "n_independent": 4,
-    "positive": 0.9427290836653387,
-    "p10": 0.0541263198837314,
-    "median": 0.35722170554291544
+    "positive": 0.9427575908412146,
+    "p10": 0.05412663811354235,
+    "median": 0.35704926676439186
    },
    "spike": null,
    "verdict": "buy_zone",
    "why": [
-    "%B 0.18 \u2014 the measured buy band (+3.47 pts vs null @60d on the AI wave)"
+    "%B 0.19 \u2014 the measured buy band (+3.47 pts vs null @60d on the AI wave)"
    ],
    "stale": false
   },
   {
-   "ticker": "EXE",
+   "ticker": "DASH",
    "tags": [
     "ndx100"
    ],
    "as_of": "2026-09-24",
-   "close": 88.62000274658203,
-   "chg": 0.018152594375407727,
-   "pct_b": 0.17825359917928849,
+   "close": 187.52999877929688,
+   "chg": -0.009193244855953298,
+   "pct_b": 0.19292647948329228,
    "band": {
-    "mid": 94.45800170898437,
-    "upper": 103.53036265460918,
-    "lower": 85.38564076335956
+    "mid": 206.77825012207032,
+    "upper": 238.1196880135315,
+    "lower": 175.43681223060915
    },
-   "vs_sma20": -0.06180523467338028,
-   "vs_sma200": -0.09987307507040433,
-   "range_pos": 0.06376877424768562,
+   "vs_sma20": -0.0930864408196237,
+   "vs_sma200": -0.002132706906509463,
+   "range_pos": 0.3028710780086205,
    "range_n": 252,
-   "atr_pct": 0.027853048779364165,
-   "dollar_volume": 287593602.2380829,
+   "atr_pct": 0.04012960390394619,
+   "dollar_volume": 778388818.8560486,
    "hold": {
     "n": 0,
     "n_independent": 0,
@@ -1927,29 +1893,29 @@
    "as_of": "2026-09-24",
    "close": 46.95000076293945,
    "chg": -0.00508577814693334,
-   "pct_b": 0.17869914960926397,
+   "pct_b": 0.20724519863510413,
    "band": {
-    "mid": 48.81889896392822,
-    "upper": 51.727229581036745,
-    "lower": 45.910568346819694
+    "mid": 48.567464637756345,
+    "upper": 51.32995370245464,
+    "lower": 45.80497557305805
    },
-   "vs_sma20": -0.03828226856098649,
-   "vs_sma200": 0.07354967594111206,
-   "range_pos": 0.6906695247252911,
+   "vs_sma20": -0.03330344474188329,
+   "vs_sma200": 0.0722480068249507,
+   "range_pos": 0.6906695842248736,
    "range_n": 252,
-   "atr_pct": 0.021697616638432938,
+   "atr_pct": 0.020946280166365315,
    "dollar_volume": 506622485.6903076,
    "hold": {
-    "n": 2008,
+    "n": 2009,
     "n_independent": 4,
-    "positive": 0.899402390438247,
-    "p10": -0.001905514406737585,
-    "median": 0.208443117003555
+    "positive": 0.8994524639123942,
+    "p10": -0.0019053051015522904,
+    "median": 0.2084430611164223
    },
    "spike": null,
-   "verdict": "buy_zone",
+   "verdict": "neutral",
    "why": [
-    "%B 0.18 \u2014 the measured buy band (+3.47 pts vs null @60d on the AI wave)"
+    "%B 0.21 \u2014 no measured edge either way"
    ],
    "stale": false
   },
@@ -2023,6 +1989,40 @@
    "stale": false
   },
   {
+   "ticker": "EXE",
+   "tags": [
+    "ndx100"
+   ],
+   "as_of": "2026-09-24",
+   "close": 88.62000274658203,
+   "chg": 0.018152594375407727,
+   "pct_b": 0.2198381785007341,
+   "band": {
+    "mid": 93.981001663208,
+    "upper": 103.54868452580679,
+    "lower": 84.41331880060922
+   },
+   "vs_sma20": -0.05704343241454002,
+   "vs_sma200": -0.09832975055492177,
+   "range_pos": 0.06376877424768562,
+   "range_n": 252,
+   "atr_pct": 0.0271925771776196,
+   "dollar_volume": 287593602.2380829,
+   "hold": {
+    "n": 0,
+    "n_independent": 0,
+    "positive": null,
+    "p10": null,
+    "median": null
+   },
+   "spike": null,
+   "verdict": "no_hold_data",
+   "why": [
+    "hold gate not measurable \u2014 under 4 independent 2-year windows of history"
+   ],
+   "stale": false
+  },
+  {
    "ticker": "CCXI",
    "tags": [
     "humanoid_oem"
@@ -2064,29 +2064,29 @@
    "as_of": "2026-09-24",
    "close": 445.0,
    "chg": -0.012449758180981374,
-   "pct_b": 0.22986451112308498,
+   "pct_b": 0.24096773374397593,
    "band": {
-    "mid": 503.41499786376954,
-    "upper": 611.5366632299699,
-    "lower": 395.2933324975691
+    "mid": 496.00699920654296,
+    "upper": 594.4638438764814,
+    "lower": 397.55015453660457
    },
-   "vs_sma20": -0.11603746036898444,
-   "vs_sma200": -0.11280999888324905,
-   "range_pos": 0.22949678944681765,
+   "vs_sma20": -0.10283524080938033,
+   "vs_sma200": -0.11199889244428218,
+   "range_pos": 0.2395646857523428,
    "range_n": 252,
-   "atr_pct": 0.058391822426651654,
-   "dollar_volume": 448628285.1547241,
+   "atr_pct": 0.05697504901172722,
+   "dollar_volume": 442383753.7017822,
    "hold": {
-    "n": 2008,
+    "n": 2009,
     "n_independent": 4,
-    "positive": 0.9835657370517928,
-    "p10": 0.2193246320379616,
-    "median": 1.188584514127164
+    "positive": 0.9835739173718268,
+    "p10": 0.21576932304931784,
+    "median": 1.1860762628553734
    },
    "spike": null,
    "verdict": "neutral",
    "why": [
-    "%B 0.23 \u2014 no measured edge either way"
+    "%B 0.24 \u2014 no measured edge either way"
    ],
    "stale": false
   },
@@ -2098,29 +2098,29 @@
    "as_of": "2026-09-24",
    "close": 174.92999267578125,
    "chg": -0.015698900099922253,
-   "pct_b": 0.2301841461084555,
+   "pct_b": 0.24439573462662492,
    "band": {
-    "mid": 184.2716178894043,
-    "upper": 201.58273041094282,
-    "lower": 166.96050536786578
+    "mid": 183.18108139038085,
+    "upper": 199.3214394210788,
+    "lower": 167.04072335968291
    },
-   "vs_sma20": -0.05069486728677708,
-   "vs_sma200": -0.11896803646479592,
+   "vs_sma20": -0.04504334537154275,
+   "vs_sma200": -0.11947387807440402,
    "range_pos": 0.4023307129417152,
    "range_n": 252,
-   "atr_pct": 0.03267603374758933,
+   "atr_pct": 0.031754213600542334,
    "dollar_volume": 310960510.27145386,
    "hold": {
-    "n": 2008,
+    "n": 2009,
     "n_independent": 4,
-    "positive": 0.8754980079681275,
-    "p10": -0.05690014488199324,
-    "median": 0.4897137638003366
+    "positive": 0.8750622200099551,
+    "p10": -0.058154200597335115,
+    "median": 0.4892445740866891
    },
    "spike": null,
    "verdict": "neutral",
    "why": [
-    "%B 0.23 \u2014 no measured edge either way"
+    "%B 0.24 \u2014 no measured edge either way"
    ],
    "stale": false
   },
@@ -2133,18 +2133,18 @@
    "as_of": "2026-09-24",
    "close": 261.6199951171875,
    "chg": -0.008564535864051703,
-   "pct_b": 0.23669400967742307,
+   "pct_b": 0.25566674817939233,
    "band": {
-    "mid": 276.0297477722168,
-    "upper": 303.39287885285773,
-    "lower": 248.66661669157585
+    "mid": 275.2267478942871,
+    "upper": 303.07140815995126,
+    "lower": 247.3820876286229
    },
-   "vs_sma20": -0.05220362215061114,
-   "vs_sma200": -0.09948862305839612,
+   "vs_sma20": -0.04943833722994784,
+   "vs_sma200": -0.09801746050376914,
    "range_pos": 0.15391304115421164,
    "range_n": 252,
-   "atr_pct": 0.03688132676891842,
-   "dollar_volume": 714318031.7199707,
+   "atr_pct": 0.03603172568388614,
+   "dollar_volume": 709867747.2412109,
    "hold": {
     "n": 0,
     "n_independent": 0,
@@ -2160,40 +2160,6 @@
    "stale": false
   },
   {
-   "ticker": "BKR",
-   "tags": [
-    "ndx100"
-   ],
-   "as_of": "2026-09-24",
-   "close": 57.290000915527344,
-   "chg": -0.012751988270479409,
-   "pct_b": 0.24206016058580196,
-   "band": {
-    "mid": 60.41549987792969,
-    "upper": 66.47408115312278,
-    "lower": 54.3569186027366
-   },
-   "vs_sma20": -0.05173339571330959,
-   "vs_sma200": -0.0244681920313633,
-   "range_pos": 0.531722379278327,
-   "range_n": 252,
-   "atr_pct": 0.03075737763191346,
-   "dollar_volume": 445792528.59249115,
-   "hold": {
-    "n": 2008,
-    "n_independent": 4,
-    "positive": 0.6548804780876494,
-    "p10": -0.439607840483224,
-    "median": 0.2764128302107629
-   },
-   "spike": null,
-   "verdict": "neutral",
-   "why": [
-    "%B 0.24 \u2014 no measured edge either way"
-   ],
-   "stale": false
-  },
-  {
    "ticker": "RRX",
    "tags": [
     "humanoid_disclosed"
@@ -2201,29 +2167,29 @@
    "as_of": "2026-09-24",
    "close": 151.11000061035156,
    "chg": -0.008594656700767866,
-   "pct_b": 0.24534720688886774,
+   "pct_b": 0.26138151491872136,
    "band": {
-    "mid": 156.8119987487793,
-    "upper": 168.00763117983485,
-    "lower": 145.61636631772376
+    "mid": 156.18099822998047,
+    "upper": 166.8067417005704,
+    "lower": 145.55525475939055
    },
-   "vs_sma20": -0.036362001530014454,
-   "vs_sma200": -0.1964033230465133,
-   "range_pos": 0.20989211267597835,
+   "vs_sma20": -0.032468723321653625,
+   "vs_sma200": -0.1965719643366527,
+   "range_pos": 0.20989205798137606,
    "range_n": 252,
-   "atr_pct": 0.04120026485669579,
-   "dollar_volume": 203324389.03808594,
+   "atr_pct": 0.039965759932614794,
+   "dollar_volume": 201216734.77478027,
    "hold": {
-    "n": 2008,
+    "n": 2009,
     "n_independent": 4,
-    "positive": 0.7973107569721115,
-    "p10": -0.07070026748990921,
-    "median": 0.16676257117185056
+    "positive": 0.796913887506222,
+    "p10": -0.07070027519258526,
+    "median": 0.16667082202365457
    },
    "spike": null,
    "verdict": "neutral",
    "why": [
-    "%B 0.25 \u2014 no measured edge either way"
+    "%B 0.26 \u2014 no measured edge either way"
    ],
    "stale": false
   },
@@ -2235,58 +2201,24 @@
    "as_of": "2026-09-24",
    "close": 896.47998046875,
    "chg": -0.009085919782656271,
-   "pct_b": 0.2510397373497471,
+   "pct_b": 0.26169069439365394,
    "band": {
-    "mid": 915.6279907226562,
-    "upper": 954.0839476092498,
-    "lower": 877.1720338360627
+    "mid": 912.7924896240235,
+    "upper": 947.0179872682897,
+    "lower": 878.5669919797572
    },
-   "vs_sma20": -0.020912434359716014,
-   "vs_sma200": -0.0643013350677446,
+   "vs_sma20": -0.01787099405473036,
+   "vs_sma200": -0.06434362779365022,
    "range_pos": 0.20386265190465133,
    "range_n": 252,
-   "atr_pct": 0.015749575898173884,
-   "dollar_volume": 1922662753.6071777,
+   "atr_pct": 0.015289260283055283,
+   "dollar_volume": 1921881711.1175537,
    "hold": {
-    "n": 2008,
+    "n": 2009,
     "n_independent": 4,
-    "positive": 0.999003984063745,
-    "p10": 0.27134912101490305,
-    "median": 0.5897853995147402
-   },
-   "spike": null,
-   "verdict": "neutral",
-   "why": [
-    "%B 0.25 \u2014 no measured edge either way"
-   ],
-   "stale": false
-  },
-  {
-   "ticker": "ADSK",
-   "tags": [
-    "ndx100"
-   ],
-   "as_of": "2026-09-24",
-   "close": 211.35000610351562,
-   "chg": -0.026709592244951286,
-   "pct_b": 0.2605690759639277,
-   "band": {
-    "mid": 229.54499893188478,
-    "upper": 267.5413289832776,
-    "lower": 191.54866888049193
-   },
-   "vs_sma20": -0.07926547262207329,
-   "vs_sma200": -0.1270750814363103,
-   "range_pos": 0.17230572857777698,
-   "range_n": 252,
-   "atr_pct": 0.041517685999617575,
-   "dollar_volume": 447159002.1392822,
-   "hold": {
-    "n": 2008,
-    "n_independent": 4,
-    "positive": 0.7400398406374502,
-    "p10": -0.2665504001751028,
-    "median": 0.35163657038794716
+    "positive": 0.9990044798407167,
+    "p10": 0.270096612316441,
+    "median": 0.5896253062555195
    },
    "spike": null,
    "verdict": "neutral",
@@ -2330,6 +2262,74 @@
    "stale": false
   },
   {
+   "ticker": "BKR",
+   "tags": [
+    "ndx100"
+   ],
+   "as_of": "2026-09-24",
+   "close": 57.290000915527344,
+   "chg": -0.012751988270479409,
+   "pct_b": 0.26562247876167994,
+   "band": {
+    "mid": 60.17849979400635,
+    "upper": 66.34056444768515,
+    "lower": 54.01643514032755
+   },
+   "vs_sma20": -0.04799885155606176,
+   "vs_sma200": -0.02518090330127587,
+   "range_pos": 0.531722379278327,
+   "range_n": 252,
+   "atr_pct": 0.030125781048094817,
+   "dollar_volume": 445792528.59249115,
+   "hold": {
+    "n": 2009,
+    "n_independent": 4,
+    "positive": 0.6550522648083623,
+    "p10": -0.4396080906817812,
+    "median": 0.276413156299959
+   },
+   "spike": null,
+   "verdict": "neutral",
+   "why": [
+    "%B 0.27 \u2014 no measured edge either way"
+   ],
+   "stale": false
+  },
+  {
+   "ticker": "ADSK",
+   "tags": [
+    "ndx100"
+   ],
+   "as_of": "2026-09-24",
+   "close": 211.35000610351562,
+   "chg": -0.026709592244951286,
+   "pct_b": 0.27411194792608623,
+   "band": {
+    "mid": 227.7874984741211,
+    "upper": 264.1716547402234,
+    "lower": 191.40334220801878
+   },
+   "vs_sma20": -0.07216152106992357,
+   "vs_sma200": -0.12550174565374406,
+   "range_pos": 0.1740059426134645,
+   "range_n": 252,
+   "atr_pct": 0.04080554093250622,
+   "dollar_volume": 447159002.1392822,
+   "hold": {
+    "n": 2009,
+    "n_independent": 4,
+    "positive": 0.7396714783474365,
+    "p10": -0.2665504001751028,
+    "median": 0.35153787896969835
+   },
+   "spike": null,
+   "verdict": "neutral",
+   "why": [
+    "%B 0.27 \u2014 no measured edge either way"
+   ],
+   "stale": false
+  },
+  {
    "ticker": "PDD",
    "tags": [
     "ndx100"
@@ -2337,22 +2337,22 @@
    "as_of": "2026-09-24",
    "close": 78.19999694824219,
    "chg": -0.012626263112781477,
-   "pct_b": 0.2768637133198818,
+   "pct_b": 0.2759738627143533,
    "band": {
-    "mid": 80.69699974060059,
-    "upper": 86.29224117243913,
-    "lower": 75.10175830876204
+    "mid": 80.37749977111817,
+    "upper": 85.2374300659916,
+    "lower": 75.51756947624473
    },
-   "vs_sma20": -0.030942944599984923,
-   "vs_sma200": -0.1836769099479878,
+   "vs_sma20": -0.0270909499434121,
+   "vs_sma200": -0.18208582808608087,
    "range_pos": 0.0755821958674879,
    "range_n": 252,
-   "atr_pct": 0.024133858279774333,
-   "dollar_volume": 516345416.7022705,
+   "atr_pct": 0.024430468256973845,
+   "dollar_volume": 517265350.5214691,
    "hold": {
-    "n": 1547,
+    "n": 1548,
     "n_independent": 4,
-    "positive": 0.6308985132514544,
+    "positive": 0.6304909560723514,
     "p10": -0.4304207207255931,
     "median": 0.3425276108611519
    },
@@ -2380,124 +2380,22 @@
     "lower": 338.7587246981104
    },
    "vs_sma20": -0.02255911380955178,
-   "vs_sma200": -0.046038814289116936,
-   "range_pos": 0.30901094358629677,
+   "vs_sma200": -0.046038818648847624,
+   "range_pos": 0.3090108932972437,
    "range_n": 252,
-   "atr_pct": 0.032497326902849386,
+   "atr_pct": 0.032497327026566825,
    "dollar_volume": 7876001092.922974,
    "hold": {
     "n": 2009,
     "n_independent": 4,
     "positive": 0.9950223992035838,
-    "p10": 0.272982137345954,
-    "median": 0.857871744943481
+    "p10": 0.272982165151086,
+    "median": 0.8578720074672255
    },
    "spike": null,
    "verdict": "neutral",
    "why": [
     "%B 0.29 \u2014 no measured edge either way"
-   ],
-   "stale": false
-  },
-  {
-   "ticker": "VRT",
-   "tags": [
-    "ai_power"
-   ],
-   "as_of": "2026-09-24",
-   "close": 245.3000030517578,
-   "chg": -0.013988245617069572,
-   "pct_b": 0.31051619580209094,
-   "band": {
-    "mid": 255.81415100097655,
-    "upper": 283.5583373543313,
-    "lower": 228.06996464762182
-   },
-   "vs_sma20": -0.04110072843147217,
-   "vs_sma200": -0.06369663343447518,
-   "range_pos": 0.44963511450273824,
-   "range_n": 252,
-   "atr_pct": 0.05479920092765101,
-   "dollar_volume": 1223159924.4529724,
-   "hold": {
-    "n": 1542,
-    "n_independent": 4,
-    "positive": 0.8002594033722439,
-    "p10": -0.26100069004359117,
-    "median": 1.4263219920529298
-   },
-   "spike": null,
-   "verdict": "neutral",
-   "why": [
-    "%B 0.31 \u2014 no measured edge either way"
-   ],
-   "stale": false
-  },
-  {
-   "ticker": "CTAS",
-   "tags": [
-    "ndx100"
-   ],
-   "as_of": "2026-09-24",
-   "close": 197.67999267578125,
-   "chg": 0.029744186168512377,
-   "pct_b": 0.31140987191239805,
-   "band": {
-    "mid": 199.89699935913086,
-    "upper": 205.77484329993297,
-    "lower": 194.01915541832875
-   },
-   "vs_sma20": -0.01109074518605746,
-   "vs_sma200": 0.05765010165633999,
-   "range_pos": 0.6567709718904805,
-   "range_n": 252,
-   "atr_pct": 0.02156324082986603,
-   "dollar_volume": 389770733.7112427,
-   "hold": {
-    "n": 2008,
-    "n_independent": 4,
-    "positive": 0.9870517928286853,
-    "p10": 0.23234721002895609,
-    "median": 0.6197902717555499
-   },
-   "spike": null,
-   "verdict": "neutral",
-   "why": [
-    "%B 0.31 \u2014 no measured edge either way"
-   ],
-   "stale": false
-  },
-  {
-   "ticker": "IDXX",
-   "tags": [
-    "ndx100"
-   ],
-   "as_of": "2026-09-24",
-   "close": 513.3900146484375,
-   "chg": -0.01653194237753919,
-   "pct_b": 0.3270268561718462,
-   "band": {
-    "mid": 525.418002319336,
-    "upper": 560.1863698378455,
-    "lower": 490.6496348008265
-   },
-   "vs_sma20": -0.022892226032994123,
-   "vs_sma200": -0.13616208717349387,
-   "range_pos": 0.03317048282031927,
-   "range_n": 252,
-   "atr_pct": 0.026733874727064375,
-   "dollar_volume": 292697585.21728516,
-   "hold": {
-    "n": 2008,
-    "n_independent": 4,
-    "positive": 0.7694223107569721,
-    "p10": -0.1371980924440097,
-    "median": 0.3519414611947893
-   },
-   "spike": null,
-   "verdict": "neutral",
-   "why": [
-    "%B 0.33 \u2014 no measured edge either way"
    ],
    "stale": false
   },
@@ -2509,18 +2407,18 @@
    "as_of": "2026-09-24",
    "close": 312.4700012207031,
    "chg": -0.008818394224573756,
-   "pct_b": 0.3422397597152329,
+   "pct_b": 0.31125720905923465,
    "band": {
-    "mid": 317.54099731445314,
-    "upper": 333.61284179376094,
-    "lower": 301.46915283514534
+    "mid": 318.5719985961914,
+    "upper": 334.7368474496857,
+    "lower": 302.40714974269713
    },
-   "vs_sma20": -0.015969579161862812,
-   "vs_sma200": -0.3353279289615769,
+   "vs_sma20": -0.01915421757837199,
+   "vs_sma200": -0.33275033052329217,
    "range_pos": 0.031907325222297916,
    "range_n": 252,
-   "atr_pct": 0.05607736487712505,
-   "dollar_volume": 2114067207.6019287,
+   "atr_pct": 0.05430682678358159,
+   "dollar_volume": 2100435866.2734985,
    "hold": {
     "n": 0,
     "n_independent": 0,
@@ -2532,6 +2430,108 @@
    "verdict": "no_hold_data",
    "why": [
     "hold gate not measurable \u2014 under 4 independent 2-year windows of history"
+   ],
+   "stale": false
+  },
+  {
+   "ticker": "VRT",
+   "tags": [
+    "ai_power"
+   ],
+   "as_of": "2026-09-24",
+   "close": 245.3000030517578,
+   "chg": -0.013988245617069572,
+   "pct_b": 0.31829921999681793,
+   "band": {
+    "mid": 255.29988479614258,
+    "upper": 282.81732788089334,
+    "lower": 227.7824417113918
+   },
+   "vs_sma20": -0.03916915885947103,
+   "vs_sma200": -0.06484903966610311,
+   "range_pos": 0.44963511450273824,
+   "range_n": 252,
+   "atr_pct": 0.05278594977857212,
+   "dollar_volume": 1210295104.1282654,
+   "hold": {
+    "n": 1543,
+    "n_independent": 4,
+    "positive": 0.8003888528839922,
+    "p10": -0.26100062356701925,
+    "median": 1.4263216111268506
+   },
+   "spike": null,
+   "verdict": "neutral",
+   "why": [
+    "%B 0.32 \u2014 no measured edge either way"
+   ],
+   "stale": false
+  },
+  {
+   "ticker": "CTAS",
+   "tags": [
+    "ndx100"
+   ],
+   "as_of": "2026-09-24",
+   "close": 197.67999267578125,
+   "chg": 0.029744186168512377,
+   "pct_b": 0.3215045784759834,
+   "band": {
+    "mid": 199.5479995727539,
+    "upper": 204.78064610515054,
+    "lower": 194.31535304035725
+   },
+   "vs_sma20": -0.009361190796060015,
+   "vs_sma200": 0.057269255555905785,
+   "range_pos": 0.656770873602914,
+   "range_n": 252,
+   "atr_pct": 0.021291479504716753,
+   "dollar_volume": 404614115.86761475,
+   "hold": {
+    "n": 2009,
+    "n_independent": 4,
+    "positive": 0.9865604778496765,
+    "p10": 0.22956734164974324,
+    "median": 0.61862991656909
+   },
+   "spike": null,
+   "verdict": "neutral",
+   "why": [
+    "%B 0.32 \u2014 no measured edge either way"
+   ],
+   "stale": false
+  },
+  {
+   "ticker": "IDXX",
+   "tags": [
+    "ndx100"
+   ],
+   "as_of": "2026-09-24",
+   "close": 513.3900146484375,
+   "chg": -0.01653194237753919,
+   "pct_b": 0.3386356254776437,
+   "band": {
+    "mid": 523.8210021972657,
+    "upper": 556.1422242132907,
+    "lower": 491.4997801812407
+   },
+   "vs_sma20": -0.019913267137196544,
+   "vs_sma200": -0.13476008844531062,
+   "range_pos": 0.03317048282031927,
+   "range_n": 252,
+   "atr_pct": 0.026282376505106553,
+   "dollar_volume": 291107741.95251465,
+   "hold": {
+    "n": 2009,
+    "n_independent": 4,
+    "positive": 0.7690393230462916,
+    "p10": -0.1371980924440097,
+    "median": 0.35165326665214436
+   },
+   "spike": null,
+   "verdict": "neutral",
+   "why": [
+    "%B 0.34 \u2014 no measured edge either way"
    ],
    "stale": false
   },
@@ -2550,17 +2550,17 @@
     "lower": 49.658021871574
    },
    "vs_sma20": -0.02114747263042227,
-   "vs_sma200": 0.047336720553074585,
+   "vs_sma200": 0.04733671896204972,
    "range_pos": 0.37923093500815863,
    "range_n": 252,
-   "atr_pct": 0.02999082536280188,
+   "atr_pct": 0.029990825396116156,
    "dollar_volume": 603923297.7628708,
    "hold": {
     "n": 2009,
     "n_independent": 4,
     "positive": 0.5350920856147336,
     "p10": -0.6955588940675635,
-    "median": 0.08206981140574965
+    "median": 0.08206958933600395
    },
    "spike": null,
    "verdict": "neutral",
@@ -2577,29 +2577,29 @@
    "as_of": "2026-09-24",
    "close": 190.99000549316406,
    "chg": -0.007225279937461027,
-   "pct_b": 0.3911315848032872,
+   "pct_b": 0.3977403620594755,
    "band": {
-    "mid": 193.63249969482422,
-    "upper": 205.76868353145613,
-    "lower": 181.4963158581923
+    "mid": 193.50649948120116,
+    "upper": 205.81093375614316,
+    "lower": 181.20206520625916
    },
-   "vs_sma20": -0.013646955990471055,
-   "vs_sma200": 0.2057552638540594,
+   "vs_sma20": -0.013004700073557807,
+   "vs_sma200": 0.20696414365337734,
    "range_pos": 0.580590310494173,
    "range_n": 252,
-   "atr_pct": 0.04349223588511297,
+   "atr_pct": 0.04369852178551483,
    "dollar_volume": 609692954.6348572,
    "hold": {
-    "n": 2008,
+    "n": 2009,
     "n_independent": 4,
-    "positive": 0.674800796812749,
+    "positive": 0.6744649079143853,
     "p10": -0.2869745375948488,
-    "median": 0.26802007205984
+    "median": 0.26593755552967147
    },
    "spike": null,
    "verdict": "neutral",
    "why": [
-    "%B 0.39 \u2014 no measured edge either way"
+    "%B 0.40 \u2014 no measured edge either way"
    ],
    "stale": false
   },
@@ -2611,92 +2611,24 @@
    "as_of": "2026-09-24",
    "close": 522.3800048828125,
    "chg": 0.011697675394502172,
-   "pct_b": 0.3913428258114688,
+   "pct_b": 0.4145842420297628,
    "band": {
-    "mid": 529.5535064697266,
-    "upper": 562.5632991524782,
-    "lower": 496.543713786975
+    "mid": 527.9385070800781,
+    "upper": 560.4764270690482,
+    "lower": 495.40058709110804
    },
-   "vs_sma20": -0.013546320625344,
-   "vs_sma200": 0.10877373027005888,
+   "vs_sma20": -0.010528692494905512,
+   "vs_sma200": 0.1080739125802701,
    "range_pos": 0.8037939129776259,
    "range_n": 252,
-   "atr_pct": 0.023797146144432704,
+   "atr_pct": 0.024477151163709843,
    "dollar_volume": 573398677.4047852,
    "hold": {
-    "n": 2008,
+    "n": 2009,
     "n_independent": 4,
-    "positive": 0.9178286852589641,
+    "positive": 0.9178695868591339,
     "p10": 0.016949181322599483,
-    "median": 0.3713846270546102
-   },
-   "spike": null,
-   "verdict": "neutral",
-   "why": [
-    "%B 0.39 \u2014 no measured edge either way"
-   ],
-   "stale": false
-  },
-  {
-   "ticker": "FCX",
-   "tags": [
-    "humanoid_materials"
-   ],
-   "as_of": "2026-09-24",
-   "close": 72.08000183105469,
-   "chg": -0.006888949950206058,
-   "pct_b": 0.40429725036330955,
-   "band": {
-    "mid": 73.17999992370605,
-    "upper": 78.92695127477593,
-    "lower": 67.43304857263617
-   },
-   "vs_sma20": -0.015031403304156421,
-   "vs_sma200": 0.15240202928509095,
-   "range_pos": 0.8257904171608051,
-   "range_n": 252,
-   "atr_pct": 0.0377010552938265,
-   "dollar_volume": 865464239.6320343,
-   "hold": {
-    "n": 2008,
-    "n_independent": 4,
-    "positive": 0.7061752988047809,
-    "p10": -0.27334075019423953,
-    "median": 0.20968243863830316
-   },
-   "spike": null,
-   "verdict": "neutral",
-   "why": [
-    "%B 0.40 \u2014 no measured edge either way"
-   ],
-   "stale": false
-  },
-  {
-   "ticker": "LIN",
-   "tags": [
-    "ndx100"
-   ],
-   "as_of": "2026-09-24",
-   "close": 468.1400146484375,
-   "chg": -0.003363677442219992,
-   "pct_b": 0.4052560120973205,
-   "band": {
-    "mid": 472.28480224609376,
-    "upper": 494.1584202423816,
-    "lower": 450.4111842498059
-   },
-   "vs_sma20": -0.008776034244473818,
-   "vs_sma200": -0.02647661275769153,
-   "range_pos": 0.5183687156404552,
-   "range_n": 252,
-   "atr_pct": 0.01686705224998726,
-   "dollar_volume": 978895786.2380981,
-   "hold": {
-    "n": 2008,
-    "n_independent": 4,
-    "positive": 0.99800796812749,
-    "p10": 0.17888278286034853,
-    "median": 0.4003671952118171
+    "median": 0.3712768327845586
    },
    "spike": null,
    "verdict": "neutral",
@@ -2713,58 +2645,58 @@
    "as_of": "2026-09-24",
    "close": 796.02001953125,
    "chg": -0.0072335283978808285,
-   "pct_b": 0.4091589686152226,
+   "pct_b": 0.41515330168053516,
    "band": {
-    "mid": 803.4144989013672,
-    "upper": 844.1146057660518,
-    "lower": 762.7143920366826
+    "mid": 802.8700012207031,
+    "upper": 843.2368146921098,
+    "lower": 762.5031877492964
    },
-   "vs_sma20": -0.009203816187321467,
-   "vs_sma200": 0.08562989188130188,
+   "vs_sma20": -0.008531869018693183,
+   "vs_sma200": 0.08497653176311415,
    "range_pos": 0.8128970749188111,
    "range_n": 252,
-   "atr_pct": 0.024216788692975503,
-   "dollar_volume": 498494838.2904053,
+   "atr_pct": 0.024315656377146354,
+   "dollar_volume": 494788681.91833496,
    "hold": {
-    "n": 2008,
+    "n": 2009,
     "n_independent": 4,
-    "positive": 0.6354581673306773,
-    "p10": -0.3134969801903976,
-    "median": 0.23497158468395485
+    "positive": 0.6351418616226978,
+    "p10": -0.31349705141654327,
+    "median": 0.23379744165398075
    },
    "spike": null,
    "verdict": "neutral",
    "why": [
-    "%B 0.41 \u2014 no measured edge either way"
+    "%B 0.42 \u2014 no measured edge either way"
    ],
    "stale": false
   },
   {
-   "ticker": "TRI",
+   "ticker": "FCX",
    "tags": [
-    "ndx100"
+    "humanoid_materials"
    ],
    "as_of": "2026-09-24",
-   "close": 100.31999969482422,
-   "chg": 0.018994441894854885,
-   "pct_b": 0.4173594376385225,
+   "close": 72.08000183105469,
+   "chg": -0.006888949950206058,
+   "pct_b": 0.4154382918182753,
    "band": {
-    "mid": 101.85499992370606,
-    "upper": 111.14220819660967,
-    "lower": 92.56779165080245
+    "mid": 72.9474998474121,
+    "upper": 78.07687835105554,
+    "lower": 67.81812134376867
    },
-   "vs_sma20": -0.015070445535630306,
-   "vs_sma200": 0.026893608316014506,
-   "range_pos": 0.300383024311155,
+   "vs_sma20": -0.011892087023846032,
+   "vs_sma200": 0.14969354610511165,
+   "range_pos": 0.8257904171608051,
    "range_n": 252,
-   "atr_pct": 0.041505751242702546,
-   "dollar_volume": 152041831.75811768,
+   "atr_pct": 0.038940121177288185,
+   "dollar_volume": 849629178.7799835,
    "hold": {
-    "n": 2008,
+    "n": 2009,
     "n_independent": 4,
-    "positive": 0.896414342629482,
-    "p10": -0.025378860259853586,
-    "median": 0.4958638596922147
+    "positive": 0.7063215530114485,
+    "p10": -0.27334075019423953,
+    "median": 0.20968243863830316
    },
    "spike": null,
    "verdict": "neutral",
@@ -2781,63 +2713,63 @@
    "as_of": "2026-09-24",
    "close": 35.220001220703125,
    "chg": -0.0019835560501053617,
-   "pct_b": 0.4258647945119261,
+   "pct_b": 0.4186575338222752,
    "band": {
-    "mid": 35.350250244140625,
-    "upper": 36.22870618541709,
-    "lower": 34.47179430286416
+    "mid": 35.36925010681152,
+    "upper": 36.286660735733825,
+    "lower": 34.451839477889216
    },
-   "vs_sma20": -0.003684529035521855,
-   "vs_sma200": -0.04535851469302066,
+   "vs_sma20": -0.004219735664671376,
+   "vs_sma200": -0.045283001722053795,
    "range_pos": 0.3368894273310885,
    "range_n": 252,
-   "atr_pct": 0.016095967643053072,
-   "dollar_volume": 24730652.762413025,
+   "atr_pct": 0.015961375222465882,
+   "dollar_volume": 24671370.30696869,
    "hold": {
-    "n": 2008,
+    "n": 2009,
     "n_independent": 4,
-    "positive": 0.6862549800796812,
-    "p10": -0.28195832255175135,
+    "positive": 0.686411149825784,
+    "p10": -0.28195837873020735,
     "median": 0.1887326381205343
    },
    "spike": null,
    "verdict": "neutral",
    "why": [
-    "%B 0.43 \u2014 no measured edge either way"
+    "%B 0.42 \u2014 no measured edge either way"
    ],
    "stale": false
   },
   {
-   "ticker": "GEHC",
+   "ticker": "LIN",
    "tags": [
     "ndx100"
    ],
    "as_of": "2026-09-24",
-   "close": 66.37999725341797,
-   "chg": 0.004387969913702161,
-   "pct_b": 0.4292170745569071,
+   "close": 468.1400146484375,
+   "chg": -0.003363677442219992,
+   "pct_b": 0.42873633295804675,
    "band": {
-    "mid": 67.30424938201904,
-    "upper": 73.83302819990028,
-    "lower": 60.775470564137784
+    "mid": 471.0942749023437,
+    "upper": 491.82194986304313,
+    "lower": 450.3665999416443
    },
-   "vs_sma20": -0.013732448353372284,
-   "vs_sma200": -0.07651118932845369,
-   "range_pos": 0.24241922315581288,
+   "vs_sma20": -0.006271059554945002,
+   "vs_sma200": -0.02717695176550705,
+   "range_pos": 0.5183687156404552,
    "range_n": 252,
-   "atr_pct": 0.024181971896544696,
-   "dollar_volume": 230615285.7269287,
+   "atr_pct": 0.01650335888403612,
+   "dollar_volume": 976874719.3710327,
    "hold": {
-    "n": 0,
-    "n_independent": 0,
-    "positive": null,
-    "p10": null,
-    "median": null
+    "n": 2009,
+    "n_independent": 4,
+    "positive": 0.9980089596814335,
+    "p10": 0.17824169821871227,
+    "median": 0.40020530820230693
    },
    "spike": null,
-   "verdict": "no_hold_data",
+   "verdict": "neutral",
    "why": [
-    "hold gate not measurable \u2014 under 4 independent 2-year windows of history"
+    "%B 0.43 \u2014 no measured edge either way"
    ],
    "stale": false
   },
@@ -2858,17 +2790,51 @@
     "lower": 487.3246864425526
    },
    "vs_sma20": -0.0031132224844993006,
-   "vs_sma200": 0.15671625423292834,
-   "range_pos": 0.7858714739850298,
+   "vs_sma200": 0.15671625218282625,
+   "range_pos": 0.7858717325895099,
    "range_n": 252,
-   "atr_pct": 0.022041026362701426,
+   "atr_pct": 0.022041026365732085,
    "dollar_volume": 11398371538.528442,
    "hold": {
     "n": 2009,
     "n_independent": 4,
     "positive": 0.9621702339472374,
-    "p10": 0.10033940387168316,
-    "median": 0.6691496664958534
+    "p10": 0.10033921463060613,
+    "median": 0.6691498327101768
+   },
+   "spike": null,
+   "verdict": "neutral",
+   "why": [
+    "%B 0.44 \u2014 no measured edge either way"
+   ],
+   "stale": false
+  },
+  {
+   "ticker": "TRI",
+   "tags": [
+    "ndx100"
+   ],
+   "as_of": "2026-09-24",
+   "close": 100.31999969482422,
+   "chg": 0.018994441894854885,
+   "pct_b": 0.4381477250840102,
+   "band": {
+    "mid": 101.51550025939942,
+    "upper": 111.17966027775746,
+    "lower": 91.85134024104137
+   },
+   "vs_sma20": -0.011776532268672035,
+   "vs_sma200": 0.02862682779852066,
+   "range_pos": 0.3003830810467054,
+   "range_n": 252,
+   "atr_pct": 0.0405851680331631,
+   "dollar_volume": 152041831.75811768,
+   "hold": {
+    "n": 2009,
+    "n_independent": 4,
+    "positive": 0.8959681433549029,
+    "p10": -0.027188478957945406,
+    "median": 0.495764801660459
    },
    "spike": null,
    "verdict": "neutral",
@@ -2912,25 +2878,25 @@
    "stale": false
   },
   {
-   "ticker": "ALGM",
+   "ticker": "GEHC",
    "tags": [
-    "humanoid_disclosed"
+    "ndx100"
    ],
    "as_of": "2026-09-24",
-   "close": 35.130001068115234,
-   "chg": 0.0005696513077750875,
-   "pct_b": 0.46017172387062844,
+   "close": 66.37999725341797,
+   "chg": 0.004387969913702161,
+   "pct_b": 0.45172507740351464,
    "band": {
-    "mid": 35.329000282287595,
-    "upper": 37.82721553928195,
-    "lower": 32.83078502529324
+    "mid": 66.95224933624267,
+    "upper": 72.8792612509792,
+    "lower": 61.02523742150615
    },
-   "vs_sma20": -0.0056327439945174085,
-   "vs_sma200": -0.12112322619204396,
-   "range_pos": 0.2633490155238287,
+   "vs_sma20": -0.008547167399123201,
+   "vs_sma200": -0.07528476748863788,
+   "range_pos": 0.2424192878670567,
    "range_n": 252,
-   "atr_pct": 0.05294299146281585,
-   "dollar_volume": 87319187.51277924,
+   "atr_pct": 0.02397269187871528,
+   "dollar_volume": 230615285.7269287,
    "hold": {
     "n": 0,
     "n_independent": 0,
@@ -2953,24 +2919,92 @@
    "as_of": "2026-09-24",
    "close": 141.52999877929688,
    "chg": -0.020078889728910587,
-   "pct_b": 0.4659937356570967,
+   "pct_b": 0.4655021587770998,
    "band": {
-    "mid": 142.21999969482422,
-    "upper": 152.36520277519938,
-    "lower": 132.07479661444907
+    "mid": 142.23049926757812,
+    "upper": 152.3833155518656,
+    "lower": 132.07768298329066
    },
-   "vs_sma20": -0.004851644754661488,
-   "vs_sma200": 0.014731631437723047,
+   "vs_sma20": -0.00492510742694785,
+   "vs_sma200": 0.013705754128447545,
    "range_pos": 0.6085142859400121,
    "range_n": 252,
-   "atr_pct": 0.04189443796021012,
+   "atr_pct": 0.040679076969143385,
    "dollar_volume": 54678989.277648926,
    "hold": {
-    "n": 2008,
+    "n": 2009,
     "n_independent": 4,
-    "positive": 0.7549800796812749,
+    "positive": 0.754604280736685,
     "p10": -0.21723422429220185,
-    "median": 0.33333333333333326
+    "median": 0.3331117562278487
+   },
+   "spike": null,
+   "verdict": "neutral",
+   "why": [
+    "%B 0.47 \u2014 no measured edge either way"
+   ],
+   "stale": false
+  },
+  {
+   "ticker": "ALGM",
+   "tags": [
+    "humanoid_disclosed"
+   ],
+   "as_of": "2026-09-24",
+   "close": 35.130001068115234,
+   "chg": 0.0005696513077750875,
+   "pct_b": 0.4728726384190818,
+   "band": {
+    "mid": 35.260000228881836,
+    "upper": 37.65608951273694,
+    "lower": 32.86391094502673
+   },
+   "vs_sma20": -0.003686873508869648,
+   "vs_sma200": -0.12181419241818048,
+   "range_pos": 0.2633490155238287,
+   "range_n": 252,
+   "atr_pct": 0.05167320674472728,
+   "dollar_volume": 87319187.51277924,
+   "hold": {
+    "n": 0,
+    "n_independent": 0,
+    "positive": null,
+    "p10": null,
+    "median": null
+   },
+   "spike": null,
+   "verdict": "no_hold_data",
+   "why": [
+    "hold gate not measurable \u2014 under 4 independent 2-year windows of history"
+   ],
+   "stale": false
+  },
+  {
+   "ticker": "DXCM",
+   "tags": [
+    "ndx100"
+   ],
+   "as_of": "2026-09-24",
+   "close": 87.47000122070312,
+   "chg": -0.002963662672764711,
+   "pct_b": 0.47474130272999165,
+   "band": {
+    "mid": 87.7104995727539,
+    "upper": 92.47120337073522,
+    "lower": 82.94979577477258
+   },
+   "vs_sma20": -0.0027419562449452206,
+   "vs_sma200": 0.20704134353390802,
+   "range_pos": 0.8701334503309581,
+   "range_n": 252,
+   "atr_pct": 0.02701943812445466,
+   "dollar_volume": 325962408.12034607,
+   "hold": {
+    "n": 2009,
+    "n_independent": 4,
+    "positive": 0.6381284221005475,
+    "p10": -0.3828753188824897,
+    "median": 0.31732207642564036
    },
    "spike": null,
    "verdict": "neutral",
@@ -2987,63 +3021,29 @@
    "as_of": "2026-09-24",
    "close": 86.23999786376953,
    "chg": 0.003958048100711542,
-   "pct_b": 0.46998848701060875,
+   "pct_b": 0.497388819140778,
    "band": {
-    "mid": 86.44250030517578,
-    "upper": 89.81624626523177,
-    "lower": 83.0687543451198
+    "mid": 86.2560001373291,
+    "upper": 89.32018343643855,
+    "lower": 83.19181683821964
    },
-   "vs_sma20": -0.002342625915392804,
-   "vs_sma200": -0.05535135253569967,
+   "vs_sma20": -0.00018552070040445123,
+   "vs_sma200": -0.054674664575858345,
    "range_pos": 0.1399519664403908,
    "range_n": 252,
-   "atr_pct": 0.02270614791604528,
+   "atr_pct": 0.02292726901095378,
    "dollar_volume": 532430109.0927124,
    "hold": {
-    "n": 2008,
+    "n": 2009,
     "n_independent": 4,
     "positive": 1.0,
-    "p10": 0.27728966542546885,
-    "median": 0.5282469160993515
+    "p10": 0.2769524892760933,
+    "median": 0.5279503705946256
    },
    "spike": null,
    "verdict": "neutral",
    "why": [
-    "%B 0.47 \u2014 no measured edge either way"
-   ],
-   "stale": false
-  },
-  {
-   "ticker": "DXCM",
-   "tags": [
-    "ndx100"
-   ],
-   "as_of": "2026-09-24",
-   "close": 87.47000122070312,
-   "chg": -0.002963662672764711,
-   "pct_b": 0.47755905236618684,
-   "band": {
-    "mid": 87.6819995880127,
-    "upper": 92.40547140321682,
-    "lower": 82.95852777280858
-   },
-   "vs_sma20": -0.002417809451263464,
-   "vs_sma200": 0.20904678783740205,
-   "range_pos": 0.8701334503309581,
-   "range_n": 252,
-   "atr_pct": 0.027194804731382274,
-   "dollar_volume": 321650373.28300476,
-   "hold": {
-    "n": 2008,
-    "n_independent": 4,
-    "positive": 0.6379482071713147,
-    "p10": -0.3828753188824897,
-    "median": 0.3179723214717347
-   },
-   "spike": null,
-   "verdict": "neutral",
-   "why": [
-    "%B 0.48 \u2014 no measured edge either way"
+    "%B 0.50 \u2014 no measured edge either way"
    ],
    "stale": false
   },
@@ -3055,29 +3055,29 @@
    "as_of": "2026-09-24",
    "close": 406.0400085449219,
    "chg": -0.0001230953567424864,
-   "pct_b": 0.48580267528950083,
+   "pct_b": 0.5002402067572657,
    "band": {
-    "mid": 407.52100067138673,
-    "upper": 459.6784372541266,
-    "lower": 355.36356408864685
+    "mid": 406.01600036621096,
+    "upper": 455.9899873268822,
+    "lower": 356.0420134055397
    },
-   "vs_sma20": -0.0036341492193652236,
-   "vs_sma200": 0.13587361553205968,
-   "range_pos": 0.7887491691703012,
+   "vs_sma20": 5.9131114757304815e-05,
+   "vs_sma200": 0.1344936203300311,
+   "range_pos": 0.7887491334059622,
    "range_n": 252,
-   "atr_pct": 0.026372038395087373,
-   "dollar_volume": 1006821261.5203857,
+   "atr_pct": 0.026011908271579405,
+   "dollar_volume": 1010024531.6238403,
    "hold": {
-    "n": 2008,
+    "n": 2009,
     "n_independent": 4,
-    "positive": 0.953187250996016,
-    "p10": 0.04337186799034276,
-    "median": 0.25559564965632164
+    "positive": 0.9532105525136884,
+    "p10": 0.04337206774959035,
+    "median": 0.25559507372037693
    },
    "spike": null,
    "verdict": "neutral",
    "why": [
-    "%B 0.49 \u2014 no measured edge either way"
+    "%B 0.50 \u2014 no measured edge either way"
    ],
    "stale": false
   },
@@ -3100,14 +3100,14 @@
    "vs_sma200": 0.14983555375368396,
    "range_pos": 0.5375002613503128,
    "range_n": 252,
-   "atr_pct": 0.06356350052548206,
+   "atr_pct": 0.06356350052549439,
    "dollar_volume": 3231094768.8842773,
    "hold": {
     "n": 2009,
     "n_independent": 4,
     "positive": 0.5306122448979592,
-    "p10": -0.43557381465139866,
-    "median": 0.05700915099780324
+    "p10": -0.4355737005666931,
+    "median": 0.05700927624790442
    },
    "spike": null,
    "verdict": "neutral",
@@ -3170,14 +3170,14 @@
    "vs_sma200": 0.013908756072186224,
    "range_pos": 0.6403498437112165,
    "range_n": 252,
-   "atr_pct": 0.02629920728576546,
+   "atr_pct": 0.02629920728576643,
    "dollar_volume": 8740442773.110962,
    "hold": {
     "n": 2009,
     "n_independent": 4,
     "positive": 0.8999502239920358,
-    "p10": -0.0013657424286825925,
-    "median": 0.4529011839482411
+    "p10": -0.00136574258526867,
+    "median": 0.4529010830080029
    },
    "spike": null,
    "verdict": "neutral",
@@ -3194,63 +3194,29 @@
    "as_of": "2026-09-24",
    "close": 249.58999633789062,
    "chg": 0.01249442983931126,
-   "pct_b": 0.534727477207683,
+   "pct_b": 0.5188292641460627,
    "band": {
-    "mid": 248.2434989929199,
-    "upper": 267.6301267188294,
-    "lower": 228.85687126701043
+    "mid": 248.87599868774413,
+    "upper": 267.83578502373354,
+    "lower": 229.9162123517547
    },
-   "vs_sma20": 0.005424099122165238,
-   "vs_sma200": -0.19188564802172514,
+   "vs_sma20": 0.0028688891412238515,
+   "vs_sma200": -0.18917545954473214,
    "range_pos": 0.15437110576876095,
    "range_n": 252,
-   "atr_pct": 0.04052642959353465,
-   "dollar_volume": 371809474.4491577,
+   "atr_pct": 0.040477474244692876,
+   "dollar_volume": 369620378.96728516,
    "hold": {
-    "n": 2008,
+    "n": 2009,
     "n_independent": 4,
-    "positive": 0.798804780876494,
+    "positive": 0.7984071677451469,
     "p10": -0.08421161009522338,
-    "median": 0.4199677200129366
+    "median": 0.419416086325068
    },
    "spike": null,
    "verdict": "neutral",
    "why": [
-    "%B 0.53 \u2014 no measured edge either way"
-   ],
-   "stale": false
-  },
-  {
-   "ticker": "CIEN",
-   "tags": [
-    "ai_network"
-   ],
-   "as_of": "2026-09-24",
-   "close": 358.42999267578125,
-   "chg": 0.0070804107435662456,
-   "pct_b": 0.5627406223554887,
-   "band": {
-    "mid": 352.46399841308596,
-    "upper": 400.00890662974285,
-    "lower": 304.91909019642907
-   },
-   "vs_sma20": 0.016926535162615997,
-   "vs_sma200": -0.07197437132019624,
-   "range_pos": 0.4517077224337717,
-   "range_n": 252,
-   "atr_pct": 0.0685580237668492,
-   "dollar_volume": 769438664.6469116,
-   "hold": {
-    "n": 2008,
-    "n_independent": 4,
-    "positive": 0.7584661354581673,
-    "p10": -0.15595673224502915,
-    "median": 0.49379963124189685
-   },
-   "spike": null,
-   "verdict": "neutral",
-   "why": [
-    "%B 0.56 \u2014 no measured edge either way"
+    "%B 0.52 \u2014 no measured edge either way"
    ],
    "stale": false
   },
@@ -3262,17 +3228,17 @@
    "as_of": "2026-09-24",
    "close": 36.0099983215332,
    "chg": -0.004698783366739123,
-   "pct_b": 0.5802419044716142,
+   "pct_b": 0.5745777249326314,
    "band": {
-    "mid": 35.80149955749512,
-    "upper": 37.10068833803958,
-    "lower": 34.50231077695066
+    "mid": 35.812499618530275,
+    "upper": 37.1366128385389,
+    "lower": 34.48838639852165
    },
-   "vs_sma20": 0.005823743882661825,
-   "vs_sma200": -0.0024201306725899485,
+   "vs_sma20": 0.00551479804835342,
+   "vs_sma200": -0.0032006391841841175,
    "range_pos": 0.5377088744949395,
    "range_n": 252,
-   "atr_pct": 0.018322449180913383,
+   "atr_pct": 0.018522132996384832,
    "dollar_volume": 5471400.141906738,
    "hold": {
     "n": 0,
@@ -3285,6 +3251,74 @@
    "verdict": "no_hold_data",
    "why": [
     "hold gate not measurable \u2014 under 4 independent 2-year windows of history"
+   ],
+   "stale": false
+  },
+  {
+   "ticker": "VTI",
+   "tags": [
+    "benchmark"
+   ],
+   "as_of": "2026-09-24",
+   "close": 378.0799865722656,
+   "chg": -0.0003966486257166446,
+   "pct_b": 0.5870604578756352,
+   "band": {
+    "mid": 377.08949890136716,
+    "upper": 382.77800373506193,
+    "lower": 371.4009940676724
+   },
+   "vs_sma20": 0.0026266646877841637,
+   "vs_sma200": 0.0707835347479071,
+   "range_pos": 0.9153902227816278,
+   "range_n": 252,
+   "atr_pct": 0.008732844773601065,
+   "dollar_volume": 1074445455.0125122,
+   "hold": {
+    "n": 2009,
+    "n_independent": 4,
+    "positive": 0.925335988053758,
+    "p10": 0.013715023499775159,
+    "median": 0.30694633627861
+   },
+   "spike": null,
+   "verdict": "neutral",
+   "why": [
+    "%B 0.59 \u2014 no measured edge either way"
+   ],
+   "stale": false
+  },
+  {
+   "ticker": "CIEN",
+   "tags": [
+    "ai_network"
+   ],
+   "as_of": "2026-09-24",
+   "close": 358.42999267578125,
+   "chg": 0.0070804107435662456,
+   "pct_b": 0.5920340385670804,
+   "band": {
+    "mid": 350.6904983520508,
+    "upper": 392.73741080004373,
+    "lower": 308.64358590405783
+   },
+   "vs_sma20": 0.022069301449852752,
+   "vs_sma200": -0.07397457733038204,
+   "range_pos": 0.4517077224337717,
+   "range_n": 252,
+   "atr_pct": 0.06646937612943378,
+   "dollar_volume": 769438664.6469116,
+   "hold": {
+    "n": 2009,
+    "n_independent": 4,
+    "positive": 0.7585863613738179,
+    "p10": -0.15595673224502915,
+    "median": 0.49379963124189685
+   },
+   "spike": null,
+   "verdict": "neutral",
+   "why": [
+    "%B 0.59 \u2014 no measured edge either way"
    ],
    "stale": false
   },
@@ -3338,17 +3372,17 @@
     "lower": 102.96748436611422
    },
    "vs_sma20": 0.007024520816670821,
-   "vs_sma200": -0.0892300323816615,
+   "vs_sma200": -0.08923003002880425,
    "range_pos": 0.22926222185639175,
    "range_n": 252,
-   "atr_pct": 0.020199678768955162,
+   "atr_pct": 0.020199678766878303,
    "dollar_volume": 2403562633.8848114,
    "hold": {
     "n": 2009,
     "n_independent": 4,
     "positive": 0.9795918367346939,
-    "p10": 0.0763554541928233,
-    "median": 0.4314146479602896
+    "p10": 0.07635546730387377,
+    "median": 0.4314150805465524
    },
    "spike": null,
    "verdict": "neutral",
@@ -3366,24 +3400,24 @@
    "as_of": "2026-09-24",
    "close": 73.1500015258789,
    "chg": -0.012820471900198083,
-   "pct_b": 0.6024484192846363,
+   "pct_b": 0.5998624023757241,
    "band": {
-    "mid": 72.24050025939941,
-    "upper": 76.67932553767234,
-    "lower": 67.80167498112648
+    "mid": 72.2595001220703,
+    "upper": 76.71814212658649,
+    "lower": 67.80085811755413
    },
-   "vs_sma20": 0.012589908198499256,
-   "vs_sma200": -0.08184966123084625,
+   "vs_sma20": 0.012323658512780389,
+   "vs_sma200": -0.08293511452953584,
    "range_pos": 0.3173088038662687,
    "range_n": 252,
-   "atr_pct": 0.04905231514559655,
+   "atr_pct": 0.04767533689383916,
    "dollar_volume": 765256160.2844238,
    "hold": {
-    "n": 2008,
+    "n": 2009,
     "n_independent": 4,
-    "positive": 0.7390438247011952,
+    "positive": 0.7386759581881533,
     "p10": -0.3865804042918335,
-    "median": 0.3515358184034889
+    "median": 0.35137617478676897
    },
    "spike": null,
    "verdict": "neutral",
@@ -3393,36 +3427,36 @@
    "stale": false
   },
   {
-   "ticker": "VTI",
+   "ticker": "BOTT",
    "tags": [
-    "benchmark"
+    "humanoid_etf"
    ],
    "as_of": "2026-09-24",
-   "close": 378.0799865722656,
-   "chg": -0.0003966486257166446,
-   "pct_b": 0.6060196025710312,
+   "close": 42.43000030517578,
+   "chg": -0.004364577131742653,
+   "pct_b": 0.6109848367974205,
    "band": {
-    "mid": 376.9375,
-    "upper": 382.32559118577944,
-    "lower": 371.54940881422056
+    "mid": 42.01009979248047,
+    "upper": 43.90180196014574,
+    "lower": 40.118397624815195
    },
-   "vs_sma20": 0.003030970843350911,
-   "vs_sma200": 0.0714917968451676,
-   "range_pos": 0.9153902227816278,
+   "vs_sma20": 0.009995227689758357,
+   "vs_sma200": -0.1325745547232503,
+   "range_pos": 0.2543881180226798,
    "range_n": 252,
-   "atr_pct": 0.009087697351587484,
-   "dollar_volume": 1081148457.0419312,
+   "atr_pct": 0.019557626704945236,
+   "dollar_volume": 718187.9987716675,
    "hold": {
-    "n": 2008,
-    "n_independent": 4,
-    "positive": 0.9252988047808764,
-    "p10": 0.013714949220370753,
-    "median": 0.306946531821096
+    "n": 0,
+    "n_independent": 0,
+    "positive": null,
+    "p10": null,
+    "median": null
    },
    "spike": null,
-   "verdict": "neutral",
+   "verdict": "illiquid",
    "why": [
-    "%B 0.61 \u2014 no measured edge either way"
+    "below the liquidity gate \u2014 limit orders only, size in days-to-exit"
    ],
    "stale": false
   },
@@ -3443,85 +3477,17 @@
     "lower": 210.69391802658708
    },
    "vs_sma20": 0.012591742568320186,
-   "vs_sma200": 0.12895429010101322,
+   "vs_sma200": 0.12895428966802935,
    "range_pos": 0.849133210917557,
    "range_n": 252,
-   "atr_pct": 0.02679717781831366,
+   "atr_pct": 0.026797177820674836,
    "dollar_volume": 25154141236.338806,
    "hold": {
     "n": 2009,
     "n_independent": 4,
     "positive": 0.9547038327526133,
-    "p10": 0.09493636428984153,
-    "median": 1.3061530535284547
-   },
-   "spike": null,
-   "verdict": "neutral",
-   "why": [
-    "%B 0.63 \u2014 no measured edge either way"
-   ],
-   "stale": false
-  },
-  {
-   "ticker": "BOTT",
-   "tags": [
-    "humanoid_etf"
-   ],
-   "as_of": "2026-09-24",
-   "close": 42.43000030517578,
-   "chg": -0.004364577131742653,
-   "pct_b": 0.626524727728765,
-   "band": {
-    "mid": 41.97329978942871,
-    "upper": 43.778087375006905,
-    "lower": 40.16851220385051
-   },
-   "vs_sma20": 0.010880738899210707,
-   "vs_sma200": -0.13224933886552737,
-   "range_pos": 0.2543881180226798,
-   "range_n": 252,
-   "atr_pct": 0.02016784638198708,
-   "dollar_volume": 742765.7409667969,
-   "hold": {
-    "n": 0,
-    "n_independent": 0,
-    "positive": null,
-    "p10": null,
-    "median": null
-   },
-   "spike": null,
-   "verdict": "illiquid",
-   "why": [
-    "below the liquidity gate \u2014 limit orders only, size in days-to-exit"
-   ],
-   "stale": false
-  },
-  {
-   "ticker": "HON",
-   "tags": [
-    "ndx100"
-   ],
-   "as_of": "2026-09-24",
-   "close": 211.7899932861328,
-   "chg": -0.0036694454119119424,
-   "pct_b": 0.6281748872477155,
-   "band": {
-    "mid": 208.9645004272461,
-    "upper": 219.98652244559227,
-    "lower": 197.94247840889992
-   },
-   "vs_sma20": 0.013521401257676535,
-   "vs_sma200": -0.07310453742653533,
-   "range_pos": 0.27043314401002305,
-   "range_n": 252,
-   "atr_pct": 0.022917188598083775,
-   "dollar_volume": 679492010.8566284,
-   "hold": {
-    "n": 2008,
-    "n_independent": 4,
-    "positive": 0.8829681274900398,
-    "p10": -0.0224122561360649,
-    "median": 0.19774381649707506
+    "p10": 0.09493610623470738,
+    "median": 1.3061527803701205
    },
    "spike": null,
    "verdict": "neutral",
@@ -3565,40 +3531,6 @@
    "stale": false
   },
   {
-   "ticker": "PH",
-   "tags": [
-    "humanoid_association"
-   ],
-   "as_of": "2026-09-24",
-   "close": 974.97998046875,
-   "chg": 0.003881712925940084,
-   "pct_b": 0.6369360953635396,
-   "band": {
-    "mid": 959.1644104003906,
-    "upper": 1016.9124060124024,
-    "lower": 901.4164147883788
-   },
-   "vs_sma20": 0.016488904192929255,
-   "vs_sma200": 0.03861902118288918,
-   "range_pos": 0.7320229112506077,
-   "range_n": 252,
-   "atr_pct": 0.023136635191719768,
-   "dollar_volume": 558654603.9245605,
-   "hold": {
-    "n": 2008,
-    "n_independent": 4,
-    "positive": 0.9656374501992032,
-    "p10": 0.0742133863036274,
-    "median": 0.5956029323515104
-   },
-   "spike": null,
-   "verdict": "neutral",
-   "why": [
-    "%B 0.64 \u2014 no measured edge either way"
-   ],
-   "stale": false
-  },
-  {
    "ticker": "SPY",
    "tags": [
     "benchmark"
@@ -3613,22 +3545,125 @@
     "lower": 752.397804407128
    },
    "vs_sma20": 0.004269746188903412,
-   "vs_sma200": 0.07393633924334342,
+   "vs_sma200": 0.07393634291362905,
    "range_pos": 0.9403867520401591,
    "range_n": 252,
-   "atr_pct": 0.008660115688999253,
+   "atr_pct": 0.0086601156697954,
    "dollar_volume": 32950393030.981445,
    "hold": {
     "n": 2009,
     "n_independent": 4,
     "positive": 0.9800895968143355,
-    "p10": 0.05369005850225639,
-    "median": 0.3171138962176725
+    "p10": 0.053689880481534,
+    "median": 0.3171139988135121
    },
    "spike": null,
    "verdict": "neutral",
    "why": [
     "%B 0.64 \u2014 no measured edge either way"
+   ],
+   "stale": false
+  },
+  {
+   "ticker": "GILD",
+   "tags": [
+    "ndx100"
+   ],
+   "as_of": "2026-09-24",
+   "close": 149.69000244140625,
+   "chg": -0.011098584461739835,
+   "pct_b": 0.6584751658342247,
+   "band": {
+    "mid": 147.96087646484375,
+    "upper": 153.4163873250478,
+    "lower": 142.5053656046397
+   },
+   "vs_sma20": 0.011686372897184993,
+   "vs_sma200": 0.11469712570063506,
+   "range_pos": 0.9256598715410529,
+   "range_n": 252,
+   "atr_pct": 0.024188417160072785,
+   "dollar_volume": 820562738.7367249,
+   "hold": {
+    "n": 2009,
+    "n_independent": 4,
+    "positive": 0.7705326032852166,
+    "p10": -0.08674107592987934,
+    "median": 0.16188163202492412
+   },
+   "spike": null,
+   "verdict": "neutral",
+   "why": [
+    "%B 0.66 \u2014 no measured edge either way"
+   ],
+   "stale": false
+  },
+  {
+   "ticker": "HON",
+   "tags": [
+    "ndx100"
+   ],
+   "as_of": "2026-09-24",
+   "close": 211.7899932861328,
+   "chg": -0.0036694454119119424,
+   "pct_b": 0.6675952803091315,
+   "band": {
+    "mid": 208.52350082397462,
+    "upper": 218.2686811659661,
+    "lower": 198.77832048198314
+   },
+   "vs_sma20": 0.015664864867752204,
+   "vs_sma200": -0.07338569094733072,
+   "range_pos": 0.2704330135438547,
+   "range_n": 252,
+   "atr_pct": 0.022412172554811684,
+   "dollar_volume": 679492010.8566284,
+   "hold": {
+    "n": 2009,
+    "n_independent": 4,
+    "positive": 0.883026381284221,
+    "p10": -0.02241244158322442,
+    "median": 0.19732455910780766
+   },
+   "spike": null,
+   "verdict": "neutral",
+   "why": [
+    "%B 0.67 \u2014 no measured edge either way"
+   ],
+   "stale": false
+  },
+  {
+   "ticker": "NXPI",
+   "tags": [
+    "ndx100",
+    "humanoid_association"
+   ],
+   "as_of": "2026-09-24",
+   "close": 230.16000366210938,
+   "chg": -0.02242609040326915,
+   "pct_b": 0.6687512637844564,
+   "band": {
+    "mid": 226.8002731323242,
+    "upper": 236.75495570606927,
+    "lower": 216.84559055857915
+   },
+   "vs_sma20": 0.014813608834699066,
+   "vs_sma200": -0.054383157017843686,
+   "range_pos": 0.3298307803409779,
+   "range_n": 252,
+   "atr_pct": 0.03321248182169369,
+   "dollar_volume": 828767333.7646484,
+   "hold": {
+    "n": 2009,
+    "n_independent": 4,
+    "positive": 0.7127924340467895,
+    "p10": -0.11728134206676044,
+    "median": 0.15405132311461678
+   },
+   "spike": null,
+   "verdict": "neutral",
+   "why": [
+    "%B 0.67 \u2014 no measured edge either way"
    ],
    "stale": false
   },
@@ -3658,8 +3693,8 @@
     "n": 2009,
     "n_independent": 4,
     "positive": 0.931806869089099,
-    "p10": 0.07406545389984376,
-    "median": 0.6769837559624194
+    "p10": 0.07406553995253451,
+    "median": 0.6769836133708174
    },
    "spike": null,
    "verdict": "neutral",
@@ -3677,29 +3712,29 @@
    "as_of": "2026-09-24",
    "close": 1722.5,
    "chg": -0.012673311248477703,
-   "pct_b": 0.6757692967126453,
+   "pct_b": 0.6747834775536454,
    "band": {
-    "mid": 1685.9150085449219,
-    "upper": 1789.9860611670665,
-    "lower": 1581.8439559227772
+    "mid": 1686.028009033203,
+    "upper": 1790.3627879187038,
+    "lower": 1581.6932301477023
    },
-   "vs_sma20": 0.02170037710658601,
-   "vs_sma200": 0.13672866186800503,
+   "vs_sma20": 0.02163190099535206,
+   "vs_sma200": 0.13428209062653207,
    "range_pos": 0.7498402948012717,
    "range_n": 252,
-   "atr_pct": 0.031003637043672094,
-   "dollar_volume": 2363678158.4228516,
+   "atr_pct": 0.03106587564623587,
+   "dollar_volume": 2334273573.76709,
    "hold": {
-    "n": 2008,
+    "n": 2009,
     "n_independent": 4,
-    "positive": 0.9292828685258964,
-    "p10": 0.054780409221249604,
-    "median": 0.5648389123717523
+    "positive": 0.929318068690891,
+    "p10": 0.05478020319786481,
+    "median": 0.5648382763670876
    },
    "spike": null,
    "verdict": "neutral",
    "why": [
-    "%B 0.68 \u2014 no measured edge either way"
+    "%B 0.67 \u2014 no measured edge either way"
    ],
    "stale": false
   },
@@ -3738,74 +3773,6 @@
    "stale": false
   },
   {
-   "ticker": "GILD",
-   "tags": [
-    "ndx100"
-   ],
-   "as_of": "2026-09-24",
-   "close": 149.69000244140625,
-   "chg": -0.011098584461739835,
-   "pct_b": 0.6994302708703924,
-   "band": {
-    "mid": 147.69040603637694,
-    "upper": 152.70367808455268,
-    "lower": 142.6771339882012
-   },
-   "vs_sma20": 0.013539108319174042,
-   "vs_sma200": 0.11612559773951547,
-   "range_pos": 0.9256598589800129,
-   "range_n": 252,
-   "atr_pct": 0.023732002899444774,
-   "dollar_volume": 827519244.2298889,
-   "hold": {
-    "n": 2008,
-    "n_independent": 4,
-    "positive": 0.7704183266932271,
-    "p10": -0.08674101699266246,
-    "median": 0.16188186905266866
-   },
-   "spike": null,
-   "verdict": "neutral",
-   "why": [
-    "%B 0.70 \u2014 no measured edge either way"
-   ],
-   "stale": false
-  },
-  {
-   "ticker": "ONTO",
-   "tags": [
-    "ai_equipment"
-   ],
-   "as_of": "2026-09-24",
-   "close": 279.7300109863281,
-   "chg": -0.009138842388074275,
-   "pct_b": 0.7029800675726435,
-   "band": {
-    "mid": 267.6495018005371,
-    "upper": 297.4073724384203,
-    "lower": 237.8916311626539
-   },
-   "vs_sma20": 0.045135556406878274,
-   "vs_sma200": 0.12504207224014352,
-   "range_pos": 0.6160398462619678,
-   "range_n": 252,
-   "atr_pct": 0.05892203059871848,
-   "dollar_volume": 294545216.5008545,
-   "hold": {
-    "n": 0,
-    "n_independent": 0,
-    "positive": null,
-    "p10": null,
-    "median": null
-   },
-   "spike": null,
-   "verdict": "no_hold_data",
-   "why": [
-    "hold gate not measurable \u2014 under 4 independent 2-year windows of history"
-   ],
-   "stale": false
-  },
-  {
    "ticker": "SNPS",
    "tags": [
     "ndx100"
@@ -3813,29 +3780,63 @@
    "as_of": "2026-09-24",
    "close": 424.9100036621094,
    "chg": 0.028688341097069525,
-   "pct_b": 0.7042945070138315,
+   "pct_b": 0.704752442601957,
    "band": {
-    "mid": 405.56950225830076,
-    "upper": 452.9043564511724,
-    "lower": 358.2346480654291
+    "mid": 405.53150177001953,
+    "upper": 452.85328617911216,
+    "lower": 358.2097173609269
    },
-   "vs_sma20": 0.047687267647385845,
-   "vs_sma200": -0.046815528278100316,
+   "vs_sma20": 0.04778544159333786,
+   "vs_sma200": -0.04620017251606401,
    "range_pos": 0.34286225864481895,
    "range_n": 252,
-   "atr_pct": 0.03612164659143715,
-   "dollar_volume": 650545070.993042,
+   "atr_pct": 0.03450717910399567,
+   "dollar_volume": 649136383.56781,
    "hold": {
-    "n": 2008,
+    "n": 2009,
     "n_independent": 4,
-    "positive": 0.8834661354581673,
-    "p10": -0.07848196199322044,
-    "median": 0.6111110651647442
+    "positive": 0.883026381284221,
+    "p10": -0.07980341197964791,
+    "median": 0.6111025224269115
    },
    "spike": null,
    "verdict": "neutral",
    "why": [
     "%B 0.70 \u2014 no measured edge either way"
+   ],
+   "stale": false
+  },
+  {
+   "ticker": "PH",
+   "tags": [
+    "humanoid_association"
+   ],
+   "as_of": "2026-09-24",
+   "close": 974.97998046875,
+   "chg": 0.003881712925940084,
+   "pct_b": 0.7139589064759053,
+   "band": {
+    "mid": 955.5368774414062,
+    "upper": 1000.9734132407078,
+    "lower": 910.1003416421046
+   },
+   "vs_sma20": 0.020347831136989347,
+   "vs_sma200": 0.03812010636825458,
+   "range_pos": 0.7320229112506077,
+   "range_n": 252,
+   "atr_pct": 0.022606156035567645,
+   "dollar_volume": 558593659.8449707,
+   "hold": {
+    "n": 2009,
+    "n_independent": 4,
+    "positive": 0.9656545545047287,
+    "p10": 0.07421309508449792,
+    "median": 0.5955069303550167
+   },
+   "spike": null,
+   "verdict": "neutral",
+   "why": [
+    "%B 0.71 \u2014 no measured edge either way"
    ],
    "stale": false
   },
@@ -3875,93 +3876,25 @@
    "stale": false
   },
   {
-   "ticker": "CDNS",
+   "ticker": "ONTO",
    "tags": [
-    "ndx100"
+    "ai_equipment"
    ],
    "as_of": "2026-09-24",
-   "close": 322.0,
-   "chg": 0.04176778224810751,
-   "pct_b": 0.7169394568674161,
+   "close": 279.7300109863281,
+   "chg": -0.009138842388074275,
+   "pct_b": 0.7180216790574282,
    "band": {
-    "mid": 302.2145004272461,
-    "upper": 347.8159319474834,
-    "lower": 256.61306890700877
+    "mid": 267.24600143432616,
+    "upper": 295.87620372882736,
+    "lower": 238.61579913982493
    },
-   "vs_sma20": 0.06546839924882097,
-   "vs_sma200": -0.011535868309843433,
-   "range_pos": 0.37378088125397213,
+   "vs_sma20": 0.046713550380546476,
+   "vs_sma200": 0.12218942990436998,
+   "range_pos": 0.6160398462619678,
    "range_n": 252,
-   "atr_pct": 0.03587173281602982,
-   "dollar_volume": 694670325.2349854,
-   "hold": {
-    "n": 2008,
-    "n_independent": 4,
-    "positive": 0.9770916334661355,
-    "p10": 0.2427529106739661,
-    "median": 0.7114689881286822
-   },
-   "spike": null,
-   "verdict": "neutral",
-   "why": [
-    "%B 0.72 \u2014 no measured edge either way"
-   ],
-   "stale": false
-  },
-  {
-   "ticker": "JBL",
-   "tags": [
-    "humanoid_disclosed"
-   ],
-   "as_of": "2026-09-24",
-   "close": 310.69000244140625,
-   "chg": 0.00628340871710531,
-   "pct_b": 0.7237773435819542,
-   "band": {
-    "mid": 305.00350189208984,
-    "upper": 317.7092129759151,
-    "lower": 292.2977908082646
-   },
-   "vs_sma20": 0.018644050032344595,
-   "vs_sma200": 0.04019690966152134,
-   "range_pos": 0.6125473850347718,
-   "range_n": 252,
-   "atr_pct": 0.03838624634537193,
-   "dollar_volume": 309695586.8331909,
-   "hold": {
-    "n": 2008,
-    "n_independent": 4,
-    "positive": 0.950199203187251,
-    "p10": 0.08433856231856174,
-    "median": 0.7832411416062086
-   },
-   "spike": null,
-   "verdict": "neutral",
-   "why": [
-    "%B 0.72 \u2014 no measured edge either way"
-   ],
-   "stale": false
-  },
-  {
-   "ticker": "GEV",
-   "tags": [
-    "ai_power"
-   ],
-   "as_of": "2026-09-24",
-   "close": 955.0399780273438,
-   "chg": 0.0033829617767513476,
-   "pct_b": 0.7287548743402144,
-   "band": {
-    "mid": 931.3085052490235,
-    "upper": 983.1794715984132,
-    "lower": 879.4375388996338
-   },
-   "vs_sma20": 0.025481859818272223,
-   "vs_sma200": 0.053455127156888826,
-   "range_pos": 0.6499199289250743,
-   "range_n": 252,
-   "atr_pct": 0.040851645234929984,
-   "dollar_volume": 2344709848.5290527,
+   "atr_pct": 0.057594921204395404,
+   "dollar_volume": 292026044.732666,
    "hold": {
     "n": 0,
     "n_independent": 0,
@@ -3977,32 +3910,99 @@
    "stale": false
   },
   {
-   "ticker": "NXPI",
+   "ticker": "JBL",
    "tags": [
-    "ndx100",
-    "humanoid_association"
+    "humanoid_disclosed"
    ],
    "as_of": "2026-09-24",
-   "close": 230.16000366210938,
-   "chg": -0.02242609040326915,
-   "pct_b": 0.7340883559627555,
+   "close": 310.69000244140625,
+   "chg": 0.00628340871710531,
+   "pct_b": 0.7303395446249965,
    "band": {
-    "mid": 226.02928924560547,
-    "upper": 234.85227063550664,
-    "lower": 217.2063078557043
+    "mid": 304.9070022583008,
+    "upper": 317.4602097253913,
+    "lower": 292.3537947912103
    },
-   "vs_sma20": 0.01827512899009931,
-   "vs_sma200": -0.054119358452535016,
-   "range_pos": 0.32983084894079956,
+   "vs_sma20": 0.018966439407011038,
+   "vs_sma200": 0.03864796001500448,
+   "range_pos": 0.6125473850347718,
    "range_n": 252,
-   "atr_pct": 0.033034542142262195,
-   "dollar_volume": 828767333.7646484,
+   "atr_pct": 0.03759656509698908,
+   "dollar_volume": 309695586.8331909,
    "hold": {
-    "n": 2008,
+    "n": 2009,
     "n_independent": 4,
-    "positive": 0.7131474103585658,
-    "p10": -0.1172815126518677,
-    "median": 0.15494531917328414
+    "positive": 0.9502239920358387,
+    "p10": 0.08433900140809802,
+    "median": 0.783241300602946
+   },
+   "spike": null,
+   "verdict": "neutral",
+   "why": [
+    "%B 0.73 \u2014 no measured edge either way"
+   ],
+   "stale": false
+  },
+  {
+   "ticker": "GEV",
+   "tags": [
+    "ai_power"
+   ],
+   "as_of": "2026-09-24",
+   "close": 955.0399780273438,
+   "chg": 0.0033829617767513476,
+   "pct_b": 0.731098292947153,
+   "band": {
+    "mid": 931.1680053710937,
+    "upper": 982.8169646771432,
+    "lower": 879.5190460650442
+   },
+   "vs_sma20": 0.025636590302237083,
+   "vs_sma200": 0.05159844457229701,
+   "range_pos": 0.6499199289250743,
+   "range_n": 252,
+   "atr_pct": 0.03996683770386195,
+   "dollar_volume": 2295502276.098633,
+   "hold": {
+    "n": 0,
+    "n_independent": 0,
+    "positive": null,
+    "p10": null,
+    "median": null
+   },
+   "spike": null,
+   "verdict": "no_hold_data",
+   "why": [
+    "hold gate not measurable \u2014 under 4 independent 2-year windows of history"
+   ],
+   "stale": false
+  },
+  {
+   "ticker": "MCHP",
+   "tags": [
+    "ndx100"
+   ],
+   "as_of": "2026-09-24",
+   "close": 74.69000244140625,
+   "chg": -0.011121360406017522,
+   "pct_b": 0.7325530203388414,
+   "band": {
+    "mid": 73.1479995727539,
+    "upper": 76.46337872028244,
+    "lower": 69.83262042522537
+   },
+   "vs_sma20": 0.021080588364124075,
+   "vs_sma200": -0.040129571812693166,
+   "range_pos": 0.4955403486381183,
+   "range_n": 252,
+   "atr_pct": 0.036041650798680595,
+   "dollar_volume": 687731887.8486633,
+   "hold": {
+    "n": 2009,
+    "n_independent": 4,
+    "positive": 0.7610751617720258,
+    "p10": -0.16483351224259857,
+    "median": 0.15774986076591957
    },
    "spike": null,
    "verdict": "neutral",
@@ -4027,17 +4027,17 @@
     "lower": 311.4537450670725
    },
    "vs_sma20": 0.023923180778294473,
-   "vs_sma200": 0.17017480840740729,
+   "vs_sma200": 0.17017480591943412,
    "range_pos": 0.9594746554685276,
    "range_n": 252,
-   "atr_pct": 0.02072060490937969,
+   "atr_pct": 0.02072060490962629,
    "dollar_volume": 13362652575.790405,
    "hold": {
     "n": 2009,
     "n_independent": 4,
     "positive": 0.9915380786460926,
-    "p10": 0.16248907017108127,
-    "median": 0.498159125094076
+    "p10": 0.1624888139883005,
+    "median": 0.4981588562513559
    },
    "spike": null,
    "verdict": "neutral",
@@ -4047,36 +4047,36 @@
    "stale": false
   },
   {
-   "ticker": "MCHP",
+   "ticker": "CDNS",
    "tags": [
     "ndx100"
    ],
    "as_of": "2026-09-24",
-   "close": 74.69000244140625,
-   "chg": -0.011121360406017522,
-   "pct_b": 0.7618260185108212,
+   "close": 322.0,
+   "chg": 0.04176778224810751,
+   "pct_b": 0.747860362614059,
    "band": {
-    "mid": 73.05949974060059,
-    "upper": 76.17321378261867,
-    "lower": 69.9457856985825
+    "mid": 300.6280014038086,
+    "upper": 343.7409831867602,
+    "lower": 257.51501962085695
    },
-   "vs_sma20": 0.022317463253852088,
-   "vs_sma200": -0.039443757996082796,
-   "range_pos": 0.4955403486381183,
+   "vs_sma20": 0.07109117745650106,
+   "vs_sma200": -0.011010950448624768,
+   "range_pos": 0.37378088125397213,
    "range_n": 252,
-   "atr_pct": 0.036579361085632145,
-   "dollar_volume": 703149474.3278503,
+   "atr_pct": 0.034115298481501244,
+   "dollar_volume": 694670325.2349854,
    "hold": {
-    "n": 2008,
+    "n": 2009,
     "n_independent": 4,
-    "positive": 0.7609561752988048,
-    "p10": -0.16483356657277326,
-    "median": 0.158013677998607
+    "positive": 0.9771030363364858,
+    "p10": 0.24237703910702368,
+    "median": 0.7114232662186175
    },
    "spike": null,
    "verdict": "neutral",
    "why": [
-    "%B 0.76 \u2014 no measured edge either way"
+    "%B 0.75 \u2014 no measured edge either way"
    ],
    "stale": false
   },
@@ -4088,18 +4088,52 @@
    "as_of": "2026-09-24",
    "close": 47.04999923706055,
    "chg": 0.013571759865701694,
-   "pct_b": 0.7715820453617167,
+   "pct_b": 0.7524072738933967,
    "band": {
-    "mid": 45.403499603271484,
-    "upper": 48.434811249069185,
-    "lower": 42.372187957473784
+    "mid": 45.415283012390134,
+    "upper": 48.653534033160696,
+    "lower": 42.17703199161957
    },
-   "vs_sma20": 0.036263716413402314,
-   "vs_sma200": -0.12670096703865785,
-   "range_pos": 0.2577581823285279,
+   "vs_sma20": 0.03599484834707356,
+   "vs_sma200": -0.1252641502622428,
+   "range_pos": 0.25980627898045594,
    "range_n": 252,
-   "atr_pct": 0.04689846290062598,
-   "dollar_volume": 203147395.33901215,
+   "atr_pct": 0.044965128764181114,
+   "dollar_volume": 202638995.1839447,
+   "hold": {
+    "n": 0,
+    "n_independent": 0,
+    "positive": null,
+    "p10": null,
+    "median": null
+   },
+   "spike": null,
+   "verdict": "no_hold_data",
+   "why": [
+    "hold gate not measurable \u2014 under 4 independent 2-year windows of history"
+   ],
+   "stale": false
+  },
+  {
+   "ticker": "SYM",
+   "tags": [
+    "humanoid_oem"
+   ],
+   "as_of": "2026-09-24",
+   "close": 44.040000915527344,
+   "chg": 0.008011039135267684,
+   "pct_b": 0.7668333284152932,
+   "band": {
+    "mid": 42.16024951934814,
+    "upper": 45.68258199434842,
+    "lower": 38.637917044347866
+   },
+   "vs_sma20": 0.04458586980887169,
+   "vs_sma200": -0.13646337357682503,
+   "range_pos": 0.11858189644853874,
+   "range_n": 252,
+   "atr_pct": 0.04319727633653921,
+   "dollar_volume": 64074355.01308441,
    "hold": {
     "n": 0,
     "n_independent": 0,
@@ -4131,17 +4165,17 @@
     "lower": 411.1128827542359
    },
    "vs_sma20": 0.049974813973951315,
-   "vs_sma200": 0.13021021466977212,
-   "range_pos": 0.52651215225714,
+   "vs_sma200": 0.13021021590274184,
+   "range_pos": 0.5265121660522467,
    "range_n": 252,
-   "atr_pct": 0.043376759263693006,
+   "atr_pct": 0.04337675926012343,
    "dollar_volume": 3430852984.0270996,
    "hold": {
     "n": 2009,
     "n_independent": 4,
     "positive": 0.9223494275759084,
-    "p10": 0.015529589073597583,
-    "median": 0.508636786203635
+    "p10": 0.015529942918374617,
+    "median": 0.5086365589007118
    },
    "spike": null,
    "verdict": "neutral",
@@ -4158,63 +4192,134 @@
    "as_of": "2026-09-24",
    "close": 432.92999267578125,
    "chg": 9.2351465709406e-05,
-   "pct_b": 0.7896423206385811,
+   "pct_b": 0.804661847068809,
    "band": {
-    "mid": 424.856999206543,
-    "upper": 438.7931419833298,
-    "lower": 410.92085642975616
+    "mid": 424.6289993286133,
+    "upper": 438.2522892597827,
+    "lower": 411.0057093974439
    },
-   "vs_sma20": 0.019001672290477112,
-   "vs_sma200": 0.029451588757235747,
-   "range_pos": 0.6307915771852242,
+   "vs_sma20": 0.01954881404777531,
+   "vs_sma200": 0.029124022678892247,
+   "range_pos": 0.6307915085719149,
    "range_n": 252,
-   "atr_pct": 0.025379585956772317,
-   "dollar_volume": 305321459.8617554,
+   "atr_pct": 0.024681424557674046,
+   "dollar_volume": 303624295.1095581,
    "hold": {
-    "n": 2008,
+    "n": 2009,
     "n_independent": 4,
-    "positive": 0.848605577689243,
-    "p10": -0.03343867707469361,
-    "median": 0.18664206045273124
+    "positive": 0.8486809357889498,
+    "p10": -0.03343887752230468,
+    "median": 0.18664217597486243
    },
    "spike": null,
    "verdict": "neutral",
    "why": [
-    "%B 0.79 \u2014 no measured edge either way"
+    "%B 0.80 \u2014 no measured edge either way"
    ],
    "stale": false
   },
   {
-   "ticker": "SYM",
+   "ticker": "ARKQ",
    "tags": [
-    "humanoid_oem"
+    "humanoid_etf"
    ],
    "as_of": "2026-09-24",
-   "close": 44.040000915527344,
-   "chg": 0.008011039135267684,
-   "pct_b": 0.8170703716601599,
+   "close": 124.87999725341797,
+   "chg": 0.0012828418148562726,
+   "pct_b": 0.8057175988561809,
    "band": {
-    "mid": 41.93724956512451,
-    "upper": 45.2531559669005,
-    "lower": 38.62134316334852
+    "mid": 122.32874946594238,
+    "upper": 126.50130576793626,
+    "lower": 118.1561931639485
    },
-   "vs_sma20": 0.050140421038758376,
-   "vs_sma200": -0.1377001924242538,
-   "range_pos": 0.11858189644853874,
+   "vs_sma20": 0.020855668014376993,
+   "vs_sma200": 0.004325948887052844,
+   "range_pos": 0.5576763095115705,
    "range_n": 252,
-   "atr_pct": 0.04321427821521514,
-   "dollar_volume": 64074355.01308441,
+   "atr_pct": 0.019863055417492972,
+   "dollar_volume": 12156444.71282959,
    "hold": {
-    "n": 0,
-    "n_independent": 0,
-    "positive": null,
-    "p10": null,
-    "median": null
+    "n": 2009,
+    "n_independent": 4,
+    "positive": 0.7630662020905923,
+    "p10": -0.3334716953182757,
+    "median": 0.4640034239317874
    },
    "spike": null,
-   "verdict": "no_hold_data",
+   "verdict": "neutral",
    "why": [
-    "hold gate not measurable \u2014 under 4 independent 2-year windows of history"
+    "%B 0.81 \u2014 no measured edge either way"
+   ],
+   "stale": false
+  },
+  {
+   "ticker": "KLAC",
+   "tags": [
+    "ndx100",
+    "ai_equipment",
+    "soxx_top10"
+   ],
+   "as_of": "2026-09-24",
+   "close": 187.11000061035156,
+   "chg": -0.003992334704371769,
+   "pct_b": 0.8060364596472038,
+   "band": {
+    "mid": 178.19300003051757,
+    "upper": 192.76152658796343,
+    "lower": 163.6244734730717
+   },
+   "vs_sma20": 0.05004125065691056,
+   "vs_sma200": 0.06742253875998383,
+   "range_pos": 0.4388644382061919,
+   "range_n": 252,
+   "atr_pct": 0.04395926909721711,
+   "dollar_volume": 1923053086.480713,
+   "hold": {
+    "n": 2009,
+    "n_independent": 4,
+    "positive": 1.0,
+    "p10": 0.31300987234996946,
+    "median": 0.884857590720163
+   },
+   "spike": null,
+   "verdict": "neutral",
+   "why": [
+    "%B 0.81 \u2014 no measured edge either way"
+   ],
+   "stale": false
+  },
+  {
+   "ticker": "TER",
+   "tags": [
+    "ndx100",
+    "ai_equipment"
+   ],
+   "as_of": "2026-09-24",
+   "close": 387.70001220703125,
+   "chg": -0.0037004738325541187,
+   "pct_b": 0.8099423622079528,
+   "band": {
+    "mid": 361.9643280029297,
+    "upper": 403.4812152408776,
+    "lower": 320.44744076498176
+   },
+   "vs_sma20": 0.071100056588707,
+   "vs_sma200": 0.18016454542445026,
+   "range_pos": 0.7272708032292483,
+   "range_n": 252,
+   "atr_pct": 0.05414665934056654,
+   "dollar_volume": 983924918.7347412,
+   "hold": {
+    "n": 2009,
+    "n_independent": 4,
+    "positive": 0.750622200099552,
+    "p10": -0.19181616541597324,
+    "median": 0.49656017831993027
+   },
+   "spike": null,
+   "verdict": "neutral",
+   "why": [
+    "%B 0.81 \u2014 no measured edge either way"
    ],
    "stale": false
   },
@@ -4254,67 +4359,31 @@
    "stale": false
   },
   {
-   "ticker": "KLAC",
-   "tags": [
-    "ndx100",
-    "ai_equipment",
-    "soxx_top10"
-   ],
-   "as_of": "2026-09-24",
-   "close": 187.11000061035156,
-   "chg": -0.003992334704371769,
-   "pct_b": 0.8249240629734864,
-   "band": {
-    "mid": 177.96849975585937,
-    "upper": 192.0356340438455,
-    "lower": 163.90136546787323
-   },
-   "vs_sma20": 0.051365836465625536,
-   "vs_sma200": 0.06947626892682868,
-   "range_pos": 0.4388644592310891,
-   "range_n": 252,
-   "atr_pct": 0.043729486669045595,
-   "dollar_volume": 1935072023.803711,
-   "hold": {
-    "n": 2008,
-    "n_independent": 4,
-    "positive": 1.0,
-    "p10": 0.3130091760665694,
-    "median": 0.8848579905884939
-   },
-   "spike": null,
-   "verdict": "neutral",
-   "why": [
-    "%B 0.82 \u2014 no measured edge either way"
-   ],
-   "stale": false
-  },
-  {
-   "ticker": "MAR",
+   "ticker": "PANW",
    "tags": [
     "ndx100"
    ],
    "as_of": "2026-09-24",
-   "close": 351.510009765625,
-   "chg": -0.0004265310098457986,
-   "pct_b": 0.8348689151222785,
+   "close": 389.9200134277344,
+   "chg": -0.008593883727790907,
+   "pct_b": 0.8307246940728795,
    "band": {
-    "mid": 340.05700225830077,
-    "upper": 357.1577347988863,
-    "lower": 322.95626971771526
+    "mid": 361.32150115966795,
+    "upper": 404.5576319666472,
+    "lower": 318.0853703526887
    },
-   "vs_sma20": 0.033679669676746515,
-   "vs_sma200": 0.015820628344466625,
-   "range_pos": 0.6532755388990329,
+   "vs_sma20": 0.07914976600141133,
+   "vs_sma200": 0.5958346445582199,
+   "range_pos": 0.9760941040046687,
    "range_n": 252,
-   "atr_pct": 0.021333730904867294,
-   "dollar_volume": 524478397.28393555,
+   "atr_pct": 0.045916341736230326,
+   "dollar_volume": 2079384801.2695312,
    "hold": {
-    "n": 2008,
+    "n": 2009,
     "n_independent": 4,
-    "positive": 0.899402390438247,
-    "p10": -0.002093685394073508,
-    "median": 0.36314712110796177
+    "positive": 0.9746142359382778,
+    "p10": 0.16746757482127972,
+    "median": 0.7059073042518846
    },
    "spike": null,
    "verdict": "neutral",
@@ -4324,31 +4393,99 @@
    "stale": false
   },
   {
-   "ticker": "EMR",
+   "ticker": "APH",
    "tags": [
     "humanoid_association"
    ],
    "as_of": "2026-09-24",
-   "close": 156.13999938964844,
-   "chg": 0.010026541745753903,
-   "pct_b": 0.8389451981672363,
+   "close": 83.08000183105469,
+   "chg": 0.01082856020454459,
+   "pct_b": 0.831889449492159,
    "band": {
-    "mid": 151.3604995727539,
-    "upper": 158.411049105154,
-    "lower": 144.30995004035378
+    "mid": 80.43423919677734,
+    "upper": 84.420148719249,
+    "lower": 76.44832967430568
    },
-   "vs_sma20": 0.03157692945243751,
-   "vs_sma200": 0.09154883161206273,
-   "range_pos": 0.8147838736958324,
+   "vs_sma20": 0.03289348740907028,
+   "vs_sma200": 0.1319667497039949,
+   "range_pos": 0.8273341955715668,
    "range_n": 252,
-   "atr_pct": 0.024166854986548646,
-   "dollar_volume": 340484376.6960144,
+   "atr_pct": 0.034587918011576055,
+   "dollar_volume": 947987655.0186157,
    "hold": {
-    "n": 2008,
+    "n": 2009,
     "n_independent": 4,
-    "positive": 0.8466135458167331,
-    "p10": -0.03413971807093186,
-    "median": 0.280893945549044
+    "positive": 0.9825783972125436,
+    "p10": 0.14323256089230463,
+    "median": 0.45056086334891066
+   },
+   "spike": null,
+   "verdict": "neutral",
+   "why": [
+    "%B 0.83 \u2014 no measured edge either way"
+   ],
+   "stale": false
+  },
+  {
+   "ticker": "PWR",
+   "tags": [
+    "ai_power"
+   ],
+   "as_of": "2026-09-24",
+   "close": 643.5,
+   "chg": 0.013545401252542444,
+   "pct_b": 0.840831392585898,
+   "band": {
+    "mid": 625.2570037841797,
+    "upper": 652.0194978100529,
+    "lower": 598.4945097583064
+   },
+   "vs_sma20": 0.02917679627002978,
+   "vs_sma200": 0.07334443957638115,
+   "range_pos": 0.6322041520313867,
+   "range_n": 252,
+   "atr_pct": 0.03555127556483612,
+   "dollar_volume": 602844734.3780518,
+   "hold": {
+    "n": 2009,
+    "n_independent": 4,
+    "positive": 0.9283225485316078,
+    "p10": 0.04594794555245363,
+    "median": 1.0371101131129854
+   },
+   "spike": null,
+   "verdict": "neutral",
+   "why": [
+    "%B 0.84 \u2014 no measured edge either way"
+   ],
+   "stale": false
+  },
+  {
+   "ticker": "TXN",
+   "tags": [
+    "ndx100"
+   ],
+   "as_of": "2026-09-24",
+   "close": 270.6499938964844,
+   "chg": -0.00722618023617938,
+   "pct_b": 0.8409746530447908,
+   "band": {
+    "mid": 262.61900482177737,
+    "upper": 274.39552398968755,
+    "lower": 250.84248565386721
+   },
+   "vs_sma20": 0.03058038042660738,
+   "vs_sma200": 0.10911754674525476,
+   "range_pos": 0.6666328608238345,
+   "range_n": 252,
+   "atr_pct": 0.030532448216009065,
+   "dollar_volume": 1743010267.8192139,
+   "hold": {
+    "n": 2009,
+    "n_independent": 4,
+    "positive": 0.883026381284221,
+    "p10": -0.01770252643895709,
+    "median": 0.30108488642465847
    },
    "spike": null,
    "verdict": "neutral",
@@ -4372,17 +4509,17 @@
     "lower": 156.8167161593549
    },
    "vs_sma20": 0.0848378568274808,
-   "vs_sma200": 0.15976519738313621,
-   "range_pos": 0.5669054697233037,
+   "vs_sma200": 0.1597651971190066,
+   "range_pos": 0.5669055122202775,
    "range_n": 252,
-   "atr_pct": 0.043347562716495,
+   "atr_pct": 0.04334756271492151,
    "dollar_volume": 1916703886.188507,
    "hold": {
     "n": 2009,
     "n_independent": 4,
     "positive": 0.7526132404181185,
-    "p10": -0.13557927609901066,
-    "median": 0.38949874967304354
+    "p10": -0.13557938225326327,
+    "median": 0.3894991901051008
    },
    "spike": null,
    "verdict": "neutral",
@@ -4392,104 +4529,71 @@
    "stale": false
   },
   {
-   "ticker": "PANW",
+   "ticker": "STX",
+   "tags": [
+    "ndx100",
+    "ai_memory"
+   ],
+   "as_of": "2026-09-24",
+   "close": 905.9199829101562,
+   "chg": -0.018632477140577808,
+   "pct_b": 0.8419759448455003,
+   "band": {
+    "mid": 844.8900390625,
+    "upper": 934.1213794060857,
+    "lower": 755.6586987189144
+   },
+   "vs_sma20": 0.07223418554605732,
+   "vs_sma200": 0.4355133360696266,
+   "range_pos": 0.7885874528151211,
+   "range_n": 252,
+   "atr_pct": 0.05690642796980921,
+   "dollar_volume": 3843909293.4814453,
+   "hold": {
+    "n": 2009,
+    "n_independent": 4,
+    "positive": 0.8018914883026381,
+    "p10": -0.1317457733871623,
+    "median": 0.5637113425242464
+   },
+   "spike": null,
+   "verdict": "neutral",
+   "why": [
+    "%B 0.84 \u2014 no measured edge either way"
+   ],
+   "stale": false
+  },
+  {
+   "ticker": "ADI",
    "tags": [
     "ndx100"
    ],
    "as_of": "2026-09-24",
-   "close": 389.9200134277344,
-   "chg": -0.008593883727790907,
-   "pct_b": 0.8465666890930662,
+   "close": 382.6099853515625,
+   "chg": -0.006801198141488052,
+   "pct_b": 0.8467738614247091,
    "band": {
-    "mid": 359.5585006713867,
-    "upper": 403.3617767966846,
-    "lower": 315.7552245460888
+    "mid": 367.8186737060547,
+    "upper": 389.1457016209301,
+    "lower": 346.49164579117934
    },
-   "vs_sma20": 0.08444109289491153,
-   "vs_sma200": 0.6015940912210542,
-   "range_pos": 0.9760941040046687,
+   "vs_sma20": 0.040213596271429175,
+   "vs_sma200": 0.0805181953102152,
+   "range_pos": 0.7225327887733822,
    "range_n": 252,
-   "atr_pct": 0.04705312585505593,
-   "dollar_volume": 2079384801.2695312,
+   "atr_pct": 0.02916595906048247,
+   "dollar_volume": 1276918456.6375732,
    "hold": {
-    "n": 2008,
+    "n": 2009,
     "n_independent": 4,
-    "positive": 0.974601593625498,
-    "p10": 0.16746757482127972,
-    "median": 0.7059073042518846
+    "positive": 0.9815828770532603,
+    "p10": 0.15115260911243067,
+    "median": 0.37973233992070266
    },
    "spike": null,
    "verdict": "neutral",
    "why": [
     "%B 0.85 \u2014 no measured edge either way"
-   ],
-   "stale": false
-  },
-  {
-   "ticker": "FAST",
-   "tags": [
-    "ndx100"
-   ],
-   "as_of": "2026-09-24",
-   "close": 50.72999954223633,
-   "chg": -0.005099080754497609,
-   "pct_b": 0.8586845789667148,
-   "band": {
-    "mid": 49.54149990081787,
-    "upper": 51.19824751573101,
-    "lower": 47.884752285904725
-   },
-   "vs_sma20": 0.023989981001742766,
-   "vs_sma200": 0.11315385212164508,
-   "range_pos": 0.8809791705706197,
-   "range_n": 252,
-   "atr_pct": 0.020964973254072598,
-   "dollar_volume": 347467639.8923874,
-   "hold": {
-    "n": 2008,
-    "n_independent": 4,
-    "positive": 0.99800796812749,
-    "p10": 0.10555106018093796,
-    "median": 0.4866046124243537
-   },
-   "spike": null,
-   "verdict": "neutral",
-   "why": [
-    "%B 0.86 \u2014 no measured edge either way"
-   ],
-   "stale": false
-  },
-  {
-   "ticker": "APH",
-   "tags": [
-    "humanoid_association"
-   ],
-   "as_of": "2026-09-24",
-   "close": 83.08000183105469,
-   "chg": 0.01082856020454459,
-   "pct_b": 0.8602467515848882,
-   "band": {
-    "mid": 80.31949310302734,
-    "upper": 84.15090687134395,
-    "lower": 76.48807933471073
-   },
-   "vs_sma20": 0.0343691004683806,
-   "vs_sma200": 0.13301983159822073,
-   "range_pos": 0.8273341955715668,
-   "range_n": 252,
-   "atr_pct": 0.034439410815865434,
-   "dollar_volume": 947987655.0186157,
-   "hold": {
-    "n": 2008,
-    "n_independent": 4,
-    "positive": 0.9825697211155379,
-    "p10": 0.14323192642641303,
-    "median": 0.45056086334891066
-   },
-   "spike": null,
-   "verdict": "neutral",
-   "why": [
-    "%B 0.86 \u2014 no measured edge either way"
    ],
    "stale": false
   },
@@ -4529,32 +4633,31 @@
    "stale": false
   },
   {
-   "ticker": "TER",
+   "ticker": "ENTG",
    "tags": [
-    "ndx100",
     "ai_equipment"
    ],
    "as_of": "2026-09-24",
-   "close": 387.70001220703125,
-   "chg": -0.0037004738325541187,
-   "pct_b": 0.8624689580268704,
+   "close": 148.6300048828125,
+   "chg": -0.015238772308890591,
+   "pct_b": 0.8624833461437806,
    "band": {
-    "mid": 360.1778564453125,
-    "upper": 398.1427016441095,
-    "lower": 322.2130112465155
+    "mid": 138.3379981994629,
+    "upper": 152.53452169887248,
+    "lower": 124.14147470005332
    },
-   "vs_sma20": 0.07641268131623069,
-   "vs_sma200": 0.18373464137450757,
-   "range_pos": 0.7272707914010282,
+   "vs_sma20": 0.074397539485211,
+   "vs_sma200": 0.14253521194362695,
+   "range_pos": 0.6943393222624699,
    "range_n": 252,
-   "atr_pct": 0.05290326657089903,
-   "dollar_volume": 999261735.3286743,
+   "atr_pct": 0.04699008316846545,
+   "dollar_volume": 306358355.0292969,
    "hold": {
-    "n": 2008,
+    "n": 2009,
     "n_independent": 4,
-    "positive": 0.7504980079681275,
-    "p10": -0.19181616541597324,
-    "median": 0.49656017831993027
+    "positive": 0.7307117969138875,
+    "p10": -0.20800768708302608,
+    "median": 0.4281931979822806
    },
    "spike": null,
    "verdict": "neutral",
@@ -4564,31 +4667,65 @@
    "stale": false
   },
   {
-   "ticker": "ARKQ",
+   "ticker": "MPWR",
    "tags": [
-    "humanoid_etf"
+    "ndx100"
    ],
    "as_of": "2026-09-24",
-   "close": 124.87999725341797,
-   "chg": 0.0012828418148562726,
-   "pct_b": 0.8711288557816816,
+   "close": 1335.550048828125,
+   "chg": -0.014695952183040206,
+   "pct_b": 0.8717745905305608,
    "band": {
-    "mid": 122.12174949645996,
-    "upper": 125.8377738825839,
-    "lower": 118.40572511033601
+    "mid": 1236.5369934082032,
+    "upper": 1369.6997457074121,
+    "lower": 1103.3742411089943
    },
-   "vs_sma20": 0.02258604849939494,
-   "vs_sma200": 0.004817822792172466,
-   "range_pos": 0.5576763095115705,
+   "vs_sma20": 0.08007286150575821,
+   "vs_sma200": 0.052490507717107615,
+   "range_pos": 0.5786283357720045,
    "range_n": 252,
-   "atr_pct": 0.02038969123967324,
-   "dollar_volume": 12381461.797332764,
+   "atr_pct": 0.04302690901009543,
+   "dollar_volume": 939376086.2304688,
    "hold": {
-    "n": 2008,
+    "n": 2009,
     "n_independent": 4,
-    "positive": 0.7629482071713147,
-    "p10": -0.3334716953182757,
-    "median": 0.4640034239317874
+    "positive": 0.9706321553011449,
+    "p10": 0.2272945641506703,
+    "median": 0.6309848150765891
+   },
+   "spike": null,
+   "verdict": "neutral",
+   "why": [
+    "%B 0.87 \u2014 no measured edge either way"
+   ],
+   "stale": false
+  },
+  {
+   "ticker": "ISRG",
+   "tags": [
+    "ndx100"
+   ],
+   "as_of": "2026-09-24",
+   "close": 399.5199890136719,
+   "chg": 0.003063020984417575,
+   "pct_b": 0.8720844385222978,
+   "band": {
+    "mid": 377.1509979248047,
+    "upper": 407.2100232064098,
+    "lower": 347.0919726431996
+   },
+   "vs_sma20": 0.059310438556302136,
+   "vs_sma200": -0.1155318030531538,
+   "range_pos": 0.2587892630255472,
+   "range_n": 252,
+   "atr_pct": 0.02787101238211901,
+   "dollar_volume": 939631698.550415,
+   "hold": {
+    "n": 2009,
+    "n_independent": 4,
+    "positive": 0.8476854156296665,
+    "p10": -0.06690222461633433,
+    "median": 0.4724493965913388
    },
    "spike": null,
    "verdict": "neutral",
@@ -4666,40 +4803,6 @@
    "stale": false
   },
   {
-   "ticker": "PWR",
-   "tags": [
-    "ai_power"
-   ],
-   "as_of": "2026-09-24",
-   "close": 643.5,
-   "chg": 0.013545401252542444,
-   "pct_b": 0.8791961272989567,
-   "band": {
-    "mid": 623.9620025634765,
-    "upper": 649.7243930916896,
-    "lower": 598.1996120352634
-   },
-   "vs_sma20": 0.03131280006835979,
-   "vs_sma200": 0.07497853692010503,
-   "range_pos": 0.6423026687750581,
-   "range_n": 252,
-   "atr_pct": 0.036486060101606425,
-   "dollar_volume": 603751496.2646484,
-   "hold": {
-    "n": 2008,
-    "n_independent": 4,
-    "positive": 0.9282868525896414,
-    "p10": 0.04594860755615304,
-    "median": 1.0371093552356117
-   },
-   "spike": null,
-   "verdict": "neutral",
-   "why": [
-    "%B 0.88 \u2014 no measured edge either way"
-   ],
-   "stale": false
-  },
-  {
    "ticker": "MRVL",
    "tags": [
     "ndx100",
@@ -4716,17 +4819,17 @@
     "lower": 196.65188491433423
    },
    "vs_sma20": 0.11681612204488356,
-   "vs_sma200": 0.6022961542820993,
+   "vs_sma200": 0.6022961550385137,
    "range_pos": 0.7634636115263871,
    "range_n": 252,
-   "atr_pct": 0.053186315711672566,
+   "atr_pct": 0.05318631571166054,
    "dollar_volume": 4834807552.542877,
    "hold": {
     "n": 2009,
     "n_independent": 4,
     "positive": 0.8551518168242906,
-    "p10": -0.07669233862667324,
-    "median": 0.4501734502128478
+    "p10": -0.0766925190014357,
+    "median": 0.4501734075714261
    },
    "spike": null,
    "verdict": "neutral",
@@ -4736,66 +4839,31 @@
    "stale": false
   },
   {
-   "ticker": "TXN",
+   "ticker": "EMR",
    "tags": [
-    "ndx100"
+    "humanoid_association"
    ],
    "as_of": "2026-09-24",
-   "close": 270.6499938964844,
-   "chg": -0.00722618023617938,
-   "pct_b": 0.8846641381138867,
+   "close": 156.13999938964844,
+   "chg": 0.010026541745753903,
+   "pct_b": 0.8866868468553354,
    "band": {
-    "mid": 262.13700408935546,
-    "upper": 273.20248818786075,
-    "lower": 251.0715199908502
+    "mid": 151.15550003051757,
+    "upper": 157.60063696711944,
+    "lower": 144.7103630939157
    },
-   "vs_sma20": 0.03247534561822896,
-   "vs_sma200": 0.11120974606207379,
-   "range_pos": 0.6666328608238345,
+   "vs_sma20": 0.03297597082557058,
+   "vs_sma200": 0.09084962475958647,
+   "range_pos": 0.8147839077551357,
    "range_n": 252,
-   "atr_pct": 0.031612068272461116,
-   "dollar_volume": 1743010267.8192139,
+   "atr_pct": 0.023492351081972524,
+   "dollar_volume": 333703921.34017944,
    "hold": {
-    "n": 2008,
+    "n": 2009,
     "n_independent": 4,
-    "positive": 0.8829681274900398,
-    "p10": -0.017702424727188748,
-    "median": 0.3010846709174526
-   },
-   "spike": null,
-   "verdict": "neutral",
-   "why": [
-    "%B 0.88 \u2014 no measured edge either way"
-   ],
-   "stale": false
-  },
-  {
-   "ticker": "STX",
-   "tags": [
-    "ndx100",
-    "ai_memory"
-   ],
-   "as_of": "2026-09-24",
-   "close": 905.9199829101562,
-   "chg": -0.018632477140577808,
-   "pct_b": 0.8921041602724488,
-   "band": {
-    "mid": 841.2194793701171,
-    "upper": 923.7237092348076,
-    "lower": 758.7152495054266
-   },
-   "vs_sma20": 0.0769127500334219,
-   "vs_sma200": 0.4428518527320726,
-   "range_pos": 0.7885874528151211,
-   "range_n": 252,
-   "atr_pct": 0.05555085864355095,
-   "dollar_volume": 3843909293.4814453,
-   "hold": {
-    "n": 2008,
-    "n_independent": 4,
-    "positive": 0.8017928286852589,
-    "p10": -0.13174588509719876,
-    "median": 0.5637113425242464
+    "positive": 0.8466898954703833,
+    "p10": -0.03413971807093186,
+    "median": 0.28089382377363137
    },
    "spike": null,
    "verdict": "neutral",
@@ -4805,36 +4873,172 @@
    "stale": false
   },
   {
-   "ticker": "ENTG",
+   "ticker": "MAR",
    "tags": [
-    "ai_equipment"
+    "ndx100"
    ],
    "as_of": "2026-09-24",
-   "close": 148.6300048828125,
-   "chg": -0.015238772308890591,
-   "pct_b": 0.9093842683752523,
+   "close": 351.510009765625,
+   "chg": -0.0004265310098457986,
+   "pct_b": 0.8910003295273139,
    "band": {
-    "mid": 137.90549850463867,
-    "upper": 151.00383569861148,
-    "lower": 124.80716131066586
+    "mid": 339.52650146484376,
+    "upper": 354.85066796269336,
+    "lower": 324.20233496699416
    },
-   "vs_sma20": 0.07776706871345729,
-   "vs_sma200": 0.14527192348163576,
-   "range_pos": 0.6943393222624699,
+   "vs_sma20": 0.03529476564886669,
+   "vs_sma200": 0.014981732865760433,
+   "range_pos": 0.6532755388990329,
    "range_n": 252,
-   "atr_pct": 0.04729530495131362,
-   "dollar_volume": 306358355.0292969,
+   "atr_pct": 0.020695275538792156,
+   "dollar_volume": 524478397.28393555,
    "hold": {
-    "n": 2008,
+    "n": 2009,
     "n_independent": 4,
-    "positive": 0.7305776892430279,
-    "p10": -0.20800768708302608,
-    "median": 0.4286866516326284
+    "positive": 0.8994524639123942,
+    "p10": -0.0020934591811729852,
+    "median": 0.36314716574741124
+   },
+   "spike": null,
+   "verdict": "neutral",
+   "why": [
+    "%B 0.89 \u2014 no measured edge either way"
+   ],
+   "stale": false
+  },
+  {
+   "ticker": "ANET",
+   "tags": [
+    "ai_network"
+   ],
+   "as_of": "2026-09-24",
+   "close": 205.6999969482422,
+   "chg": 0.010959825596699169,
+   "pct_b": 0.8990998907682111,
+   "band": {
+    "mid": 196.30499954223632,
+    "upper": 208.07523253819357,
+    "lower": 184.53476654627906
+   },
+   "vs_sma20": 0.047859185593408515,
+   "vs_sma200": 0.3131024722115623,
+   "range_pos": 0.9491363472283924,
+   "range_n": 252,
+   "atr_pct": 0.03781417571423509,
+   "dollar_volume": 1090130471.561432,
+   "hold": {
+    "n": 2009,
+    "n_independent": 4,
+    "positive": 0.8566450970632156,
+    "p10": -0.12226535405545791,
+    "median": 0.9930955840320121
+   },
+   "spike": null,
+   "verdict": "neutral",
+   "why": [
+    "%B 0.90 \u2014 no measured edge either way"
+   ],
+   "stale": false
+  },
+  {
+   "ticker": "ETN",
+   "tags": [
+    "ai_power"
+   ],
+   "as_of": "2026-09-24",
+   "close": 440.0,
+   "chg": 0.002826124092387916,
+   "pct_b": 0.9024348270414431,
+   "band": {
+    "mid": 412.8184982299805,
+    "upper": 446.5898072017315,
+    "lower": 379.0471892582295
+   },
+   "vs_sma20": 0.0658437107023162,
+   "vs_sma200": 0.14367847867587202,
+   "range_pos": 0.8639956781314156,
+   "range_n": 252,
+   "atr_pct": 0.03282953951807888,
+   "dollar_volume": 768702904.5898438,
+   "hold": {
+    "n": 2009,
+    "n_independent": 4,
+    "positive": 0.9940268790443006,
+    "p10": 0.13952884101070628,
+    "median": 0.4649643709578206
+   },
+   "spike": null,
+   "verdict": "neutral",
+   "why": [
+    "%B 0.90 \u2014 no measured edge either way"
+   ],
+   "stale": false
+  },
+  {
+   "ticker": "FAST",
+   "tags": [
+    "ndx100"
+   ],
+   "as_of": "2026-09-24",
+   "close": 50.72999954223633,
+   "chg": -0.005099080754497609,
+   "pct_b": 0.9118179834691681,
+   "band": {
+    "mid": 49.48799991607666,
+    "upper": 50.99594720834523,
+    "lower": 47.98005262380809
+   },
+   "vs_sma20": 0.025096985698874308,
+   "vs_sma200": 0.11202517365507103,
+   "range_pos": 0.8809791705706197,
+   "range_n": 252,
+   "atr_pct": 0.020089592831351016,
+   "dollar_volume": 340745160.44483185,
+   "hold": {
+    "n": 2009,
+    "n_independent": 4,
+    "positive": 0.9980089596814335,
+    "p10": 0.10555116797416586,
+    "median": 0.48577468341935015
    },
    "spike": null,
    "verdict": "neutral",
    "why": [
     "%B 0.91 \u2014 no measured edge either way"
+   ],
+   "stale": false
+  },
+  {
+   "ticker": "CRWD",
+   "tags": [
+    "ndx100"
+   ],
+   "as_of": "2026-09-24",
+   "close": 259.6700134277344,
+   "chg": -0.010743178450815183,
+   "pct_b": 0.9155767989595822,
+   "band": {
+    "mid": 229.07450180053712,
+    "upper": 265.88540137889987,
+    "lower": 192.26360222217437
+   },
+   "vs_sma20": 0.13356140201862265,
+   "vs_sma200": 0.7369832941846701,
+   "range_pos": 0.9838791672889018,
+   "range_n": 252,
+   "atr_pct": 0.047750343535094636,
+   "dollar_volume": 1723043865.739441,
+   "hold": {
+    "n": 0,
+    "n_independent": 0,
+    "positive": null,
+    "p10": null,
+    "median": null
+   },
+   "spike": null,
+   "verdict": "no_hold_data",
+   "why": [
+    "hold gate not measurable \u2014 under 4 independent 2-year windows of history"
    ],
    "stale": false
   },
@@ -4863,7 +5067,7 @@
     "n_independent": 4,
     "positive": 0.9741164758586361,
     "p10": 0.1126775499319248,
-    "median": 0.7248726298848995
+    "median": 0.7248725133922824
    },
    "spike": null,
    "verdict": "neutral",
@@ -4873,65 +5077,99 @@
    "stale": false
   },
   {
-   "ticker": "ANET",
-   "tags": [
-    "ai_network"
-   ],
-   "as_of": "2026-09-24",
-   "close": 205.6999969482422,
-   "chg": 0.010959825596699169,
-   "pct_b": 0.9188764225001097,
-   "band": {
-    "mid": 196.15799942016602,
-    "upper": 207.54799061509138,
-    "lower": 184.76800822524066
-   },
-   "vs_sma20": 0.048644447620193265,
-   "vs_sma200": 0.3163207599678799,
-   "range_pos": 0.9491363472283924,
-   "range_n": 252,
-   "atr_pct": 0.038760727009316126,
-   "dollar_volume": 1128477886.4936829,
-   "hold": {
-    "n": 2008,
-    "n_independent": 4,
-    "positive": 0.8565737051792829,
-    "p10": -0.12226535405545791,
-    "median": 0.9930955840320121
-   },
-   "spike": null,
-   "verdict": "neutral",
-   "why": [
-    "%B 0.92 \u2014 no measured edge either way"
-   ],
-   "stale": false
-  },
-  {
-   "ticker": "ADI",
+   "ticker": "BIIB",
    "tags": [
     "ndx100"
    ],
    "as_of": "2026-09-24",
-   "close": 382.6099853515625,
-   "chg": -0.006801198141488052,
-   "pct_b": 0.921112229916809,
+   "close": 226.36000061035156,
+   "chg": -0.00514217103336867,
+   "pct_b": 0.9176043126053344,
    "band": {
-    "mid": 366.8337066650391,
-    "upper": 385.56538620999083,
-    "lower": 348.1020271200873
+    "mid": 218.94599838256835,
+    "upper": 227.8228250866905,
+    "lower": 210.0691716784462
    },
-   "vs_sma20": 0.043006622346536405,
-   "vs_sma200": 0.08223820518961311,
-   "range_pos": 0.7225327887733822,
+   "vs_sma20": 0.03386224129489945,
+   "vs_sma200": 0.1685358474176677,
+   "range_pos": 0.9872632466669778,
    "range_n": 252,
-   "atr_pct": 0.029363366685701168,
-   "dollar_volume": 1288585435.256958,
+   "atr_pct": 0.025754363385683265,
+   "dollar_volume": 184893108.68530273,
    "hold": {
-    "n": 2008,
+    "n": 2009,
     "n_independent": 4,
-    "positive": 0.9815737051792829,
-    "p10": 0.1511527462596356,
-    "median": 0.3797332414173813
+    "positive": 0.32603285216525635,
+    "p10": -0.453334333108384,
+    "median": -0.1284723279477361
+   },
+   "spike": null,
+   "verdict": "neutral",
+   "why": [
+    "%B 0.92 \u2014 no measured edge either way"
+   ],
+   "stale": false
+  },
+  {
+   "ticker": "ZS",
+   "tags": [
+    "ndx100"
+   ],
+   "as_of": "2026-09-24",
+   "close": 214.63999938964844,
+   "chg": 0.0008859988067619895,
+   "pct_b": 0.9198276927034036,
+   "band": {
+    "mid": 186.65274887084962,
+    "upper": 219.9845788158683,
+    "lower": 153.32091892583094
+   },
+   "vs_sma20": 0.14994287889198987,
+   "vs_sma200": 0.2799593522679542,
+   "range_pos": 0.442626718685375,
+   "range_n": 252,
+   "atr_pct": 0.04376484946424467,
+   "dollar_volume": 411832830.40008545,
+   "hold": {
+    "n": 1639,
+    "n_independent": 4,
+    "positive": 0.6674801708358755,
+    "p10": -0.36517065058104525,
+    "median": 0.4740583753721972
+   },
+   "spike": null,
+   "verdict": "neutral",
+   "why": [
+    "%B 0.92 \u2014 no measured edge either way"
+   ],
+   "stale": false
+  },
+  {
+   "ticker": "TEL",
+   "tags": [
+    "humanoid_association"
+   ],
+   "as_of": "2026-09-24",
+   "close": 213.6699981689453,
+   "chg": -0.0033583712988148884,
+   "pct_b": 0.9232201761759409,
+   "band": {
+    "mid": 206.8,
+    "upper": 214.91634056653447,
+    "lower": 198.68365943346555
+   },
+   "vs_sma20": 0.03322049404712435,
+   "vs_sma200": 0.00040789741327573736,
+   "range_pos": 0.3720177654546778,
+   "range_n": 252,
+   "atr_pct": 0.028504459511948455,
+   "dollar_volume": 387358392.1142578,
+   "hold": {
+    "n": 2009,
+    "n_independent": 4,
+    "positive": 0.8317570930811349,
+    "p10": -0.0791979881501994,
+    "median": 0.2564003197515141
    },
    "spike": null,
    "verdict": "neutral",
@@ -4955,119 +5193,17 @@
     "lower": 693.351597047535
    },
    "vs_sma20": 0.03057875355651274,
-   "vs_sma200": 0.11690683325159967,
+   "vs_sma200": 0.11690684198445123,
    "range_pos": 0.9665917192810566,
    "range_n": 252,
-   "atr_pct": 0.013265372840165048,
+   "atr_pct": 0.013265372840448458,
    "dollar_volume": 23960401838.619995,
    "hold": {
     "n": 2009,
     "n_independent": 4,
     "positive": 0.9084121453459433,
-    "p10": 0.006260709373411277,
-    "median": 0.46599843346034486
-   },
-   "spike": null,
-   "verdict": "neutral",
-   "why": [
-    "%B 0.93 \u2014 no measured edge either way"
-   ],
-   "stale": false
-  },
-  {
-   "ticker": "CRWD",
-   "tags": [
-    "ndx100"
-   ],
-   "as_of": "2026-09-24",
-   "close": 259.6700134277344,
-   "chg": -0.010743178450815183,
-   "pct_b": 0.9274684734515622,
-   "band": {
-    "mid": 226.03050155639647,
-    "upper": 265.3778616081427,
-    "lower": 186.68314150465022
-   },
-   "vs_sma20": 0.1488273115340788,
-   "vs_sma200": 0.7441030093873773,
-   "range_pos": 0.9838791672889018,
-   "range_n": 252,
-   "atr_pct": 0.04946391804298442,
-   "dollar_volume": 1723043865.739441,
-   "hold": {
-    "n": 0,
-    "n_independent": 0,
-    "positive": null,
-    "p10": null,
-    "median": null
-   },
-   "spike": null,
-   "verdict": "no_hold_data",
-   "why": [
-    "hold gate not measurable \u2014 under 4 independent 2-year windows of history"
-   ],
-   "stale": false
-  },
-  {
-   "ticker": "MPWR",
-   "tags": [
-    "ndx100"
-   ],
-   "as_of": "2026-09-24",
-   "close": 1335.550048828125,
-   "chg": -0.014695952183040206,
-   "pct_b": 0.9281190053762454,
-   "band": {
-    "mid": 1232.6999938964843,
-    "upper": 1352.8185282760228,
-    "lower": 1112.5814595169459
-   },
-   "vs_sma20": 0.08343478173187813,
-   "vs_sma200": 0.05424495047530442,
-   "range_pos": 0.5786282741568305,
-   "range_n": 252,
-   "atr_pct": 0.04084795341078989,
-   "dollar_volume": 939376086.2304688,
-   "hold": {
-    "n": 2008,
-    "n_independent": 4,
-    "positive": 0.9706175298804781,
-    "p10": 0.22729482033416715,
-    "median": 0.6311817572791965
-   },
-   "spike": null,
-   "verdict": "neutral",
-   "why": [
-    "%B 0.93 \u2014 no measured edge either way"
-   ],
-   "stale": false
-  },
-  {
-   "ticker": "ISRG",
-   "tags": [
-    "ndx100"
-   ],
-   "as_of": "2026-09-24",
-   "close": 399.5199890136719,
-   "chg": 0.003063020984417575,
-   "pct_b": 0.9293179768956209,
-   "band": {
-    "mid": 375.5674987792969,
-    "upper": 403.46347742847246,
-    "lower": 347.67152013012134
-   },
-   "vs_sma20": 0.06377679195411612,
-   "vs_sma200": -0.11722472600455736,
-   "range_pos": 0.2587892630255472,
-   "range_n": 252,
-   "atr_pct": 0.02874628258789179,
-   "dollar_volume": 955585981.4086914,
-   "hold": {
-    "n": 2008,
-    "n_independent": 4,
-    "positive": 0.8481075697211156,
-    "p10": -0.06665294486298035,
-    "median": 0.47255772510263494
+    "p10": 0.0062606287305393415,
+    "median": 0.4659987346334282
    },
    "spike": null,
    "verdict": "neutral",
@@ -5095,14 +5231,14 @@
    "vs_sma200": 0.28024914491655406,
    "range_pos": 0.42827068166513543,
    "range_n": 252,
-   "atr_pct": 0.08635570702553418,
+   "atr_pct": 0.08635570702553419,
    "dollar_volume": 8141108677.409363,
    "hold": {
     "n": 2009,
     "n_independent": 4,
     "positive": 0.7575908412145346,
-    "p10": -0.5223267589284639,
-    "median": 0.7332903003025393
+    "p10": -0.5223267136840541,
+    "median": 0.7332901302674459
    },
    "spike": null,
    "verdict": "leveraged",
@@ -5128,17 +5264,17 @@
     "lower": 879.8650606458756
    },
    "vs_sma20": 0.09498603371093939,
-   "vs_sma200": 0.645150970562739,
-   "range_pos": 0.8742959433524157,
+   "vs_sma200": 0.645150971518248,
+   "range_pos": 0.8742959451674245,
    "range_n": 252,
-   "atr_pct": 0.04528106283135877,
+   "atr_pct": 0.04528106283135596,
    "dollar_volume": 31061162391.986084,
    "hold": {
     "n": 2009,
     "n_independent": 4,
     "positive": 0.7959183673469388,
-    "p10": -0.13635593656507417,
-    "median": 0.5383364997886697
+    "p10": -0.13635598524123738,
+    "median": 0.5383367393777763
    },
    "spike": null,
    "verdict": "neutral",
@@ -5162,17 +5298,17 @@
     "lower": 476.7770693147647
    },
    "vs_sma20": 0.07985784739598145,
-   "vs_sma200": 0.26703970210121053,
+   "vs_sma200": 0.2670396990720074,
    "range_pos": 0.7714880041448479,
    "range_n": 252,
-   "atr_pct": 0.031225270480661815,
+   "atr_pct": 0.031225270480737033,
    "dollar_volume": 4207853749.2523193,
    "hold": {
     "n": 2009,
     "n_independent": 4,
     "positive": 0.9497262319561971,
-    "p10": 0.07299962535921645,
-    "median": 0.5448708787104453
+    "p10": 0.07299953626509414,
+    "median": 0.5448709963442828
    },
    "spike": null,
    "verdict": "neutral",
@@ -5197,56 +5333,22 @@
     "lower": 402.57909544887406
    },
    "vs_sma20": 0.053382820405408093,
-   "vs_sma200": 0.1854037952374752,
-   "range_pos": 0.87790493039934,
+   "vs_sma200": 0.185403788583828,
+   "range_pos": 0.8779049123050375,
    "range_n": 252,
-   "atr_pct": 0.02412686186599624,
+   "atr_pct": 0.02412686178352456,
    "dollar_volume": 4656300396.69342,
    "hold": {
     "n": 2009,
     "n_independent": 4,
     "positive": 0.8282727725236436,
-    "p10": -0.1595920003795539,
-    "median": 0.86981978966767
+    "p10": -0.15959191401227202,
+    "median": 0.8698198016869425
    },
    "spike": null,
    "verdict": "neutral",
    "why": [
     "%B 0.94 \u2014 no measured edge either way"
-   ],
-   "stale": false
-  },
-  {
-   "ticker": "BIIB",
-   "tags": [
-    "ndx100"
-   ],
-   "as_of": "2026-09-24",
-   "close": 226.36000061035156,
-   "chg": -0.00514217103336867,
-   "pct_b": 0.9517517036430405,
-   "band": {
-    "mid": 218.73149871826172,
-    "upper": 227.17474511951673,
-    "lower": 210.2882523170067
-   },
-   "vs_sma20": 0.034876101232752754,
-   "vs_sma200": 0.16986628054417596,
-   "range_pos": 0.9872632466669778,
-   "range_n": 252,
-   "atr_pct": 0.026261402468863382,
-   "dollar_volume": 184893108.68530273,
-   "hold": {
-    "n": 2008,
-    "n_independent": 4,
-    "positive": 0.3256972111553785,
-    "p10": -0.453334333108384,
-    "median": -0.1284723279477361
-   },
-   "spike": null,
-   "verdict": "neutral",
-   "why": [
-    "%B 0.95 \u2014 no measured edge either way"
    ],
    "stale": false
   },
@@ -5282,74 +5384,6 @@
    "verdict": "no_hold_data",
    "why": [
     "hold gate not measurable \u2014 under 4 independent 2-year windows of history"
-   ],
-   "stale": false
-  },
-  {
-   "ticker": "ETN",
-   "tags": [
-    "ai_power"
-   ],
-   "as_of": "2026-09-24",
-   "close": 440.0,
-   "chg": 0.002826124092387916,
-   "pct_b": 0.9553734199452701,
-   "band": {
-    "mid": 411.665998840332,
-    "upper": 442.77673117410916,
-    "lower": 380.55526650655486
-   },
-   "vs_sma20": 0.06882764483704062,
-   "vs_sma200": 0.1452805088548459,
-   "range_pos": 0.8639956781314156,
-   "range_n": 252,
-   "atr_pct": 0.03362584862609114,
-   "dollar_volume": 768702904.5898438,
-   "hold": {
-    "n": 2008,
-    "n_independent": 4,
-    "positive": 0.9940239043824701,
-    "p10": 0.13952832434933415,
-    "median": 0.46507286145082394
-   },
-   "spike": null,
-   "verdict": "neutral",
-   "why": [
-    "%B 0.96 \u2014 no measured edge either way"
-   ],
-   "stale": false
-  },
-  {
-   "ticker": "ZS",
-   "tags": [
-    "ndx100"
-   ],
-   "as_of": "2026-09-24",
-   "close": 214.63999938964844,
-   "chg": 0.0008859988067619895,
-   "pct_b": 0.9653184947841797,
-   "band": {
-    "mid": 184.65924911499025,
-    "upper": 216.87454961423606,
-    "lower": 152.44394861574443
-   },
-   "vs_sma20": 0.16235715469626277,
-   "vs_sma200": 0.2787202292612099,
-   "range_pos": 0.442626718685375,
-   "range_n": 252,
-   "atr_pct": 0.04499125206194695,
-   "dollar_volume": 410562648.45581055,
-   "hold": {
-    "n": 1638,
-    "n_independent": 4,
-    "positive": 0.6672771672771672,
-    "p10": -0.36517065058104525,
-    "median": 0.4754781806642878
-   },
-   "spike": null,
-   "verdict": "neutral",
-   "why": [
-    "%B 0.97 \u2014 no measured edge either way"
    ],
    "stale": false
   },
@@ -5424,70 +5458,104 @@
    "stale": false
   },
   {
-   "ticker": "TEL",
-   "tags": [
-    "humanoid_association"
-   ],
-   "as_of": "2026-09-24",
-   "close": 213.6699981689453,
-   "chg": -0.0033583712988148884,
-   "pct_b": 0.9835386178570844,
-   "band": {
-    "mid": 206.37750015258788,
-    "upper": 213.91826085612368,
-    "lower": 198.8367394490521
-   },
-   "vs_sma20": 0.03533572221276837,
-   "vs_sma200": -2.1885068045568445e-05,
-   "range_pos": 0.3720177654546778,
-   "range_n": 252,
-   "atr_pct": 0.02874650926599588,
-   "dollar_volume": 398034586.5005493,
-   "hold": {
-    "n": 2008,
-    "n_independent": 4,
-    "positive": 0.8316733067729084,
-    "p10": -0.07919810357052726,
-    "median": 0.2563995418469569
-   },
-   "spike": null,
-   "verdict": "neutral",
-   "why": [
-    "%B 0.98 \u2014 no measured edge either way"
-   ],
-   "stale": false
-  },
-  {
-   "ticker": "ROST",
+   "ticker": "DDOG",
    "tags": [
     "ndx100"
    ],
    "as_of": "2026-09-24",
-   "close": 235.39999389648438,
-   "chg": 0.0060688870624601154,
-   "pct_b": 0.984058109332489,
+   "close": 256.9200134277344,
+   "chg": 0.021591346836715264,
+   "pct_b": 0.9910378154109302,
    "band": {
-    "mid": 229.5369842529297,
-    "upper": 235.5930852979465,
-    "lower": 223.4808832079129
+    "mid": 230.70524978637695,
+    "upper": 257.3984726081461,
+    "lower": 204.0120269646078
    },
-   "vs_sma20": 0.025542766725096255,
-   "vs_sma200": 0.09370891470791243,
-   "range_pos": 0.8246177035907679,
+   "vs_sma20": 0.11362881280608539,
+   "vs_sma200": 0.4182816166911245,
+   "range_pos": 0.8316760657744412,
    "range_n": 252,
-   "atr_pct": 0.022721639451260996,
-   "dollar_volume": 518627390.01464844,
+   "atr_pct": 0.045554829578715726,
+   "dollar_volume": 941910387.5564575,
    "hold": {
-    "n": 2008,
+    "n": 0,
+    "n_independent": 0,
+    "positive": null,
+    "p10": null,
+    "median": null
+   },
+   "spike": null,
+   "verdict": "no_hold_data",
+   "why": [
+    "hold gate not measurable \u2014 under 4 independent 2-year windows of history"
+   ],
+   "stale": false
+  },
+  {
+   "ticker": "WBD",
+   "tags": [
+    "ndx100"
+   ],
+   "as_of": "2026-09-24",
+   "close": 30.84000015258789,
+   "chg": 0.0026007777344208005,
+   "pct_b": 0.9931514663228473,
+   "band": {
+    "mid": 28.762500095367432,
+    "upper": 30.86885098256159,
+    "lower": 26.656149208173275
+   },
+   "vs_sma20": 0.07222946719972612,
+   "vs_sma200": 0.11650538652219011,
+   "range_pos": 1.0,
+   "range_n": 252,
+   "atr_pct": 0.01558240312046151,
+   "dollar_volume": 542109225.3034592,
+   "hold": {
+    "n": 2009,
     "n_independent": 4,
-    "positive": 0.8047808764940239,
-    "p10": -0.070122643016574,
-    "median": 0.29765870393439764
+    "positive": 0.4026879044300647,
+    "p10": -0.6103850250424572,
+    "median": -0.08557780979707696
    },
    "spike": null,
    "verdict": "neutral",
    "why": [
-    "%B 0.98 \u2014 no measured edge either way"
+    "%B 0.99 \u2014 no measured edge either way"
+   ],
+   "stale": false
+  },
+  {
+   "ticker": "ALNT",
+   "tags": [
+    "humanoid_association"
+   ],
+   "as_of": "2026-09-24",
+   "close": 112.55999755859375,
+   "chg": -0.009154937759653814,
+   "pct_b": 0.9998425348499648,
+   "band": {
+    "mid": 97.333500289917,
+    "upper": 112.564794354604,
+    "lower": 82.10220622522999
+   },
+   "vs_sma20": 0.1564363474376571,
+   "vs_sma200": 0.4727322108572465,
+   "range_pos": 0.9767773668074011,
+   "range_n": 252,
+   "atr_pct": 0.0495945217109054,
+   "dollar_volume": 22093959.939193726,
+   "hold": {
+    "n": 2009,
+    "n_independent": 4,
+    "positive": 0.704330512692882,
+    "p10": -0.31021237533896107,
+    "median": 0.19600215584917158
+   },
+   "spike": null,
+   "verdict": "neutral",
+   "why": [
+    "%B 1.00 \u2014 no measured edge either way"
    ],
    "stale": false
   },
@@ -5516,8 +5584,8 @@
     "n": 2009,
     "n_independent": 4,
     "positive": 0.4917869586859134,
-    "p10": -0.3780799836837896,
-    "median": -0.012162261700427668
+    "p10": -0.37807987156630596,
+    "median": -0.012162349684053053
    },
    "spike": null,
    "verdict": "extended",
@@ -5543,16 +5611,16 @@
     "lower": 530.130001530224
    },
    "vs_sma20": 0.19365574464198443,
-   "vs_sma200": 0.24416588877214873,
+   "vs_sma200": 0.24416588694960795,
    "range_pos": 1.0,
    "range_n": 252,
-   "atr_pct": 0.03461369197862892,
+   "atr_pct": 0.03461369205955434,
    "dollar_volume": 10575912087.374878,
    "hold": {
     "n": 2009,
     "n_independent": 4,
     "positive": 0.7919362867098059,
-    "p10": -0.28084676678741094,
+    "p10": -0.28084705689183787,
     "median": 0.2822709008632849
    },
    "spike": null,
@@ -5570,131 +5638,63 @@
    "as_of": "2026-09-24",
    "close": 247.74000549316406,
    "chg": 0.005234362186633756,
-   "pct_b": 1.0277242095655155,
+   "pct_b": 1.0215032141090858,
    "band": {
-    "mid": 237.5023635864258,
-    "upper": 247.20216674228925,
-    "lower": 227.80256043056232
+    "mid": 237.53070449829102,
+    "upper": 247.31904397412166,
+    "lower": 227.74236502246038
    },
-   "vs_sma20": 0.04310543167715819,
-   "vs_sma200": 0.0870601725878235,
+   "vs_sma20": 0.042980973834254366,
+   "vs_sma200": 0.08595193706399162,
    "range_pos": 0.8698773074862682,
    "range_n": 252,
-   "atr_pct": 0.021627217199044094,
-   "dollar_volume": 282464466.5222168,
+   "atr_pct": 0.020982611622219576,
+   "dollar_volume": 288463084.41467285,
    "hold": {
-    "n": 2008,
+    "n": 2009,
     "n_independent": 4,
-    "positive": 0.9905378486055777,
-    "p10": 0.15269333617516323,
-    "median": 0.35606742851495277
+    "positive": 0.9905425584868094,
+    "p10": 0.15269314106589893,
+    "median": 0.356067004865966
    },
    "spike": null,
    "verdict": "extended",
    "why": [
-    "%B 1.03 \u2014 the stall zone (\u22122.65 pts vs null @60d)"
+    "%B 1.02 \u2014 the stall zone (\u22122.65 pts vs null @60d)"
    ],
    "stale": false
   },
   {
-   "ticker": "DDOG",
+   "ticker": "ROST",
    "tags": [
     "ndx100"
    ],
    "as_of": "2026-09-24",
-   "close": 256.9200134277344,
-   "chg": 0.021591346836715264,
-   "pct_b": 1.0318174354408316,
+   "close": 235.39999389648438,
+   "chg": 0.0060688870624601154,
+   "pct_b": 1.0461802440417094,
    "band": {
-    "mid": 229.71499938964843,
-    "upper": 255.2923989116623,
-    "lower": 204.13759986763455
+    "mid": 229.37177200317382,
+    "upper": 234.89029996081467,
+    "lower": 223.85324404553296
    },
-   "vs_sma20": 0.11842941954321451,
-   "vs_sma200": 0.4220522586559796,
-   "range_pos": 0.8316760657744412,
+   "vs_sma20": 0.02628144623317974,
+   "vs_sma200": 0.09228518376157546,
+   "range_pos": 0.8213558295154695,
    "range_n": 252,
-   "atr_pct": 0.04777169330253194,
-   "dollar_volume": 950841531.9992065,
+   "atr_pct": 0.02205149830218251,
+   "dollar_volume": 514957424.1897583,
    "hold": {
-    "n": 0,
-    "n_independent": 0,
-    "positive": null,
-    "p10": null,
-    "median": null
-   },
-   "spike": null,
-   "verdict": "no_hold_data",
-   "why": [
-    "hold gate not measurable \u2014 under 4 independent 2-year windows of history"
-   ],
-   "stale": false
-  },
-  {
-   "ticker": "ALNT",
-   "tags": [
-    "humanoid_association"
-   ],
-   "as_of": "2026-09-24",
-   "close": 112.55999755859375,
-   "chg": -0.009154937759653814,
-   "pct_b": 1.050737858661944,
-   "band": {
-    "mid": 96.5830005645752,
-    "upper": 111.08808382944805,
-    "lower": 82.07791729970235
-   },
-   "vs_sma20": 0.1654224542686098,
-   "vs_sma200": 0.477917545346459,
-   "range_pos": 0.9767773668074011,
-   "range_n": 252,
-   "atr_pct": 0.05054138039507038,
-   "dollar_volume": 22284299.559402466,
-   "hold": {
-    "n": 2008,
+    "n": 2009,
     "n_independent": 4,
-    "positive": 0.704183266932271,
-    "p10": -0.31021249064867407,
-    "median": 0.19600265357935331
+    "positive": 0.8048780487804879,
+    "p10": -0.07012263720309642,
+    "median": 0.2976584215171185
    },
    "spike": null,
    "verdict": "extended",
    "why": [
     "%B 1.05 \u2014 the stall zone (\u22122.65 pts vs null @60d)"
-   ],
-   "stale": false
-  },
-  {
-   "ticker": "WBD",
-   "tags": [
-    "ndx100"
-   ],
-   "as_of": "2026-09-24",
-   "close": 30.84000015258789,
-   "chg": 0.0026007777344208005,
-   "pct_b": 1.0798442088729139,
-   "band": {
-    "mid": 28.658500099182127,
-    "upper": 30.539608869455186,
-    "lower": 26.77739132890907
-   },
-   "vs_sma20": 0.07612052430713279,
-   "vs_sma200": 0.11746621190054363,
-   "range_pos": 1.0,
-   "range_n": 252,
-   "atr_pct": 0.016555674934216197,
-   "dollar_volume": 527385250.52814484,
-   "hold": {
-    "n": 2008,
-    "n_independent": 4,
-    "positive": 0.40239043824701193,
-    "p10": -0.6103850250424572,
-    "median": -0.08557780979707696
-   },
-   "spike": null,
-   "verdict": "extended",
-   "why": [
-    "%B 1.08 \u2014 the stall zone (\u22122.65 pts vs null @60d)"
    ],
    "stale": false
   },
