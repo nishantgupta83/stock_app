@@ -2,10 +2,10 @@
   "experiment_id": "fwd_prov_long_h1d",
   "config_hash": "f1b6a019435833a8a180b7609cacb0bb88f94948ae54ed6bd9d36175e615b9cc",
   "forward_epoch": "2026-08-03",
-  "captured_at": "2026-09-25T00:57:46.731544+00:00",
+  "captured_at": "2026-09-26T00:57:26.543615+00:00",
   "sync_ok": true,
-  "n_admitted": 163,
-  "n_open": 0,
+  "n_admitted": 174,
+  "n_open": 11,
   "n_cohorts_forward": 31,
   "forward": {
     "n_cohorts": 31,
