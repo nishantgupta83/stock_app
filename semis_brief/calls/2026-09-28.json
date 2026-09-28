@@ -1,0 +1,539 @@
+{
+ "date": "2026-09-28",
+ "generated_at": "2026-09-28T13:00:37+00:00",
+ "snapshot_cutoff": "2026-09-28T13:00:37.487887+00:00",
+ "prior_session": "2026-09-25",
+ "calendar_verified": true,
+ "weights": {
+  "NVDA": 0.094308205,
+  "MU": 0.0890507,
+  "AMD": 0.0822601,
+  "AVGO": 0.0747613,
+  "INTC": 0.050920602,
+  "MRVL": 0.0465602,
+  "TSM": 0.0465258,
+  "AMAT": 0.0459298,
+  "LRCX": 0.0427297,
+  "KLAC": 0.041171398
+ },
+ "weights_source": "yfinance",
+ "premarket": {
+  "NVDA": {
+   "price": 229.522,
+   "ts": "2026-09-28T12:55:00+00:00",
+   "prior_close": 225.07000732421875,
+   "move": 0.01978047954371842
+  },
+  "MU": {
+   "price": 1072.99,
+   "ts": "2026-09-28T12:55:00+00:00",
+   "prior_close": 1082.280029296875,
+   "move": -0.008583757479947662
+  },
+  "AMD": {
+   "price": 625.29,
+   "ts": "2026-09-28T12:55:00+00:00",
+   "prior_close": 630.6300048828125,
+   "move": -0.008467730430626874
+  },
+  "AVGO": {
+   "price": 352.0186,
+   "ts": "2026-09-28T13:00:37+00:00",
+   "prior_close": 352.80999755859375,
+   "move": -0.002243126793657013
+  },
+  "INTC": {
+   "price": 120.7604,
+   "ts": "2026-09-28T12:55:00+00:00",
+   "prior_close": 123.0,
+   "move": -0.018208130081300733
+  },
+  "MRVL": {
+   "price": 258.29,
+   "ts": "2026-09-28T13:00:27+00:00",
+   "prior_close": 261.94000244140625,
+   "move": -0.013934498004834928
+  },
+  "TSM": {
+   "price": 449.06,
+   "ts": "2026-09-28T13:00:26+00:00",
+   "prior_close": 450.6099853515625,
+   "move": -0.0034397492331493806
+  },
+  "AMAT": {
+   "price": 479.29,
+   "ts": "2026-09-28T12:55:00+00:00",
+   "prior_close": 485.0,
+   "move": -0.011773195876288667
+  },
+  "LRCX": {
+   "price": 312.8788,
+   "ts": "2026-09-28T13:00:30+00:00",
+   "prior_close": 315.2099914550781,
+   "move": -0.007395677542824108
+  },
+  "KLAC": {
+   "price": 186.3034,
+   "ts": "2026-09-28T13:00:19+00:00",
+   "prior_close": 187.9199981689453,
+   "move": -0.008602587189746269
+  },
+  "SOXX": {
+   "price": 567.58,
+   "ts": "2026-09-28T12:55:00+00:00",
+   "prior_close": 572.6799926757812,
+   "move": -0.008905484286175436
+  },
+  "SOXL": {
+   "price": 147.6,
+   "ts": "2026-09-28T12:55:00+00:00",
+   "prior_close": 151.4499969482422,
+   "move": -0.02542091136230218
+  },
+  "SOXS": {
+   "price": 33.2915,
+   "ts": "2026-09-28T12:55:00+00:00",
+   "prior_close": 32.43000030517578,
+   "move": 0.026564899374568407
+  }
+ },
+ "implied": {
+  "implied_soxx": -0.004412308951475203,
+  "n_used": 10,
+  "n_missing": 0,
+  "coverage": 1.0,
+  "contrib": {
+   "NVDA": 0.0030371335780591765,
+   "MU": -0.0012444927613577976,
+   "AMD": -0.0011340543148149374,
+   "AVGO": -0.0002730286777646084,
+   "INTC": -0.0015095116707568293,
+   "MRVL": -0.0010562914469806279,
+   "TSM": -0.00026055429127727983,
+   "AMAT": -0.0008803726097760439,
+   "LRCX": -0.0005145000358653089,
+   "KLAC": -0.0005766367209409457
+  },
+  "dispersion": 0.009753414480026689,
+  "n_up": 1,
+  "n_down": 9
+ },
+ "implied_soxx": -0.004412308951475203,
+ "implied_soxl": -0.013236926854425608,
+ "implied_soxs": 0.013236926854425608,
+ "bias": "lean_soxs",
+ "components": {
+  "overnight_asia_eu": -0.022138821676350152,
+  "nasdaq_futures": 0.002610114192495905,
+  "news_net": 5,
+  "social_skew": 64
+ },
+ "overnight": {
+  "2330.TW": {
+   "label": "TSMC (Taiwan)",
+   "move": -0.010000000000000009
+  },
+  "000660.KS": {
+   "label": "SK Hynix",
+   "move": -0.050483351235230955
+  },
+  "005930.KS": {
+   "label": "Samsung",
+   "move": -0.05429071803852892
+  },
+  "8035.T": {
+   "label": "Tokyo Electron",
+   "move": -0.0035385704175513455
+  },
+  "ASML.AS": {
+   "label": "ASML (Amsterdam)",
+   "move": 0.007618531309560472
+  }
+ },
+ "nasdaq_futures": 0.002610114192495905,
+ "news": [
+  {
+   "ticker": "NVDA",
+   "title": "Bitcoin Is Soaring Again. Will It Hit $100,000 by the End of 2026?",
+   "link": "https://www.fool.com/investing/2026/09/28/bitcoin-is-soaring-again-will-it-hit-usd100-000-by-the-end-of-2026/?.tsrc=rss",
+   "published": "2026-09-28 12:46:51+00:00",
+   "tag": 0
+  },
+  {
+   "ticker": "NVDA",
+   "title": "Stock Market Today: Dow Falls, Trump Rejects Iran Deal; Oil, Yields Jump As Nvidia Rises On Buyback (Live Coverage)",
+   "link": "https://finance.yahoo.com/m/6b34a52f-8642-3ca8-8589-c9e25040f485/stock-market-today%3A-dow.html?.tsrc=rss",
+   "published": "2026-09-28 12:43:14+00:00",
+   "tag": -1
+  },
+  {
+   "ticker": "INTC",
+   "title": "Gunnison Copper names defense-sector finance veteran Jennifer Hays as CFO",
+   "link": "https://www.proactiveinvestors.com/companies/news/1099222/gunnison-copper-names-defense-sector-finance-veteran-jennifer-hays-as-cfo-1099222.html?.tsrc=rss",
+   "published": "2026-09-28 12:41:00+00:00",
+   "tag": 0
+  },
+  {
+   "ticker": "NVDA",
+   "title": "Super Micro Burned $6.8 Billion Last Year. Here\u2019s What Changed in June",
+   "link": "https://www.tikr.com/blog/super-micro-burned-6-8-billion-last-year-heres-what-changed-in-june?ref=yahoofinance&.tsrc=rss",
+   "published": "2026-09-28 12:32:28+00:00",
+   "tag": 0
+  },
+  {
+   "ticker": "NVDA",
+   "title": "The AI Conference Unveils Full Agenda, Bringing Applied Insights From the AI Builders at Anthropic, NVIDIA, OpenAI, and More",
+   "link": "https://finance.yahoo.com/technology/ai/articles/ai-conference-unveils-full-agenda-123000110.html?.tsrc=rss",
+   "published": "2026-09-28 12:30:00+00:00",
+   "tag": 0
+  },
+  {
+   "ticker": "LRCX",
+   "title": "Virtualware completes the acquisition of British company Virtalis",
+   "link": "https://finance.yahoo.com/technology/articles/virtualware-completes-acquisition-british-company-122900373.html?.tsrc=rss",
+   "published": "2026-09-28 12:29:00+00:00",
+   "tag": 0
+  },
+  {
+   "ticker": "NVDA",
+   "title": "NVDA Stock Climbs After Nvidia Approves \u2018Largest Buyback Increase\u2019 In Company History",
+   "link": "https://stocktwits.com/news-articles/markets/equity/nvda-stock-climbs-after-nvidia-approves-largest-buyback-increase-in-company-history/cZMSMQxRBQ1?.tsrc=rss",
+   "published": "2026-09-28 12:28:14+00:00",
+   "tag": 0
+  },
+  {
+   "ticker": "NVDA",
+   "title": "Apple Is the Best-Performing \"Magnificent Seven\" Stock This Year. But It Has Still Lagged This Unassuming Dividend Stock (That Remains a Top Buy Now).",
+   "link": "https://www.fool.com/investing/2026/09/28/apple-is-the-best-performing-magnificent-seven-sto/?.tsrc=rss",
+   "published": "2026-09-28 12:27:00+00:00",
+   "tag": 0
+  },
+  {
+   "ticker": "NVDA",
+   "title": "Nvidia announces record $150 billion share buyback increase",
+   "link": "https://qz.com/nvidia-share-buyback-repurchase-record-150-billion-092826?.tsrc=rss",
+   "published": "2026-09-28 12:26:20+00:00",
+   "tag": 1
+  },
+  {
+   "ticker": "NVDA",
+   "title": "Nvidia Stock in Focus -- Chip Giant Unveils Powerful AI Safety Platform",
+   "link": "https://finance.yahoo.com/technology/ai/articles/nvidia-stock-focus-chip-giant-122306846.html?.tsrc=rss",
+   "published": "2026-09-28 12:23:06+00:00",
+   "tag": 0
+  }
+ ],
+ "news_net": 5,
+ "filings": [
+  {
+   "ticker": "AVGO",
+   "form_type": "4",
+   "filed_at": "2026-09-25T20:15:18+00:00",
+   "primary_doc_url": "https://www.sec.gov/Archives/edgar/data/1730168/000110465926110983/xslF345X06/tm2626134-1_4seq1.xml"
+  }
+ ],
+ "truth_social": [
+  {
+   "posted_at": "2026-09-26T18:58:36+00:00",
+   "text": "The American People elected me to deliver HISTORIC Economic Results, and now, I have a new responsibility, reporting our incredible results because the Fake News refuses to do it. S P Global reported this week that U.S. Business Growth is at its HIGHEST LEVEL IN MORE THAN FIVE YE",
+   "url": "https://www.trumpstruth.org/statuses/41947"
+  },
+  {
+   "posted_at": "2026-09-26T10:31:22+00:00",
+   "text": "Trump\u2019s U.N. speech reveals a world realigned by his policy and pressure, with China in the wings: https:// justthenews.com/government/whi te-house/trump-0",
+   "url": "https://www.trumpstruth.org/statuses/41920"
+  }
+ ],
+ "social": {
+  "SOXL": {
+   "bull": 8,
+   "bear": 1,
+   "msgs": 30,
+   "last12h": 30,
+   "vol_ratio": null
+  },
+  "SOXS": {
+   "bull": 3,
+   "bear": 2,
+   "msgs": 30,
+   "last12h": 30,
+   "vol_ratio": null
+  },
+  "SOXX": {
+   "bull": 7,
+   "bear": 1,
+   "msgs": 30,
+   "last12h": 19,
+   "vol_ratio": null
+  },
+  "NVDA": {
+   "bull": 16,
+   "bear": 0,
+   "msgs": 30,
+   "last12h": 30,
+   "vol_ratio": null
+  },
+  "MU": {
+   "bull": 20,
+   "bear": 1,
+   "msgs": 30,
+   "last12h": 30,
+   "vol_ratio": null
+  },
+  "AMD": {
+   "bull": 17,
+   "bear": 2,
+   "msgs": 30,
+   "last12h": 30,
+   "vol_ratio": null
+  }
+ },
+ "levels": {
+  "soxl_prior_close": 151.4499969482422,
+  "soxl_prior_high": 153.89999389648438,
+  "soxl_prior_low": 147.38999938964844,
+  "soxl_pm_high": 147.67,
+  "soxl_pm_low": 139.41,
+  "soxl_gap": -0.02542091136230218,
+  "gap_fill": {
+   "bucket": "down 2-4%",
+   "n": 63,
+   "fill_rate": 0.49206349206349204
+  }
+ },
+ "bands": {
+  "SOXX": {
+   "state": {
+    "as_of": "2026-09-25",
+    "close": 572.6799926757812,
+    "upper": 578.5129690307958,
+    "middle": 526.7720016479492,
+    "lower": 475.0310342651026,
+    "pct_b": 0.9436329020304677,
+    "bandwidth": 0.1964453965699794,
+    "zone": "inside"
+   },
+   "open_trade": null,
+   "record_5y": {
+    "n": 24,
+    "win_rate": 0.7916666666666666,
+    "mean": 0.03354375471187052
+   },
+   "record_live": {
+    "n": 0,
+    "win_rate": null,
+    "mean": null
+   },
+   "last_trade": {
+    "signal_date": "2026-07-29",
+    "entry_date": "2026-07-30",
+    "entry": 491.57000732421875,
+    "exit_date": "2026-08-04",
+    "exit": 542.2100219726562,
+    "ret": 0.10261689259702429,
+    "hold_days": 4
+   }
+  },
+  "SOXL": {
+   "state": {
+    "as_of": "2026-09-25",
+    "close": 151.4499969482422,
+    "upper": 154.87221462104233,
+    "middle": 121.54749908447266,
+    "lower": 88.22278354790299,
+    "pct_b": 0.9486534600866331,
+    "bandwidth": 0.548340620540613,
+    "zone": "inside"
+   },
+   "open_trade": null,
+   "record_5y": {
+    "n": 24,
+    "win_rate": 0.7083333333333334,
+    "mean": 0.07545322936058657
+   },
+   "record_live": {
+    "n": 0,
+    "win_rate": null,
+    "mean": null
+   },
+   "last_trade": {
+    "signal_date": "2026-07-29",
+    "entry_date": "2026-07-30",
+    "entry": 107.37999725341797,
+    "exit_date": "2026-08-07",
+    "exit": 140.25,
+    "ret": 0.3057091785000558,
+    "hold_days": 7
+   }
+  },
+  "SOXS": {
+   "state": {
+    "as_of": "2026-09-25",
+    "close": 32.43000030517578,
+    "upper": 58.22368849118876,
+    "middle": 44.296000480651855,
+    "lower": 30.36831247011495,
+    "pct_b": 0.07401400122910111,
+    "bandwidth": 0.6288463003164545,
+    "zone": "inside"
+   },
+   "open_trade": {
+    "signal_date": "2026-09-18",
+    "entry_date": "2026-09-21",
+    "entry": 38.75,
+    "last": 32.43000030517578,
+    "unrealized": -0.16329676631804438
+   },
+   "record_5y": {
+    "n": 21,
+    "win_rate": 0.5238095238095238,
+    "mean": -0.03641262356919698
+   },
+   "record_live": {
+    "n": 0,
+    "win_rate": null,
+    "mean": null
+   },
+   "last_trade": {
+    "signal_date": "2026-06-15",
+    "entry_date": "2026-06-16",
+    "entry": 40.29999923706055,
+    "exit_date": "2026-07-07",
+    "exit": 48.0,
+    "ret": 0.1906670200672957,
+    "hold_days": 14
+   }
+  }
+ },
+ "portfolio": [
+  {
+   "ticker": "VTI",
+   "role": "core",
+   "note": "total US market",
+   "close": 379.7699890136719,
+   "as_of": "2026-09-25",
+   "chg": 0.004469960065138778,
+   "pct_b": 0.7434731299279054,
+   "vs_sma20": 0.007223222916612926,
+   "vs_sma200": 0.07152135212066368,
+   "range_pos": 0.9376205028382778,
+   "range_n": 251,
+   "dollar_volume": 1074445455.0125122,
+   "thin": false
+  },
+  {
+   "ticker": "RRX",
+   "role": "theme",
+   "note": "frameless motors; ~$30M humanoid orders (JPM note, not an RRX filing)",
+   "close": 156.17999267578125,
+   "as_of": "2026-09-25",
+   "chg": 0.03355166464794768,
+   "pct_b": 0.5192680734134645,
+   "vs_sma20": 0.002477596862041409,
+   "vs_sma200": -0.1714815613556645,
+   "range_pos": 0.2506395473672176,
+   "range_n": 251,
+   "dollar_volume": 200094808.4274292,
+   "thin": false
+  },
+  {
+   "ticker": "NOVT",
+   "role": "theme",
+   "note": "ATI force/torque, global #1; no humanoid revenue disclosed",
+   "close": 143.92999267578125,
+   "as_of": "2026-09-25",
+   "chg": 0.01695749252585621,
+   "pct_b": 0.5857177079454279,
+   "vs_sma20": 0.012205067558326732,
+   "vs_sma200": 0.029845653116521653,
+   "range_pos": 0.6430316732349907,
+   "range_n": 251,
+   "dollar_volume": 54393077.39715576,
+   "thin": false
+  },
+  {
+   "ticker": "ALGM",
+   "role": "theme",
+   "note": "2 disclosed humanoid joint design wins",
+   "close": 36.7599983215332,
+   "as_of": "2026-09-25",
+   "chg": 0.04639900950351494,
+   "pct_b": 0.8413411669444825,
+   "vs_sma20": 0.043769557993476926,
+   "vs_sma200": -0.08198633456564941,
+   "range_pos": 0.29816313622517565,
+   "range_n": 251,
+   "dollar_volume": 87319187.51277924,
+   "thin": false
+  },
+  {
+   "ticker": "KOID",
+   "role": "theme",
+   "note": "humanoid ETF, 41 holdings, 0.69%",
+   "close": 36.5099983215332,
+   "as_of": "2026-09-25",
+   "chg": 0.013885032582770407,
+   "pct_b": 0.7884633153949521,
+   "vs_sma20": 0.02017432648695827,
+   "vs_sma200": 0.009525466411301586,
+   "range_pos": 0.5628237953128139,
+   "range_n": 251,
+   "dollar_volume": 5289919.886398315,
+   "thin": false
+  },
+  {
+   "ticker": "MP",
+   "role": "watch",
+   "note": "NdPr + magnets; DoD $110/kg floor",
+   "close": 48.83000183105469,
+   "as_of": "2026-09-25",
+   "chg": -0.00953341609085756,
+   "pct_b": 0.23624598696759944,
+   "vs_sma20": -0.05429610780527239,
+   "vs_sma200": -0.14325739608706,
+   "range_pos": 0.17720896475862513,
+   "range_n": 251,
+   "dollar_volume": 280555072.1824646,
+   "thin": false
+  },
+  {
+   "ticker": "USAR",
+   "role": "watch",
+   "note": "magnet converter, no mine",
+   "close": 15.180000305175781,
+   "as_of": "2026-09-25",
+   "chg": -0.013003888672104003,
+   "pct_b": 0.18174388458402763,
+   "vs_sma20": -0.07974901151503266,
+   "vs_sma200": -0.21651207092261893,
+   "range_pos": 0.12247948478512023,
+   "range_n": 251,
+   "dollar_volume": 185201063.4823799,
+   "thin": false
+  },
+  {
+   "ticker": "AME",
+   "role": "watch",
+   "note": "no humanoid disclosure found",
+   "close": 250.74000549316406,
+   "as_of": "2026-09-25",
+   "chg": 0.012109469336726741,
+   "pct_b": 1.07822596048134,
+   "vs_sma20": 0.05312897750328638,
+   "vs_sma200": 0.09475835702165392,
+   "range_pos": 0.9018174598773134,
+   "range_n": 251,
+   "dollar_volume": 289306336.0557556,
+   "thin": false
+  }
+ ],
+ "catalysts": {
+  "earnings_next_7d": [
+   {
+    "ticker": "MU",
+    "date": "2026-09-30"
+   }
+  ],
+  "macro_today": null
+ }
+}
