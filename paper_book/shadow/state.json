@@ -8281,6 +8281,21 @@
 "return_pct": -0.001278,
 "qqq_return_pct": -0.010638,
 "excess_pct": 0.00936
+},
+{
+"setup_id": 652,
+"ticker": "FSLR",
+"skip_category": "payoff",
+"reason_to_skip": "rule news_article:neutral:h1d profit_factor 0.87 < 1.0 (no payoff edge)",
+"priceable": 1,
+"status": "resolved",
+"entry_date": "2026-09-25",
+"entry_px": 174.09,
+"exit_date": "2026-09-28",
+"exit_px": 172.97,
+"return_pct": -0.006433,
+"qqq_return_pct": -0.010705,
+"excess_pct": 0.004272
 }
 ]
 }

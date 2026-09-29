@@ -1,14 +1,14 @@
 {
-  "captured_at": "2026-09-26T00:53:53.831862+00:00",
+  "captured_at": "2026-09-29T02:19:19.637197+00:00",
   "sync_ok": true,
   "by_category": {
     "payoff": {
-      "n_setups": 15,
-      "n_resolved": 15,
+      "n_setups": 16,
+      "n_resolved": 16,
       "mean_return_pct": -0.0062,
-      "mean_excess_vs_qqq_pct": -0.0059,
-      "win_rate": 0.2667,
-      "median_excess_pct": -0.0065,
+      "mean_excess_vs_qqq_pct": -0.0052,
+      "win_rate": 0.3125,
+      "median_excess_pct": -0.0058,
       "status": "ok"
     },
     "vocabulary": {
@@ -39,12 +39,12 @@
       "status": "ok"
     },
     "overall_priceable": {
-      "n_setups": 277,
-      "n_resolved": 277,
-      "mean_return_pct": 0.028,
-      "mean_excess_vs_qqq_pct": 0.0333,
-      "win_rate": 0.639,
-      "median_excess_pct": 0.0209,
+      "n_setups": 278,
+      "n_resolved": 278,
+      "mean_return_pct": 0.0279,
+      "mean_excess_vs_qqq_pct": 0.0332,
+      "win_rate": 0.6403,
+      "median_excess_pct": 0.0205,
       "status": "ok"
     }
   },
@@ -125,6 +125,7 @@
     "rule 8k_material_event::h1d profit_factor 0.76 < 1.0 (no payoff edge)": 2,
     "rule 8k_material_event::h1d profit_factor 0.78 < 1.0 (no payoff edge)": 1,
     "rule institutional_decrease:BRDGW:h1d has only n=0 closed trades (need \u22655 or mature)": 4,
-    "rule institutional_exit:BRDGW:h1d has only n=0 closed trades (need \u22655 or mature)": 1
+    "rule institutional_exit:BRDGW:h1d has only n=0 closed trades (need \u22655 or mature)": 1,
+    "rule news_article:neutral:h1d profit_factor 0.87 < 1.0 (no payoff edge)": 1
   }
 }
