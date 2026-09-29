@@ -1,0 +1,528 @@
+{
+ "date": "2026-09-29",
+ "generated_at": "2026-09-29T13:01:09+00:00",
+ "snapshot_cutoff": "2026-09-29T13:01:09.485467+00:00",
+ "prior_session": "2026-09-28",
+ "calendar_verified": true,
+ "weights": {
+  "NVDA": 0.094308205,
+  "MU": 0.0890507,
+  "AMD": 0.0822601,
+  "AVGO": 0.0747613,
+  "INTC": 0.050920602,
+  "MRVL": 0.0465602,
+  "TSM": 0.0465258,
+  "AMAT": 0.0459298,
+  "LRCX": 0.0427297,
+  "KLAC": 0.041171398
+ },
+ "weights_source": "yfinance",
+ "premarket": {
+  "NVDA": {
+   "price": 230.128,
+   "ts": "2026-09-29T13:00:00+00:00",
+   "prior_close": 228.86000061035156,
+   "move": 0.0055405024305985595
+  },
+  "MU": {
+   "price": 1068.84,
+   "ts": "2026-09-29T13:00:00+00:00",
+   "prior_close": 1053.97998046875,
+   "move": 0.01409895805102579
+  },
+  "AMD": {
+   "price": 613.8375,
+   "ts": "2026-09-29T13:00:00+00:00",
+   "prior_close": 607.8699951171875,
+   "move": 0.009817074260528358
+  },
+  "AVGO": {
+   "price": 352.46,
+   "ts": "2026-09-29T13:00:00+00:00",
+   "prior_close": 349.57000732421875,
+   "move": 0.008267278700202718
+  },
+  "INTC": {
+   "price": 116.51,
+   "ts": "2026-09-29T13:00:00+00:00",
+   "prior_close": 116.02999877929688,
+   "move": 0.0041368717207017625
+  },
+  "MRVL": {
+   "price": 256.17,
+   "ts": "2026-09-29T13:00:00+00:00",
+   "prior_close": 251.89999389648438,
+   "move": 0.01695119574028392
+  },
+  "TSM": {
+   "price": 453.15,
+   "ts": "2026-09-29T13:00:00+00:00",
+   "prior_close": 452.8800048828125,
+   "move": 0.0005961736315944766
+  },
+  "AMAT": {
+   "price": 496.08,
+   "ts": "2026-09-29T13:00:53+00:00",
+   "prior_close": 486.760009765625,
+   "move": 0.019146992454993406
+  },
+  "LRCX": {
+   "price": 320.0,
+   "ts": "2026-09-29T13:00:00+00:00",
+   "prior_close": 314.4700012207031,
+   "move": 0.01758513930686756
+  },
+  "KLAC": {
+   "price": 193.2563,
+   "ts": "2026-09-29T13:00:52+00:00",
+   "prior_close": 189.1699981689453,
+   "move": 0.021601215153606246
+  },
+  "SOXX": {
+   "price": 566.73,
+   "ts": "2026-09-29T13:00:00+00:00",
+   "prior_close": 560.7899780273438,
+   "move": 0.01059223988551139
+  },
+  "SOXL": {
+   "price": 146.3838,
+   "ts": "2026-09-29T13:00:00+00:00",
+   "prior_close": 142.2899932861328,
+   "move": 0.02877086869794776
+  },
+  "SOXS": {
+   "price": 33.42,
+   "ts": "2026-09-29T13:00:00+00:00",
+   "prior_close": 34.43000030517578,
+   "move": -0.029334890973670702
+  }
+ },
+ "implied": {
+  "implied_soxx": 0.010991998092848525,
+  "n_used": 10,
+  "n_missing": 0,
+  "coverage": 1.0,
+  "contrib": {
+   "NVDA": 0.0008506995967462833,
+   "MU": 0.002044099134694544,
+   "AMD": 0.0013147673411689667,
+   "AVGO": 0.0010062757837009716,
+   "INTC": 0.00034295977208754087,
+   "MRVL": 0.0012849693667000867,
+   "TSM": 4.5158989080165626e-05,
+   "AMAT": 0.001431768221143241,
+   "LRCX": 0.0012233571233589667,
+   "KLAC": 0.0014479427641677593
+  },
+  "dispersion": 0.006746598966775684,
+  "n_up": 10,
+  "n_down": 0
+ },
+ "implied_soxx": 0.010991998092848525,
+ "implied_soxl": 0.03297599427854558,
+ "implied_soxs": -0.03297599427854558,
+ "bias": "lean_soxl",
+ "components": {
+  "overnight_asia_eu": 0.012401890773666357,
+  "nasdaq_futures": 0.00672689938398352,
+  "news_net": null,
+  "social_skew": 67
+ },
+ "overnight": {
+  "2330.TW": {
+   "label": "TSMC (Taiwan)",
+   "move": 0.0
+  },
+  "000660.KS": {
+   "label": "SK Hynix",
+   "move": -0.0016968325791855143
+  },
+  "005930.KS": {
+   "label": "Samsung",
+   "move": 0.0092592592592593
+  },
+  "8035.T": {
+   "label": "Tokyo Electron",
+   "move": 0.02139559659090917
+  },
+  "ASML.AS": {
+   "label": "ASML (Amsterdam)",
+   "move": 0.03305143059734883
+  }
+ },
+ "nasdaq_futures": 0.00672689938398352,
+ "news": [
+  {
+   "ticker": "NVDA",
+   "title": "AT&T vs T-Mobile: What's the Better Dividend Stock to Buy Right Now?",
+   "link": "https://www.fool.com/investing/2026/09/29/at-and-t-vs-t-mobile-what-s-the-better-dividend-stock-to-buy-right-now/?.tsrc=rss",
+   "published": "2026-09-29 12:50:01+00:00",
+   "tag": 0
+  },
+  {
+   "ticker": "NVDA",
+   "title": "What's Wrong With Nike Stock?",
+   "link": "https://www.fool.com/investing/2026/09/29/whats-wrong-with-nike-stock/?.tsrc=rss",
+   "published": "2026-09-29 12:50:00+00:00",
+   "tag": 0
+  },
+  {
+   "ticker": "NVDA",
+   "title": "Meet the 1 Stock I'd Buy With $5,000, Even If the Market Fell 10% Tomorrow",
+   "link": "https://www.fool.com/investing/2026/09/29/meet-the-1-stock-id-buy-with-5000-even-if-the-mark/?.tsrc=rss",
+   "published": "2026-09-29 12:43:00+00:00",
+   "tag": 0
+  },
+  {
+   "ticker": "AMAT",
+   "title": "Is Applied Materials Still The Business You Bought?",
+   "link": "https://www.trefis.com/articles/616977/is-applied-materials-still-the-business-you-bought/2026-09-29?.tsrc=rss",
+   "published": "2026-09-29 12:42:50+00:00",
+   "tag": 0
+  },
+  {
+   "ticker": "NVDA",
+   "title": "Stock Market Today: Dow Rises As Oil Prices, Treasury Yields Fall; Nvidia Stock Hits Buy Point (Live Coverage)",
+   "link": "https://finance.yahoo.com/m/8757314c-41ab-383f-89ee-51177c4ae956/stock-market-today%3A-dow-rises.html?.tsrc=rss",
+   "published": "2026-09-29 12:42:03+00:00",
+   "tag": 0
+  },
+  {
+   "ticker": "NVDA",
+   "title": "Prediction: Microsoft Will Double Its Paid Copilot Seats in the Next 12 Months",
+   "link": "https://www.fool.com/investing/2026/09/29/prediction-microsoft-will-double-its-paid-copilot-seats-in-the-next-12-months/?.tsrc=rss",
+   "published": "2026-09-29 12:37:01+00:00",
+   "tag": 0
+  },
+  {
+   "ticker": "NVDA",
+   "title": "Samsung invests $1 billion in Helix AI infrastructure firm",
+   "link": "https://qz.com/samsung-investment-helix-digital-infrastructure-kkr-nvidia-092926?.tsrc=rss",
+   "published": "2026-09-29 12:34:39+00:00",
+   "tag": 0
+  },
+  {
+   "ticker": "NVDA",
+   "title": "Stock-Split Watch: Is Caterpillar Next?",
+   "link": "https://www.fool.com/investing/2026/09/29/stock-split-watch-is-caterpillar-next/?.tsrc=rss",
+   "published": "2026-09-29 12:31:00+00:00",
+   "tag": 0
+  },
+  {
+   "ticker": "NVDA",
+   "title": "Intel Is Trying to Reinvent Itself. Here\u2019s Where INTC Stock Could Be in 2027",
+   "link": "https://247wallst.com/investing/2026/09/29/intel-is-trying-to-reinvent-itself-heres-where-intc-stock-could-be-in-2027/?.tsrc=rss",
+   "published": "2026-09-29 12:30:10+00:00",
+   "tag": 0
+  },
+  {
+   "ticker": "NVDA",
+   "title": "Phaidra and Aligned Data Centers Partner to Empower Operations Teams and Strengthen Data Center Reliability with AI",
+   "link": "https://finance.yahoo.com/technology/ai/articles/phaidra-aligned-data-centers-partner-123000129.html?.tsrc=rss",
+   "published": "2026-09-29 12:30:00+00:00",
+   "tag": 0
+  }
+ ],
+ "news_net": 0,
+ "filings": [
+  {
+   "ticker": "AMD",
+   "form_type": "8-K",
+   "filed_at": "2026-09-28T20:16:47+00:00",
+   "primary_doc_url": "https://www.sec.gov/Archives/edgar/data/2488/000000248826000182/amd-20260926.htm"
+  }
+ ],
+ "truth_social": [],
+ "social": {
+  "SOXL": {
+   "bull": 17,
+   "bear": 1,
+   "msgs": 30,
+   "last12h": 30,
+   "vol_ratio": null
+  },
+  "SOXS": {
+   "bull": 9,
+   "bear": 2,
+   "msgs": 30,
+   "last12h": 11,
+   "vol_ratio": null
+  },
+  "SOXX": {
+   "bull": 12,
+   "bear": 0,
+   "msgs": 30,
+   "last12h": 5,
+   "vol_ratio": null
+  },
+  "NVDA": {
+   "bull": 10,
+   "bear": 1,
+   "msgs": 30,
+   "last12h": 30,
+   "vol_ratio": null
+  },
+  "MU": {
+   "bull": 15,
+   "bear": 4,
+   "msgs": 30,
+   "last12h": 30,
+   "vol_ratio": null
+  },
+  "AMD": {
+   "bull": 12,
+   "bear": 0,
+   "msgs": 30,
+   "last12h": 30,
+   "vol_ratio": null
+  }
+ },
+ "levels": {
+  "soxl_prior_close": 142.2899932861328,
+  "soxl_prior_high": 149.99000549316406,
+  "soxl_prior_low": 135.2100067138672,
+  "soxl_pm_high": 147.6586,
+  "soxl_pm_low": 143.4,
+  "soxl_gap": 0.02877086869794776,
+  "gap_fill": {
+   "bucket": "up 2-4%",
+   "n": 80,
+   "fill_rate": 0.45
+  }
+ },
+ "bands": {
+  "SOXX": {
+   "state": {
+    "as_of": "2026-09-28",
+    "close": 560.7899780273438,
+    "upper": 582.4413725325793,
+    "middle": 529.380500793457,
+    "lower": 476.3196290543348,
+    "pct_b": 0.7959758877343153,
+    "bandwidth": 0.20046402033921704,
+    "zone": "inside"
+   },
+   "open_trade": null,
+   "record_5y": {
+    "n": 24,
+    "win_rate": 0.7916666666666666,
+    "mean": 0.03354375471187052
+   },
+   "record_live": {
+    "n": 0,
+    "win_rate": null,
+    "mean": null
+   },
+   "last_trade": {
+    "signal_date": "2026-07-29",
+    "entry_date": "2026-07-30",
+    "entry": 491.57000732421875,
+    "exit_date": "2026-08-04",
+    "exit": 542.2100219726562,
+    "ret": 0.10261689259702429,
+    "hold_days": 4
+   }
+  },
+  "SOXL": {
+   "state": {
+    "as_of": "2026-09-28",
+    "close": 142.2899932861328,
+    "upper": 157.24421902779926,
+    "middle": 123.09499893188476,
+    "lower": 88.94577883597026,
+    "pct_b": 0.7810458672311593,
+    "bandwidth": 0.5548433387584031,
+    "zone": "inside"
+   },
+   "open_trade": null,
+   "record_5y": {
+    "n": 24,
+    "win_rate": 0.7083333333333334,
+    "mean": 0.07545322936058657
+   },
+   "record_live": {
+    "n": 0,
+    "win_rate": null,
+    "mean": null
+   },
+   "last_trade": {
+    "signal_date": "2026-07-29",
+    "entry_date": "2026-07-30",
+    "entry": 107.37999725341797,
+    "exit_date": "2026-08-07",
+    "exit": 140.25,
+    "ret": 0.3057091785000558,
+    "hold_days": 7
+   }
+  },
+  "SOXS": {
+   "state": {
+    "as_of": "2026-09-28",
+    "close": 34.43000030517578,
+    "upper": 57.843506166528485,
+    "middle": 43.52650051116943,
+    "lower": 29.20949485581038,
+    "pct_b": 0.18231834138485845,
+    "bandwidth": 0.6578523652130102,
+    "zone": "inside"
+   },
+   "open_trade": {
+    "signal_date": "2026-09-18",
+    "entry_date": "2026-09-21",
+    "entry": 38.75,
+    "last": 34.43000030517578,
+    "unrealized": -0.1116838630922379
+   },
+   "record_5y": {
+    "n": 20,
+    "win_rate": 0.5,
+    "mean": -0.05450411367801486
+   },
+   "record_live": {
+    "n": 0,
+    "win_rate": null,
+    "mean": null
+   },
+   "last_trade": {
+    "signal_date": "2026-04-08",
+    "entry_date": "2026-04-09",
+    "entry": 267.6000061035156,
+    "exit_date": "2026-07-07",
+    "exit": 48.0,
+    "ret": -0.8210278067817675,
+    "hold_days": 61
+   }
+  }
+ },
+ "portfolio": [
+  {
+   "ticker": "VTI",
+   "role": "core",
+   "note": "total US market",
+   "close": 375.8399963378906,
+   "as_of": "2026-09-28",
+   "chg": -0.010348349762939746,
+   "pct_b": 0.4065162265325484,
+   "vs_sma20": -0.0027343671712367623,
+   "vs_sma200": 0.059840637520073514,
+   "range_pos": 0.8835032770048227,
+   "range_n": 251,
+   "dollar_volume": 1074445455.0125122,
+   "thin": false
+  },
+  {
+   "ticker": "RRX",
+   "role": "theme",
+   "note": "frameless motors; ~$30M humanoid orders (JPM note, not an RRX filing)",
+   "close": 156.47999572753906,
+   "as_of": "2026-09-28",
+   "chg": 0.0019208801756098737,
+   "pct_b": 0.5366971405950532,
+   "vs_sma20": 0.00470956091173691,
+   "vs_sma200": -0.1700580415797176,
+   "range_pos": 0.25338080326145457,
+   "range_n": 251,
+   "dollar_volume": 196831693.83010864,
+   "thin": false
+  },
+  {
+   "ticker": "NOVT",
+   "role": "theme",
+   "note": "ATI force/torque, global #1; no humanoid revenue disclosed",
+   "close": 142.0800018310547,
+   "as_of": "2026-09-28",
+   "chg": -0.012853407481885126,
+   "pct_b": 0.49464126182155765,
+   "vs_sma20": -0.0007630548184139885,
+   "vs_sma200": 0.015684939150442556,
+   "range_pos": 0.616424584536502,
+   "range_n": 251,
+   "dollar_volume": 53880749.76196289,
+   "thin": false
+  },
+  {
+   "ticker": "ALGM",
+   "role": "theme",
+   "note": "2 disclosed humanoid joint design wins",
+   "close": 36.939998626708984,
+   "as_of": "2026-09-28",
+   "chg": 0.0048966352936512525,
+   "pct_b": 0.850847777368567,
+   "vs_sma20": 0.047141156526197436,
+   "vs_sma200": -0.07840945636582741,
+   "range_pos": 0.30200765334784474,
+   "range_n": 251,
+   "dollar_volume": 87319187.51277924,
+   "thin": false
+  },
+  {
+   "ticker": "KOID",
+   "role": "theme",
+   "note": "humanoid ETF, 41 holdings, 0.69%",
+   "close": 35.880001068115234,
+   "as_of": "2026-09-28",
+   "chg": -0.01725547199070676,
+   "pct_b": 0.5445284059818674,
+   "vs_sma20": 0.0030752464509624655,
+   "vs_sma200": -0.00853272401139793,
+   "range_pos": 0.5220208607627962,
+   "range_n": 251,
+   "dollar_volume": 5155741.963195801,
+   "thin": false
+  },
+  {
+   "ticker": "MP",
+   "role": "watch",
+   "note": "NdPr + magnets; DoD $110/kg floor",
+   "close": 46.45000076293945,
+   "as_of": "2026-09-28",
+   "chg": -0.0487405484101705,
+   "pct_b": 0.060913778849543646,
+   "vs_sma20": -0.09187771415287782,
+   "vs_sma200": -0.1840584737867108,
+   "range_pos": 0.13790259071796945,
+   "range_n": 251,
+   "dollar_volume": 280555072.1824646,
+   "thin": false
+  },
+  {
+   "ticker": "USAR",
+   "role": "watch",
+   "note": "magnet converter, no mine",
+   "close": 14.414999961853027,
+   "as_of": "2026-09-28",
+   "chg": -0.050395278520641296,
+   "pct_b": 0.05483702290218782,
+   "vs_sma20": -0.11655201962463513,
+   "vs_sma200": -0.25540144213233384,
+   "range_pos": 0.09391337859736947,
+   "range_n": 251,
+   "dollar_volume": 185201063.4823799,
+   "thin": false
+  },
+  {
+   "ticker": "AME",
+   "role": "watch",
+   "note": "no humanoid disclosure found",
+   "close": 251.6699981689453,
+   "as_of": "2026-09-28",
+   "chg": 0.003708992005292844,
+   "pct_b": 1.0169601494380403,
+   "vs_sma20": 0.05362311460897984,
+   "vs_sma200": 0.09748430838239597,
+   "range_pos": 0.9135538656117227,
+   "range_n": 251,
+   "dollar_volume": 298514204.0046692,
+   "thin": false
+  }
+ ],
+ "catalysts": {
+  "earnings_next_7d": [
+   {
+    "ticker": "MU",
+    "date": "2026-09-30"
+   }
+  ],
+  "macro_today": null
+ }
+}

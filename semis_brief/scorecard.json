@@ -1,59 +1,59 @@
 {
- "updated": "2026-09-28T13:00:39+00:00",
- "n_graded": 2,
- "n_called": 2,
+ "updated": "2026-09-29T13:01:10+00:00",
+ "n_graded": 3,
+ "n_called": 3,
  "n_no_edge": 0,
  "all": {
   "bias": {
-   "n": 2,
-   "hits": 1,
-   "hit_rate": 0.5
+   "n": 3,
+   "hits": 2,
+   "hit_rate": 0.6666666666666666
   },
   "fade_called": {
-   "n": 2,
+   "n": 3,
    "hits": 1,
-   "hit_rate": 0.5
+   "hit_rate": 0.3333333333333333
   },
   "up_day_base_rate": {
-   "n": 2,
+   "n": 3,
    "hits": 2,
-   "hit_rate": 1.0
+   "hit_rate": 0.6666666666666666
   },
-  "follow_compounded": -0.03925432645060778,
-  "follow_n": 2,
-  "fade_compounded": 0.03741556485556141,
-  "fade_n": 2
+  "follow_compounded": -0.0037199962160806566,
+  "follow_n": 3,
+  "fade_compounded": -0.00458909393388951,
+  "fade_n": 3
  },
  "last20": {
   "bias": {
-   "n": 2,
-   "hits": 1,
-   "hit_rate": 0.5
+   "n": 3,
+   "hits": 2,
+   "hit_rate": 0.6666666666666666
   },
   "fade_called": {
-   "n": 2,
+   "n": 3,
    "hits": 1,
-   "hit_rate": 0.5
+   "hit_rate": 0.3333333333333333
   },
   "up_day_base_rate": {
-   "n": 2,
+   "n": 3,
    "hits": 2,
-   "hit_rate": 1.0
+   "hit_rate": 0.6666666666666666
   },
-  "follow_compounded": -0.03925432645060778,
-  "follow_n": 2,
-  "fade_compounded": 0.03741556485556141,
-  "fade_n": 2
+  "follow_compounded": -0.0037199962160806566,
+  "follow_n": 3,
+  "fade_compounded": -0.00458909393388951,
+  "fade_n": 3
  },
  "fade_gap_null_all_days": {
-  "n": 2,
+  "n": 3,
   "hits": 1,
-  "hit_rate": 0.5
+  "hit_rate": 0.3333333333333333
  },
  "fade_gap_null_last20": {
-  "n": 2,
+  "n": 3,
   "hits": 1,
-  "hit_rate": 0.5
+  "hit_rate": 0.3333333333333333
  },
  "no_edge_days_up_rate": {
   "n": 0,
@@ -62,26 +62,26 @@
  },
  "components": {
   "nasdaq_futures": {
+   "n": 3,
+   "hits": 1,
+   "hit_rate": 0.3333333333333333
+  },
+  "news_net": {
    "n": 2,
    "hits": 1,
    "hit_rate": 0.5
   },
-  "news_net": {
-   "n": 1,
-   "hits": 1,
-   "hit_rate": 1.0
-  },
   "overnight_asia_eu": {
-   "n": 2,
-   "hits": 2,
+   "n": 3,
+   "hits": 3,
    "hit_rate": 1.0
   },
   "social_skew": {
-   "n": 2,
+   "n": 3,
    "hits": 2,
-   "hit_rate": 1.0
+   "hit_rate": 0.6666666666666666
   }
  },
  "mean_soxl_oc_on_lean_soxl": 0.014808304568035835,
- "mean_soxs_oc_on_lean_soxs": -0.05133990566022506
+ "mean_soxs_oc_on_lean_soxs": -0.006676853556894624
 }
