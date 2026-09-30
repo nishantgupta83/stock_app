@@ -40,6 +40,8 @@ tr.v-no td.vd{color:var(--no)} tr.v-no{background:var(--no-bg)}
 .stale{display:inline-block;background:var(--warn-bg);color:var(--warn);font-size:9px;
 padding:1px 4px;border-radius:2px;margin-left:5px;letter-spacing:.03em}
 .tiny{color:var(--muted);font-size:9.5px}
+.earn{display:inline-block;background:var(--warn-bg);color:var(--warn);font-size:9px;font-weight:700;
+  padding:1px 5px;border-radius:2px;margin-left:5px;letter-spacing:.03em}
 .tag{display:inline-block;background:var(--sunk);color:var(--muted);font-size:9.5px;
 padding:1px 5px;border-radius:2px;margin:2px 3px 0 0;letter-spacing:.03em}
 .none{color:var(--muted);font-size:13px;padding:12px;background:var(--sunk);border-radius:3px}
@@ -128,8 +130,11 @@ td.pos{color:var(--go)} td.neg{color:var(--no)} .stat b.pos{color:var(--go)} .st
 Measured on the AI complex over the 2023+ wave, forward 60 days: buying dips beat simply
 holding by <b>+3.47 pts</b>, while buying strength lost <b>2.65 pts</b> and top-quartile
 12-month momentum lost <b>3.01 pts</b>. Owning the complex at all was worth <b>+17.95%</b>,
-which is roughly five times what the timing overlay adds.</p>
+which is roughly five times what the timing overlay adds. These are daily entries on the
+names as they stand today (in-sample, overlapping); the quarterly portfolio test further down
+did not confirm the dip rule.</p>
 </header>
+<section id="regime"><h2>Market backdrop: normal — QQQ above its 200-day</h2><p class="sub">Descriptive only. Nothing on this page was measured by regime, so it does not change a verdict. Broad risk-off = QQQ below its 200-day with VIX ≥ 25 or up 20% in 5 days; sector washout = SOXX below its 200-day or under 40% of the AI list above theirs.</p><div class="stats"><div class="stat"><span>QQQ vs 200-day</span><b class="sm">+10.8%</b></div><div class="stat"><span>SOXX vs 200-day</span><b class="sm">+24.8%</b></div><div class="stat"><span>VIX</span><b class="sm">16.1 (+8% 5d)</b></div><div class="stat"><span>AI list above 200-day</span><b class="sm">72%</b></div><div class="stat"><span>AI list, equal weight 5d / 20d</span><b class="sm">-0.3% / +3.3%</b></div></div></section>
 
 <div class="rules">
 <div class="rule"><b>1. Is it on sale?</b><span class="th">%B &lt; 0.20</span>
@@ -163,95 +168,104 @@ horizon, not by exiting at the midband.</div>
 <div class="ev"><b>Why there are two signals.</b> Meta launched Muse on 2026-09-08 and ran
 +20.3% before the first analyst upgrade on 09-21 — following that upgrade captured 2% of
 the move. Replaying these rules over those sessions:
-<table>
+<div class="tw"><table>
 <tr><td><b>%B &lt; 0.20 dip rule</b></td><td>2026-08-21 @ 549.47</td><td><b>+35.4%</b></td><td>18 days <i>before</i> the launch, and META was 11.8% below its 200-day</td></tr>
 <tr><td><b>move + volume spike</b></td><td>2026-09-09 @ 653.17</td><td><b>+13.9%</b></td><td>the day <i>after</i> the launch</td></tr>
 <tr><td>follow the analyst</td><td>2026-09-21 @ 741.25</td><td>+0.4%</td><td>the move was over</td></tr>
-</table>
+</table></div>
 The dip rule caught it by accident — it was buying a drawdown, not predicting a product.
 The spike rule reacts to the catalyst, late but not uselessly. They are labelled separately
 so a reaction is never mistaken for a setup.</div>
 
-<section class="pin"><div class="pinhd"><h2>Semis — SOXX / SOXL / SOXS</h2><button type="button" class="refresh" data-tag="semis_etf">Refresh live</button></div><p class="sub">The 3x pair moves with SOXX, so read SOXX's %B and size with SOXL/SOXS's ATR. SOXS is inverse: its %B means the opposite.</p><div data-pin="semis_etf"><div class="tw"><table><tr><th>Ticker</th><th>Close</th><th>1d</th><th>%B</th><th>vs 20d</th><th>vs 200d</th><th>range</th><th>ATR</th><th>$vol/d</th><th>2y pos</th><th>2y p10</th><th>msgs</th><th>Verdict</th></tr><tr class="v-mid">
-<td class="tk"><b>SOXX</b><br><span class="tag">semis_etf</span></td>
+<section class="pin"><div class="pinhd"><h2>Semis — SOXX / SOXL / SOXS</h2><button type="button" class="refresh" data-tag="semis_etf">Refresh live</button></div><p class="sub">The 3x pair moves with SOXX, so read SOXX's %B and size with SOXL/SOXS's ATR. SOXS is inverse: its %B means the opposite.</p><div data-pin="semis_etf"><div class="tw"><table><tr><th>Ticker</th><th>Close</th><th>1d</th><th>%B</th><th>vs 20d</th><th>vs 200d</th><th>range</th><th>ATR</th><th>$vol/d</th><th>2y pos</th><th>2y p10</th><th title='this name&#39;s past %B&lt;0.20 dips, next open, fixed 60-session hold, non-overlapping'>60d dips</th><th title='a 2-ATR stop loses 1% of a $7,000 portfolio; 20% cap'>size</th><th>msgs</th><th>Verdict</th></tr><tr class="v-mid">
+<td class="tk"><b>SOXX</b><br><span class="tiny">semis ETF</span> <span class="tag">semis_etf</span></td>
 <td>560.79</td><td>-2.08%</td>
 <td class="pb">0.80</td>
 <td>+6.0%</td><td>+24.8%</td><td>76%</td>
-<td>3.1%</td><td>4.1B</td>
+<td>3.1%</td><td>4.2B</td>
 <td>95% <span class="tiny">4w</span></td>
-<td>+7.3%</td><td>—</td>
+<td>+7.3%</td><td><span title="29 non-overlapping episodes (357 daily entries) · win 72% (95% CI 54–85%) · median +5.5% · p10 -16.9% · worst -18.9% · CVaR10 -18.1% · top episode = 19% of gains · next open, fixed 60-session hold">72% of 29<br><span class="tiny">med +6% · CVaR -18%</span></span></td>
+<td>$1,131<br><span class="tiny">16%</span></td><td>—</td>
 <td class="vd">neutral</td>
 </tr><tr class="v-warn">
-<td class="tk"><b>SOXL</b><br><span class="tag">semis_etf</span><span class="tag">leveraged</span></td>
+<td class="tk"><b>SOXL</b><br><span class="tiny">semis ETF</span> <span class="tag">semis_etf</span><span class="tag">leveraged</span></td>
 <td>142.29</td><td>-6.05%</td>
 <td class="pb">0.78</td>
 <td>+15.6%</td><td>+23.4%</td><td>41%</td>
 <td>8.8%</td><td>8.1B</td>
 <td>76% <span class="tiny">4w</span></td>
-<td>-52.2%</td><td>—</td>
+<td>-52.2%</td><td><span title="30 non-overlapping episodes (397 daily entries) · win 63% (95% CI 46–78%) · median +8.7% · p10 -42.6% · worst -60.8% · CVaR10 -57.2% · top episode = 28% of gains · next open, fixed 60-session hold">63% of 30<br><span class="tiny">med +9% · CVaR -57%</span></span></td>
+<td>—</td><td>—</td>
 <td class="vd">leveraged · not rated</td>
 </tr><tr class="v-warn">
-<td class="tk"><b>SOXS</b><br><span class="tag">semis_etf</span><span class="tag">leveraged</span><span class="tag">inverse</span></td>
+<td class="tk"><b>SOXS</b><br><span class="tiny">semis ETF</span> <span class="tag">semis_etf</span><span class="tag">leveraged</span><span class="tag">inverse</span></td>
 <td>34.43</td><td>+6.17%</td>
 <td class="pb">0.19</td>
 <td>-20.1%</td><td>-83.9%</td><td>0%</td>
 <td>12.1%</td><td>2.6B</td>
 <td>0% <span class="tiny">4w</span></td>
-<td>-98.7%</td><td>—</td>
+<td>-98.7%</td><td><span title="36 non-overlapping episodes (813 daily entries) · win 17% (95% CI 8–32%) · median -21.4% · p10 -59.4% · worst -70.6% · CVaR10 -64.7% · top episode = 38% of gains · next open, fixed 60-session hold">17% of 36<br><span class="tiny">med -21% · CVaR -65%</span></span></td>
+<td>—</td><td>—</td>
 <td class="vd">leveraged · not rated</td>
-</tr></table></div></div></section><section class="pin soxx" id="soxx-movers" data-nightly="2026-09-28"><div class="pinhd"><h2>What is moving SOXX</h2><button type="button" class="refresh-soxx">Refresh live</button></div><p class="sub">The ten holdings behind SOXX, their fund weight, and how much of the day each one contributed (fund weight × its move, so together they explain about 61% of the fund).</p><div class="stats"><div class="stat"><span>Weight above its own 20-day</span><b id="s-above">88%</b></div><div class="stat"><span>Weight that rose today</span><b id="s-breadth">37%</b></div><div class="stat"><span>Top-10 contribution today</span><b id="s-total" class="neg">-0.85%</b></div><div class="stat"><span>Largest mover</span><b id="s-lead" class="sm">AMD -0.30% · 23% of gross movement</b></div></div><div class="cn" id="s-note">Tiles are the nightly snapshot, as of 2026-09-28. <b>Refresh live</b> re-prices the rows; the tiles and the chart only update when all ten come back for the same session.</div><div class="cwrap"><div class="cl">Weighted daily return of the top ten (renormalised to 100%), last 20 sessions <i>· most recent on the right</i></div><svg class="cbars" viewBox="0 0 320 64" width="100%" preserveAspectRatio="none" role="img" aria-label="Daily weighted return of the SOXX top 10, last 20 sessions"><line x1="0" x2="320" y1="32" y2="32" class="zero"/><rect x="1.0" y="29.0" width="14.0" height="3.0" class="bar-up"><title>2026-08-31  +0.55%</title></rect><rect x="17.0" y="32.0" width="14.0" height="9.8" class="bar-dn"><title>2026-09-01  -1.78%</title></rect><rect x="33.0" y="28.5" width="14.0" height="3.5" class="bar-up"><title>2026-09-02  +0.63%</title></rect><rect x="49.0" y="30.4" width="14.0" height="1.6" class="bar-up"><title>2026-09-03  +0.30%</title></rect><rect x="65.0" y="10.2" width="14.0" height="21.8" class="bar-up"><title>2026-09-04  +3.96%</title></rect><rect x="81.0" y="19.3" width="14.0" height="12.7" class="bar-up"><title>2026-09-08  +2.31%</title></rect><rect x="97.0" y="29.0" width="14.0" height="3.0" class="bar-up"><title>2026-09-09  +0.55%</title></rect><rect x="113.0" y="32.0" width="14.0" height="18.3" class="bar-dn"><title>2026-09-10  -3.31%</title></rect><rect x="129.0" y="25.8" width="14.0" height="6.2" class="bar-up"><title>2026-09-11  +1.13%</title></rect><rect x="145.0" y="32.0" width="14.0" height="29.0" class="bar-dn"><title>2026-09-14  -5.27%</title></rect><rect x="161.0" y="31.4" width="14.0" height="1.0" class="bar-up"><title>2026-09-15  +0.10%</title></rect><rect x="177.0" y="27.2" width="14.0" height="4.8" class="bar-up"><title>2026-09-16  +0.87%</title></rect><rect x="193.0" y="11.9" width="14.0" height="20.1" class="bar-up"><title>2026-09-17  +3.65%</title></rect><rect x="209.0" y="15.7" width="14.0" height="16.3" class="bar-up"><title>2026-09-18  +2.96%</title></rect><rect x="225.0" y="5.5" width="14.0" height="26.5" class="bar-up"><title>2026-09-21  +4.81%</title></rect><rect x="241.0" y="21.2" width="14.0" height="10.8" class="bar-up"><title>2026-09-22  +1.96%</title></rect><rect x="257.0" y="32.0" width="14.0" height="7.4" class="bar-dn"><title>2026-09-23  -1.34%</title></rect><rect x="273.0" y="29.1" width="14.0" height="2.9" class="bar-up"><title>2026-09-24  +0.53%</title></rect><rect x="289.0" y="30.1" width="14.0" height="1.9" class="bar-up"><title>2026-09-25  +0.34%</title></rect><rect x="305.0" y="32.0" width="14.0" height="7.6" class="bar-dn"><title>2026-09-28  -1.38%</title></rect></svg><div class="cn">Last 5 sessions — return: +2.0%, -1.3%, +0.5%, +0.3%, -1.4% · weight rising: 100%, 8%, 44%, 84%, 37%</div></div><div class="tw"><table class="tsoxx"><tr><th>Ticker</th><th>Fund wt</th><th>1d</th><th>Contrib</th><th class="hide-sm">5d</th><th class="hide-sm">20d</th><th>Trend</th><th>vs 20d</th></tr><tr data-tk="NVDA" data-w="9.43"><td class="tk"><b>NVDA</b></td><td>9.43%</td><td class="c-1d pos">+1.68%</td><td class="c-ctr pos"><b>+0.159%</b></td><td class="c-5d hide-sm">+0.7%</td><td class="c-20d hide-sm">+5.3%</td><td class="c-spark"><svg class="spark sp-up" viewBox="0 0 88 24" width="88" height="24" role="img" aria-label="20-day trend"><polyline points="1.0,15.4 5.3,12.0 9.6,15.5 13.9,8.2 18.2,4.0 22.5,2.0 26.8,6.8 31.1,9.0 35.4,14.3 39.7,14.3 44.0,22.0 48.3,20.7 52.6,18.9 56.9,13.2 61.2,10.2 65.5,4.8 69.8,3.3 74.1,6.8 78.4,7.8 82.7,7.3 87.0,3.3" fill="none" stroke-width="1.7" stroke-linejoin="round" stroke-linecap="round"/></svg></td><td class="c-vs20"><span class="pill p-up">above 20d</span></td></tr><tr data-tk="MU" data-w="8.91"><td class="tk"><b>MU</b></td><td>8.91%</td><td class="c-1d neg">-2.61%</td><td class="c-ctr neg"><b>-0.233%</b></td><td class="c-5d hide-sm">+1.0%</td><td class="c-20d hide-sm">+13.0%</td><td class="c-spark"><svg class="spark sp-up" viewBox="0 0 88 24" width="88" height="24" role="img" aria-label="20-day trend"><polyline points="1.0,21.0 5.3,18.0 9.6,20.9 13.9,18.3 18.2,18.0 22.5,11.2 26.8,13.1 31.1,9.9 35.4,15.8 39.7,16.0 44.0,22.0 48.3,21.6 52.6,21.7 56.9,15.8 61.2,11.3 65.5,8.1 69.8,2.0 74.1,4.8 78.4,3.8 82.7,3.6 87.0,6.9" fill="none" stroke-width="1.7" stroke-linejoin="round" stroke-linecap="round"/></svg></td><td class="c-vs20"><span class="pill p-up">above 20d</span></td></tr><tr data-tk="AMD" data-w="8.23"><td class="tk"><b>AMD</b></td><td>8.23%</td><td class="c-1d neg">-3.61%</td><td class="c-ctr neg"><b>-0.297%</b></td><td class="c-5d hide-sm">-1.2%</td><td class="c-20d hide-sm">+30.6%</td><td class="c-spark"><svg class="spark sp-up" viewBox="0 0 88 24" width="88" height="24" role="img" aria-label="20-day trend"><polyline points="1.0,20.9 5.3,20.3 9.6,21.6 13.9,21.9 18.2,22.0 22.5,19.5 26.8,16.3 31.1,14.6 35.4,16.6 39.7,15.1 44.0,17.7 48.3,16.5 52.6,15.5 56.9,11.8 61.2,10.1 65.5,3.7 69.8,2.8 74.1,3.8 78.4,2.2 82.7,2.0 87.0,4.6" fill="none" stroke-width="1.7" stroke-linejoin="round" stroke-linecap="round"/></svg></td><td class="c-vs20"><span class="pill p-up">above 20d</span></td></tr><tr data-tk="AVGO" data-w="7.48"><td class="tk"><b>AVGO</b></td><td>7.48%</td><td class="c-1d neg">-0.92%</td><td class="c-ctr neg"><b>-0.069%</b></td><td class="c-5d hide-sm">-3.6%</td><td class="c-20d hide-sm">-5.0%</td><td class="c-spark"><svg class="spark sp-dn" viewBox="0 0 88 24" width="88" height="24" role="img" aria-label="20-day trend"><polyline points="1.0,3.0 5.3,2.0 9.6,2.4 13.9,4.0 18.2,10.5 22.5,10.0 26.8,3.1 31.1,5.8 35.4,8.1 39.7,7.4 44.0,18.5 48.3,22.0 52.6,21.8 56.9,16.8 61.2,10.2 65.5,6.5 69.8,5.3 74.1,11.5 78.4,14.5 82.7,12.9 87.0,15.0" fill="none" stroke-width="1.7" stroke-linejoin="round" stroke-linecap="round"/></svg></td><td class="c-vs20"><span class="pill p-dn">BELOW 20d</span></td></tr><tr data-tk="INTC" data-w="5.09"><td class="tk"><b>INTC</b></td><td>5.09%</td><td class="c-1d neg">-5.67%</td><td class="c-ctr neg"><b>-0.288%</b></td><td class="c-5d hide-sm">-4.7%</td><td class="c-20d hide-sm">+29.7%</td><td class="c-spark"><svg class="spark sp-up" viewBox="0 0 88 24" width="88" height="24" role="img" aria-label="20-day trend"><polyline points="1.0,21.7 5.3,21.7 9.6,22.0 13.9,21.4 18.2,20.6 22.5,18.4 26.8,13.9 31.1,13.0 35.4,16.1 39.7,14.7 44.0,17.7 48.3,17.7 52.6,15.7 56.9,11.7 61.2,11.8 65.5,4.9 69.8,3.8 74.1,4.5 78.4,2.0 82.7,4.3 87.0,7.9" fill="none" stroke-width="1.7" stroke-linejoin="round" stroke-linecap="round"/></svg></td><td class="c-vs20"><span class="pill p-up">above 20d</span></td></tr><tr data-tk="MRVL" data-w="4.66"><td class="tk"><b>MRVL</b></td><td>4.66%</td><td class="c-1d neg">-3.83%</td><td class="c-ctr neg"><b>-0.179%</b></td><td class="c-5d hide-sm">-2.1%</td><td class="c-20d hide-sm">+16.3%</td><td class="c-spark"><svg class="spark sp-up" viewBox="0 0 88 24" width="88" height="24" role="img" aria-label="20-day trend"><polyline points="1.0,18.4 5.3,20.1 9.6,20.6 13.9,22.0 18.2,21.2 22.5,15.9 26.8,15.2 31.1,11.8 35.4,14.7 39.7,11.4 44.0,17.6 48.3,16.6 52.6,13.7 56.9,9.7 61.2,8.5 65.5,3.8 69.8,2.0 74.1,2.5 78.4,3.2 82.7,2.2 87.0,5.7" fill="none" stroke-width="1.7" stroke-linejoin="round" stroke-linecap="round"/></svg></td><td class="c-vs20"><span class="pill p-up">above 20d</span></td></tr><tr data-tk="TSM" data-w="4.65"><td class="tk"><b>TSM</b></td><td>4.65%</td><td class="c-1d pos">+0.50%</td><td class="c-ctr pos"><b>+0.023%</b></td><td class="c-5d hide-sm">+1.7%</td><td class="c-20d hide-sm">+8.8%</td><td class="c-spark"><svg class="spark sp-up" viewBox="0 0 88 24" width="88" height="24" role="img" aria-label="20-day trend"><polyline points="1.0,20.1 5.3,21.2 9.6,21.9 13.9,21.1 18.2,20.4 22.5,14.5 26.8,9.5 31.1,11.3 35.4,14.9 39.7,12.3 44.0,19.9 48.3,22.0 52.6,19.5 56.9,13.2 61.2,11.1 65.5,5.8 69.8,2.4 74.1,5.1 78.4,2.9 82.7,3.1 87.0,2.0" fill="none" stroke-width="1.7" stroke-linejoin="round" stroke-linecap="round"/></svg></td><td class="c-vs20"><span class="pill p-up">above 20d</span></td></tr><tr data-tk="AMAT" data-w="4.59"><td class="tk"><b>AMAT</b></td><td>4.59%</td><td class="c-1d pos">+0.36%</td><td class="c-ctr pos"><b>+0.017%</b></td><td class="c-5d hide-sm">+4.9%</td><td class="c-20d hide-sm">+5.4%</td><td class="c-spark"><svg class="spark sp-up" viewBox="0 0 88 24" width="88" height="24" role="img" aria-label="20-day trend"><polyline points="1.0,9.0 5.3,9.9 9.6,14.6 13.9,15.5 18.2,16.2 22.5,11.0 26.8,5.9 31.1,7.0 35.4,11.2 39.7,10.5 44.0,19.5 48.3,20.4 52.6,22.0 56.9,21.4 61.2,13.8 65.5,8.3 69.8,6.0 74.1,5.5 78.4,5.5 82.7,2.5 87.0,2.0" fill="none" stroke-width="1.7" stroke-linejoin="round" stroke-linecap="round"/></svg></td><td class="c-vs20"><span class="pill p-up">above 20d</span></td></tr><tr data-tk="LRCX" data-w="4.27"><td class="tk"><b>LRCX</b></td><td>4.27%</td><td class="c-1d neg">-0.23%</td><td class="c-ctr neg"><b>-0.010%</b></td><td class="c-5d hide-sm">+4.1%</td><td class="c-20d hide-sm">+4.3%</td><td class="c-spark"><svg class="spark sp-up" viewBox="0 0 88 24" width="88" height="24" role="img" aria-label="20-day trend"><polyline points="1.0,9.2 5.3,9.4 9.6,13.8 13.9,14.5 18.2,12.8 22.5,7.0 26.8,2.0 31.1,3.8 35.4,10.8 39.7,10.7 44.0,20.3 48.3,21.4 52.6,22.0 56.9,22.0 61.2,14.6 65.5,9.1 69.8,5.7 74.1,7.0 78.4,7.1 82.7,3.9 87.0,4.2" fill="none" stroke-width="1.7" stroke-linejoin="round" stroke-linecap="round"/></svg></td><td class="c-vs20"><span class="pill p-up">above 20d</span></td></tr><tr data-tk="KLAC" data-w="4.12"><td class="tk"><b>KLAC</b></td><td>4.12%</td><td class="c-1d pos">+0.67%</td><td class="c-ctr pos"><b>+0.027%</b></td><td class="c-5d hide-sm">+2.8%</td><td class="c-20d hide-sm">+7.8%</td><td class="c-spark"><svg class="spark sp-up" viewBox="0 0 88 24" width="88" height="24" role="img" aria-label="20-day trend"><polyline points="1.0,14.5 5.3,14.6 9.6,18.8 13.9,17.5 18.2,16.9 22.5,5.3 26.8,2.2 31.1,7.7 35.4,13.0 39.7,9.8 44.0,20.4 48.3,21.4 52.6,22.0 56.9,20.5 61.2,13.2 65.5,6.8 69.8,2.8 74.1,3.2 78.4,3.9 82.7,3.1 87.0,2.0" fill="none" stroke-width="1.7" stroke-linejoin="round" stroke-linecap="round"/></svg></td><td class="c-vs20"><span class="pill p-up">above 20d</span></td></tr></table></div><div class="readbox"><b>How to use this for SOXL vs SOXS.</b> SOXX %B <b>0.80</b> sits in the middle, where the measured edge is zero either way.<p><b>Breadth is context, not a trigger.</b> Reproduce every number here with <code>scripts/soxx_breadth_study.py</code> (8 years of SOXX, entry at the next open). <b>Broad strength has no edge:</b> top-10 weight above its 20-day &gt; 80% was <b>+0.04 pts</b> vs the null at 20 days (n=727; +0.00 at 5d, −0.03 at 1d). <b>Weakness in the holdings</b> (breadth &lt; 20%, or their composite %B &lt; 0.20) pointed the same way as SOXX's own dip signal but smaller (about +0.7 to +0.9 pts vs +1.3) and rests on a few hundred overlapping observations, so treat it as noise-level: it adds nothing you cannot read off SOXX's own %B. Use this table to see <i>why</i> SOXX moved, broad or one name, and take the direction call from SOXX's %B. SOXL and SOXS are daily-reset products and are not rated on this page.</p></div></section><section class="pin"><div class="pinhd"><h2>Mega caps</h2><button type="button" class="refresh" data-tag="megacap">Refresh live</button></div><p class="sub">META, GOOGL, MSFT, AAPL, AMZN, NFLX — tracked every day whether or not they signal.</p><div data-pin="megacap"><div class="tw"><table><tr><th>Ticker</th><th>Close</th><th>1d</th><th>%B</th><th>vs 20d</th><th>vs 200d</th><th>range</th><th>ATR</th><th>$vol/d</th><th>2y pos</th><th>2y p10</th><th>msgs</th><th>Verdict</th></tr><tr class="v-mid">
-<td class="tk"><b>META</b><br><span class="tag">ndx100</span><span class="tag">ai_platform</span><span class="tag">megacap</span></td>
+</tr></table></div></div></section><section class="pin soxx" id="soxx-movers" data-nightly="2026-09-28"><div class="pinhd"><h2>What is moving SOXX</h2><button type="button" class="refresh-soxx">Refresh live</button></div><p class="sub">The ten holdings behind SOXX, their fund weight, and how much of the day each one contributed (fund weight × its move, so together they explain about 61% of the fund).</p><div class="stats"><div class="stat"><span>Weight above its own 20-day</span><b id="s-above">88%</b></div><div class="stat"><span>Weight that rose today</span><b id="s-breadth">37%</b></div><div class="stat"><span>Top-10 contribution today</span><b id="s-total" class="neg">-0.85%</b></div><div class="stat"><span>Largest mover</span><b id="s-lead" class="sm">AMD -0.30% · 23% of gross movement</b></div></div><div class="cn" id="s-note">Tiles are the nightly snapshot, as of 2026-09-28. <b>Refresh live</b> re-prices the rows; the tiles and the chart only update when all ten come back for the same session.</div><div class="cn">SOXX 20-day realized vol <b>39%</b> (annualized) · 5-day drawdown <b>-2.1%</b> · median holding vs its 20-day <b>+5.8%</b> — the median keeps one or two large holdings from masking the rest.</div><div class="cwrap"><div class="cl">Weighted daily return of the top ten (renormalised to 100%), last 20 sessions <i>· most recent on the right</i></div><svg class="cbars" viewBox="0 0 320 64" width="100%" preserveAspectRatio="none" role="img" aria-label="Daily weighted return of the SOXX top 10, last 20 sessions"><line x1="0" x2="320" y1="32" y2="32" class="zero"/><rect x="1.0" y="29.0" width="14.0" height="3.0" class="bar-up"><title>2026-08-31  +0.55%</title></rect><rect x="17.0" y="32.0" width="14.0" height="9.8" class="bar-dn"><title>2026-09-01  -1.78%</title></rect><rect x="33.0" y="28.5" width="14.0" height="3.5" class="bar-up"><title>2026-09-02  +0.63%</title></rect><rect x="49.0" y="30.4" width="14.0" height="1.6" class="bar-up"><title>2026-09-03  +0.30%</title></rect><rect x="65.0" y="10.2" width="14.0" height="21.8" class="bar-up"><title>2026-09-04  +3.96%</title></rect><rect x="81.0" y="19.3" width="14.0" height="12.7" class="bar-up"><title>2026-09-08  +2.31%</title></rect><rect x="97.0" y="29.0" width="14.0" height="3.0" class="bar-up"><title>2026-09-09  +0.55%</title></rect><rect x="113.0" y="32.0" width="14.0" height="18.3" class="bar-dn"><title>2026-09-10  -3.31%</title></rect><rect x="129.0" y="25.8" width="14.0" height="6.2" class="bar-up"><title>2026-09-11  +1.13%</title></rect><rect x="145.0" y="32.0" width="14.0" height="29.0" class="bar-dn"><title>2026-09-14  -5.27%</title></rect><rect x="161.0" y="31.4" width="14.0" height="1.0" class="bar-up"><title>2026-09-15  +0.10%</title></rect><rect x="177.0" y="27.2" width="14.0" height="4.8" class="bar-up"><title>2026-09-16  +0.87%</title></rect><rect x="193.0" y="11.9" width="14.0" height="20.1" class="bar-up"><title>2026-09-17  +3.65%</title></rect><rect x="209.0" y="15.7" width="14.0" height="16.3" class="bar-up"><title>2026-09-18  +2.96%</title></rect><rect x="225.0" y="5.5" width="14.0" height="26.5" class="bar-up"><title>2026-09-21  +4.81%</title></rect><rect x="241.0" y="21.2" width="14.0" height="10.8" class="bar-up"><title>2026-09-22  +1.96%</title></rect><rect x="257.0" y="32.0" width="14.0" height="7.4" class="bar-dn"><title>2026-09-23  -1.34%</title></rect><rect x="273.0" y="29.1" width="14.0" height="2.9" class="bar-up"><title>2026-09-24  +0.53%</title></rect><rect x="289.0" y="30.1" width="14.0" height="1.9" class="bar-up"><title>2026-09-25  +0.34%</title></rect><rect x="305.0" y="32.0" width="14.0" height="7.6" class="bar-dn"><title>2026-09-28  -1.38%</title></rect></svg><div class="cn">Last 5 sessions — return: +2.0%, -1.3%, +0.5%, +0.3%, -1.4% · weight rising: 100%, 8%, 44%, 84%, 37%</div></div><div class="tw"><table class="tsoxx"><tr><th>Ticker</th><th>Fund wt</th><th>1d</th><th>Contrib</th><th class="hide-sm">5d</th><th class="hide-sm">20d</th><th>Trend</th><th>vs 20d</th></tr><tr data-tk="NVDA" data-w="9.43"><td class="tk"><b>NVDA</b></td><td>9.43%</td><td class="c-1d pos">+1.68%</td><td class="c-ctr pos"><b>+0.159%</b></td><td class="c-5d hide-sm">+0.7%</td><td class="c-20d hide-sm">+5.3%</td><td class="c-spark"><svg class="spark sp-up" viewBox="0 0 88 24" width="88" height="24" role="img" aria-label="20-day trend"><polyline points="1.0,15.4 5.3,12.0 9.6,15.5 13.9,8.2 18.2,4.0 22.5,2.0 26.8,6.8 31.1,9.0 35.4,14.3 39.7,14.3 44.0,22.0 48.3,20.7 52.6,18.9 56.9,13.2 61.2,10.2 65.5,4.8 69.8,3.3 74.1,6.8 78.4,7.8 82.7,7.3 87.0,3.3" fill="none" stroke-width="1.7" stroke-linejoin="round" stroke-linecap="round"/></svg></td><td class="c-vs20"><span class="pill p-up">above 20d</span></td></tr><tr data-tk="MU" data-w="8.91"><td class="tk"><b>MU</b><br><span class="earn">earnings in 1 session</span></td><td>8.91%</td><td class="c-1d neg">-2.61%</td><td class="c-ctr neg"><b>-0.233%</b></td><td class="c-5d hide-sm">+1.0%</td><td class="c-20d hide-sm">+13.0%</td><td class="c-spark"><svg class="spark sp-up" viewBox="0 0 88 24" width="88" height="24" role="img" aria-label="20-day trend"><polyline points="1.0,21.0 5.3,18.0 9.6,20.9 13.9,18.3 18.2,18.0 22.5,11.2 26.8,13.1 31.1,9.9 35.4,15.8 39.7,16.0 44.0,22.0 48.3,21.6 52.6,21.7 56.9,15.8 61.2,11.3 65.5,8.1 69.8,2.0 74.1,4.8 78.4,3.8 82.7,3.6 87.0,6.9" fill="none" stroke-width="1.7" stroke-linejoin="round" stroke-linecap="round"/></svg></td><td class="c-vs20"><span class="pill p-up">above 20d</span></td></tr><tr data-tk="AMD" data-w="8.23"><td class="tk"><b>AMD</b></td><td>8.23%</td><td class="c-1d neg">-3.61%</td><td class="c-ctr neg"><b>-0.297%</b></td><td class="c-5d hide-sm">-1.2%</td><td class="c-20d hide-sm">+30.6%</td><td class="c-spark"><svg class="spark sp-up" viewBox="0 0 88 24" width="88" height="24" role="img" aria-label="20-day trend"><polyline points="1.0,20.9 5.3,20.3 9.6,21.6 13.9,21.9 18.2,22.0 22.5,19.5 26.8,16.3 31.1,14.6 35.4,16.6 39.7,15.1 44.0,17.7 48.3,16.5 52.6,15.5 56.9,11.8 61.2,10.1 65.5,3.7 69.8,2.8 74.1,3.8 78.4,2.2 82.7,2.0 87.0,4.6" fill="none" stroke-width="1.7" stroke-linejoin="round" stroke-linecap="round"/></svg></td><td class="c-vs20"><span class="pill p-up">above 20d</span></td></tr><tr data-tk="AVGO" data-w="7.48"><td class="tk"><b>AVGO</b></td><td>7.48%</td><td class="c-1d neg">-0.92%</td><td class="c-ctr neg"><b>-0.069%</b></td><td class="c-5d hide-sm">-3.6%</td><td class="c-20d hide-sm">-5.0%</td><td class="c-spark"><svg class="spark sp-dn" viewBox="0 0 88 24" width="88" height="24" role="img" aria-label="20-day trend"><polyline points="1.0,3.0 5.3,2.0 9.6,2.4 13.9,4.0 18.2,10.5 22.5,10.0 26.8,3.1 31.1,5.8 35.4,8.1 39.7,7.4 44.0,18.5 48.3,22.0 52.6,21.8 56.9,16.8 61.2,10.2 65.5,6.5 69.8,5.3 74.1,11.5 78.4,14.5 82.7,12.9 87.0,15.0" fill="none" stroke-width="1.7" stroke-linejoin="round" stroke-linecap="round"/></svg></td><td class="c-vs20"><span class="pill p-dn">BELOW 20d</span></td></tr><tr data-tk="INTC" data-w="5.09"><td class="tk"><b>INTC</b></td><td>5.09%</td><td class="c-1d neg">-5.67%</td><td class="c-ctr neg"><b>-0.288%</b></td><td class="c-5d hide-sm">-4.7%</td><td class="c-20d hide-sm">+29.7%</td><td class="c-spark"><svg class="spark sp-up" viewBox="0 0 88 24" width="88" height="24" role="img" aria-label="20-day trend"><polyline points="1.0,21.7 5.3,21.7 9.6,22.0 13.9,21.4 18.2,20.6 22.5,18.4 26.8,13.9 31.1,13.0 35.4,16.1 39.7,14.7 44.0,17.7 48.3,17.7 52.6,15.7 56.9,11.7 61.2,11.8 65.5,4.9 69.8,3.8 74.1,4.5 78.4,2.0 82.7,4.3 87.0,7.9" fill="none" stroke-width="1.7" stroke-linejoin="round" stroke-linecap="round"/></svg></td><td class="c-vs20"><span class="pill p-up">above 20d</span></td></tr><tr data-tk="MRVL" data-w="4.66"><td class="tk"><b>MRVL</b></td><td>4.66%</td><td class="c-1d neg">-3.83%</td><td class="c-ctr neg"><b>-0.179%</b></td><td class="c-5d hide-sm">-2.1%</td><td class="c-20d hide-sm">+16.3%</td><td class="c-spark"><svg class="spark sp-up" viewBox="0 0 88 24" width="88" height="24" role="img" aria-label="20-day trend"><polyline points="1.0,18.4 5.3,20.1 9.6,20.6 13.9,22.0 18.2,21.2 22.5,15.9 26.8,15.2 31.1,11.8 35.4,14.7 39.7,11.4 44.0,17.6 48.3,16.6 52.6,13.7 56.9,9.7 61.2,8.5 65.5,3.8 69.8,2.0 74.1,2.5 78.4,3.2 82.7,2.2 87.0,5.7" fill="none" stroke-width="1.7" stroke-linejoin="round" stroke-linecap="round"/></svg></td><td class="c-vs20"><span class="pill p-up">above 20d</span></td></tr><tr data-tk="TSM" data-w="4.65"><td class="tk"><b>TSM</b></td><td>4.65%</td><td class="c-1d pos">+0.50%</td><td class="c-ctr pos"><b>+0.023%</b></td><td class="c-5d hide-sm">+1.7%</td><td class="c-20d hide-sm">+8.8%</td><td class="c-spark"><svg class="spark sp-up" viewBox="0 0 88 24" width="88" height="24" role="img" aria-label="20-day trend"><polyline points="1.0,20.1 5.3,21.2 9.6,21.9 13.9,21.1 18.2,20.4 22.5,14.5 26.8,9.5 31.1,11.3 35.4,14.9 39.7,12.3 44.0,19.9 48.3,22.0 52.6,19.5 56.9,13.2 61.2,11.1 65.5,5.8 69.8,2.4 74.1,5.1 78.4,2.9 82.7,3.1 87.0,2.0" fill="none" stroke-width="1.7" stroke-linejoin="round" stroke-linecap="round"/></svg></td><td class="c-vs20"><span class="pill p-up">above 20d</span></td></tr><tr data-tk="AMAT" data-w="4.59"><td class="tk"><b>AMAT</b></td><td>4.59%</td><td class="c-1d pos">+0.36%</td><td class="c-ctr pos"><b>+0.017%</b></td><td class="c-5d hide-sm">+4.9%</td><td class="c-20d hide-sm">+5.4%</td><td class="c-spark"><svg class="spark sp-up" viewBox="0 0 88 24" width="88" height="24" role="img" aria-label="20-day trend"><polyline points="1.0,9.0 5.3,9.9 9.6,14.6 13.9,15.5 18.2,16.2 22.5,11.0 26.8,5.9 31.1,7.0 35.4,11.2 39.7,10.5 44.0,19.5 48.3,20.4 52.6,22.0 56.9,21.4 61.2,13.8 65.5,8.3 69.8,6.0 74.1,5.5 78.4,5.5 82.7,2.5 87.0,2.0" fill="none" stroke-width="1.7" stroke-linejoin="round" stroke-linecap="round"/></svg></td><td class="c-vs20"><span class="pill p-up">above 20d</span></td></tr><tr data-tk="LRCX" data-w="4.27"><td class="tk"><b>LRCX</b></td><td>4.27%</td><td class="c-1d neg">-0.23%</td><td class="c-ctr neg"><b>-0.010%</b></td><td class="c-5d hide-sm">+4.1%</td><td class="c-20d hide-sm">+4.3%</td><td class="c-spark"><svg class="spark sp-up" viewBox="0 0 88 24" width="88" height="24" role="img" aria-label="20-day trend"><polyline points="1.0,9.2 5.3,9.4 9.6,13.8 13.9,14.5 18.2,12.8 22.5,7.0 26.8,2.0 31.1,3.8 35.4,10.8 39.7,10.7 44.0,20.3 48.3,21.4 52.6,22.0 56.9,22.0 61.2,14.6 65.5,9.1 69.8,5.7 74.1,7.0 78.4,7.1 82.7,3.9 87.0,4.2" fill="none" stroke-width="1.7" stroke-linejoin="round" stroke-linecap="round"/></svg></td><td class="c-vs20"><span class="pill p-up">above 20d</span></td></tr><tr data-tk="KLAC" data-w="4.12"><td class="tk"><b>KLAC</b></td><td>4.12%</td><td class="c-1d pos">+0.67%</td><td class="c-ctr pos"><b>+0.027%</b></td><td class="c-5d hide-sm">+2.8%</td><td class="c-20d hide-sm">+7.8%</td><td class="c-spark"><svg class="spark sp-up" viewBox="0 0 88 24" width="88" height="24" role="img" aria-label="20-day trend"><polyline points="1.0,14.5 5.3,14.6 9.6,18.8 13.9,17.5 18.2,16.9 22.5,5.3 26.8,2.2 31.1,7.7 35.4,13.0 39.7,9.8 44.0,20.4 48.3,21.4 52.6,22.0 56.9,20.5 61.2,13.2 65.5,6.8 69.8,2.8 74.1,3.2 78.4,3.9 82.7,3.1 87.0,2.0" fill="none" stroke-width="1.7" stroke-linejoin="round" stroke-linecap="round"/></svg></td><td class="c-vs20"><span class="pill p-up">above 20d</span></td></tr></table></div><div class="readbox"><b>How to use this for SOXL vs SOXS.</b> SOXX %B <b>0.80</b> sits in the middle, where the measured edge is zero either way.<p><b>Breadth is context, not a trigger.</b> Reproduce every number here with <code>scripts/soxx_breadth_study.py</code> (8 years of SOXX, entry at the next open). <b>Broad strength has no edge:</b> top-10 weight above its 20-day &gt; 80% was <b>+0.04 pts</b> vs the null at 20 days (n=727; +0.00 at 5d, −0.03 at 1d). <b>Weakness in the holdings</b> (breadth &lt; 20%, or their composite %B &lt; 0.20) pointed the same way as SOXX's own dip signal but smaller (about +0.7 to +0.9 pts vs +1.3) and rests on a few hundred overlapping observations, so treat it as noise-level: it adds nothing you cannot read off SOXX's own %B. Use this table to see <i>why</i> SOXX moved, broad or one name, and take the direction call from SOXX's %B. SOXL and SOXS are daily-reset products and are not rated on this page.</p></div></section><section class="pin"><div class="pinhd"><h2>Mega caps</h2><button type="button" class="refresh" data-tag="megacap">Refresh live</button></div><p class="sub">META, GOOGL, MSFT, AAPL, AMZN, NFLX — tracked every day whether or not they signal.</p><div data-pin="megacap"><div class="tw"><table><tr><th>Ticker</th><th>Close</th><th>1d</th><th>%B</th><th>vs 20d</th><th>vs 200d</th><th>range</th><th>ATR</th><th>$vol/d</th><th>2y pos</th><th>2y p10</th><th title='this name&#39;s past %B&lt;0.20 dips, next open, fixed 60-session hold, non-overlapping'>60d dips</th><th title='a 2-ATR stop loses 1% of a $7,000 portfolio; 20% cap'>size</th><th>msgs</th><th>Verdict</th></tr><tr class="v-mid">
+<td class="tk"><b>META</b><br><span class="tiny">platform</span> <span class="tag">ndx100</span><span class="tag">ai_platform</span><span class="tag">megacap</span></td>
 <td>715.62</td><td>-4.79%</td>
 <td class="pb">0.70</td>
 <td>+7.2%</td><td>+14.4%</td><td>75%</td>
 <td>3.9%</td><td>10.6B</td>
 <td>79% <span class="tiny">4w</span></td>
-<td>-28.1%</td><td>—</td>
+<td>-28.1%</td><td><span title="30 non-overlapping episodes (400 daily entries) · win 57% (95% CI 39–73%) · median +2.6% · p10 -16.9% · worst -31.7% · CVaR10 -24.9% · top episode = 22% of gains · next open, fixed 60-session hold">57% of 30<br><span class="tiny">med +3% · CVaR -25%</span></span></td>
+<td>$894<br><span class="tiny">13%</span></td><td>—</td>
 <td class="vd">neutral</td>
 </tr><tr class="v-mid">
-<td class="tk"><b>GOOGL</b><br><span class="tag">ndx100</span><span class="tag">ai_platform</span><span class="tag">megacap</span></td>
+<td class="tk"><b>GOOGL</b><br><span class="tiny">platform</span> <span class="tag">ndx100</span><span class="tag">ai_platform</span><span class="tag">megacap</span></td>
 <td>342.75</td><td>-0.34%</td>
 <td class="pb">0.53</td>
 <td>+0.2%</td><td>+1.4%</td><td>64%</td>
 <td>2.5%</td><td>8.5B</td>
 <td>90% <span class="tiny">4w</span></td>
-<td>-0.1%</td><td>—</td>
+<td>-0.1%</td><td><span title="31 non-overlapping episodes (370 daily entries) · win 71% (95% CI 53–84%) · median +4.7% · p10 -7.8% · worst -9.3% · CVaR10 -8.6% · top episode = 16% of gains · next open, fixed 60-session hold">71% of 31<br><span class="tiny">med +5% · CVaR -9%</span></span></td>
+<td>$1,400<br><span class="tiny">20% cap</span></td><td>—</td>
 <td class="vd">neutral</td>
 </tr><tr class="v-mid">
-<td class="tk"><b>MSFT</b><br><span class="tag">ndx100</span><span class="tag">ai_platform</span><span class="tag">megacap</span></td>
+<td class="tk"><b>MSFT</b><br><span class="tiny">platform</span> <span class="tag">ndx100</span><span class="tag">ai_platform</span><span class="tag">megacap</span></td>
 <td>509.22</td><td>-1.35%</td>
 <td class="pb">0.85</td>
 <td>+1.9%</td><td>+18.2%</td><td>85%</td>
 <td>2.3%</td><td>11.3B</td>
 <td>96% <span class="tiny">4w</span></td>
-<td>+10.0%</td><td>—</td>
+<td>+10.0%</td><td><span title="27 non-overlapping episodes (346 daily entries) · win 70% (95% CI 52–84%) · median +6.7% · p10 -9.3% · worst -18.9% · CVaR10 -12.8% · top episode = 13% of gains · next open, fixed 60-session hold">70% of 27<br><span class="tiny">med +7% · CVaR -13%</span></span></td>
+<td>$1,400<br><span class="tiny">20% cap</span></td><td>—</td>
 <td class="vd">neutral</td>
 </tr><tr class="v-mid">
-<td class="tk"><b>AAPL</b><br><span class="tag">ndx100</span><span class="tag">megacap</span></td>
+<td class="tk"><b>AAPL</b><br><span class="tiny">megacap</span> <span class="tag">ndx100</span><span class="tag">megacap</span></td>
 <td>338.40</td><td>-0.78%</td>
 <td class="pb">0.75</td>
 <td>+2.4%</td><td>+17.6%</td><td>97%</td>
 <td>2.0%</td><td>13.1B</td>
 <td>99% <span class="tiny">4w</span></td>
-<td>+16.2%</td><td>—</td>
+<td>+16.2%</td><td><span title="27 non-overlapping episodes (385 daily entries) · win 70% (95% CI 52–84%) · median +6.0% · p10 -9.3% · worst -29.5% · CVaR10 -16.6% · top episode = 13% of gains · next open, fixed 60-session hold">70% of 27<br><span class="tiny">med +6% · CVaR -17%</span></span></td>
+<td>$1,400<br><span class="tiny">20% cap</span></td><td>—</td>
 <td class="vd">neutral</td>
 </tr><tr class="v-warn">
-<td class="tk"><b>AMZN</b><br><span class="tag">ndx100</span><span class="tag">megacap</span></td>
+<td class="tk"><b>AMZN</b><br><span class="tiny">megacap</span> <span class="tag">ndx100</span><span class="tag">megacap</span></td>
 <td>246.15</td><td>-1.41%</td>
 <td class="pb">0.07</td>
 <td>-2.8%</td><td>+2.2%</td><td>56%</td>
 <td>2.3%</td><td>8.6B</td>
 <td>79% <span class="tiny">4w</span></td>
-<td>-25.5%</td><td>—</td>
+<td>-25.5%</td><td><span title="30 non-overlapping episodes (383 daily entries) · win 73% (95% CI 56–86%) · median +5.7% · p10 -17.3% · worst -25.9% · CVaR10 -22.0% · top episode = 12% of gains · next open, fixed 60-session hold">73% of 30<br><span class="tiny">med +6% · CVaR -22%</span></span></td>
+<td>$1,400<br><span class="tiny">20% cap</span></td><td>—</td>
 <td class="vd">DIP · FAILS HOLD</td>
 </tr><tr class="v-warn">
-<td class="tk"><b>NFLX</b><br><span class="tag">ndx100</span><span class="tag">megacap</span></td>
+<td class="tk"><b>NFLX</b><br><span class="tiny">megacap</span> <span class="tag">ndx100</span><span class="tag">megacap</span></td>
 <td>69.23</td><td>-2.70%</td>
 <td class="pb">0.07</td>
 <td>-9.1%</td><td>-18.1%</td><td>3%</td>
 <td>3.1%</td><td>2.5B</td>
 <td>77% <span class="tiny">4w</span></td>
-<td>-39.2%</td><td>30</td>
+<td>-39.2%</td><td><span title="31 non-overlapping episodes (433 daily entries) · win 74% (95% CI 57–86%) · median +7.4% · p10 -22.6% · worst -47.0% · CVaR10 -37.2% · top episode = 11% of gains · next open, fixed 60-session hold">74% of 31<br><span class="tiny">med +7% · CVaR -37%</span></span></td>
+<td>$1,124<br><span class="tiny">16%</span></td><td>30</td>
 <td class="vd">DIP · FAILS HOLD</td>
 </tr></table></div></div></section>
 
@@ -269,6 +283,8 @@ Cached 10 minutes.</p>
       <input id="q-cash" type="number" inputmode="numeric" value="500" step="50" min="0"></div>
     <div class="fld"><label for="q-pf">Whole portfolio ($)</label>
       <input id="q-pf" type="number" inputmode="numeric" value="7000" step="100" min="0"></div>
+    <div class="fld"><label for="q-risk">Risk per position (%)</label>
+      <input id="q-risk" type="number" inputmode="decimal" value="1" step="0.25" min="0.1"></div>
     <div class="fld" style="flex:0 0 auto"><label>&nbsp;</label><button id="q-go" type="button">Check</button></div>
   </div>
   <div id="q-out" class="qout" hidden></div>
@@ -280,14 +296,15 @@ Cached 10 minutes.</p>
 <p class="sub">%B below 0.2, liquid, and passes the 1–3 year hold gate
 (≥80% of rolling 2-year windows positive with a
 10th percentile above -10%).</p>
-<div class="tw"><table><tr><th>Ticker</th><th>Close</th><th>1d</th><th>%B</th><th>vs 20d</th><th>vs 200d</th><th>range</th><th>ATR</th><th>$vol/d</th><th>2y pos</th><th>2y p10</th><th>msgs</th><th>Verdict</th></tr><tr class="v-go">
+<div class="tw"><table><tr><th>Ticker</th><th>Close</th><th>1d</th><th>%B</th><th>vs 20d</th><th>vs 200d</th><th>range</th><th>ATR</th><th>$vol/d</th><th>2y pos</th><th>2y p10</th><th title='this name&#39;s past %B&lt;0.20 dips, next open, fixed 60-session hold, non-overlapping'>60d dips</th><th title='a 2-ATR stop loses 1% of a $7,000 portfolio; 20% cap'>size</th><th>msgs</th><th>Verdict</th></tr><tr class="v-go">
 <td class="tk"><b>MNST</b><br><span class="tag">ndx100</span></td>
 <td>41.86</td><td>-2.90%</td>
 <td class="pb">-0.06</td>
 <td>-4.7%</td><td>-1.0%</td><td>53%</td>
 <td>2.5%</td><td>448M</td>
 <td>95% <span class="tiny">4w</span></td>
-<td>+3.8%</td><td>0</td>
+<td>+3.8%</td><td><span title="32 non-overlapping episodes (442 daily entries) · win 66% (95% CI 48–80%) · median +6.6% · p10 -9.7% · worst -14.8% · CVaR10 -12.5% · top episode = 9% of gains · next open, fixed 60-session hold">66% of 32<br><span class="tiny">med +7% · CVaR -13%</span></span></td>
+<td>$1,386<br><span class="tiny">20%</span></td><td>0</td>
 <td class="vd">BUY ZONE</td>
 </tr><tr class="v-go">
 <td class="tk"><b>PAYX</b><br><span class="tag">ndx100</span></td>
@@ -296,16 +313,18 @@ Cached 10 minutes.</p>
 <td>-14.0%</td><td>-3.1%</td><td>36%</td>
 <td>3.3%</td><td>315M</td>
 <td>88% <span class="tiny">4w</span></td>
-<td>-2.5%</td><td>1</td>
+<td>-2.5%</td><td><span title="32 non-overlapping episodes (423 daily entries) · win 66% (95% CI 48–80%) · median +5.2% · p10 -11.5% · worst -19.0% · CVaR10 -16.5% · top episode = 9% of gains · next open, fixed 60-session hold">66% of 32<br><span class="tiny">med +5% · CVaR -17%</span></span></td>
+<td>$1,059<br><span class="tiny">15%</span></td><td>3</td>
 <td class="vd">BUY ZONE</td>
 </tr><tr class="v-go">
-<td class="tk"><b>ORCL</b><br><span class="tag">ai_platform</span></td>
+<td class="tk"><b>ORCL</b><br><span class="tiny">platform</span> <span class="tag">ai_platform</span></td>
 <td>132.60</td><td>-3.28%</td>
 <td class="pb">0.01</td>
 <td>-10.2%</td><td>-18.8%</td><td>9%</td>
 <td>5.3%</td><td>4.2B</td>
 <td>98% <span class="tiny">4w</span></td>
-<td>+14.4%</td><td>30</td>
+<td>+14.4%</td><td><span title="30 non-overlapping episodes (425 daily entries) · win 60% (95% CI 42–75%) · median +3.2% · p10 -12.1% · worst -29.4% · CVaR10 -23.4% · top episode = 14% of gains · next open, fixed 60-session hold">60% of 30<br><span class="tiny">med +3% · CVaR -23%</span></span></td>
+<td>$665<br><span class="tiny">9%</span></td><td>30</td>
 <td class="vd">BUY ZONE</td>
 </tr><tr class="v-go">
 <td class="tk"><b>XEL</b><br><span class="tag">ndx100</span></td>
@@ -314,16 +333,18 @@ Cached 10 minutes.</p>
 <td>-5.3%</td><td>-9.9%</td><td>0%</td>
 <td>1.9%</td><td>393M</td>
 <td>82% <span class="tiny">4w</span></td>
-<td>-6.9%</td><td>0</td>
+<td>-6.9%</td><td><span title="31 non-overlapping episodes (422 daily entries) · win 61% (95% CI 44–76%) · median +3.0% · p10 -5.6% · worst -11.4% · CVaR10 -9.6% · top episode = 9% of gains · next open, fixed 60-session hold">61% of 31<br><span class="tiny">med +3% · CVaR -10%</span></span></td>
+<td>$1,400<br><span class="tiny">20% cap</span></td><td>1</td>
 <td class="vd">BUY ZONE</td>
 </tr><tr class="v-go">
 <td class="tk"><b>PCAR</b><br><span class="tag">ndx100</span></td>
 <td>111.65</td><td>+0.31%</td>
 <td class="pb">0.12</td>
 <td>-6.1%</td><td>-7.1%</td><td>44%</td>
-<td>2.5%</td><td>346M</td>
+<td>2.5%</td><td>348M</td>
 <td>98% <span class="tiny">4w</span></td>
-<td>+8.1%</td><td>—</td>
+<td>+8.1%</td><td><span title="31 non-overlapping episodes (456 daily entries) · win 61% (95% CI 44–76%) · median +6.4% · p10 -12.1% · worst -22.4% · CVaR10 -17.5% · top episode = 15% of gains · next open, fixed 60-session hold">61% of 31<br><span class="tiny">med +6% · CVaR -17%</span></span></td>
+<td>$1,400<br><span class="tiny">20% cap</span></td><td>—</td>
 <td class="vd">BUY ZONE</td>
 </tr><tr class="v-go">
 <td class="tk"><b>AEP</b><br><span class="tag">ndx100</span></td>
@@ -332,7 +353,8 @@ Cached 10 minutes.</p>
 <td>-2.8%</td><td>-5.8%</td><td>39%</td>
 <td>1.6%</td><td>462M</td>
 <td>86% <span class="tiny">4w</span></td>
-<td>-2.5%</td><td>—</td>
+<td>-2.5%</td><td><span title="30 non-overlapping episodes (400 daily entries) · win 67% (95% CI 49–81%) · median +4.7% · p10 -8.6% · worst -22.3% · CVaR10 -14.0% · top episode = 14% of gains · next open, fixed 60-session hold">67% of 30<br><span class="tiny">med +5% · CVaR -14%</span></span></td>
+<td>$1,400<br><span class="tiny">20% cap</span></td><td>—</td>
 <td class="vd">BUY ZONE</td>
 </tr><tr class="v-go">
 <td class="tk"><b>AXON</b><br><span class="tag">ndx100</span></td>
@@ -341,7 +363,8 @@ Cached 10 minutes.</p>
 <td>-11.2%</td><td>-15.0%</td><td>19%</td>
 <td>5.8%</td><td>434M</td>
 <td>98% <span class="tiny">4w</span></td>
-<td>+21.3%</td><td>—</td>
+<td>+21.3%</td><td><span title="32 non-overlapping episodes (417 daily entries) · win 59% (95% CI 42–74%) · median +20.1% · p10 -17.7% · worst -31.0% · CVaR10 -27.9% · top episode = 12% of gains · next open, fixed 60-session hold">59% of 32<br><span class="tiny">med +20% · CVaR -28%</span></span></td>
+<td>$607<br><span class="tiny">9%</span></td><td>—</td>
 <td class="vd">BUY ZONE</td>
 </tr><tr class="v-go">
 <td class="tk"><b>ADP</b><br><span class="tag">ndx100</span></td>
@@ -350,7 +373,8 @@ Cached 10 minutes.</p>
 <td>-3.5%</td><td>+11.4%</td><td>76%</td>
 <td>2.1%</td><td>556M</td>
 <td>93% <span class="tiny">4w</span></td>
-<td>+4.1%</td><td>—</td>
+<td>+4.1%</td><td><span title="31 non-overlapping episodes (404 daily entries) · win 68% (95% CI 50–81%) · median +5.6% · p10 -12.9% · worst -19.8% · CVaR10 -17.4% · top episode = 12% of gains · next open, fixed 60-session hold">68% of 31<br><span class="tiny">med +6% · CVaR -17%</span></span></td>
+<td>$1,400<br><span class="tiny">20% cap</span></td><td>—</td>
 <td class="vd">BUY ZONE</td>
 </tr><tr class="v-go">
 <td class="tk"><b>VRSK</b><br><span class="tag">ndx100</span></td>
@@ -359,7 +383,8 @@ Cached 10 minutes.</p>
 <td>-6.2%</td><td>-11.7%</td><td>13%</td>
 <td>3.4%</td><td>248M</td>
 <td>83% <span class="tiny">4w</span></td>
-<td>-9.6%</td><td>—</td>
+<td>-9.6%</td><td><span title="31 non-overlapping episodes (438 daily entries) · win 58% (95% CI 41–74%) · median +1.7% · p10 -10.9% · worst -16.4% · CVaR10 -15.1% · top episode = 16% of gains · next open, fixed 60-session hold">58% of 31<br><span class="tiny">med +2% · CVaR -15%</span></span></td>
+<td>$1,029<br><span class="tiny">15%</span></td><td>—</td>
 <td class="vd">BUY ZONE</td>
 </tr><tr class="v-go">
 <td class="tk"><b>CSCO</b><br><span class="tag">ndx100</span></td>
@@ -368,7 +393,8 @@ Cached 10 minutes.</p>
 <td>-2.0%</td><td>+10.4%</td><td>64%</td>
 <td>2.6%</td><td>2.0B</td>
 <td>82% <span class="tiny">4w</span></td>
-<td>-3.2%</td><td>—</td>
+<td>-3.2%</td><td><span title="29 non-overlapping episodes (365 daily entries) · win 66% (95% CI 47–80%) · median +4.8% · p10 -9.5% · worst -16.3% · CVaR10 -13.7% · top episode = 14% of gains · next open, fixed 60-session hold">66% of 29<br><span class="tiny">med +5% · CVaR -14%</span></span></td>
+<td>$1,358<br><span class="tiny">19%</span></td><td>—</td>
 <td class="vd">BUY ZONE</td>
 </tr></table></div></section>
 
@@ -380,14 +406,15 @@ something happened, and the rule does not know what or which direction it resolv
 
 <section><h2>Near the band / neutral</h2>
 <p class="sub">Dips that fail the hold gate, plus names with no measured edge either way.</p>
-<div class="tw"><table><tr><th>Ticker</th><th>Close</th><th>1d</th><th>%B</th><th>vs 20d</th><th>vs 200d</th><th>range</th><th>ATR</th><th>$vol/d</th><th>2y pos</th><th>2y p10</th><th>msgs</th><th>Verdict</th></tr><tr class="v-warn">
+<div class="tw"><table><tr><th>Ticker</th><th>Close</th><th>1d</th><th>%B</th><th>vs 20d</th><th>vs 200d</th><th>range</th><th>ATR</th><th>$vol/d</th><th>2y pos</th><th>2y p10</th><th title='this name&#39;s past %B&lt;0.20 dips, next open, fixed 60-session hold, non-overlapping'>60d dips</th><th title='a 2-ATR stop loses 1% of a $7,000 portfolio; 20% cap'>size</th><th>msgs</th><th>Verdict</th></tr><tr class="v-warn">
 <td class="tk"><b>CDW</b><br><span class="tag">ndx100</span></td>
 <td>130.33</td><td>-3.77%</td>
 <td class="pb">-0.17</td>
 <td>-11.2%</td><td>-0.4%</td><td>51%</td>
 <td>4.7%</td><td>239M</td>
 <td>79% <span class="tiny">4w</span></td>
-<td>-30.4%</td><td>0</td>
+<td>-30.4%</td><td><span title="32 non-overlapping episodes (424 daily entries) · win 69% (95% CI 51–82%) · median +7.5% · p10 -12.4% · worst -23.6% · CVaR10 -17.1% · top episode = 13% of gains · next open, fixed 60-session hold">69% of 32<br><span class="tiny">med +7% · CVaR -17%</span></span></td>
+<td>$746<br><span class="tiny">11%</span></td><td>0</td>
 <td class="vd">DIP · FAILS HOLD</td>
 </tr><tr class="v-warn">
 <td class="tk"><b>REGN</b><br><span class="tag">ndx100</span></td>
@@ -396,7 +423,8 @@ something happened, and the rule does not know what or which direction it resolv
 <td>-5.9%</td><td>+2.4%</td><td>66%</td>
 <td>2.8%</td><td>494M</td>
 <td>64% <span class="tiny">4w</span></td>
-<td>-31.3%</td><td>2</td>
+<td>-31.3%</td><td><span title="30 non-overlapping episodes (464 daily entries) · win 47% (95% CI 30–64%) · median -0.2% · p10 -14.6% · worst -33.0% · CVaR10 -25.4% · top episode = 19% of gains · next open, fixed 60-session hold">47% of 30<br><span class="tiny">med -0% · CVaR -25%</span></span></td>
+<td>$1,271<br><span class="tiny">18%</span></td><td>3</td>
 <td class="vd">DIP · FAILS HOLD</td>
 </tr><tr class="v-warn">
 <td class="tk"><b>CSGP</b><br><span class="tag">ndx100</span></td>
@@ -405,7 +433,8 @@ something happened, and the rule does not know what or which direction it resolv
 <td>-9.7%</td><td>-33.9%</td><td>0%</td>
 <td>4.5%</td><td>184M</td>
 <td>62% <span class="tiny">4w</span></td>
-<td>-22.8%</td><td>0</td>
+<td>-22.8%</td><td><span title="31 non-overlapping episodes (457 daily entries) · win 58% (95% CI 41–74%) · median +5.9% · p10 -15.3% · worst -27.3% · CVaR10 -24.4% · top episode = 16% of gains · next open, fixed 60-session hold">58% of 31<br><span class="tiny">med +6% · CVaR -24%</span></span></td>
+<td>$775<br><span class="tiny">11%</span></td><td>2</td>
 <td class="vd">DIP · FAILS HOLD</td>
 </tr><tr class="v-warn">
 <td class="tk"><b>TTD</b><br><span class="tag">ndx100</span></td>
@@ -414,7 +443,8 @@ something happened, and the rule does not know what or which direction it resolv
 <td>-11.1%</td><td>-46.6%</td><td>0%</td>
 <td>5.0%</td><td>264M</td>
 <td>70% <span class="tiny">4w</span></td>
-<td>-47.0%</td><td>30</td>
+<td>-47.0%</td><td><span title="30 non-overlapping episodes (445 daily entries) · win 57% (95% CI 39–73%) · median +11.1% · p10 -24.8% · worst -55.1% · CVaR10 -40.5% · top episode = 11% of gains · next open, fixed 60-session hold">57% of 30<br><span class="tiny">med +11% · CVaR -40%</span></span></td>
+<td>$698<br><span class="tiny">10%</span></td><td>30</td>
 <td class="vd">DIP · FAILS HOLD</td>
 </tr><tr class="v-warn">
 <td class="tk"><b>MELI</b><br><span class="tag">ndx100</span></td>
@@ -423,7 +453,8 @@ something happened, and the rule does not know what or which direction it resolv
 <td>-8.3%</td><td>-7.1%</td><td>17%</td>
 <td>3.5%</td><td>769M</td>
 <td>78% <span class="tiny">4w</span></td>
-<td>-24.0%</td><td>5</td>
+<td>-24.0%</td><td><span title="30 non-overlapping episodes (441 daily entries) · win 57% (95% CI 39–73%) · median +10.3% · p10 -11.7% · worst -40.8% · CVaR10 -30.1% · top episode = 14% of gains · next open, fixed 60-session hold">57% of 30<br><span class="tiny">med +10% · CVaR -30%</span></span></td>
+<td>$1,014<br><span class="tiny">14%</span></td><td>7</td>
 <td class="vd">DIP · FAILS HOLD</td>
 </tr><tr class="v-warn">
 <td class="tk"><b>INTU</b><br><span class="tag">ndx100</span></td>
@@ -432,7 +463,8 @@ something happened, and the rule does not know what or which direction it resolv
 <td>-14.5%</td><td>-32.5%</td><td>4%</td>
 <td>5.0%</td><td>1.2B</td>
 <td>84% <span class="tiny">4w</span></td>
-<td>-10.7%</td><td>11</td>
+<td>-10.7%</td><td><span title="30 non-overlapping episodes (404 daily entries) · win 67% (95% CI 49–81%) · median +9.0% · p10 -14.3% · worst -42.6% · CVaR10 -31.7% · top episode = 15% of gains · next open, fixed 60-session hold">67% of 30<br><span class="tiny">med +9% · CVaR -32%</span></span></td>
+<td>$701<br><span class="tiny">10%</span></td><td>21</td>
 <td class="vd">DIP · FAILS HOLD</td>
 </tr><tr class="v-warn">
 <td class="tk"><b>MDLZ</b><br><span class="tag">ndx100</span></td>
@@ -441,16 +473,18 @@ something happened, and the rule does not know what or which direction it resolv
 <td>-2.3%</td><td>+2.1%</td><td>66%</td>
 <td>2.0%</td><td>473M</td>
 <td>79% <span class="tiny">4w</span></td>
-<td>-7.7%</td><td>0</td>
+<td>-7.7%</td><td><span title="32 non-overlapping episodes (464 daily entries) · win 59% (95% CI 42–74%) · median +2.6% · p10 -6.0% · worst -17.9% · CVaR10 -11.3% · top episode = 14% of gains · next open, fixed 60-session hold">59% of 32<br><span class="tiny">med +3% · CVaR -11%</span></span></td>
+<td>$1,400<br><span class="tiny">20% cap</span></td><td>1</td>
 <td class="vd">DIP · FAILS HOLD</td>
 </tr><tr class="v-warn">
-<td class="tk"><b>NFLX</b><br><span class="tag">ndx100</span><span class="tag">megacap</span></td>
+<td class="tk"><b>NFLX</b><br><span class="tiny">megacap</span> <span class="tag">ndx100</span><span class="tag">megacap</span></td>
 <td>69.23</td><td>-2.70%</td>
 <td class="pb">0.07</td>
 <td>-9.1%</td><td>-18.1%</td><td>3%</td>
 <td>3.1%</td><td>2.5B</td>
 <td>77% <span class="tiny">4w</span></td>
-<td>-39.2%</td><td>30</td>
+<td>-39.2%</td><td><span title="31 non-overlapping episodes (433 daily entries) · win 74% (95% CI 57–86%) · median +7.4% · p10 -22.6% · worst -47.0% · CVaR10 -37.2% · top episode = 11% of gains · next open, fixed 60-session hold">74% of 31<br><span class="tiny">med +7% · CVaR -37%</span></span></td>
+<td>$1,124<br><span class="tiny">16%</span></td><td>30</td>
 <td class="vd">DIP · FAILS HOLD</td>
 </tr><tr class="v-warn">
 <td class="tk"><b>CPRT</b><br><span class="tag">ndx100</span></td>
@@ -459,16 +493,18 @@ something happened, and the rule does not know what or which direction it resolv
 <td>-11.1%</td><td>-19.3%</td><td>0%</td>
 <td>3.5%</td><td>290M</td>
 <td>86% <span class="tiny">4w</span></td>
-<td>-16.5%</td><td>—</td>
+<td>-16.5%</td><td><span title="32 non-overlapping episodes (411 daily entries) · win 62% (95% CI 45–77%) · median +8.9% · p10 -12.3% · worst -19.1% · CVaR10 -17.3% · top episode = 9% of gains · next open, fixed 60-session hold">62% of 32<br><span class="tiny">med +9% · CVaR -17%</span></span></td>
+<td>$999<br><span class="tiny">14%</span></td><td>—</td>
 <td class="vd">DIP · FAILS HOLD</td>
 </tr><tr class="v-warn">
-<td class="tk"><b>AMZN</b><br><span class="tag">ndx100</span><span class="tag">megacap</span></td>
+<td class="tk"><b>AMZN</b><br><span class="tiny">megacap</span> <span class="tag">ndx100</span><span class="tag">megacap</span></td>
 <td>246.15</td><td>-1.41%</td>
 <td class="pb">0.07</td>
 <td>-2.8%</td><td>+2.2%</td><td>56%</td>
 <td>2.3%</td><td>8.6B</td>
 <td>79% <span class="tiny">4w</span></td>
-<td>-25.5%</td><td>—</td>
+<td>-25.5%</td><td><span title="30 non-overlapping episodes (383 daily entries) · win 73% (95% CI 56–86%) · median +5.7% · p10 -17.3% · worst -25.9% · CVaR10 -22.0% · top episode = 12% of gains · next open, fixed 60-session hold">73% of 30<br><span class="tiny">med +6% · CVaR -22%</span></span></td>
+<td>$1,400<br><span class="tiny">20% cap</span></td><td>—</td>
 <td class="vd">DIP · FAILS HOLD</td>
 </tr><tr class="v-warn">
 <td class="tk"><b>KHC</b><br><span class="tag">ndx100</span></td>
@@ -477,7 +513,8 @@ something happened, and the rule does not know what or which direction it resolv
 <td>-4.0%</td><td>+1.2%</td><td>46%</td>
 <td>2.5%</td><td>354M</td>
 <td>37% <span class="tiny">4w</span></td>
-<td>-58.1%</td><td>—</td>
+<td>-58.1%</td><td><span title="35 non-overlapping episodes (582 daily entries) · win 40% (95% CI 26–56%) · median -1.2% · p10 -14.6% · worst -20.5% · CVaR10 -17.2% · top episode = 18% of gains · next open, fixed 60-session hold">40% of 35<br><span class="tiny">med -1% · CVaR -17%</span></span></td>
+<td>$1,380<br><span class="tiny">20%</span></td><td>—</td>
 <td class="vd">DIP · FAILS HOLD</td>
 </tr><tr class="v-warn">
 <td class="tk"><b>TTWO</b><br><span class="tag">ndx100</span></td>
@@ -486,7 +523,8 @@ something happened, and the rule does not know what or which direction it resolv
 <td>-4.3%</td><td>-10.2%</td><td>17%</td>
 <td>3.4%</td><td>495M</td>
 <td>76% <span class="tiny">4w</span></td>
-<td>-25.0%</td><td>—</td>
+<td>-25.0%</td><td><span title="30 non-overlapping episodes (392 daily entries) · win 50% (95% CI 33–67%) · median +2.9% · p10 -10.3% · worst -20.7% · CVaR10 -15.4% · top episode = 16% of gains · next open, fixed 60-session hold">50% of 30<br><span class="tiny">med +3% · CVaR -15%</span></span></td>
+<td>$1,021<br><span class="tiny">15%</span></td><td>—</td>
 <td class="vd">DIP · FAILS HOLD</td>
 </tr><tr class="v-warn">
 <td class="tk"><b>PEP</b><br><span class="tag">ndx100</span></td>
@@ -495,7 +533,8 @@ something happened, and the rule does not know what or which direction it resolv
 <td>-4.3%</td><td>-11.3%</td><td>1%</td>
 <td>1.7%</td><td>1.0B</td>
 <td>78% <span class="tiny">4w</span></td>
-<td>-11.2%</td><td>—</td>
+<td>-11.2%</td><td><span title="31 non-overlapping episodes (466 daily entries) · win 58% (95% CI 41–74%) · median +1.9% · p10 -6.8% · worst -10.4% · CVaR10 -8.5% · top episode = 12% of gains · next open, fixed 60-session hold">58% of 31<br><span class="tiny">med +2% · CVaR -8%</span></span></td>
+<td>$1,400<br><span class="tiny">20% cap</span></td><td>—</td>
 <td class="vd">DIP · FAILS HOLD</td>
 </tr><tr class="v-warn">
 <td class="tk"><b>FANG</b><br><span class="tag">ndx100</span></td>
@@ -504,7 +543,8 @@ something happened, and the rule does not know what or which direction it resolv
 <td>-6.1%</td><td>+1.5%</td><td>66%</td>
 <td>3.3%</td><td>381M</td>
 <td>68% <span class="tiny">4w</span></td>
-<td>-49.1%</td><td>—</td>
+<td>-49.1%</td><td><span title="30 non-overlapping episodes (459 daily entries) · win 50% (95% CI 33–67%) · median +2.6% · p10 -10.2% · worst -67.9% · CVaR10 -34.4% · top episode = 21% of gains · next open, fixed 60-session hold">50% of 30<br><span class="tiny">med +3% · CVaR -34%</span></span></td>
+<td>$1,070<br><span class="tiny">15%</span></td><td>—</td>
 <td class="vd">DIP · FAILS HOLD</td>
 </tr><tr class="v-warn">
 <td class="tk"><b>ROP</b><br><span class="tag">ndx100</span></td>
@@ -513,7 +553,8 @@ something happened, and the rule does not know what or which direction it resolv
 <td>-8.4%</td><td>-4.3%</td><td>20%</td>
 <td>2.8%</td><td>283M</td>
 <td>85% <span class="tiny">4w</span></td>
-<td>-15.7%</td><td>—</td>
+<td>-15.7%</td><td><span title="33 non-overlapping episodes (437 daily entries) · win 64% (95% CI 47–78%) · median +3.2% · p10 -10.1% · worst -16.0% · CVaR10 -13.4% · top episode = 17% of gains · next open, fixed 60-session hold">64% of 33<br><span class="tiny">med +3% · CVaR -13%</span></span></td>
+<td>$1,242<br><span class="tiny">18%</span></td><td>—</td>
 <td class="vd">DIP · FAILS HOLD</td>
 </tr><tr class="v-warn">
 <td class="tk"><b>ADBE</b><br><span class="tag">ndx100</span></td>
@@ -522,34 +563,38 @@ something happened, and the rule does not know what or which direction it resolv
 <td>-10.0%</td><td>-11.9%</td><td>23%</td>
 <td>4.2%</td><td>1.2B</td>
 <td>64% <span class="tiny">4w</span></td>
-<td>-43.2%</td><td>—</td>
+<td>-43.2%</td><td><span title="29 non-overlapping episodes (421 daily entries) · win 45% (95% CI 28–62%) · median -1.5% · p10 -17.6% · worst -26.4% · CVaR10 -23.2% · top episode = 20% of gains · next open, fixed 60-session hold">45% of 29<br><span class="tiny">med -2% · CVaR -23%</span></span></td>
+<td>$841<br><span class="tiny">12%</span></td><td>—</td>
 <td class="vd">DIP · FAILS HOLD</td>
 </tr><tr class="v-warn">
 <td class="tk"><b>CMCSA</b><br><span class="tag">ndx100</span></td>
 <td>21.79</td><td>-0.55%</td>
 <td class="pb">0.14</td>
 <td>-10.4%</td><td>-17.4%</td><td>0%</td>
-<td>3.3%</td><td>657M</td>
+<td>3.3%</td><td>667M</td>
 <td>57% <span class="tiny">4w</span></td>
-<td>-26.9%</td><td>—</td>
+<td>-26.9%</td><td><span title="32 non-overlapping episodes (472 daily entries) · win 47% (95% CI 31–64%) · median -0.5% · p10 -14.2% · worst -20.6% · CVaR10 -19.4% · top episode = 12% of gains · next open, fixed 60-session hold">47% of 32<br><span class="tiny">med -0% · CVaR -19%</span></span></td>
+<td>$1,062<br><span class="tiny">15%</span></td><td>—</td>
 <td class="vd">DIP · FAILS HOLD</td>
 </tr><tr class="v-warn">
-<td class="tk"><b>NOW</b><br><span class="tag">ai_platform</span></td>
+<td class="tk"><b>NOW</b><br><span class="tiny">platform</span> <span class="tag">ai_platform</span></td>
 <td>131.45</td><td>-3.07%</td>
 <td class="pb">0.14</td>
 <td>-4.8%</td><td>+12.9%</td><td>46%</td>
 <td>4.6%</td><td>2.0B</td>
 <td>78% <span class="tiny">4w</span></td>
-<td>-21.4%</td><td>—</td>
+<td>-21.4%</td><td><span title="31 non-overlapping episodes (425 daily entries) · win 65% (95% CI 47–79%) · median +8.4% · p10 -16.2% · worst -28.6% · CVaR10 -24.7% · top episode = 16% of gains · next open, fixed 60-session hold">65% of 31<br><span class="tiny">med +8% · CVaR -25%</span></span></td>
+<td>$756<br><span class="tiny">11%</span></td><td>—</td>
 <td class="vd">DIP · FAILS HOLD</td>
 </tr><tr class="v-warn">
-<td class="tk"><b>ALB</b><br><span class="tag">humanoid_materials</span></td>
+<td class="tk"><b>ALB</b><br><span class="tiny">materials</span> <span class="tag">humanoid_materials</span></td>
 <td>107.39</td><td>-2.13%</td>
 <td class="pb">0.18</td>
 <td>-10.2%</td><td>-30.7%</td><td>20%</td>
 <td>4.8%</td><td>267M</td>
 <td>49% <span class="tiny">4w</span></td>
-<td>-62.4%</td><td>—</td>
+<td>-62.4%</td><td><span title="32 non-overlapping episodes (469 daily entries) · win 56% (95% CI 39–72%) · median +1.6% · p10 -21.4% · worst -29.0% · CVaR10 -27.0% · top episode = 19% of gains · next open, fixed 60-session hold">56% of 32<br><span class="tiny">med +2% · CVaR -27%</span></span></td>
+<td>$729<br><span class="tiny">10%</span></td><td>—</td>
 <td class="vd">DIP · FAILS HOLD</td>
 </tr><tr class="v-mid">
 <td class="tk"><b>CSX</b><br><span class="tag">ndx100</span></td>
@@ -558,7 +603,8 @@ something happened, and the rule does not know what or which direction it resolv
 <td>-2.8%</td><td>+6.5%</td><td>68%</td>
 <td>2.0%</td><td>494M</td>
 <td>90% <span class="tiny">4w</span></td>
-<td>-0.2%</td><td>—</td>
+<td>-0.2%</td><td><span title="33 non-overlapping episodes (413 daily entries) · win 70% (95% CI 53–83%) · median +4.9% · p10 -9.9% · worst -14.1% · CVaR10 -11.8% · top episode = 12% of gains · next open, fixed 60-session hold">70% of 33<br><span class="tiny">med +5% · CVaR -12%</span></span></td>
+<td>$1,400<br><span class="tiny">20% cap</span></td><td>—</td>
 <td class="vd">neutral</td>
 </tr><tr class="v-mid">
 <td class="tk"><b>ADSK</b><br><span class="tag">ndx100</span></td>
@@ -567,16 +613,18 @@ something happened, and the rule does not know what or which direction it resolv
 <td>-6.7%</td><td>-13.9%</td><td>14%</td>
 <td>4.0%</td><td>442M</td>
 <td>74% <span class="tiny">4w</span></td>
-<td>-26.7%</td><td>—</td>
+<td>-26.7%</td><td><span title="31 non-overlapping episodes (428 daily entries) · win 55% (95% CI 38–71%) · median +2.6% · p10 -12.4% · worst -27.7% · CVaR10 -21.3% · top episode = 15% of gains · next open, fixed 60-session hold">55% of 31<br><span class="tiny">med +3% · CVaR -21%</span></span></td>
+<td>$873<br><span class="tiny">12%</span></td><td>—</td>
 <td class="vd">neutral</td>
 </tr><tr class="v-mid">
-<td class="tk"><b>TSLA</b><br><span class="tag">ndx100</span><span class="tag">humanoid_oem</span></td>
+<td class="tk"><b>TSLA</b><br><span class="tiny">humanoid</span> <span class="tag">ndx100</span><span class="tag">humanoid_oem</span></td>
 <td>357.45</td><td>-3.94%</td>
 <td class="pb">0.24</td>
 <td>-2.4%</td><td>-9.5%</td><td>31%</td>
 <td>3.6%</td><td>12.2B</td>
-<td>74% <span class="tiny">4w</span></td>
-<td>-33.4%</td><td>—</td>
+<td>73% <span class="tiny">4w</span></td>
+<td>-33.4%</td><td><span title="32 non-overlapping episodes (475 daily entries) · win 50% (95% CI 34–66%) · median +1.9% · p10 -26.4% · worst -44.9% · CVaR10 -37.1% · top episode = 14% of gains · next open, fixed 60-session hold">50% of 32<br><span class="tiny">med +2% · CVaR -37%</span></span></td>
+<td>$969<br><span class="tiny">14%</span></td><td>—</td>
 <td class="vd">neutral</td>
 </tr><tr class="v-mid">
 <td class="tk"><b>TMUS</b><br><span class="tag">ndx100</span></td>
@@ -585,7 +633,8 @@ something happened, and the rule does not know what or which direction it resolv
 <td>-5.0%</td><td>-12.4%</td><td>6%</td>
 <td>2.9%</td><td>788M</td>
 <td>95% <span class="tiny">4w</span></td>
-<td>+8.6%</td><td>—</td>
+<td>+8.6%</td><td><span title="33 non-overlapping episodes (425 daily entries) · win 67% (95% CI 50–80%) · median +6.8% · p10 -6.4% · worst -20.0% · CVaR10 -13.9% · top episode = 11% of gains · next open, fixed 60-session hold">67% of 33<br><span class="tiny">med +7% · CVaR -14%</span></span></td>
+<td>$1,194<br><span class="tiny">17%</span></td><td>—</td>
 <td class="vd">neutral</td>
 </tr><tr class="v-mid">
 <td class="tk"><b>BKNG</b><br><span class="tag">ndx100</span></td>
@@ -594,7 +643,8 @@ something happened, and the rule does not know what or which direction it resolv
 <td>-6.7%</td><td>-10.4%</td><td>16%</td>
 <td>4.0%</td><td>1.1B</td>
 <td>84% <span class="tiny">4w</span></td>
-<td>-5.0%</td><td>—</td>
+<td>-5.0%</td><td><span title="32 non-overlapping episodes (419 daily entries) · win 75% (95% CI 58–87%) · median +4.1% · p10 -7.9% · worst -29.8% · CVaR10 -18.6% · top episode = 15% of gains · next open, fixed 60-session hold">75% of 32<br><span class="tiny">med +4% · CVaR -19%</span></span></td>
+<td>$876<br><span class="tiny">13%</span></td><td>—</td>
 <td class="vd">neutral</td>
 </tr><tr class="v-mid">
 <td class="tk"><b>SBUX</b><br><span class="tag">ndx100</span></td>
@@ -603,30 +653,33 @@ something happened, and the rule does not know what or which direction it resolv
 <td>-3.9%</td><td>-2.4%</td><td>59%</td>
 <td>2.4%</td><td>657M</td>
 <td>75% <span class="tiny">4w</span></td>
-<td>-8.6%</td><td>—</td>
+<td>-8.6%</td><td><span title="31 non-overlapping episodes (418 daily entries) · win 52% (95% CI 35–68%) · median +6.4% · p10 -15.9% · worst -19.6% · CVaR10 -17.9% · top episode = 10% of gains · next open, fixed 60-session hold">52% of 31<br><span class="tiny">med +6% · CVaR -18%</span></span></td>
+<td>$1,400<br><span class="tiny">20% cap</span></td><td>—</td>
 <td class="vd">neutral</td>
 </tr></table></div></section>
 
 <section><h2>Extended</h2>
 <p class="sub">%B above 1.00 — the stall zone, −2.65 pts vs the
 null at 60 days. Not a short signal; a not-today signal.</p>
-<div class="tw"><table><tr><th>Ticker</th><th>Close</th><th>1d</th><th>%B</th><th>vs 20d</th><th>vs 200d</th><th>range</th><th>ATR</th><th>$vol/d</th><th>2y pos</th><th>2y p10</th><th>msgs</th><th>Verdict</th></tr><tr class="v-warn">
-<td class="tk"><b>AME</b><br><span class="tag">humanoid_association</span></td>
+<div class="tw"><table><tr><th>Ticker</th><th>Close</th><th>1d</th><th>%B</th><th>vs 20d</th><th>vs 200d</th><th>range</th><th>ATR</th><th>$vol/d</th><th>2y pos</th><th>2y p10</th><th title='this name&#39;s past %B&lt;0.20 dips, next open, fixed 60-session hold, non-overlapping'>60d dips</th><th title='a 2-ATR stop loses 1% of a $7,000 portfolio; 20% cap'>size</th><th>msgs</th><th>Verdict</th></tr><tr class="v-warn">
+<td class="tk"><b>AME</b><br><span class="tiny">humanoid</span> <span class="tag">humanoid_association</span></td>
 <td>251.67</td><td>+0.37%</td>
 <td class="pb">1.02</td>
 <td>+5.4%</td><td>+10.1%</td><td>92%</td>
 <td>2.0%</td><td>298M</td>
 <td>99% <span class="tiny">4w</span></td>
-<td>+15.3%</td><td>—</td>
+<td>+15.3%</td><td><span title="30 non-overlapping episodes (387 daily entries) · win 67% (95% CI 49–81%) · median +6.2% · p10 -6.3% · worst -24.1% · CVaR10 -17.1% · top episode = 11% of gains · next open, fixed 60-session hold">67% of 30<br><span class="tiny">med +6% · CVaR -17%</span></span></td>
+<td>$1,400<br><span class="tiny">20% cap</span></td><td>—</td>
 <td class="vd">extended</td>
 </tr><tr class="v-warn">
-<td class="tk"><b>EMR</b><br><span class="tag">humanoid_association</span></td>
+<td class="tk"><b>EMR</b><br><span class="tiny">humanoid</span> <span class="tag">humanoid_association</span></td>
 <td>159.39</td><td>+0.73%</td>
 <td class="pb">1.05</td>
 <td>+5.3%</td><td>+11.2%</td><td>89%</td>
 <td>2.3%</td><td>334M</td>
 <td>85% <span class="tiny">4w</span></td>
-<td>-3.4%</td><td>—</td>
+<td>-3.4%</td><td><span title="31 non-overlapping episodes (414 daily entries) · win 65% (95% CI 47–79%) · median +3.3% · p10 -8.1% · worst -20.2% · CVaR10 -13.1% · top episode = 12% of gains · next open, fixed 60-session hold">65% of 31<br><span class="tiny">med +3% · CVaR -13%</span></span></td>
+<td>$1,400<br><span class="tiny">20% cap</span></td><td>—</td>
 <td class="vd">extended</td>
 </tr><tr class="v-warn">
 <td class="tk"><b>MAR</b><br><span class="tag">ndx100</span></td>
@@ -635,17 +688,18 @@ null at 60 days. Not a short signal; a not-today signal.</p>
 <td>+5.5%</td><td>+3.3%</td><td>70%</td>
 <td>2.1%</td><td>522M</td>
 <td>90% <span class="tiny">4w</span></td>
-<td>-0.2%</td><td>—</td>
+<td>-0.2%</td><td><span title="29 non-overlapping episodes (394 daily entries) · win 72% (95% CI 54–85%) · median +3.8% · p10 -8.1% · worst -49.2% · CVaR10 -24.0% · top episode = 17% of gains · next open, fixed 60-session hold">72% of 29<br><span class="tiny">med +4% · CVaR -24%</span></span></td>
+<td>$1,400<br><span class="tiny">20% cap</span></td><td>—</td>
 <td class="vd">extended</td>
 </tr></table></div></section>
 
-<section id="rotation"><h2>Does the dip rule hold up as a quarterly rotation?</h2><p class="sub">Buy the dip names at each quarter-end, hold to the next, versus the same number of names drawn at random from the same list (2000 draws), after 0.20% costs. Thresholds were written before each run. Neither variant cleared them, so nothing here changes the verdicts above. The universe is today's AI leaders, which flatters dip entries; the mean is carried by one quarter (2026-03-31) in v1.</p><div class="tw"><table><tr><th>Test</th><th>signal qtrs</th><th>mean net excess</th><th>qtrs positive</th><th>ex best qtr</th><th>p vs random</th><th>result</th></tr><tr><td><b>v1 · dip (%B &lt; 0.20)</b></td><td>23</td><td>+4.2 pts</td><td>52%</td><td>+1.0 pts</td><td>0.071</td><td>not promoted <span class='sub'>(failed: P1, P4)</span></td></tr><tr><td><b>v2 · dip + above 200-day</b></td><td>18</td><td>+3.3 pts</td><td>39%</td><td>-4.8 pts</td><td>0.259</td><td>not promoted <span class='sub'>(failed: P1, P3, P4, P5, P6)</span></td></tr></table></div><p class="sub">The 1–3 year durability gate cannot be tested point-in-time on 10 years of data (needs 2016 prior sessions); it is judged forward only. Method and thresholds: <code>docs/experiments/2026-09-24-preregistration-qr-s1-v{1,2}.md</code>.</p></section>
+<section id="rotation"><h2>Does the dip rule hold up as a quarterly rotation?</h2><p class="sub">Buy the dip names at each quarter-end, hold to the next, versus the same number of names drawn at random from the same list (2000 draws), after 0.20% costs. Thresholds were written before each run. Neither variant cleared them, so nothing here changes the verdicts above. The universe is today's AI leaders, which flatters dip entries; the mean is carried by one quarter (2026-03-31) in v1.</p><div class="tw"><table><tr><th>Test</th><th>signal qtrs</th><th>mean net excess</th><th>qtrs positive</th><th>ex best qtr</th><th>p vs random</th><th>result</th></tr><tr><td><b>v1 · dip (%B &lt; 0.20)</b></td><td>23</td><td>+4.2 pts</td><td>52%</td><td>+1.0 pts</td><td>0.071</td><td>not promoted <span class='sub'>(failed: P1, P4)</span></td></tr><tr><td><b>v2 · dip + above 200-day</b></td><td>18</td><td>+3.3 pts</td><td>39%</td><td>-4.8 pts</td><td>0.259</td><td>not promoted <span class='sub'>(failed: P1, P3, P4, P5, P6)</span></td></tr></table></div><p class="sub">The 1–3 year durability gate cannot be tested point-in-time on 10 years of data (needs 2016 prior sessions); it is judged forward only. Method and thresholds: <code>docs/experiments/2026-09-24-preregistration-qr-s1-v{1,2}.md</code>.</p></section><section id="robustness"><h2>Is %B &lt; 0.20 / 60 days a lucky setting?</h2><p class="sub">Daily entries at the next open on the 34 AI stocks over 10 years, edge vs every session for the same names. The rule was fixed before this ran: the grid can only demote the default, never pick a different cell. Result: <b>not demoted — it sits on a plateau</b>. Deeper dips test a little better and every cell is positive, but the default edge is +1.31 pts over 10 years, well below the +3.47 pts measured on 2023+ alone.</p><div class="tw"><table class="tsoxx"><tr><th>edge vs null, pts</th><th>20d</th><th>40d</th><th>60d</th><th>90d</th></tr><tr><td>%B &lt; 0.10</td><td class="pos">+1.24</td><td class="pos">+1.52</td><td class="pos">+1.72</td><td class="pos">+1.34</td></tr><tr><td>%B &lt; 0.15</td><td class="pos">+1.13</td><td class="pos">+1.35</td><td class="pos">+1.52</td><td class="pos">+1.09</td></tr><tr><td>%B &lt; 0.20</td><td class="pos">+0.98</td><td class="pos">+1.17</td><td class="pos"><b>+1.31</b></td><td class="pos">+0.63</td></tr><tr><td>%B &lt; 0.25</td><td class="pos">+0.85</td><td class="pos">+1.05</td><td class="pos">+1.28</td><td class="pos">+0.57</td></tr><tr><td>%B &lt; 0.30</td><td class="pos">+0.77</td><td class="pos">+1.00</td><td class="pos">+1.31</td><td class="pos">+0.59</td></tr></table></div><p class="sub"><b>By year (default cell):</b> 2016 +0.5% · 2017 +2.2% · 2018 +2.1% · 2019 +4.1% · 2020 +8.1% · 2021 +3.2% · 2022 +3.8% · 2023 +4.4% · 2024 +3.5% · 2025 -3.3% · 2026 +4.2%<br><b>By market:</b> QQQ above 200 +0.72% · QQQ below 200 +2.16%<br><b>Same rule on indices since 1999</b> (no hand-picked names): QQQ +0.58% · SPY +0.85% · XLK +0.39% — positive on at least 2 of 3. Episodes are counted per name, and the names dip together, so the independent count is far lower than the raw one. Source: <code>scripts/quarterly_rotation/robustness.py</code>.</p></section>
 
 <footer><b>as of 2026-09-28</b>
 
 · the <b>2y pos</b> column shows the count of INDEPENDENT (non-overlapping) 2-year windows
 behind it — a name with 1-2 is one market cycle, not a distribution · generated
-2026-09-29T14:50:02+00:00 · bars strictly before today, split-corrected,
+2026-09-30T02:50:23+00:00 · bars strictly before today, split-corrected,
 entry measured at the next open. The <b>msgs</b> column is StockTwits message volume in 12h —
 the bull/bear ratio is deliberately not shown, because in a live pull across 20 tickers nine
 of them read 100% bullish. Thresholds were each measured against the unconditional base rate;
@@ -729,7 +783,8 @@ async function quote(sym) {
   if (!r.ok || j.error) throw new Error(j.error || ('HTTP ' + r.status));
   return j;
 }
-function card(q, a, v, cash, pf) {
+function card(q, a, v, cash, pf, risk) {
+  const sz = (a.atr_pct > 0 && pf > 0) ? Math.min(0.20, (risk || 0.01) / (2 * a.atr_pct)) * pf : null;
   const shares = (cash > 0 && a.close) ? Math.floor(cash / a.close) : 0;
   const atrD = a.atr_pct ? a.atr_pct * a.close * shares : null;
   const chk = [
@@ -753,6 +808,7 @@ function card(q, a, v, cash, pf) {
     + '<div><span>ATR(14)</span><span>' + pc(a.atr_pct, 1) + '</span></div>'
     + '<div><span>Exit level (20d mid)</span><span>' + (a.band ? usd(a.band.mid) + ' (' + pcs(a.band.mid / a.close - 1) + ')' : '—') + '</span></div>'
     + '<div><span>Shares for ' + usd(cash) + '</span><span>' + (shares || '—') + '</span></div>'
+    + '<div><span>Volatility-scaled size (2-ATR stop = ' + pc(risk || 0.01, 1) + ' of portfolio, 20% cap)</span><span>' + (sz ? usd(sz) : '—') + '</span></div>'
     + '<div><span>Share of portfolio</span><span>' + (pf > 0 && a.close ? pc(shares * a.close / pf, 1) : '—') + '</span></div>'
     + '<div><span>A quiet day moves it</span><span>' + (atrD ? '± ' + usd(atrD) : '—') + '</span></div>'
     + '<div><span>Min sane stop (1 ATR)</span><span>' + (atrD ? usd(atrD) : '—') + '</span></div>'
@@ -767,14 +823,14 @@ function card(q, a, v, cash, pf) {
     go.disabled = true; go.textContent = '…'; err.hidden = true;
     try {
       const q = await quote(s), a = analyse(q.symbol, q.bars);
-      out.innerHTML = card(q, a, verdict(a), parseFloat($('q-cash').value) || 0, parseFloat($('q-pf').value) || 0);
+      out.innerHTML = card(q, a, verdict(a), parseFloat($('q-cash').value) || 0, parseFloat($('q-pf').value) || 0, (parseFloat($('q-risk').value) || 1) / 100);
       out.hidden = false;
     } catch (e) { err.textContent = s + ': ' + e.message; err.hidden = false; out.hidden = true; }
     finally { go.disabled = false; go.textContent = 'Check'; }
   }
   go.addEventListener('click', run);
   sym.addEventListener('keydown', function (e) { if (e.key === 'Enter') { e.preventDefault(); run(); } });
-  ['q-cash', 'q-pf'].forEach(function (i) { $(i).addEventListener('input', function () { if (!out.hidden) run(); }); });
+  ['q-cash', 'q-pf', 'q-risk'].forEach(function (i) { $(i).addEventListener('input', function () { if (!out.hidden) run(); }); });
   run();
 
   // Refresh only the pinned sections. A live refresh of all 146 rows would be 146 upstream

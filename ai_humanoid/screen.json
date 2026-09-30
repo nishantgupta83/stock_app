@@ -1,5 +1,5 @@
 {
- "generated_at": "2026-09-29T14:50:02+00:00",
+ "generated_at": "2026-09-30T02:50:23+00:00",
  "as_of": "2026-09-28",
  "n_stale": 0,
  "soxx_trend": {
@@ -639,6 +639,28 @@
   },
   "note": "attribution only; broad strength showed no forward edge (+0.04 pts @20d)"
  },
+ "soxx_stats": {
+  "rvol20": 0.3897310543039409,
+  "dd5": -0.020933081909733864,
+  "median_vs20": 0.057915941389151016
+ },
+ "regime": {
+  "qqq_vs200": 0.10803612128698425,
+  "soxx_vs200": 0.24809022646225776,
+  "vix": 16.06999969482422,
+  "vix_5d": 0.08069938254878606,
+  "ai_above_200": 0.7222222222222222,
+  "ai_ew_5d": -0.002857031104986664,
+  "ai_ew_20d": 0.03331280089144585,
+  "state": "normal \u2014 QQQ above its 200-day"
+ },
+ "sizing": {
+  "risk": 0.01,
+  "cap": 0.2,
+  "portfolio": 7000,
+  "dip_horizon": 60,
+  "earnings_warn": 5
+ },
  "n_universe": 147,
  "n_resolved": 146,
  "thresholds": {
@@ -666,19 +688,44 @@
     "lower": 134.51194258643625
    },
    "vs_sma20": -0.11222368747572042,
-   "vs_sma200": -0.0036503078249001675,
-   "range_pos": 0.5105407248407732,
+   "vs_sma200": -0.0036503066626509817,
+   "range_pos": 0.5105406008802318,
    "range_n": 252,
-   "atr_pct": 0.046928797332124905,
+   "atr_pct": 0.046928797332039335,
    "dollar_volume": 238608649.54452515,
    "hold": {
-    "n": 2008,
+    "n": 2007,
     "n_independent": 4,
-    "positive": 0.7933266932270916,
-    "p10": -0.3044971098899112,
-    "median": 0.40640515428872326
+    "positive": 0.7932237169905332,
+    "p10": -0.3044970805520626,
+    "median": 0.4061283955525894
+   },
+   "dip_history": {
+    "n": 424,
+    "episodes": 32,
+    "horizon": 60,
+    "win_rate": 0.6875,
+    "win_ci": [
+     0.514330003019676,
+     0.8204764788338126
+    ],
+    "median": 0.07480217957599722,
+    "p10": -0.12389467608965399,
+    "worst": -0.23626388531270237,
+    "cvar10": -0.17094222560040143,
+    "top_share": 0.12952380390752677
    },
    "spike": null,
+   "cluster": null,
+   "size": {
+    "weight": 0.10654438818500019,
+    "dollars": 745.8107172950013,
+    "capped": false
+   },
+   "earnings": {
+    "date": "2026-11-03",
+    "sessions": 25
+   },
    "verdict": "dip_but_fails_hold",
    "why": [
     "%B -0.17 \u2014 the measured buy band (+3.47 pts vs null @60d on the AI wave)",
@@ -713,13 +760,38 @@
    "atr_pct": 0.02525008772687355,
    "dollar_volume": 448435090.15083313,
    "hold": {
-    "n": 2008,
+    "n": 2007,
     "n_independent": 4,
-    "positive": 0.950199203187251,
+    "positive": 0.9501743896362731,
     "p10": 0.037504965092809206,
     "median": 0.23926142634026815
    },
+   "dip_history": {
+    "n": 442,
+    "episodes": 32,
+    "horizon": 60,
+    "win_rate": 0.65625,
+    "win_ci": [
+     0.4831077350878594,
+     0.7958976664567146
+    ],
+    "median": 0.06633814044690567,
+    "p10": -0.09694299447515842,
+    "worst": -0.147813338751123,
+    "cvar10": -0.12507122271302695,
+    "top_share": 0.09082173268011724
+   },
    "spike": null,
+   "cluster": null,
+   "size": {
+    "weight": 0.1980191139961278,
+    "dollars": 1386.1337979728946,
+    "capped": false
+   },
+   "earnings": {
+    "date": "2026-11-05",
+    "sessions": 27
+   },
    "verdict": "buy_zone",
    "why": [
     "%B -0.06 \u2014 the measured buy band (+3.47 pts vs null @60d on the AI wave)",
@@ -747,19 +819,44 @@
     "lower": 753.656746565961
    },
    "vs_sma20": -0.05944001386198483,
-   "vs_sma200": 0.02427205077556005,
-   "range_pos": 0.6642047509762385,
+   "vs_sma200": 0.02427205120117648,
+   "range_pos": 0.6642046820022061,
    "range_n": 252,
-   "atr_pct": 0.027538481085012646,
+   "atr_pct": 0.02753848109473038,
    "dollar_volume": 493734758.58154297,
    "hold": {
-    "n": 2008,
+    "n": 2007,
     "n_independent": 4,
-    "positive": 0.6354581673306773,
+    "positive": 0.635774788241156,
     "p10": -0.3134969089642372,
-    "median": 0.23497178916734773
+    "median": 0.23497169767473358
+   },
+   "dip_history": {
+    "n": 464,
+    "episodes": 30,
+    "horizon": 60,
+    "win_rate": 0.4666666666666667,
+    "win_ci": [
+     0.30232127224128236,
+     0.6385798671847496
+    ],
+    "median": -0.0015941403138430843,
+    "p10": -0.14628174546141792,
+    "worst": -0.3296224248750428,
+    "cvar10": -0.25388794999777053,
+    "top_share": 0.19055189215632615
    },
    "spike": null,
+   "cluster": null,
+   "size": {
+    "weight": 0.1815641168734166,
+    "dollars": 1270.948818113916,
+    "capped": false
+   },
+   "earnings": {
+    "date": "2026-10-30",
+    "sessions": 23
+   },
    "verdict": "dip_but_fails_hold",
    "why": [
     "%B -0.02 \u2014 the measured buy band (+3.47 pts vs null @60d on the AI wave)",
@@ -767,9 +864,9 @@
    ],
    "stale": false,
    "social": {
-    "messages_12h": 2,
-    "bull": 8,
-    "bear": 3
+    "messages_12h": 3,
+    "bull": 7,
+    "bear": 2
    }
   },
   {
@@ -787,19 +884,44 @@
     "lower": 99.65804864753403
    },
    "vs_sma20": -0.13985012206667724,
-   "vs_sma200": -0.030982307182550795,
+   "vs_sma200": -0.030982306461104114,
    "range_pos": 0.3587518470576104,
    "range_n": 252,
-   "atr_pct": 0.033035475847942274,
+   "atr_pct": 0.03303547584791888,
    "dollar_volume": 315493974.6902466,
    "hold": {
-    "n": 2008,
+    "n": 2007,
     "n_independent": 4,
-    "positive": 0.8789840637450199,
-    "p10": -0.02502464726868514,
-    "median": 0.2764652054652126
+    "positive": 0.8789237668161435,
+    "p10": -0.025024840039584495,
+    "median": 0.27640311026789477
+   },
+   "dip_history": {
+    "n": 423,
+    "episodes": 32,
+    "horizon": 60,
+    "win_rate": 0.65625,
+    "win_ci": [
+     0.4831077350878594,
+     0.7958976664567146
+    ],
+    "median": 0.05206922019669524,
+    "p10": -0.11529257311520447,
+    "worst": -0.18997238349594037,
+    "cvar10": -0.16526215227661936,
+    "top_share": 0.09104989269377721
    },
    "spike": null,
+   "cluster": null,
+   "size": {
+    "weight": 0.15135244374919402,
+    "dollars": 1059.467106244358,
+    "capped": false
+   },
+   "earnings": {
+    "date": "2026-12-18",
+    "sessions": 57
+   },
    "verdict": "buy_zone",
    "why": [
     "%B -0.01 \u2014 the measured buy band (+3.47 pts vs null @60d on the AI wave)",
@@ -807,8 +929,8 @@
    ],
    "stale": false,
    "social": {
-    "messages_12h": 1,
-    "bull": 3,
+    "messages_12h": 3,
+    "bull": 4,
     "bear": 4
    }
   },
@@ -833,13 +955,38 @@
    "atr_pct": 0.0451798294533585,
    "dollar_volume": 184155068.30329895,
    "hold": {
-    "n": 2008,
+    "n": 2007,
     "n_independent": 4,
-    "positive": 0.6220119521912351,
+    "positive": 0.6218236173393124,
     "p10": -0.22778382736223202,
-    "median": 0.14316828879264443
+    "median": 0.14232058636378353
+   },
+   "dip_history": {
+    "n": 457,
+    "episodes": 31,
+    "horizon": 60,
+    "win_rate": 0.5806451612903226,
+    "win_ci": [
+     0.40765964352020967,
+     0.7358469692645074
+    ],
+    "median": 0.05948525924325532,
+    "p10": -0.15329856157737132,
+    "worst": -0.2726998871074351,
+    "cvar10": -0.24448053224216895,
+    "top_share": 0.15893814557128055
    },
    "spike": null,
+   "cluster": null,
+   "size": {
+    "weight": 0.11066885511734305,
+    "dollars": 774.6819858214013,
+    "capped": false
+   },
+   "earnings": {
+    "date": "2026-10-27",
+    "sessions": 20
+   },
    "verdict": "dip_but_fails_hold",
    "why": [
     "%B 0.00 \u2014 the measured buy band (+3.47 pts vs null @60d on the AI wave)",
@@ -848,8 +995,8 @@
    ],
    "stale": false,
    "social": {
-    "messages_12h": 0,
-    "bull": 5,
+    "messages_12h": 2,
+    "bull": 6,
     "bear": 0
    }
   },
@@ -868,19 +1015,44 @@
     "lower": 132.4345289446941
    },
    "vs_sma20": -0.10236792086526447,
-   "vs_sma200": -0.18838144230908416,
+   "vs_sma200": -0.18838144268809387,
    "range_pos": 0.09029858071263136,
    "range_n": 252,
-   "atr_pct": 0.05265580722325946,
+   "atr_pct": 0.052655807223251,
    "dollar_volume": 4203312937.711334,
    "hold": {
-    "n": 2008,
+    "n": 2007,
     "n_independent": 4,
-    "positive": 0.9810756972111554,
-    "p10": 0.14440316146460663,
-    "median": 0.37587186284937757
+    "positive": 0.9810662680617838,
+    "p10": 0.1444034483664749,
+    "median": 0.37587245891001286
+   },
+   "dip_history": {
+    "n": 425,
+    "episodes": 30,
+    "horizon": 60,
+    "win_rate": 0.6,
+    "win_ci": [
+     0.42320052498273836,
+     0.7540960567391659
+    ],
+    "median": 0.032312676809647556,
+    "p10": -0.12121080807108564,
+    "worst": -0.2942526766846776,
+    "cvar10": -0.23431393545292545,
+    "top_share": 0.1436677489127055
    },
    "spike": null,
+   "cluster": "platform",
+   "size": {
+    "weight": 0.09495628808425467,
+    "dollars": 664.6940165897827,
+    "capped": false
+   },
+   "earnings": {
+    "date": "2026-12-10",
+    "sessions": 51
+   },
    "verdict": "buy_zone",
    "why": [
     "%B 0.01 \u2014 the measured buy band (+3.47 pts vs null @60d on the AI wave)",
@@ -889,7 +1061,7 @@
    "stale": false,
    "social": {
     "messages_12h": 30,
-    "bull": 14,
+    "bull": 11,
     "bear": 1
    }
   },
@@ -914,13 +1086,38 @@
    "atr_pct": 0.05013934500710556,
    "dollar_volume": 263905540.62452316,
    "hold": {
-    "n": 2008,
+    "n": 2007,
     "n_independent": 4,
-    "positive": 0.6987051792828686,
+    "positive": 0.6985550572994519,
     "p10": -0.4701314213359393,
-    "median": 1.0764095986439965
+    "median": 1.0755885702205576
+   },
+   "dip_history": {
+    "n": 445,
+    "episodes": 30,
+    "horizon": 60,
+    "win_rate": 0.5666666666666667,
+    "win_ci": [
+     0.3919700954540873,
+     0.7262276256938489
+    ],
+    "median": 0.11053686869162993,
+    "p10": -0.24842978710994923,
+    "worst": -0.5505753602413312,
+    "cvar10": -0.40494050811630533,
+    "top_share": 0.11397821352833418
    },
    "spike": null,
+   "cluster": null,
+   "size": {
+    "weight": 0.09972208450851161,
+    "dollars": 698.0545915595812,
+    "capped": false
+   },
+   "earnings": {
+    "date": "2026-11-05",
+    "sessions": 27
+   },
    "verdict": "dip_but_fails_hold",
    "why": [
     "%B 0.02 \u2014 the measured buy band (+3.47 pts vs null @60d on the AI wave)",
@@ -930,7 +1127,7 @@
    "stale": false,
    "social": {
     "messages_12h": 30,
-    "bull": 4,
+    "bull": 5,
     "bear": 5
    }
   },
@@ -955,13 +1152,38 @@
    "atr_pct": 0.03451819811087571,
    "dollar_volume": 768900149.2004395,
    "hold": {
-    "n": 2008,
+    "n": 2007,
     "n_independent": 4,
-    "positive": 0.7823705179282868,
+    "positive": 0.7822620827105132,
     "p10": -0.24027391752930405,
     "median": 0.858318390278294
    },
+   "dip_history": {
+    "n": 441,
+    "episodes": 30,
+    "horizon": 60,
+    "win_rate": 0.5666666666666667,
+    "win_ci": [
+     0.3919700954540873,
+     0.7262276256938489
+    ],
+    "median": 0.10320638466874477,
+    "p10": -0.11674384058325105,
+    "worst": -0.4081435130850617,
+    "cvar10": -0.3014973371937745,
+    "top_share": 0.14025221752381845
+   },
    "spike": null,
+   "cluster": null,
+   "size": {
+    "weight": 0.14485112994425514,
+    "dollars": 1013.957909609786,
+    "capped": false
+   },
+   "earnings": {
+    "date": "2026-11-04",
+    "sessions": 26
+   },
    "verdict": "dip_but_fails_hold",
    "why": [
     "%B 0.03 \u2014 the measured buy band (+3.47 pts vs null @60d on the AI wave)",
@@ -970,9 +1192,9 @@
    ],
    "stale": false,
    "social": {
-    "messages_12h": 5,
-    "bull": 17,
-    "bear": 2
+    "messages_12h": 7,
+    "bull": 13,
+    "bear": 3
    }
   },
   {
@@ -990,19 +1212,44 @@
     "lower": 265.40852419641146
    },
    "vs_sma20": -0.14474019861421883,
-   "vs_sma200": -0.32544629927780533,
+   "vs_sma200": -0.32544629541193926,
    "range_pos": 0.03540168420065131,
    "range_n": 252,
-   "atr_pct": 0.04993300186848297,
+   "atr_pct": 0.04993300187158088,
    "dollar_volume": 1162818413.9160156,
    "hold": {
-    "n": 2008,
+    "n": 2007,
     "n_independent": 4,
-    "positive": 0.8371513944223108,
-    "p10": -0.10703881325333875,
-    "median": 0.5049058641533422
+    "positive": 0.8370702541106129,
+    "p10": -0.10703909367729036,
+    "median": 0.5036446684460014
+   },
+   "dip_history": {
+    "n": 404,
+    "episodes": 30,
+    "horizon": 60,
+    "win_rate": 0.6666666666666666,
+    "win_ci": [
+     0.48779725813830266,
+     0.807697044731538
+    ],
+    "median": 0.08960576771985962,
+    "p10": -0.14270742735137543,
+    "worst": -0.4260279115116756,
+    "cvar10": -0.3166943962693843,
+    "top_share": 0.15372027594255852
    },
    "spike": null,
+   "cluster": null,
+   "size": {
+    "weight": 0.10013417604771975,
+    "dollars": 700.9392323340383,
+    "capped": false
+   },
+   "earnings": {
+    "date": "2026-11-19",
+    "sessions": 37
+   },
    "verdict": "dip_but_fails_hold",
    "why": [
     "%B 0.04 \u2014 the measured buy band (+3.47 pts vs null @60d on the AI wave)",
@@ -1011,8 +1258,8 @@
    ],
    "stale": false,
    "social": {
-    "messages_12h": 11,
-    "bull": 9,
+    "messages_12h": 21,
+    "bull": 12,
     "bear": 4
    }
   },
@@ -1031,19 +1278,44 @@
     "lower": 68.99418795950206
    },
    "vs_sma20": -0.05313870671567855,
-   "vs_sma200": -0.09858938317801547,
+   "vs_sma200": -0.09858938407140017,
    "range_pos": 0.0,
    "range_n": 252,
-   "atr_pct": 0.018659148447234073,
+   "atr_pct": 0.01865914842905087,
    "dollar_volume": 393312134.41085815,
    "hold": {
-    "n": 2008,
+    "n": 2007,
     "n_independent": 4,
-    "positive": 0.8172310756972112,
-    "p10": -0.06939232204142831,
-    "median": 0.2002852070045147
+    "positive": 0.817140009965122,
+    "p10": -0.06939195307804302,
+    "median": 0.19940030198603664
+   },
+   "dip_history": {
+    "n": 422,
+    "episodes": 31,
+    "horizon": 60,
+    "win_rate": 0.6129032258064516,
+    "win_ci": [
+     0.4382380114113197,
+     0.7626712464872843
+    ],
+    "median": 0.029605698163659877,
+    "p10": -0.05646819671818526,
+    "worst": -0.1140114697645278,
+    "cvar10": -0.09588185056563758,
+    "top_share": 0.08942069153157772
    },
    "spike": null,
+   "cluster": null,
+   "size": {
+    "weight": 0.2,
+    "dollars": 1400.0,
+    "capped": true
+   },
+   "earnings": {
+    "date": "2026-10-29",
+    "sessions": 22
+   },
    "verdict": "buy_zone",
    "why": [
     "%B 0.05 \u2014 the measured buy band (+3.47 pts vs null @60d on the AI wave)",
@@ -1051,7 +1323,7 @@
    ],
    "stale": false,
    "social": {
-    "messages_12h": 0,
+    "messages_12h": 1,
     "bull": 5,
     "bear": 2
    }
@@ -1071,19 +1343,44 @@
     "lower": 60.0195132995067
    },
    "vs_sma20": -0.022687034983100873,
-   "vs_sma200": 0.020620408121263534,
-   "range_pos": 0.6647301554128056,
+   "vs_sma200": 0.0206204077911174,
+   "range_pos": 0.6647302445592637,
    "range_n": 252,
-   "atr_pct": 0.019614462876542896,
+   "atr_pct": 0.019614462876411616,
    "dollar_volume": 472876871.2251663,
    "hold": {
-    "n": 2008,
+    "n": 2007,
     "n_independent": 4,
-    "positive": 0.7898406374501992,
-    "p10": -0.0766056994670522,
-    "median": 0.1921752535752348
+    "positive": 0.7897359242650722,
+    "p10": -0.07660559082867102,
+    "median": 0.19217514982558126
+   },
+   "dip_history": {
+    "n": 464,
+    "episodes": 32,
+    "horizon": 60,
+    "win_rate": 0.59375,
+    "win_ci": [
+     0.4225972657298823,
+     0.744805975196862
+    ],
+    "median": 0.025921826697307138,
+    "p10": -0.05966608621680025,
+    "worst": -0.17856160045221248,
+    "cvar10": -0.11274669226237082,
+    "top_share": 0.14078499563604904
    },
    "spike": null,
+   "cluster": null,
+   "size": {
+    "weight": 0.2,
+    "dollars": 1400.0,
+    "capped": true
+   },
+   "earnings": {
+    "date": "2026-10-27",
+    "sessions": 20
+   },
    "verdict": "dip_but_fails_hold",
    "why": [
     "%B 0.05 \u2014 the measured buy band (+3.47 pts vs null @60d on the AI wave)",
@@ -1091,8 +1388,8 @@
    ],
    "stale": false,
    "social": {
-    "messages_12h": 0,
-    "bull": 10,
+    "messages_12h": 1,
+    "bull": 11,
     "bear": 1
    }
   },
@@ -1123,16 +1420,41 @@
     "p10": null,
     "median": null
    },
+   "dip_history": {
+    "n": 84,
+    "episodes": 8,
+    "horizon": 60,
+    "win_rate": 0.625,
+    "win_ci": [
+     0.30573785458380187,
+     0.863158240538479
+    ],
+    "median": 0.179201417778047,
+    "p10": -0.2744850960633416,
+    "worst": -0.2744850960633416,
+    "cvar10": -0.2744850960633416,
+    "top_share": 0.3642123104235457
+   },
    "spike": null,
+   "cluster": "materials",
+   "size": {
+    "weight": 0.07068379083649577,
+    "dollars": 494.7865358554704,
+    "capped": false
+   },
+   "earnings": {
+    "date": "2026-11-05",
+    "sessions": 27
+   },
    "verdict": "no_hold_data",
    "why": [
     "hold gate not measurable \u2014 under 4 independent 2-year windows of history"
    ],
    "stale": false,
    "social": {
-    "messages_12h": 21,
-    "bull": 11,
-    "bear": 0
+    "messages_12h": 30,
+    "bull": 12,
+    "bear": 1
    }
   },
   {
@@ -1162,16 +1484,41 @@
     "p10": null,
     "median": null
    },
+   "dip_history": {
+    "n": 307,
+    "episodes": 18,
+    "horizon": 60,
+    "win_rate": 0.5,
+    "win_ci": [
+     0.2903070395897999,
+     0.7096929604102
+    ],
+    "median": 0.0010330157834408382,
+    "p10": -0.27069422399302046,
+    "worst": -0.39693853937805157,
+    "cvar10": -0.333816381685536,
+    "top_share": 0.5173740529189117
+   },
    "spike": null,
+   "cluster": "materials",
+   "size": {
+    "weight": 0.08763710627248406,
+    "dollars": 613.4597439073884,
+    "capped": false
+   },
+   "earnings": {
+    "date": "2026-11-05",
+    "sessions": 27
+   },
    "verdict": "no_hold_data",
    "why": [
     "hold gate not measurable \u2014 under 4 independent 2-year windows of history"
    ],
    "stale": false,
    "social": {
-    "messages_12h": 14,
-    "bull": 12,
-    "bear": 0
+    "messages_12h": 16,
+    "bull": 9,
+    "bear": 3
    }
   },
   {
@@ -1196,13 +1543,38 @@
    "atr_pct": 0.031152304162324056,
    "dollar_volume": 2482915074.2160797,
    "hold": {
-    "n": 2008,
+    "n": 2007,
     "n_independent": 4,
-    "positive": 0.7699203187250996,
+    "positive": 0.7698056801195815,
     "p10": -0.3916197581776084,
-    "median": 0.5449322847681588
+    "median": 0.5441513054169849
+   },
+   "dip_history": {
+    "n": 433,
+    "episodes": 31,
+    "horizon": 60,
+    "win_rate": 0.7419354838709677,
+    "win_ci": [
+     0.5675352757228489,
+     0.8629845626313024
+    ],
+    "median": 0.07448562182516727,
+    "p10": -0.22566332198278405,
+    "worst": -0.46959240477173025,
+    "cvar10": -0.3716613504498441,
+    "top_share": 0.11383361021495443
    },
    "spike": null,
+   "cluster": "megacap",
+   "size": {
+    "weight": 0.16050177136004778,
+    "dollars": 1123.5123995203344,
+    "capped": false
+   },
+   "earnings": {
+    "date": "2026-10-20",
+    "sessions": 15
+   },
    "verdict": "dip_but_fails_hold",
    "why": [
     "%B 0.07 \u2014 the measured buy band (+3.47 pts vs null @60d on the AI wave)",
@@ -1212,8 +1584,8 @@
    "stale": false,
    "social": {
     "messages_12h": 30,
-    "bull": 10,
-    "bear": 1
+    "bull": 13,
+    "bear": 2
    }
   },
   {
@@ -1237,13 +1609,38 @@
    "atr_pct": 0.03503407840356349,
    "dollar_volume": 290284771.02594376,
    "hold": {
-    "n": 2008,
+    "n": 2007,
     "n_independent": 4,
-    "positive": 0.8640438247011952,
+    "positive": 0.8639760837070254,
     "p10": -0.1650565743502116,
-    "median": 0.5906888969965025
+    "median": 0.5904442739096261
+   },
+   "dip_history": {
+    "n": 411,
+    "episodes": 32,
+    "horizon": 60,
+    "win_rate": 0.625,
+    "win_ci": [
+     0.45254100589525126,
+     0.7706633153404079
+    ],
+    "median": 0.08885114250398507,
+    "p10": -0.12336587356881246,
+    "worst": -0.1912476411959706,
+    "cvar10": -0.1729538499672998,
+    "top_share": 0.08845591964615439
    },
    "spike": null,
+   "cluster": null,
+   "size": {
+    "weight": 0.14271818263361039,
+    "dollars": 999.0272784352727,
+    "capped": false
+   },
+   "earnings": {
+    "date": "2026-11-19",
+    "sessions": 37
+   },
    "verdict": "dip_but_fails_hold",
    "why": [
     "%B 0.07 \u2014 the measured buy band (+3.47 pts vs null @60d on the AI wave)",
@@ -1274,13 +1671,38 @@
    "atr_pct": 0.023342242125972402,
    "dollar_volume": 8586073998.181152,
    "hold": {
-    "n": 2008,
+    "n": 2007,
     "n_independent": 4,
-    "positive": 0.7863545816733067,
+    "positive": 0.7862481315396114,
     "p10": -0.2549482135998423,
-    "median": 0.609040008045185
+    "median": 0.6084481976752341
+   },
+   "dip_history": {
+    "n": 383,
+    "episodes": 30,
+    "horizon": 60,
+    "win_rate": 0.7333333333333333,
+    "win_ci": [
+     0.5555169795568831,
+     0.8581750444608938
+    ],
+    "median": 0.057467925242888684,
+    "p10": -0.17349688437160515,
+    "worst": -0.2587590018234103,
+    "cvar10": -0.2203958447511072,
+    "top_share": 0.12116561885028389
    },
    "spike": null,
+   "cluster": "megacap",
+   "size": {
+    "weight": 0.2,
+    "dollars": 1400.0,
+    "capped": true
+   },
+   "earnings": {
+    "date": "2026-10-29",
+    "sessions": 22
+   },
    "verdict": "dip_but_fails_hold",
    "why": [
     "%B 0.07 \u2014 the measured buy band (+3.47 pts vs null @60d on the AI wave)",
@@ -1303,19 +1725,44 @@
     "lower": 23.377732180082834
    },
    "vs_sma20": -0.04041533535653474,
-   "vs_sma200": 0.012372834433023838,
-   "range_pos": 0.45734009584185664,
+   "vs_sma200": 0.012372836092479744,
+   "range_pos": 0.45734025077041757,
    "range_n": 252,
-   "atr_pct": 0.025353327345592626,
+   "atr_pct": 0.025353327362840558,
    "dollar_volume": 353581885.1200104,
    "hold": {
-    "n": 2008,
+    "n": 2007,
     "n_independent": 4,
-    "positive": 0.3715139442231076,
-    "p10": -0.5814413057662922,
-    "median": -0.11649197850511273
+    "positive": 0.3716990533134031,
+    "p10": -0.5814411705023603,
+    "median": -0.11649203684030174
+   },
+   "dip_history": {
+    "n": 582,
+    "episodes": 35,
+    "horizon": 60,
+    "win_rate": 0.4,
+    "win_ci": [
+     0.25550504933307244,
+     0.5642758041848053
+    ],
+    "median": -0.012435663288377308,
+    "p10": -0.14619953720186551,
+    "worst": -0.20530159508945756,
+    "cvar10": -0.17170523609321878,
+    "top_share": 0.18193072757612705
    },
    "spike": null,
+   "cluster": null,
+   "size": {
+    "weight": 0.19721277323655423,
+    "dollars": 1380.4894126558795,
+    "capped": false
+   },
+   "earnings": {
+    "date": "2026-10-28",
+    "sessions": 21
+   },
    "verdict": "dip_but_fails_hold",
    "why": [
     "%B 0.08 \u2014 the measured buy band (+3.47 pts vs null @60d on the AI wave)",
@@ -1350,7 +1797,32 @@
     "p10": null,
     "median": null
    },
+   "dip_history": {
+    "n": 283,
+    "episodes": 18,
+    "horizon": 60,
+    "win_rate": 0.5,
+    "win_ci": [
+     0.2903070395897999,
+     0.7096929604102
+    ],
+    "median": 0.057456088476719014,
+    "p10": -0.277530839350141,
+    "worst": -0.32754604406267707,
+    "cvar10": -0.30253844170640903,
+    "top_share": 0.17502980343067343
+   },
    "spike": null,
+   "cluster": null,
+   "size": {
+    "weight": 0.11162827542155326,
+    "dollars": 781.3979279508728,
+    "capped": false
+   },
+   "earnings": {
+    "date": "2026-11-04",
+    "sessions": 26
+   },
    "verdict": "no_hold_data",
    "why": [
     "hold gate not measurable \u2014 under 4 independent 2-year windows of history"
@@ -1378,13 +1850,38 @@
    "atr_pct": 0.03429394927735666,
    "dollar_volume": 495040399.26834106,
    "hold": {
-    "n": 2008,
+    "n": 2007,
     "n_independent": 4,
-    "positive": 0.7619521912350598,
+    "positive": 0.7618335824613851,
     "p10": -0.2499378831938608,
-    "median": 0.3260011507597258
+    "median": 0.3257919208113218
+   },
+   "dip_history": {
+    "n": 392,
+    "episodes": 30,
+    "horizon": 60,
+    "win_rate": 0.5,
+    "win_ci": [
+     0.33153851227173764,
+     0.6684614877282624
+    ],
+    "median": 0.028757819620749636,
+    "p10": -0.10321953005907014,
+    "worst": -0.20748539185647374,
+    "cvar10": -0.15358599747136562,
+    "top_share": 0.1553158964692115
    },
    "spike": null,
+   "cluster": null,
+   "size": {
+    "weight": 0.14579831443622507,
+    "dollars": 1020.5882010535755,
+    "capped": false
+   },
+   "earnings": {
+    "date": "2026-11-09",
+    "sessions": 29
+   },
    "verdict": "dip_but_fails_hold",
    "why": [
     "%B 0.11 \u2014 the measured buy band (+3.47 pts vs null @60d on the AI wave)",
@@ -1412,15 +1909,40 @@
    "range_pos": 0.44363694875847604,
    "range_n": 252,
    "atr_pct": 0.02499944775342925,
-   "dollar_volume": 345872502.3712158,
+   "dollar_volume": 348186390.39611816,
    "hold": {
-    "n": 2008,
+    "n": 2007,
     "n_independent": 4,
-    "positive": 0.976593625498008,
-    "p10": 0.08077074184801059,
-    "median": 0.2932951884655355
+    "positive": 0.9765819631290483,
+    "p10": 0.08077072889302284,
+    "median": 0.29329545474432717
+   },
+   "dip_history": {
+    "n": 456,
+    "episodes": 31,
+    "horizon": 60,
+    "win_rate": 0.6129032258064516,
+    "win_ci": [
+     0.4382380114113197,
+     0.7626712464872843
+    ],
+    "median": 0.06376181211640364,
+    "p10": -0.1209864426837094,
+    "worst": -0.22405601578248735,
+    "cvar10": -0.17495071076904778,
+    "top_share": 0.1461677708889659
    },
    "spike": null,
+   "cluster": null,
+   "size": {
+    "weight": 0.2,
+    "dollars": 1400.0,
+    "capped": true
+   },
+   "earnings": {
+    "date": "2026-10-27",
+    "sessions": 20
+   },
    "verdict": "buy_zone",
    "why": [
     "%B 0.12 \u2014 the measured buy band (+3.47 pts vs null @60d on the AI wave)",
@@ -1443,19 +1965,44 @@
     "lower": 126.5692518464119
    },
    "vs_sma20": -0.04329864713972764,
-   "vs_sma200": -0.11339767863754446,
+   "vs_sma200": -0.11339768330461841,
    "range_pos": 0.009382673427907256,
    "range_n": 252,
-   "atr_pct": 0.01746381980819524,
+   "atr_pct": 0.017463819816778848,
    "dollar_volume": 1049791029.8904419,
    "hold": {
-    "n": 2008,
+    "n": 2007,
     "n_independent": 4,
-    "positive": 0.7818725099601593,
-    "p10": -0.1116259666854651,
-    "median": 0.20177942680774485
+    "positive": 0.7817638266068759,
+    "p10": -0.1116258774281238,
+    "median": 0.20177922926350522
+   },
+   "dip_history": {
+    "n": 466,
+    "episodes": 31,
+    "horizon": 60,
+    "win_rate": 0.5806451612903226,
+    "win_ci": [
+     0.40765964352020967,
+     0.7358469692645074
+    ],
+    "median": 0.01862247821106,
+    "p10": -0.0679307090680179,
+    "worst": -0.10351184059404372,
+    "cvar10": -0.08497068941757872,
+    "top_share": 0.11818351846630298
    },
    "spike": null,
+   "cluster": null,
+   "size": {
+    "weight": 0.2,
+    "dollars": 1400.0,
+    "capped": true
+   },
+   "earnings": {
+    "date": "2026-10-08",
+    "sessions": 7
+   },
    "verdict": "dip_but_fails_hold",
    "why": [
     "%B 0.12 \u2014 the measured buy band (+3.47 pts vs null @60d on the AI wave)",
@@ -1479,19 +2026,44 @@
     "lower": 181.21922417172956
    },
    "vs_sma20": -0.060542602888373986,
-   "vs_sma200": 0.015077643302970012,
-   "range_pos": 0.6605099017789383,
+   "vs_sma200": 0.015077644151773706,
+   "range_pos": 0.6605099686469499,
    "range_n": 252,
-   "atr_pct": 0.03270061889525637,
+   "atr_pct": 0.03270061889481975,
    "dollar_volume": 381029642.8161621,
    "hold": {
-    "n": 2008,
+    "n": 2007,
     "n_independent": 4,
-    "positive": 0.6817729083665338,
-    "p10": -0.4912479022571806,
-    "median": 0.1340607534350131
+    "positive": 0.6816143497757847,
+    "p10": -0.4912476389672755,
+    "median": 0.13398600393637072
+   },
+   "dip_history": {
+    "n": 459,
+    "episodes": 30,
+    "horizon": 60,
+    "win_rate": 0.5,
+    "win_ci": [
+     0.33153851227173764,
+     0.6684614877282624
+    ],
+    "median": 0.02584459257999372,
+    "p10": -0.10215398708555845,
+    "worst": -0.6790648553433649,
+    "cvar10": -0.3435311548537105,
+    "top_share": 0.20784562565722595
    },
    "spike": null,
+   "cluster": null,
+   "size": {
+    "weight": 0.15290230487937562,
+    "dollars": 1070.3161341556292,
+    "capped": false
+   },
+   "earnings": {
+    "date": "2026-11-02",
+    "sessions": 24
+   },
    "verdict": "dip_but_fails_hold",
    "why": [
     "%B 0.13 \u2014 the measured buy band (+3.47 pts vs null @60d on the AI wave)",
@@ -1514,19 +2086,44 @@
     "lower": 342.99353326561885
    },
    "vs_sma20": -0.08355801749701408,
-   "vs_sma200": -0.04290020083001311,
-   "range_pos": 0.19794048548930435,
+   "vs_sma200": -0.04290019925061639,
+   "range_pos": 0.19794054518492962,
    "range_n": 252,
-   "atr_pct": 0.028178612791232065,
+   "atr_pct": 0.02817861279123166,
    "dollar_volume": 283095848.1338501,
    "hold": {
-    "n": 2008,
+    "n": 2007,
     "n_independent": 4,
-    "positive": 0.8471115537848606,
-    "p10": -0.1565388683802159,
-    "median": 0.25958148055145935
+    "positive": 0.8470353761833582,
+    "p10": -0.15653890832186212,
+    "median": 0.2595485148547203
+   },
+   "dip_history": {
+    "n": 437,
+    "episodes": 33,
+    "horizon": 60,
+    "win_rate": 0.6363636363636364,
+    "win_ci": [
+     0.46615872621534094,
+     0.7781303383204013
+    ],
+    "median": 0.03185282480355012,
+    "p10": -0.10115807302032809,
+    "worst": -0.15976510519928988,
+    "cvar10": -0.133962215709038,
+    "top_share": 0.17169342034165147
    },
    "spike": null,
+   "cluster": null,
+   "size": {
+    "weight": 0.17743953675235036,
+    "dollars": 1242.0767572664524,
+    "capped": false
+   },
+   "earnings": {
+    "date": "2026-10-22",
+    "sessions": 17
+   },
    "verdict": "dip_but_fails_hold",
    "why": [
     "%B 0.13 \u2014 the measured buy band (+3.47 pts vs null @60d on the AI wave)",
@@ -1556,13 +2153,38 @@
    "atr_pct": 0.04163552582938666,
    "dollar_volume": 1199196371.5644836,
    "hold": {
-    "n": 2008,
+    "n": 2007,
     "n_independent": 4,
-    "positive": 0.6364541832669323,
+    "positive": 0.6362730443447933,
     "p10": -0.4318713386826356,
-    "median": 0.3061847987825441
+    "median": 0.3046433297938549
+   },
+   "dip_history": {
+    "n": 421,
+    "episodes": 29,
+    "horizon": 60,
+    "win_rate": 0.4482758620689655,
+    "win_ci": [
+     0.2841291114874579,
+     0.6245233293193238
+    ],
+    "median": -0.015298670967038519,
+    "p10": -0.17621448226002578,
+    "worst": -0.2636393547072564,
+    "cvar10": -0.23166332497798794,
+    "top_share": 0.20236619935975386
    },
    "spike": null,
+   "cluster": null,
+   "size": {
+    "weight": 0.12008975269074092,
+    "dollars": 840.6282688351864,
+    "capped": false
+   },
+   "earnings": {
+    "date": "2026-12-09",
+    "sessions": 50
+   },
    "verdict": "dip_but_fails_hold",
    "why": [
     "%B 0.13 \u2014 the measured buy band (+3.47 pts vs null @60d on the AI wave)",
@@ -1586,10 +2208,10 @@
     "lower": 82.56832596834562
    },
    "vs_sma20": -0.08051803473499508,
-   "vs_sma200": -0.12933742538142556,
+   "vs_sma200": -0.1293374250424567,
    "range_pos": 0.0,
    "range_n": 252,
-   "atr_pct": 0.027698339786562734,
+   "atr_pct": 0.027698339786667664,
    "dollar_volume": 286455645.32699585,
    "hold": {
     "n": 0,
@@ -1598,7 +2220,32 @@
     "p10": null,
     "median": null
    },
+   "dip_history": {
+    "n": 227,
+    "episodes": 17,
+    "horizon": 60,
+    "win_rate": 0.6470588235294118,
+    "win_ci": [
+     0.4129996672121182,
+     0.826905138560951
+    ],
+    "median": 0.09392729872014516,
+    "p10": -0.1443939119666504,
+    "worst": -0.2063515803103061,
+    "cvar10": -0.17537274613847825,
+    "top_share": 0.18377918819022665
+   },
    "spike": null,
+   "cluster": null,
+   "size": {
+    "weight": 0.18051623449311222,
+    "dollars": 1263.6136414517855,
+    "capped": false
+   },
+   "earnings": {
+    "date": "2026-10-27",
+    "sessions": 20
+   },
    "verdict": "no_hold_data",
    "why": [
     "hold gate not measurable \u2014 under 4 independent 2-year windows of history"
@@ -1623,16 +2270,41 @@
    "vs_sma200": -0.05825482784072544,
    "range_pos": 0.38834395439543956,
    "range_n": 252,
-   "atr_pct": 0.016344980998610054,
+   "atr_pct": 0.016344980998610394,
    "dollar_volume": 461756193.78738403,
    "hold": {
-    "n": 2008,
+    "n": 2007,
     "n_independent": 4,
-    "positive": 0.8640438247011952,
-    "p10": -0.025439558084133007,
-    "median": 0.23822573745063136
+    "positive": 0.8639760837070254,
+    "p10": -0.02543946900477334,
+    "median": 0.23822552792623308
+   },
+   "dip_history": {
+    "n": 400,
+    "episodes": 30,
+    "horizon": 60,
+    "win_rate": 0.6666666666666666,
+    "win_ci": [
+     0.48779725813830266,
+     0.807697044731538
+    ],
+    "median": 0.04698131415728923,
+    "p10": -0.08583733705445107,
+    "worst": -0.22347359199476913,
+    "cvar10": -0.14019320875260177,
+    "top_share": 0.13998990054676536
    },
    "spike": null,
+   "cluster": null,
+   "size": {
+    "weight": 0.2,
+    "dollars": 1400.0,
+    "capped": true
+   },
+   "earnings": {
+    "date": "2026-10-28",
+    "sessions": 21
+   },
    "verdict": "buy_zone",
    "why": [
     "%B 0.14 \u2014 the measured buy band (+3.47 pts vs null @60d on the AI wave)",
@@ -1661,13 +2333,38 @@
    "atr_pct": 0.05765586350160669,
    "dollar_volume": 433915300.82244873,
    "hold": {
-    "n": 2008,
+    "n": 2007,
     "n_independent": 4,
-    "positive": 0.9835657370517928,
+    "positive": 0.9835575485799701,
     "p10": 0.21294844138038016,
-    "median": 1.1816232780410614
+    "median": 1.1807770155837791
+   },
+   "dip_history": {
+    "n": 417,
+    "episodes": 32,
+    "horizon": 60,
+    "win_rate": 0.59375,
+    "win_ci": [
+     0.4225972657298823,
+     0.744805975196862
+    ],
+    "median": 0.20094400253318545,
+    "p10": -0.17743122545551282,
+    "worst": -0.3096150392451327,
+    "cvar10": -0.2786503452769445,
+    "top_share": 0.11507734483772401
    },
    "spike": null,
+   "cluster": null,
+   "size": {
+    "weight": 0.08672144854548343,
+    "dollars": 607.050139818384,
+    "capped": false
+   },
+   "earnings": {
+    "date": "2026-11-03",
+    "sessions": 25
+   },
    "verdict": "buy_zone",
    "why": [
     "%B 0.14 \u2014 the measured buy band (+3.47 pts vs null @60d on the AI wave)",
@@ -1694,15 +2391,40 @@
    "range_pos": 0.0,
    "range_n": 252,
    "atr_pct": 0.03294817281619386,
-   "dollar_volume": 657032251.1674881,
+   "dollar_volume": 666528881.9826126,
    "hold": {
-    "n": 2008,
+    "n": 2007,
     "n_independent": 4,
-    "positive": 0.5677290836653387,
+    "positive": 0.56751370204285,
     "p10": -0.2687066045021981,
-    "median": 0.05540327329704975
+    "median": 0.05460391429633393
+   },
+   "dip_history": {
+    "n": 472,
+    "episodes": 32,
+    "horizon": 60,
+    "win_rate": 0.46875,
+    "win_ci": [
+     0.30869129901682335,
+     0.6355076206742619
+    ],
+    "median": -0.004738949144310944,
+    "p10": -0.14211934384298597,
+    "worst": -0.2055068269819572,
+    "cvar10": -0.19355488235218266,
+    "top_share": 0.12066883470873434
    },
    "spike": null,
+   "cluster": null,
+   "size": {
+    "weight": 0.15175348350554133,
+    "dollars": 1062.2743845387893,
+    "capped": false
+   },
+   "earnings": {
+    "date": "2026-10-22",
+    "sessions": 17
+   },
    "verdict": "dip_but_fails_hold",
    "why": [
     "%B 0.14 \u2014 the measured buy band (+3.47 pts vs null @60d on the AI wave)",
@@ -1732,13 +2454,38 @@
    "atr_pct": 0.046276994651629925,
    "dollar_volume": 1979945210.4804993,
    "hold": {
-    "n": 2008,
+    "n": 2007,
     "n_independent": 4,
-    "positive": 0.7788844621513944,
+    "positive": 0.7787742899850523,
     "p10": -0.21445406288904278,
-    "median": 0.7990105903625411
+    "median": 0.7942937318765326
+   },
+   "dip_history": {
+    "n": 425,
+    "episodes": 31,
+    "horizon": 60,
+    "win_rate": 0.6451612903225806,
+    "win_ci": [
+     0.469476380428149,
+     0.7888355225843418
+    ],
+    "median": 0.08434074782626211,
+    "p10": -0.16198030698045351,
+    "worst": -0.28639678539555424,
+    "cvar10": -0.24718608017529328,
+    "top_share": 0.16174306119688975
    },
    "spike": null,
+   "cluster": "platform",
+   "size": {
+    "weight": 0.1080450456569114,
+    "dollars": 756.3153195983798,
+    "capped": false
+   },
+   "earnings": {
+    "date": "2026-10-28",
+    "sessions": 21
+   },
    "verdict": "dip_but_fails_hold",
    "why": [
     "%B 0.14 \u2014 the measured buy band (+3.47 pts vs null @60d on the AI wave)",
@@ -1761,19 +2508,44 @@
     "lower": 257.719615770488
    },
    "vs_sma20": -0.035427369145251686,
-   "vs_sma200": 0.11434243748395878,
-   "range_pos": 0.7602220889064303,
+   "vs_sma200": 0.11434243893145624,
+   "range_pos": 0.7602220521261077,
    "range_n": 252,
-   "atr_pct": 0.021297743443777804,
+   "atr_pct": 0.02129774350432589,
    "dollar_volume": 556013100.2288818,
    "hold": {
-    "n": 2008,
+    "n": 2007,
     "n_independent": 4,
-    "positive": 0.9322709163346613,
-    "p10": 0.04061291488756269,
-    "median": 0.27319456680252596
+    "positive": 0.9322371699053313,
+    "p10": 0.040613119194228275,
+    "median": 0.27308181404572474
+   },
+   "dip_history": {
+    "n": 404,
+    "episodes": 31,
+    "horizon": 60,
+    "win_rate": 0.6774193548387096,
+    "win_ci": [
+     0.5014068555995079,
+     0.8143076925268695
+    ],
+    "median": 0.05623497536868949,
+    "p10": -0.12910570978435698,
+    "worst": -0.19755175841738026,
+    "cvar10": -0.17352905662956297,
+    "top_share": 0.12128038604519024
    },
    "spike": null,
+   "cluster": null,
+   "size": {
+    "weight": 0.2,
+    "dollars": 1400.0,
+    "capped": true
+   },
+   "earnings": {
+    "date": "2026-10-28",
+    "sessions": 21
+   },
    "verdict": "buy_zone",
    "why": [
     "%B 0.15 \u2014 the measured buy band (+3.47 pts vs null @60d on the AI wave)"
@@ -1795,19 +2567,44 @@
     "lower": 162.8605218363315
    },
    "vs_sma20": -0.06153863237709656,
-   "vs_sma200": -0.11716612356709488,
-   "range_pos": 0.1265955376949318,
+   "vs_sma200": -0.11716612179493158,
+   "range_pos": 0.12659555846330292,
    "range_n": 252,
-   "atr_pct": 0.03400341255956573,
+   "atr_pct": 0.03400341256498641,
    "dollar_volume": 247848801.26953125,
    "hold": {
-    "n": 2008,
+    "n": 2007,
     "n_independent": 4,
-    "positive": 0.8301792828685259,
-    "p10": -0.09574130398254477,
-    "median": 0.34571760695048903
+    "positive": 0.8300946686596911,
+    "p10": -0.09574128812512783,
+    "median": 0.34558511396535185
+   },
+   "dip_history": {
+    "n": 438,
+    "episodes": 31,
+    "horizon": 60,
+    "win_rate": 0.5806451612903226,
+    "win_ci": [
+     0.40765964352020967,
+     0.7358469692645074
+    ],
+    "median": 0.01653696614577993,
+    "p10": -0.10907370035189123,
+    "worst": -0.16379594064175096,
+    "cvar10": -0.15137819981887246,
+    "top_share": 0.15811873458503461
    },
    "spike": null,
+   "cluster": null,
+   "size": {
+    "weight": 0.14704406478156082,
+    "dollars": 1029.3084534709258,
+    "capped": false
+   },
+   "earnings": {
+    "date": "2026-10-28",
+    "sessions": 21
+   },
    "verdict": "buy_zone",
    "why": [
     "%B 0.15 \u2014 the measured buy band (+3.47 pts vs null @60d on the AI wave)",
@@ -1830,19 +2627,44 @@
     "lower": 105.59078894659129
    },
    "vs_sma20": -0.019848223657252584,
-   "vs_sma200": 0.10393162617671003,
-   "range_pos": 0.6422275064355158,
+   "vs_sma200": 0.10393162878988504,
+   "range_pos": 0.6422274206791548,
    "range_n": 252,
-   "atr_pct": 0.025773493354592985,
+   "atr_pct": 0.02577349335470288,
    "dollar_volume": 2048080401.8318176,
    "hold": {
-    "n": 2008,
+    "n": 2007,
     "n_independent": 4,
-    "positive": 0.8207171314741036,
-    "p10": -0.032231908065790016,
-    "median": 0.23140866304580787
+    "positive": 0.820627802690583,
+    "p10": -0.03223180771862877,
+    "median": 0.23058271739358016
+   },
+   "dip_history": {
+    "n": 365,
+    "episodes": 29,
+    "horizon": 60,
+    "win_rate": 0.6551724137931034,
+    "win_ci": [
+     0.47344776507155983,
+     0.8005949125080951
+    ],
+    "median": 0.048486248741105076,
+    "p10": -0.09470449977219031,
+    "worst": -0.16258038203778236,
+    "cvar10": -0.13683394448828853,
+    "top_share": 0.1386090576877856
    },
    "spike": null,
+   "cluster": null,
+   "size": {
+    "weight": 0.19399776084632517,
+    "dollars": 1357.9843259242762,
+    "capped": false
+   },
+   "earnings": {
+    "date": "2026-11-12",
+    "sessions": 32
+   },
    "verdict": "buy_zone",
    "why": [
     "%B 0.17 \u2014 the measured buy band (+3.47 pts vs null @60d on the AI wave)"
@@ -1876,7 +2698,29 @@
     "p10": null,
     "median": null
    },
+   "dip_history": {
+    "n": 4,
+    "episodes": 1,
+    "horizon": 60,
+    "win_rate": 1.0,
+    "win_ci": [
+     0.20654329147389294,
+     1.0
+    ],
+    "median": 0.01679842670122267,
+    "p10": 0.01679842670122267,
+    "worst": 0.01679842670122267,
+    "cvar10": 0.01679842670122267,
+    "top_share": 1.0
+   },
    "spike": null,
+   "cluster": "humanoid",
+   "size": {
+    "weight": 0.07852135278036008,
+    "dollars": 549.6494694625206,
+    "capped": false
+   },
+   "earnings": null,
    "verdict": "no_hold_data",
    "why": [
     "hold gate not measurable \u2014 under 4 independent 2-year windows of history"
@@ -1898,19 +2742,44 @@
     "lower": 100.4692102414327
    },
    "vs_sma20": -0.10162973135411912,
-   "vs_sma200": -0.30714823842498373,
-   "range_pos": 0.2029177375736179,
+   "vs_sma200": -0.30714823603769514,
+   "range_pos": 0.202917692254685,
    "range_n": 252,
-   "atr_pct": 0.04802367804404458,
+   "atr_pct": 0.04802367804387063,
    "dollar_volume": 267185869.64569092,
    "hold": {
-    "n": 2008,
+    "n": 2007,
     "n_independent": 4,
-    "positive": 0.4860557768924303,
-    "p10": -0.6237750477431123,
-    "median": -0.017516900145266412
+    "positive": 0.4857997010463378,
+    "p10": -0.6237749766210627,
+    "median": -0.0181096466069115
+   },
+   "dip_history": {
+    "n": 469,
+    "episodes": 32,
+    "horizon": 60,
+    "win_rate": 0.5625,
+    "win_ci": [
+     0.3932530203122613,
+     0.7183491403055682
+    ],
+    "median": 0.01568872204142413,
+    "p10": -0.21421905022581922,
+    "worst": -0.29034466030584505,
+    "cvar10": -0.2703964972672687,
+    "top_share": 0.19151656778519127
    },
    "spike": null,
+   "cluster": "materials",
+   "size": {
+    "weight": 0.10411530735801611,
+    "dollars": 728.8071515061127,
+    "capped": false
+   },
+   "earnings": {
+    "date": "2026-11-04",
+    "sessions": 26
+   },
    "verdict": "dip_but_fails_hold",
    "why": [
     "%B 0.18 \u2014 the measured buy band (+3.47 pts vs null @60d on the AI wave)",
@@ -1946,7 +2815,32 @@
     "p10": null,
     "median": null
    },
+   "dip_history": {
+    "n": 271,
+    "episodes": 18,
+    "horizon": 60,
+    "win_rate": 0.4444444444444444,
+    "win_ci": [
+     0.24559231101389126,
+     0.6628393057174837
+    ],
+    "median": -0.007052090655893295,
+    "p10": -0.16641377416150327,
+    "worst": -0.306262170177388,
+    "cvar10": -0.23633797216944563,
+    "top_share": 0.25167680785045027
+   },
    "spike": null,
+   "cluster": null,
+   "size": {
+    "weight": 0.14063572502369007,
+    "dollars": 984.4500751658304,
+    "capped": false
+   },
+   "earnings": {
+    "date": "2026-11-05",
+    "sessions": 27
+   },
    "verdict": "no_hold_data",
    "why": [
     "hold gate not measurable \u2014 under 4 independent 2-year windows of history"
@@ -1963,26 +2857,48 @@
    "as_of": "2026-09-28",
    "close": 34.43000030517578,
    "chg": 0.0616712914332227,
-   "pct_b": 0.18726690258224218,
+   "pct_b": 0.1872669025822421,
    "band": {
     "mid": 43.0921293258667,
     "upper": 56.94120557045714,
-    "lower": 29.243053081276255
+    "lower": 29.24305308127626
    },
    "vs_sma20": -0.2010141795311875,
-   "vs_sma200": -0.8394368221191711,
-   "range_pos": 0.002470327376240988,
+   "vs_sma200": -0.8394368213193866,
+   "range_pos": 0.0024703275295301385,
    "range_n": 252,
-   "atr_pct": 0.1211199110763387,
-   "dollar_volume": 2618363339.7701263,
+   "atr_pct": 0.12111991107584809,
+   "dollar_volume": 2624269506.9202423,
    "hold": {
-    "n": 2008,
+    "n": 2007,
     "n_independent": 4,
     "positive": 0.0,
-    "p10": -0.9872072105145445,
-    "median": -0.9229943976778991
+    "p10": -0.987207211378262,
+    "median": -0.9236961366417297
+   },
+   "dip_history": {
+    "n": 813,
+    "episodes": 36,
+    "horizon": 60,
+    "win_rate": 0.16666666666666666,
+    "win_ci": [
+     0.07870340628564097,
+     0.3189111473467432
+    ],
+    "median": -0.21376193827509038,
+    "p10": -0.593699723725398,
+    "worst": -0.706382981745128,
+    "cvar10": -0.6468414359357183,
+    "top_share": 0.3787198377264824
    },
    "spike": null,
+   "cluster": "semis ETF",
+   "size": {
+    "weight": 0.041281404152194966,
+    "dollars": 288.96982906536476,
+    "capped": false
+   },
+   "earnings": null,
    "verdict": "leveraged",
    "why": [
     "daily-reset leveraged product \u2014 the %B and forward-return thresholds on this page were measured on ordinary long instruments and do not transfer \u00b7 INVERSE: a low %B here means the underlying is STRONG"
@@ -2004,19 +2920,44 @@
     "lower": 45.84012545103594
    },
    "vs_sma20": -0.02821222610649099,
-   "vs_sma200": 0.06529604810968714,
-   "range_pos": 0.6810889757325971,
+   "vs_sma200": 0.06529604579513903,
+   "range_pos": 0.681089037074994,
    "range_n": 252,
-   "atr_pct": 0.01974251040577487,
+   "atr_pct": 0.019742510420815578,
    "dollar_volume": 493533903.99742126,
    "hold": {
-    "n": 2008,
+    "n": 2007,
     "n_independent": 4,
-    "positive": 0.899402390438247,
-    "p10": -0.001905409554738835,
-    "median": 0.2084432528015987
+    "positive": 0.8993522670652716,
+    "p10": -0.0019053053009473464,
+    "median": 0.206163628525724
+   },
+   "dip_history": {
+    "n": 413,
+    "episodes": 33,
+    "horizon": 60,
+    "win_rate": 0.696969696969697,
+    "win_ci": [
+     0.5266154602526555,
+     0.8262465218545277
+    ],
+    "median": 0.049108429053492664,
+    "p10": -0.09895156555123297,
+    "worst": -0.14083020889364672,
+    "cvar10": -0.11750729013727035,
+    "top_share": 0.11727676049619629
    },
    "spike": null,
+   "cluster": null,
+   "size": {
+    "weight": 0.2,
+    "dollars": 1400.0,
+    "capped": true
+   },
+   "earnings": {
+    "date": "2026-10-21",
+    "sessions": 16
+   },
    "verdict": "neutral",
    "why": [
     "%B 0.20 \u2014 no measured edge either way"
@@ -2050,7 +2991,32 @@
     "p10": null,
     "median": null
    },
+   "dip_history": {
+    "n": 245,
+    "episodes": 16,
+    "horizon": 60,
+    "win_rate": 0.5625,
+    "win_ci": [
+     0.33178195606776517,
+     0.7690163666481448
+    ],
+    "median": 0.12120053500562578,
+    "p10": -0.3706896551724138,
+    "worst": -0.5288419092636172,
+    "cvar10": -0.4497657822180155,
+    "top_share": 0.2082862678884738
+   },
    "spike": null,
+   "cluster": null,
+   "size": {
+    "weight": 0.09470462109841996,
+    "dollars": 662.9323476889397,
+    "capped": false
+   },
+   "earnings": {
+    "date": "2026-11-04",
+    "sessions": 26
+   },
    "verdict": "no_hold_data",
    "why": [
     "hold gate not measurable \u2014 under 4 independent 2-year windows of history"
@@ -2078,13 +3044,38 @@
    "atr_pct": 0.0400819723899949,
    "dollar_volume": 442322858.3213806,
    "hold": {
-    "n": 2008,
+    "n": 2007,
     "n_independent": 4,
-    "positive": 0.7385458167330677,
+    "positive": 0.7384155455904334,
     "p10": -0.2665504001751028,
-    "median": 0.3500186752332839
+    "median": 0.34890811488045803
+   },
+   "dip_history": {
+    "n": 428,
+    "episodes": 31,
+    "horizon": 60,
+    "win_rate": 0.5483870967741935,
+    "win_ci": [
+     0.37771879603669134,
+     0.7083851716341388
+    ],
+    "median": 0.02638187867964148,
+    "p10": -0.12448815834898486,
+    "worst": -0.27700824827942316,
+    "cvar10": -0.21339723067714722,
+    "top_share": 0.1527446952174687
    },
    "spike": null,
+   "cluster": null,
+   "size": {
+    "weight": 0.12474436016646925,
+    "dollars": 873.2105211652848,
+    "capped": false
+   },
+   "earnings": {
+    "date": "2026-11-27",
+    "sessions": 42
+   },
    "verdict": "neutral",
    "why": [
     "%B 0.23 \u2014 no measured edge either way"
@@ -2113,13 +3104,38 @@
    "atr_pct": 0.0361340252474567,
    "dollar_volume": 12179009051.867676,
    "hold": {
-    "n": 2008,
+    "n": 2007,
     "n_independent": 4,
-    "positive": 0.7350597609561753,
+    "positive": 0.7349277528649726,
     "p10": -0.3343112097205284,
     "median": 0.6691225246430881
    },
+   "dip_history": {
+    "n": 475,
+    "episodes": 32,
+    "horizon": 60,
+    "win_rate": 0.5,
+    "win_ci": [
+     0.33630614316859386,
+     0.6636938568314061
+    ],
+    "median": 0.018605541297014083,
+    "p10": -0.26431616326023055,
+    "worst": -0.4486627578986957,
+    "cvar10": -0.37065445644064104,
+    "top_share": 0.13534576387083608
+   },
    "spike": null,
+   "cluster": "humanoid",
+   "size": {
+    "weight": 0.13837373405698625,
+    "dollars": 968.6161383989038,
+    "capped": false
+   },
+   "earnings": {
+    "date": "2026-10-21",
+    "sessions": 16
+   },
    "verdict": "neutral",
    "why": [
     "%B 0.24 \u2014 no measured edge either way"
@@ -2144,16 +3160,41 @@
    "vs_sma200": -0.12405412399579241,
    "range_pos": 0.05609722714244308,
    "range_n": 252,
-   "atr_pct": 0.029303668408098553,
+   "atr_pct": 0.029303668408098543,
    "dollar_volume": 787950830.7235718,
    "hold": {
-    "n": 2008,
+    "n": 2007,
     "n_independent": 4,
-    "positive": 0.9452191235059761,
+    "positive": 0.9451918285999004,
     "p10": 0.0863922956057328,
-    "median": 0.3447011551835073
+    "median": 0.3445711354970351
+   },
+   "dip_history": {
+    "n": 425,
+    "episodes": 33,
+    "horizon": 60,
+    "win_rate": 0.6666666666666666,
+    "win_ci": [
+     0.4960758179994997,
+     0.8024997053219629
+    ],
+    "median": 0.06751310010476086,
+    "p10": -0.06373024254517756,
+    "worst": -0.19976536200363992,
+    "cvar10": -0.13878580970892265,
+    "top_share": 0.1092698908773047
    },
    "spike": null,
+   "cluster": null,
+   "size": {
+    "weight": 0.17062710137063145,
+    "dollars": 1194.38970959442,
+    "capped": false
+   },
+   "earnings": {
+    "date": "2026-10-28",
+    "sessions": 21
+   },
    "verdict": "neutral",
    "why": [
     "%B 0.24 \u2014 no measured edge either way"
@@ -2176,10 +3217,10 @@
     "lower": 244.74227363192318
    },
    "vs_sma20": -0.047626899512206666,
-   "vs_sma200": -0.09917045352093223,
-   "range_pos": 0.14672564944415645,
+   "vs_sma200": -0.09917045875099628,
+   "range_pos": 0.14672562239951664,
    "range_n": 252,
-   "atr_pct": 0.03434094375551176,
+   "atr_pct": 0.03434094376879981,
    "dollar_volume": 707797969.7921753,
    "hold": {
     "n": 0,
@@ -2188,7 +3229,32 @@
     "p10": null,
     "median": null
    },
+   "dip_history": {
+    "n": 178,
+    "episodes": 14,
+    "horizon": 60,
+    "win_rate": 0.7857142857142857,
+    "win_ci": [
+     0.5241027622679172,
+     0.9242875166308363
+    ],
+    "median": 0.1169402644479638,
+    "p10": -0.07611481740772652,
+    "worst": -0.1566477077566102,
+    "cvar10": -0.1566477077566102,
+    "top_share": 0.26986361212187465
+   },
    "spike": null,
+   "cluster": "power",
+   "size": {
+    "weight": 0.1455987940710794,
+    "dollars": 1019.1915584975558,
+    "capped": false
+   },
+   "earnings": {
+    "date": "2026-11-09",
+    "sessions": 29
+   },
    "verdict": "no_hold_data",
    "why": [
     "hold gate not measurable \u2014 under 4 independent 2-year windows of history"
@@ -2210,19 +3276,44 @@
     "lower": 149.3031243061323
    },
    "vs_sma20": -0.0666666944770753,
-   "vs_sma200": -0.10382770902236049,
-   "range_pos": 0.15776811750419403,
+   "vs_sma200": -0.10382771425717974,
+   "range_pos": 0.15776808132180034,
    "range_n": 252,
-   "atr_pct": 0.03994855483083861,
+   "atr_pct": 0.03994855483026447,
    "dollar_volume": 1088025675.126648,
    "hold": {
-    "n": 2008,
+    "n": 2007,
     "n_independent": 4,
-    "positive": 0.8406374501992032,
-    "p10": -0.04950433258501241,
-    "median": 0.20320635332259096
+    "positive": 0.8405580468360737,
+    "p10": -0.04950433741992932,
+    "median": 0.20217425772594022
+   },
+   "dip_history": {
+    "n": 419,
+    "episodes": 32,
+    "horizon": 60,
+    "win_rate": 0.75,
+    "win_ci": [
+     0.5789310822975338,
+     0.8674775601737845
+    ],
+    "median": 0.040501771416361576,
+    "p10": -0.07920278186690988,
+    "worst": -0.29782025919318533,
+    "cvar10": -0.18573084594211256,
+    "top_share": 0.14594856342210033
    },
    "spike": null,
+   "cluster": null,
+   "size": {
+    "weight": 0.1251609731877477,
+    "dollars": 876.1268123142338,
+    "capped": false
+   },
+   "earnings": {
+    "date": "2026-10-27",
+    "sessions": 20
+   },
    "verdict": "neutral",
    "why": [
     "%B 0.28 \u2014 no measured edge either way"
@@ -2244,19 +3335,44 @@
     "lower": 90.32267394681526
    },
    "vs_sma20": -0.03905512847784698,
-   "vs_sma200": -0.024480528963439552,
-   "range_pos": 0.5866475063430404,
+   "vs_sma200": -0.024480525534038122,
+   "range_pos": 0.5866476049481906,
    "range_n": 252,
-   "atr_pct": 0.023560158744796934,
+   "atr_pct": 0.02356015874231409,
    "dollar_volume": 656673542.0562744,
    "hold": {
-    "n": 2008,
+    "n": 2007,
     "n_independent": 4,
-    "positive": 0.7539840637450199,
-    "p10": -0.08567537267092462,
-    "median": 0.15039633842504196
+    "positive": 0.7538614848031888,
+    "p10": -0.08567566745598898,
+    "median": 0.15039641984548346
+   },
+   "dip_history": {
+    "n": 418,
+    "episodes": 31,
+    "horizon": 60,
+    "win_rate": 0.5161290322580645,
+    "win_ci": [
+     0.34840118286973176,
+     0.6803001396872117
+    ],
+    "median": 0.06400266513290997,
+    "p10": -0.15892219581205813,
+    "worst": -0.19587402009120114,
+    "cvar10": -0.17937914363859905,
+    "top_share": 0.10497524201083079
    },
    "spike": null,
+   "cluster": null,
+   "size": {
+    "weight": 0.2,
+    "dollars": 1400.0,
+    "capped": true
+   },
+   "earnings": {
+    "date": "2026-10-28",
+    "sessions": 21
+   },
    "verdict": "neutral",
    "why": [
     "%B 0.28 \u2014 no measured edge either way"
@@ -2281,16 +3397,41 @@
    "vs_sma200": -0.029797807740225557,
    "range_pos": 0.5250288453537577,
    "range_n": 252,
-   "atr_pct": 0.02876401654614647,
+   "atr_pct": 0.028764016546146482,
    "dollar_volume": 436278076.8463135,
    "hold": {
-    "n": 2008,
+    "n": 2007,
     "n_independent": 4,
-    "positive": 0.6548804780876494,
-    "p10": -0.43960801947284744,
-    "median": 0.27807082227711866
+    "positive": 0.6552067762830095,
+    "p10": -0.43960803332774323,
+    "median": 0.27807075931464986
+   },
+   "dip_history": {
+    "n": 507,
+    "episodes": 30,
+    "horizon": 60,
+    "win_rate": 0.43333333333333335,
+    "win_ci": [
+     0.2737723743061511,
+     0.6080299045459127
+    ],
+    "median": -0.001964258966984045,
+    "p10": -0.13717338618386998,
+    "worst": -0.3615402088530859,
+    "cvar10": -0.2861301335335031,
+    "top_share": 0.3374696546342512
    },
    "spike": null,
+   "cluster": null,
+   "size": {
+    "weight": 0.17382829661422408,
+    "dollars": 1216.7980762995685,
+    "capped": false
+   },
+   "earnings": {
+    "date": "2026-10-27",
+    "sessions": 20
+   },
    "verdict": "neutral",
    "why": [
     "%B 0.29 \u2014 no measured edge either way"
@@ -2314,19 +3455,44 @@
     "lower": 337.9947623197545
    },
    "vs_sma20": -0.019757914809106825,
-   "vs_sma200": -0.04690453618969426,
+   "vs_sma200": -0.04690453975832176,
    "range_pos": 0.3047981543757413,
    "range_n": 252,
-   "atr_pct": 0.030777660933653445,
+   "atr_pct": 0.0307776609331079,
    "dollar_volume": 7830187894.035339,
    "hold": {
-    "n": 2008,
+    "n": 2007,
     "n_independent": 4,
-    "positive": 0.9950199203187251,
-    "p10": 0.272982165151086,
-    "median": 0.8592846014046447
+    "positive": 0.9950174389636273,
+    "p10": 0.272982137345954,
+    "median": 0.8592847583802563
+   },
+   "dip_history": {
+    "n": 360,
+    "episodes": 29,
+    "horizon": 60,
+    "win_rate": 0.6896551724137931,
+    "win_ci": [
+     0.5076952952728147,
+     0.8272457551023193
+    ],
+    "median": 0.08270556356733971,
+    "p10": -0.08036090841989851,
+    "worst": -0.2371864564296431,
+    "cvar10": -0.1515692492385328,
+    "top_share": 0.1546693764373255
    },
    "spike": null,
+   "cluster": "compute",
+   "size": {
+    "weight": 0.1624554903917809,
+    "dollars": 1137.1884327424661,
+    "capped": false
+   },
+   "earnings": {
+    "date": "2026-12-09",
+    "sessions": 50
+   },
    "verdict": "neutral",
    "why": [
     "%B 0.31 \u2014 no measured edge either way"
@@ -2348,19 +3514,44 @@
     "lower": 91.32369391286264
    },
    "vs_sma20": -0.034242548710291754,
-   "vs_sma200": 0.0006701705967659954,
+   "vs_sma200": 0.000670176876123918,
    "range_pos": 0.2633720418506804,
    "range_n": 252,
-   "atr_pct": 0.03960721344351224,
+   "atr_pct": 0.03960721344410023,
    "dollar_volume": 149730743.02444458,
    "hold": {
-    "n": 2008,
+    "n": 2007,
     "n_independent": 4,
-    "positive": 0.8949203187250996,
-    "p10": -0.030438830496749558,
-    "median": 0.49586338523584494
+    "positive": 0.8948679621325362,
+    "p10": -0.030438607034569687,
+    "median": 0.49586363897892016
+   },
+   "dip_history": {
+    "n": 376,
+    "episodes": 28,
+    "horizon": 60,
+    "win_rate": 0.7142857142857143,
+    "win_ci": [
+     0.529403642629825,
+     0.8474618415167003
+    ],
+    "median": 0.053503723024144634,
+    "p10": -0.14460426508109359,
+    "worst": -0.25965049076614666,
+    "cvar10": -0.18815007238959902,
+    "top_share": 0.13091946555303147
    },
    "spike": null,
+   "cluster": null,
+   "size": {
+    "weight": 0.12623963074445432,
+    "dollars": 883.6774152111802,
+    "capped": false
+   },
+   "earnings": {
+    "date": "2026-11-03",
+    "sessions": 25
+   },
    "verdict": "neutral",
    "why": [
     "%B 0.32 \u2014 no measured edge either way"
@@ -2382,19 +3573,44 @@
     "lower": 226.73028598652573
    },
    "vs_sma20": -0.038661318121184673,
-   "vs_sma200": -0.07201542025414442,
-   "range_pos": 0.4443317527162421,
+   "vs_sma200": -0.07201541783114607,
+   "range_pos": 0.4443317884034824,
    "range_n": 252,
-   "atr_pct": 0.05166847964116249,
+   "atr_pct": 0.051668479620953306,
    "dollar_volume": 1171284615.4785156,
    "hold": {
     "n": 1545,
     "n_independent": 4,
     "positive": 0.8006472491909385,
-    "p10": -0.26100073502101206,
-    "median": 1.442085074224352
+    "p10": -0.2610007565201512,
+    "median": 1.4420839865635204
+   },
+   "dip_history": {
+    "n": 283,
+    "episodes": 25,
+    "horizon": 60,
+    "win_rate": 0.8,
+    "win_ci": [
+     0.6086866446346177,
+     0.9113954589934752
+    ],
+    "median": 0.16804232684678766,
+    "p10": -0.16180861500555932,
+    "worst": -0.38287904342631984,
+    "cvar10": -0.3391667955443819,
+    "top_share": 0.14959633440052497
    },
    "spike": null,
+   "cluster": "power",
+   "size": {
+    "weight": 0.09677079791549222,
+    "dollars": 677.3955854084455,
+    "capped": false
+   },
+   "earnings": {
+    "date": "2026-10-21",
+    "sessions": 16
+   },
    "verdict": "neutral",
    "why": [
     "%B 0.32 \u2014 no measured edge either way"
@@ -2422,13 +3638,38 @@
    "atr_pct": 0.04291045825717651,
    "dollar_volume": 609692954.6348572,
    "hold": {
-    "n": 2008,
+    "n": 2007,
     "n_independent": 4,
-    "positive": 0.6733067729083665,
+    "positive": 0.6731439960139511,
     "p10": -0.2869745375948488,
-    "median": 0.26521670726997937
+    "median": 0.26349673002100227
+   },
+   "dip_history": {
+    "n": 496,
+    "episodes": 33,
+    "horizon": 60,
+    "win_rate": 0.696969696969697,
+    "win_ci": [
+     0.5266154602526555,
+     0.8262465218545277
+    ],
+    "median": 0.0768042014021093,
+    "p10": -0.15564665078948736,
+    "worst": -0.40162636571304666,
+    "cvar10": -0.3448362776141611,
+    "top_share": 0.10107545913728934
    },
    "spike": null,
+   "cluster": null,
+   "size": {
+    "weight": 0.11652171062898824,
+    "dollars": 815.6519744029176,
+    "capped": false
+   },
+   "earnings": {
+    "date": "2026-08-27",
+    "sessions": null
+   },
    "verdict": "neutral",
    "why": [
     "%B 0.33 \u2014 no measured edge either way"
@@ -2462,7 +3703,32 @@
     "p10": -0.4278790156334361,
     "median": 0.34212703876234296
    },
+   "dip_history": {
+    "n": 419,
+    "episodes": 24,
+    "horizon": 60,
+    "win_rate": 0.5416666666666666,
+    "win_ci": [
+     0.35074553553106635,
+     0.7210894164831857
+    ],
+    "median": 0.045925940996334846,
+    "p10": -0.2370471606056369,
+    "worst": -0.37914739191096714,
+    "cvar10": -0.35425524761907334,
+    "top_share": 0.17413169769953354
+   },
    "spike": null,
+   "cluster": null,
+   "size": {
+    "weight": 0.2,
+    "dollars": 1400.0,
+    "capped": true
+   },
+   "earnings": {
+    "date": "2026-11-18",
+    "sessions": 36
+   },
    "verdict": "neutral",
    "why": [
     "%B 0.35 \u2014 no measured edge either way"
@@ -2484,19 +3750,44 @@
     "lower": 167.96562101146364
    },
    "vs_sma20": -0.0217661269973638,
-   "vs_sma200": -0.11094698046670604,
+   "vs_sma200": -0.1109469791027502,
    "range_pos": 0.4179616348630055,
    "range_n": 252,
-   "atr_pct": 0.030672116926181103,
+   "atr_pct": 0.03067211694330447,
    "dollar_volume": 310960510.27145386,
    "hold": {
-    "n": 2008,
+    "n": 2007,
     "n_independent": 4,
-    "positive": 0.874003984063745,
+    "positive": 0.8739412057797707,
     "p10": -0.06132202344170601,
-    "median": 0.48844945657412353
+    "median": 0.4883494786949518
+   },
+   "dip_history": {
+    "n": 416,
+    "episodes": 30,
+    "horizon": 60,
+    "win_rate": 0.6333333333333333,
+    "win_ci": [
+     0.45513246433604937,
+     0.7812629779598231
+    ],
+    "median": 0.08204074729318744,
+    "p10": -0.18148612946237597,
+    "worst": -0.21696414979073597,
+    "cvar10": -0.2003489321960312,
+    "top_share": 0.13895803801011888
    },
    "spike": null,
+   "cluster": null,
+   "size": {
+    "weight": 0.16301450627754824,
+    "dollars": 1141.1015439428377,
+    "capped": false
+   },
+   "earnings": {
+    "date": "2026-10-28",
+    "sessions": 21
+   },
    "verdict": "neutral",
    "why": [
     "%B 0.35 \u2014 no measured edge either way"
@@ -2524,13 +3815,38 @@
    "atr_pct": 0.07229192981218399,
    "dollar_volume": 1590923195.8740234,
    "hold": {
-    "n": 2008,
+    "n": 2007,
     "n_independent": 4,
-    "positive": 0.6752988047808764,
+    "positive": 0.6751370204285002,
     "p10": -0.4348517575024309,
-    "median": 0.2783245646516992
+    "median": 0.278227687838666
+   },
+   "dip_history": {
+    "n": 420,
+    "episodes": 29,
+    "horizon": 60,
+    "win_rate": 0.5172413793103449,
+    "win_ci": [
+     0.3443073797056916,
+     0.6861418066920478
+    ],
+    "median": 0.03919213516794562,
+    "p10": -0.24291819054077368,
+    "worst": -0.2972508536163222,
+    "cvar10": -0.26405682805954817,
+    "top_share": 0.1481988629816979
    },
    "spike": null,
+   "cluster": "equipment",
+   "size": {
+    "weight": 0.06916401336899028,
+    "dollars": 484.14809358293195,
+    "capped": false
+   },
+   "earnings": {
+    "date": "2026-11-04",
+    "sessions": 26
+   },
    "verdict": "neutral",
    "why": [
     "%B 0.38 \u2014 no measured edge either way"
@@ -2552,19 +3868,41 @@
     "lower": 34.472408598165124
    },
    "vs_sma20": -0.004851080276709552,
-   "vs_sma200": -0.04735000674550549,
+   "vs_sma200": -0.04735000576002357,
    "range_pos": 0.3275486429079046,
    "range_n": 252,
-   "atr_pct": 0.015380915170049237,
+   "atr_pct": 0.01538091517004516,
    "dollar_volume": 24516664.07852173,
    "hold": {
-    "n": 2008,
+    "n": 2007,
     "n_independent": 4,
-    "positive": 0.6862549800796812,
-    "p10": -0.28195826637329524,
-    "median": 0.18833922250540214
+    "positive": 0.6860986547085202,
+    "p10": -0.2819584032286878,
+    "median": 0.18782001212054622
+   },
+   "dip_history": {
+    "n": 448,
+    "episodes": 29,
+    "horizon": 60,
+    "win_rate": 0.5517241379310345,
+    "win_ci": [
+     0.37547667068067625,
+     0.715870888512542
+    ],
+    "median": 0.03601487941380599,
+    "p10": -0.18330901753774287,
+    "worst": -0.2416652170151744,
+    "cvar10": -0.2074251127609897,
+    "top_share": 0.16575239161020147
    },
    "spike": null,
+   "cluster": "humanoid ETF",
+   "size": {
+    "weight": 0.2,
+    "dollars": 1400.0,
+    "capped": true
+   },
+   "earnings": null,
    "verdict": "neutral",
    "why": [
     "%B 0.40 \u2014 no measured edge either way"
@@ -2592,13 +3930,38 @@
    "atr_pct": 0.026194926246416797,
    "dollar_volume": 321650373.28300476,
    "hold": {
-    "n": 2008,
+    "n": 2007,
     "n_independent": 4,
-    "positive": 0.6379482071713147,
+    "positive": 0.637767812655705,
     "p10": -0.3828753188824897,
-    "median": 0.3158664197033414
+    "median": 0.3138242330461245
+   },
+   "dip_history": {
+    "n": 453,
+    "episodes": 31,
+    "horizon": 60,
+    "win_rate": 0.5806451612903226,
+    "win_ci": [
+     0.40765964352020967,
+     0.7358469692645074
+    ],
+    "median": 0.07579793628927733,
+    "p10": -0.16424068462430874,
+    "worst": -0.30914542348418195,
+    "cvar10": -0.2664960721135663,
+    "top_share": 0.12383647548268603
    },
    "spike": null,
+   "cluster": null,
+   "size": {
+    "weight": 0.1908766588218186,
+    "dollars": 1336.1366117527302,
+    "capped": false
+   },
+   "earnings": {
+    "date": "2026-10-29",
+    "sessions": 22
+   },
    "verdict": "neutral",
    "why": [
     "%B 0.42 \u2014 no measured edge either way"
@@ -2626,13 +3989,38 @@
    "atr_pct": 0.02106034165888282,
    "dollar_volume": 173347499.7493744,
    "hold": {
-    "n": 2008,
+    "n": 2007,
     "n_independent": 4,
-    "positive": 0.9427290836653387,
-    "p10": 0.05412670175952772,
+    "positive": 0.942700548081714,
+    "p10": 0.05412651082159492,
     "median": 0.35722144182710025
    },
+   "dip_history": {
+    "n": 415,
+    "episodes": 30,
+    "horizon": 60,
+    "win_rate": 0.5666666666666667,
+    "win_ci": [
+     0.3919700954540873,
+     0.7262276256938489
+    ],
+    "median": 0.02604402962880914,
+    "p10": -0.05604716216473116,
+    "worst": -0.25174953053517246,
+    "cvar10": -0.12926713147083221,
+    "top_share": 0.1225835681626297
+   },
    "spike": null,
+   "cluster": null,
+   "size": {
+    "weight": 0.2,
+    "dollars": 1400.0,
+    "capped": true
+   },
+   "earnings": {
+    "date": "2026-08-04",
+    "sessions": null
+   },
    "verdict": "neutral",
    "why": [
     "%B 0.43 \u2014 no measured edge either way"
@@ -2666,7 +4054,32 @@
     "p10": null,
     "median": null
    },
+   "dip_history": {
+    "n": 266,
+    "episodes": 18,
+    "horizon": 60,
+    "win_rate": 0.4444444444444444,
+    "win_ci": [
+     0.24559231101389126,
+     0.6628393057174837
+    ],
+    "median": -0.007035145343323279,
+    "p10": -0.12133075945651306,
+    "worst": -0.16379921548319354,
+    "cvar10": -0.1425649874698533,
+    "top_share": 0.341036341627195
+   },
    "spike": null,
+   "cluster": "humanoid",
+   "size": {
+    "weight": 0.11463520251286428,
+    "dollars": 802.44641759005,
+    "capped": false
+   },
+   "earnings": {
+    "date": "2026-11-16",
+    "sessions": 34
+   },
    "verdict": "no_hold_data",
    "why": [
     "hold gate not measurable \u2014 under 4 independent 2-year windows of history"
@@ -2688,19 +4101,44 @@
     "lower": 68.29195841039713
    },
    "vs_sma20": -0.006317545340772557,
-   "vs_sma200": 0.1427572776667596,
+   "vs_sma200": 0.14275727697448737,
    "range_pos": 0.8215095895796104,
    "range_n": 252,
-   "atr_pct": 0.03788456371759178,
+   "atr_pct": 0.0378845637147935,
    "dollar_volume": 834949703.4568787,
    "hold": {
-    "n": 2008,
+    "n": 2007,
     "n_independent": 4,
-    "positive": 0.7061752988047809,
-    "p10": -0.27334094945117837,
-    "median": 0.20968229796275084
+    "positive": 0.706028898854011,
+    "p10": -0.2733406240145979,
+    "median": 0.20945821511742801
+   },
+   "dip_history": {
+    "n": 489,
+    "episodes": 31,
+    "horizon": 60,
+    "win_rate": 0.5483870967741935,
+    "win_ci": [
+     0.37771879603669134,
+     0.7083851716341388
+    ],
+    "median": 0.05197688030532266,
+    "p10": -0.19374564820245532,
+    "worst": -0.38722711435699775,
+    "cvar10": -0.3238548931449371,
+    "top_share": 0.15761980104420406
    },
    "spike": null,
+   "cluster": "materials",
+   "size": {
+    "weight": 0.1319798754353229,
+    "dollars": 923.8591280472604,
+    "capped": false
+   },
+   "earnings": {
+    "date": "2026-10-22",
+    "sessions": 17
+   },
    "verdict": "neutral",
    "why": [
     "%B 0.44 \u2014 no measured edge either way"
@@ -2728,13 +4166,35 @@
    "atr_pct": 0.020044115534808865,
    "dollar_volume": 11842234.613800049,
    "hold": {
-    "n": 2008,
+    "n": 2007,
     "n_independent": 4,
-    "positive": 0.7629482071713147,
+    "positive": 0.7628300946686597,
     "p10": -0.3334716953182757,
-    "median": 0.4640035455980076
+    "median": 0.46377271904526807
+   },
+   "dip_history": {
+    "n": 420,
+    "episodes": 30,
+    "horizon": 60,
+    "win_rate": 0.6,
+    "win_ci": [
+     0.42320052498273836,
+     0.7540960567391659
+    ],
+    "median": 0.06857308343947266,
+    "p10": -0.14518801355597988,
+    "worst": -0.21736164627806953,
+    "cvar10": -0.1881370613524723,
+    "top_share": 0.14806487765289392
    },
    "spike": null,
+   "cluster": "humanoid ETF",
+   "size": {
+    "weight": 0.2,
+    "dollars": 1400.0,
+    "capped": true
+   },
+   "earnings": null,
    "verdict": "neutral",
    "why": [
     "%B 0.45 \u2014 no measured edge either way"
@@ -2768,7 +4228,29 @@
     "p10": null,
     "median": null
    },
+   "dip_history": {
+    "n": 93,
+    "episodes": 7,
+    "horizon": 60,
+    "win_rate": 0.5714285714285714,
+    "win_ci": [
+     0.2504542304090258,
+     0.8417830777373732
+    ],
+    "median": 0.06464334317976728,
+    "p10": -0.19379482152332472,
+    "worst": -0.19379482152332472,
+    "cvar10": -0.19379482152332472,
+    "top_share": 0.5059569255498166
+   },
    "spike": null,
+   "cluster": "humanoid ETF",
+   "size": {
+    "weight": 0.2,
+    "dollars": 1400.0,
+    "capped": true
+   },
+   "earnings": null,
    "verdict": "illiquid",
    "why": [
     "below the liquidity gate \u2014 limit orders only, size in days-to-exit"
@@ -2796,13 +4278,38 @@
    "atr_pct": 0.06554964361173966,
    "dollar_volume": 734853027.507019,
    "hold": {
-    "n": 2008,
+    "n": 2007,
     "n_independent": 4,
-    "positive": 0.7584661354581673,
+    "positive": 0.7583457897359243,
     "p10": -0.15595673224502915,
     "median": 0.4951413156662072
    },
+   "dip_history": {
+    "n": 431,
+    "episodes": 30,
+    "horizon": 60,
+    "win_rate": 0.6333333333333333,
+    "win_ci": [
+     0.45513246433604937,
+     0.7812629779598231
+    ],
+    "median": 0.08302066055814095,
+    "p10": -0.12536196091166518,
+    "worst": -0.25279617884250394,
+    "cvar10": -0.2048416376078881,
+    "top_share": 0.2195433953748325
+   },
    "spike": null,
+   "cluster": "network",
+   "size": {
+    "weight": 0.07627806536395144,
+    "dollars": 533.9464575476601,
+    "capped": false
+   },
+   "earnings": {
+    "date": "2026-09-03",
+    "sessions": null
+   },
    "verdict": "neutral",
    "why": [
     "%B 0.46 \u2014 no measured edge either way"
@@ -2824,19 +4331,44 @@
     "lower": 30.374995639122275
    },
    "vs_sma20": -0.0018833271496545567,
-   "vs_sma200": 0.08663696841845292,
-   "range_pos": 0.7941821348176066,
+   "vs_sma200": 0.08663696806051302,
+   "range_pos": 0.7941821797337824,
    "range_n": 252,
-   "atr_pct": 0.02469502932418253,
+   "atr_pct": 0.024695029324107543,
    "dollar_volume": 341818710.9967232,
    "hold": {
-    "n": 2008,
+    "n": 2007,
     "n_independent": 4,
-    "positive": 0.6977091633466136,
-    "p10": -0.09277947593158642,
-    "median": 0.21505982932579792
+    "positive": 0.6975585450921774,
+    "p10": -0.09277970602445695,
+    "median": 0.21502952776472406
+   },
+   "dip_history": {
+    "n": 432,
+    "episodes": 29,
+    "horizon": 60,
+    "win_rate": 0.5517241379310345,
+    "win_ci": [
+     0.37547667068067625,
+     0.715870888512542
+    ],
+    "median": 0.013740055884700286,
+    "p10": -0.06297084359338989,
+    "worst": -0.12629846841353254,
+    "cvar10": -0.09892713901140741,
+    "top_share": 0.197900968471969
    },
    "spike": null,
+   "cluster": null,
+   "size": {
+    "weight": 0.2,
+    "dollars": 1400.0,
+    "capped": true
+   },
+   "earnings": {
+    "date": "2026-10-26",
+    "sessions": 19
+   },
    "verdict": "neutral",
    "why": [
     "%B 0.47 \u2014 no measured edge either way"
@@ -2858,19 +4390,41 @@
     "lower": 370.4912434696159
    },
    "vs_sma20": -0.00034336721236138956,
-   "vs_sma200": 0.06577244367538637,
-   "range_pos": 0.897822288014656,
+   "vs_sma200": 0.0657724409084619,
+   "range_pos": 0.8978222454909645,
    "range_n": 252,
-   "atr_pct": 0.008783821746688328,
+   "atr_pct": 0.00878382180664904,
    "dollar_volume": 1071740709.5001221,
    "hold": {
-    "n": 2008,
+    "n": 2007,
     "n_independent": 4,
-    "positive": 0.9252988047808764,
-    "p10": 0.013715084254420251,
-    "median": 0.3069468361425103
+    "positive": 0.9252615844544095,
+    "p10": 0.01371500774492529,
+    "median": 0.3062986245373922
+   },
+   "dip_history": {
+    "n": 346,
+    "episodes": 30,
+    "horizon": 60,
+    "win_rate": 0.8,
+    "win_ci": [
+     0.6269395261897256,
+     0.9049502189759876
+    ],
+    "median": 0.05773915024444998,
+    "p10": -0.0982642669852336,
+    "worst": -0.14786315557470597,
+    "cvar10": -0.12448683569154588,
+    "top_share": 0.11240607858451833
    },
    "spike": null,
+   "cluster": "index",
+   "size": {
+    "weight": 0.2,
+    "dollars": 1400.0,
+    "capped": true
+   },
+   "earnings": null,
    "verdict": "neutral",
    "why": [
     "%B 0.49 \u2014 no measured edge either way"
@@ -2898,13 +4452,38 @@
    "atr_pct": 0.03895962397910633,
    "dollar_volume": 53880749.76196289,
    "hold": {
-    "n": 2008,
+    "n": 2007,
     "n_independent": 4,
-    "positive": 0.7534860557768924,
+    "positive": 0.7533632286995515,
     "p10": -0.21723422429220185,
-    "median": 0.3329987577829967
+    "median": 0.33228774139948025
+   },
+   "dip_history": {
+    "n": 413,
+    "episodes": 33,
+    "horizon": 60,
+    "win_rate": 0.6666666666666666,
+    "win_ci": [
+     0.4960758179994997,
+     0.8024997053219629
+    ],
+    "median": 0.09677425805289541,
+    "p10": -0.16251112607151852,
+    "worst": -0.29275181233602765,
+    "cvar10": -0.2245756055319433,
+    "top_share": 0.11176811690780011
    },
    "spike": null,
+   "cluster": "humanoid",
+   "size": {
+    "weight": 0.12833799429587545,
+    "dollars": 898.3659600711281,
+    "capped": false
+   },
+   "earnings": {
+    "date": "2026-11-03",
+    "sessions": 25
+   },
    "verdict": "neutral",
    "why": [
     "%B 0.49 \u2014 no measured edge either way"
@@ -2932,13 +4511,38 @@
    "atr_pct": 0.02317783046225875,
    "dollar_volume": 570214859.4970703,
    "hold": {
-    "n": 2008,
+    "n": 2007,
     "n_independent": 4,
-    "positive": 0.9178286852589641,
+    "positive": 0.9177877428998505,
     "p10": 0.016949181322599483,
-    "median": 0.3704665773838949
+    "median": 0.3701550387596899
+   },
+   "dip_history": {
+    "n": 405,
+    "episodes": 30,
+    "horizon": 60,
+    "win_rate": 0.6,
+    "win_ci": [
+     0.42320052498273836,
+     0.7540960567391659
+    ],
+    "median": 0.02695302917670328,
+    "p10": -0.0852680409667611,
+    "worst": -0.1378817330076093,
+    "cvar10": -0.1192753752363418,
+    "top_share": 0.17372549871688445
    },
    "spike": null,
+   "cluster": null,
+   "size": {
+    "weight": 0.2,
+    "dollars": 1400.0,
+    "capped": true
+   },
+   "earnings": {
+    "date": "2026-11-02",
+    "sessions": 24
+   },
    "verdict": "neutral",
    "why": [
     "%B 0.52 \u2014 no measured edge either way"
@@ -2965,16 +4569,41 @@
    "vs_sma200": 0.014206343445634317,
    "range_pos": 0.6426969992131152,
    "range_n": 252,
-   "atr_pct": 0.024704773173337538,
+   "atr_pct": 0.024704773173337507,
    "dollar_volume": 8475431390.234375,
    "hold": {
-    "n": 2008,
+    "n": 2007,
     "n_independent": 4,
-    "positive": 0.8999003984063745,
-    "p10": -0.0013656279326003107,
-    "median": 0.452901229664199
+    "positive": 0.8998505231689088,
+    "p10": -0.0013658570813378512,
+    "median": 0.45281302005899526
+   },
+   "dip_history": {
+    "n": 370,
+    "episodes": 31,
+    "horizon": 60,
+    "win_rate": 0.7096774193548387,
+    "win_ci": [
+     0.5340734004245933,
+     0.8390437928156713
+    ],
+    "median": 0.04738517082751126,
+    "p10": -0.0779102961224366,
+    "worst": -0.09305860067685312,
+    "cvar10": -0.08574622861325125,
+    "top_share": 0.1579257471757005
    },
    "spike": null,
+   "cluster": "platform",
+   "size": {
+    "weight": 0.2,
+    "dollars": 1400.0,
+    "capped": true
+   },
+   "earnings": {
+    "date": "2026-10-28",
+    "sessions": 21
+   },
    "verdict": "neutral",
    "why": [
     "%B 0.53 \u2014 no measured edge either way"
@@ -2999,16 +4628,41 @@
    "vs_sma200": -0.16845117996284265,
    "range_pos": 0.25861583799148946,
    "range_n": 252,
-   "atr_pct": 0.03844297749370493,
+   "atr_pct": 0.03844297749370499,
    "dollar_volume": 196831693.83010864,
    "hold": {
-    "n": 2008,
+    "n": 2007,
     "n_independent": 4,
-    "positive": 0.795816733067729,
-    "p10": -0.07070028289526298,
-    "median": 0.1650975022221639
+    "positive": 0.7957149975087194,
+    "p10": -0.07070005729592643,
+    "median": 0.16466828829631663
+   },
+   "dip_history": {
+    "n": 447,
+    "episodes": 30,
+    "horizon": 60,
+    "win_rate": 0.5,
+    "win_ci": [
+     0.33153851227173764,
+     0.6684614877282624
+    ],
+    "median": 0.04693512314790338,
+    "p10": -0.1867819915947403,
+    "worst": -0.2741571572918823,
+    "cvar10": -0.24781957545260302,
+    "top_share": 0.1102668238440223
    },
    "spike": null,
+   "cluster": "humanoid",
+   "size": {
+    "weight": 0.1300627663613919,
+    "dollars": 910.4393645297434,
+    "capped": false
+   },
+   "earnings": {
+    "date": "2026-10-28",
+    "sessions": 21
+   },
    "verdict": "neutral",
    "why": [
     "%B 0.54 \u2014 no measured edge either way"
@@ -3030,10 +4684,10 @@
     "lower": 61.583025752255125
    },
    "vs_sma20": 0.005533592896645123,
-   "vs_sma200": -0.06760377696704711,
-   "range_pos": 0.25641465406588093,
+   "vs_sma200": -0.0676037779602654,
+   "range_pos": 0.2564145856187233,
    "range_n": 252,
-   "atr_pct": 0.023017320437457852,
+   "atr_pct": 0.023017320434875164,
    "dollar_volume": 230615285.7269287,
    "hold": {
     "n": 0,
@@ -3042,7 +4696,32 @@
     "p10": null,
     "median": null
    },
+   "dip_history": {
+    "n": 191,
+    "episodes": 12,
+    "horizon": 60,
+    "win_rate": 0.6666666666666666,
+    "win_ci": [
+     0.3906175873976139,
+     0.8618821601026385
+    ],
+    "median": 0.06399038570774596,
+    "p10": -0.17816736063841476,
+    "worst": -0.19884612549809622,
+    "cvar10": -0.19884612549809622,
+    "top_share": 0.26032793638895924
+   },
    "spike": null,
+   "cluster": null,
+   "size": {
+    "weight": 0.2,
+    "dollars": 1400.0,
+    "capped": true
+   },
+   "earnings": {
+    "date": "2026-10-28",
+    "sessions": 21
+   },
    "verdict": "no_hold_data",
    "why": [
     "hold gate not measurable \u2014 under 4 independent 2-year windows of history"
@@ -3076,7 +4755,29 @@
     "p10": null,
     "median": null
    },
+   "dip_history": {
+    "n": 41,
+    "episodes": 3,
+    "horizon": 60,
+    "win_rate": 0.6666666666666666,
+    "win_ci": [
+     0.2076549551264879,
+     0.9385096847238394
+    ],
+    "median": 0.061254208706517765,
+    "p10": -0.08273526031020251,
+    "worst": -0.08273526031020251,
+    "cvar10": -0.08273526031020251,
+    "top_share": 0.6287368181734982
+   },
    "spike": null,
+   "cluster": "humanoid ETF",
+   "size": {
+    "weight": 0.2,
+    "dollars": 1400.0,
+    "capped": true
+   },
+   "earnings": null,
    "verdict": "no_hold_data",
    "why": [
     "hold gate not measurable \u2014 under 4 independent 2-year windows of history"
@@ -3099,19 +4800,44 @@
     "lower": 412.4083043898363
    },
    "vs_sma20": 0.00787266948326959,
-   "vs_sma200": 0.14891479835605903,
+   "vs_sma200": 0.14891480102247745,
    "range_pos": 0.5420677101139564,
    "range_n": 252,
-   "atr_pct": 0.06095031269906447,
+   "atr_pct": 0.06095031272662877,
    "dollar_volume": 3202879896.798706,
    "hold": {
-    "n": 2008,
+    "n": 2007,
     "n_independent": 4,
-    "positive": 0.5303784860557769,
-    "p10": -0.4355738191638032,
-    "median": 0.05891618085427397
+    "positive": 0.5301444942700548,
+    "p10": -0.43557381465139866,
+    "median": 0.05891606680934447
+   },
+   "dip_history": {
+    "n": 425,
+    "episodes": 29,
+    "horizon": 60,
+    "win_rate": 0.4827586206896552,
+    "win_ci": [
+     0.3138581933079522,
+     0.6556926202943085
+    ],
+    "median": -0.02010365522796498,
+    "p10": -0.24803688786278333,
+    "worst": -0.3354272939211046,
+    "cvar10": -0.28073132899417313,
+    "top_share": 0.272353935381298
    },
    "spike": null,
+   "cluster": "memory",
+   "size": {
+    "weight": 0.08203403356477833,
+    "dollars": 574.2382349534483,
+    "capped": false
+   },
+   "earnings": {
+    "date": "2026-11-05",
+    "sessions": 27
+   },
    "verdict": "neutral",
    "why": [
     "%B 0.55 \u2014 no measured edge either way"
@@ -3140,13 +4866,38 @@
    "atr_pct": 0.06748089062972688,
    "dollar_volume": 3545006701.0375977,
    "hold": {
-    "n": 2008,
+    "n": 2007,
     "n_independent": 4,
-    "positive": 0.6573705179282868,
+    "positive": 0.6571998006975586,
     "p10": -0.459803097296404,
-    "median": 0.24604541627982401
+    "median": 0.2456287094437486
+   },
+   "dip_history": {
+    "n": 474,
+    "episodes": 33,
+    "horizon": 60,
+    "win_rate": 0.6363636363636364,
+    "win_ci": [
+     0.46615872621534094,
+     0.7781303383204013
+    ],
+    "median": 0.027999979654947937,
+    "p10": -0.12073666592853405,
+    "worst": -0.3660462516006452,
+    "cvar10": -0.23760950785313986,
+    "top_share": 0.249471902592924
    },
    "spike": null,
+   "cluster": "network",
+   "size": {
+    "weight": 0.07409505051489917,
+    "dollars": 518.6653536042942,
+    "capped": false
+   },
+   "earnings": {
+    "date": "2026-11-05",
+    "sessions": 27
+   },
    "verdict": "neutral",
    "why": [
     "%B 0.55 \u2014 no measured edge either way"
@@ -3168,19 +4919,44 @@
     "lower": 451.3679809301868
    },
    "vs_sma20": 0.005179301663761793,
-   "vs_sma200": -0.02079982966819538,
+   "vs_sma200": -0.02079983307758726,
    "range_pos": 0.5428565680024374,
    "range_n": 252,
-   "atr_pct": 0.016139282876654927,
+   "atr_pct": 0.01613928287652484,
    "dollar_volume": 922101190.6005859,
    "hold": {
-    "n": 2008,
+    "n": 2007,
     "n_independent": 4,
-    "positive": 0.99800796812749,
-    "p10": 0.17815956308459735,
-    "median": 0.3997179069302683
+    "positive": 0.9980069755854509,
+    "p10": 0.17815973019584974,
+    "median": 0.39918831347703065
+   },
+   "dip_history": {
+    "n": 379,
+    "episodes": 31,
+    "horizon": 60,
+    "win_rate": 0.7419354838709677,
+    "win_ci": [
+     0.5675352757228489,
+     0.8629845626313024
+    ],
+    "median": 0.058369419381809395,
+    "p10": -0.032591529373385164,
+    "worst": -0.1075891610533597,
+    "cvar10": -0.08085359712963658,
+    "top_share": 0.1135112001046699
    },
    "spike": null,
+   "cluster": null,
+   "size": {
+    "weight": 0.2,
+    "dollars": 1400.0,
+    "capped": true
+   },
+   "earnings": {
+    "date": "2026-10-30",
+    "sessions": 23
+   },
    "verdict": "neutral",
    "why": [
     "%B 0.57 \u2014 no measured edge either way"
@@ -3202,19 +4978,41 @@
     "lower": 752.2600612492374
    },
    "vs_sma20": 0.002193175476316922,
-   "vs_sma200": 0.07035352937891193,
+   "vs_sma200": 0.07035352663892658,
    "range_pos": 0.9297186598092492,
    "range_n": 252,
-   "atr_pct": 0.00871323602029186,
-   "dollar_volume": 32576718317.816162,
+   "atr_pct": 0.008713236020832725,
+   "dollar_volume": 32648681069.244385,
    "hold": {
-    "n": 2008,
+    "n": 2007,
     "n_independent": 4,
-    "positive": 0.9800796812749004,
-    "p10": 0.053689800542075394,
-    "median": 0.3171137936218491
+    "positive": 0.9800697558545092,
+    "p10": 0.053689964956432856,
+    "median": 0.3165416427441414
+   },
+   "dip_history": {
+    "n": 336,
+    "episodes": 27,
+    "horizon": 60,
+    "win_rate": 0.7407407407407407,
+    "win_ci": [
+     0.553210695973843,
+     0.8682979157713322
+    ],
+    "median": 0.046874473023454266,
+    "p10": -0.11114842462222374,
+    "worst": -0.14427394889867795,
+    "cvar10": -0.12813699654591196,
+    "top_share": 0.11451564680039776
    },
    "spike": null,
+   "cluster": "index",
+   "size": {
+    "weight": 0.2,
+    "dollars": 1400.0,
+    "capped": true
+   },
+   "earnings": null,
    "verdict": "neutral",
    "why": [
     "%B 0.57 \u2014 no measured edge either way"
@@ -3242,13 +5040,38 @@
    "atr_pct": 0.02183037033556235,
    "dollar_volume": 517070354.26483154,
    "hold": {
-    "n": 2008,
+    "n": 2007,
     "n_independent": 4,
     "positive": 1.0,
-    "p10": 0.27728966542546885,
+    "p10": 0.2779896023753772,
     "median": 0.5282469160993515
    },
+   "dip_history": {
+    "n": 412,
+    "episodes": 30,
+    "horizon": 60,
+    "win_rate": 0.7333333333333333,
+    "win_ci": [
+     0.5555169795568831,
+     0.8581750444608938
+    ],
+    "median": 0.07848991503593461,
+    "p10": -0.05880085903333465,
+    "worst": -0.39488411806685164,
+    "cvar10": -0.25218959286688886,
+    "top_share": 0.2040958320800053
+   },
    "spike": null,
+   "cluster": null,
+   "size": {
+    "weight": 0.2,
+    "dollars": 1400.0,
+    "capped": true
+   },
+   "earnings": {
+    "date": "2026-10-28",
+    "sessions": 21
+   },
    "verdict": "neutral",
    "why": [
     "%B 0.58 \u2014 no measured edge either way"
@@ -3283,7 +5106,32 @@
     "p10": null,
     "median": null
    },
+   "dip_history": {
+    "n": 22,
+    "episodes": 4,
+    "horizon": 60,
+    "win_rate": 0.75,
+    "win_ci": [
+     0.3006360524426366,
+     0.9544139373553637
+    ],
+    "median": 1.9398673189460252,
+    "p10": -0.0023133672369405334,
+    "worst": -0.0023133672369405334,
+    "cvar10": -0.0023133672369405334,
+    "top_share": 0.37012237196423137
+   },
    "spike": null,
+   "cluster": "memory",
+   "size": {
+    "weight": 0.07638674667972484,
+    "dollars": 534.7072267580738,
+    "capped": false
+   },
+   "earnings": {
+    "date": "2026-10-29",
+    "sessions": 22
+   },
    "verdict": "no_hold_data",
    "why": [
     "hold gate not measurable \u2014 under 4 independent 2-year windows of history"
@@ -3318,7 +5166,32 @@
     "p10": null,
     "median": null
    },
+   "dip_history": {
+    "n": 118,
+    "episodes": 9,
+    "horizon": 60,
+    "win_rate": 0.6666666666666666,
+    "win_ci": [
+     0.35419734749908977,
+     0.879418401317257
+    ],
+    "median": 0.06284246149449779,
+    "p10": -0.32638278565650813,
+    "worst": -0.32638278565650813,
+    "cvar10": -0.32638278565650813,
+    "top_share": 0.5123686173997262
+   },
    "spike": null,
+   "cluster": "compute",
+   "size": {
+    "weight": 0.07142723154784182,
+    "dollars": 499.99062083489275,
+    "capped": false
+   },
+   "earnings": {
+    "date": "2026-11-04",
+    "sessions": 26
+   },
    "verdict": "no_hold_data",
    "why": [
     "hold gate not measurable \u2014 under 4 independent 2-year windows of history"
@@ -3340,19 +5213,44 @@
     "lower": 160.28130307776877
    },
    "vs_sma20": 0.02908493184572869,
-   "vs_sma200": 0.11783431911421371,
-   "range_pos": 0.5130096377975066,
+   "vs_sma200": 0.1178343183514654,
+   "range_pos": 0.5130096704884745,
    "range_n": 252,
-   "atr_pct": 0.04864213971865403,
+   "atr_pct": 0.04864213971736679,
    "dollar_volume": 1916703886.188507,
    "hold": {
-    "n": 2008,
+    "n": 2007,
     "n_independent": 4,
-    "positive": 0.7524900398406374,
-    "p10": -0.1355792004387787,
-    "median": 0.3900659222996048
+    "positive": 0.752366716492277,
+    "p10": -0.1355793912865092,
+    "median": 0.3900661119522284
+   },
+   "dip_history": {
+    "n": 477,
+    "episodes": 29,
+    "horizon": 60,
+    "win_rate": 0.5172413793103449,
+    "win_ci": [
+     0.3443073797056916,
+     0.6861418066920478
+    ],
+    "median": 0.0009946748913134407,
+    "p10": -0.20451131541609513,
+    "worst": -0.23002625745495175,
+    "cvar10": -0.21773338646753307,
+    "top_share": 0.2099177678301606
    },
    "spike": null,
+   "cluster": null,
+   "size": {
+    "weight": 0.10279153073964879,
+    "dollars": 719.5407151775415,
+    "capped": false
+   },
+   "earnings": {
+    "date": "2026-11-04",
+    "sessions": 26
+   },
    "verdict": "neutral",
    "why": [
     "%B 0.62 \u2014 no measured edge either way"
@@ -3380,13 +5278,38 @@
    "atr_pct": 0.03886148018672888,
    "dollar_volume": 369620378.96728516,
    "hold": {
-    "n": 2008,
+    "n": 2007,
     "n_independent": 4,
-    "positive": 0.7973107569721115,
+    "positive": 0.7972097658196313,
     "p10": -0.08421161009522338,
     "median": 0.4199677200129366
    },
+   "dip_history": {
+    "n": 459,
+    "episodes": 32,
+    "horizon": 60,
+    "win_rate": 0.53125,
+    "win_ci": [
+     0.3644923793257382,
+     0.6913087009831766
+    ],
+    "median": 0.03785814016579714,
+    "p10": -0.2071460223255629,
+    "worst": -0.2543880744717294,
+    "cvar10": -0.22927624239306008,
+    "top_share": 0.1698633478026637
+   },
    "spike": null,
+   "cluster": null,
+   "size": {
+    "weight": 0.1286621090080735,
+    "dollars": 900.6347630565145,
+    "capped": false
+   },
+   "earnings": {
+    "date": "2026-10-29",
+    "sessions": 22
+   },
    "verdict": "neutral",
    "why": [
     "%B 0.63 \u2014 no measured edge either way"
@@ -3414,13 +5337,38 @@
    "atr_pct": 0.025668411888082245,
    "dollar_volume": 286700631.161499,
    "hold": {
-    "n": 2008,
+    "n": 2007,
     "n_independent": 4,
-    "positive": 0.7689243027888446,
+    "positive": 0.7688091679123069,
     "p10": -0.1371980924440097,
-    "median": 0.34892114503887894
+    "median": 0.3483166025553899
+   },
+   "dip_history": {
+    "n": 439,
+    "episodes": 32,
+    "horizon": 60,
+    "win_rate": 0.65625,
+    "win_ci": [
+     0.4831077350878594,
+     0.7958976664567146
+    ],
+    "median": 0.06545698900087449,
+    "p10": -0.1698838676242007,
+    "worst": -0.23011706419161015,
+    "cvar10": -0.2241564920608596,
+    "top_share": 0.09881620659645945
    },
    "spike": null,
+   "cluster": null,
+   "size": {
+    "weight": 0.19479194980198533,
+    "dollars": 1363.5436486138974,
+    "capped": false
+   },
+   "earnings": {
+    "date": "2026-11-02",
+    "sessions": 24
+   },
    "verdict": "neutral",
    "why": [
     "%B 0.64 \u2014 no measured edge either way"
@@ -3448,13 +5396,38 @@
    "atr_pct": 0.02490348208697406,
    "dollar_volume": 1018680916.6030884,
    "hold": {
-    "n": 2008,
+    "n": 2007,
     "n_independent": 4,
-    "positive": 0.953187250996016,
-    "p10": 0.04337186799034276,
-    "median": 0.255595159466278
+    "positive": 0.9531639262580966,
+    "p10": 0.04337180777416694,
+    "median": 0.25534662988447443
+   },
+   "dip_history": {
+    "n": 489,
+    "episodes": 31,
+    "horizon": 60,
+    "win_rate": 0.6129032258064516,
+    "win_ci": [
+     0.4382380114113197,
+     0.7626712464872843
+    ],
+    "median": 0.04880721758906037,
+    "p10": -0.06505044888281653,
+    "worst": -0.16508625762950935,
+    "cvar10": -0.15222855571356428,
+    "top_share": 0.11399290392239403
    },
    "spike": null,
+   "cluster": null,
+   "size": {
+    "weight": 0.2,
+    "dollars": 1400.0,
+    "capped": true
+   },
+   "earnings": {
+    "date": "2026-11-03",
+    "sessions": 25
+   },
    "verdict": "neutral",
    "why": [
     "%B 0.65 \u2014 no measured edge either way"
@@ -3479,7 +5452,7 @@
    "vs_sma200": 0.04199504953261379,
    "range_pos": 0.6415271194291066,
    "range_n": 252,
-   "atr_pct": 0.037850926377695854,
+   "atr_pct": 0.03785092637769574,
    "dollar_volume": 2194637235.9924316,
    "hold": {
     "n": 0,
@@ -3488,7 +5461,32 @@
     "p10": null,
     "median": null
    },
+   "dip_history": {
+    "n": 63,
+    "episodes": 7,
+    "horizon": 60,
+    "win_rate": 0.5714285714285714,
+    "win_ci": [
+     0.2504542304090258,
+     0.8417830777373732
+    ],
+    "median": 0.20721006253107777,
+    "p10": -0.029366036656657935,
+    "worst": -0.029366036656657935,
+    "cvar10": -0.029366036656657935,
+    "top_share": 0.5019767171586287
+   },
    "spike": null,
+   "cluster": "power",
+   "size": {
+    "weight": 0.13209716322679832,
+    "dollars": 924.6801425875882,
+    "capped": false
+   },
+   "earnings": {
+    "date": "2026-10-28",
+    "sessions": 21
+   },
    "verdict": "no_hold_data",
    "why": [
     "hold gate not measurable \u2014 under 4 independent 2-year windows of history"
@@ -3513,16 +5511,41 @@
    "vs_sma200": 0.07171535652680228,
    "range_pos": 0.7111953013811213,
    "range_n": 252,
-   "atr_pct": 0.020042746217986976,
+   "atr_pct": 0.020042746217987215,
    "dollar_volume": 404614115.86761475,
    "hold": {
-    "n": 2008,
+    "n": 2007,
     "n_independent": 4,
-    "positive": 0.9860557768924303,
-    "p10": 0.22393544558758394,
-    "median": 0.6179514567066258
+    "positive": 0.9860488290981565,
+    "p10": 0.22393563131292016,
+    "median": 0.6179503953671599
+   },
+   "dip_history": {
+    "n": 361,
+    "episodes": 30,
+    "horizon": 60,
+    "win_rate": 0.6666666666666666,
+    "win_ci": [
+     0.48779725813830266,
+     0.807697044731538
+    ],
+    "median": 0.09271621334786961,
+    "p10": -0.08376002018769846,
+    "worst": -0.21298753674622684,
+    "cvar10": -0.15460270595811595,
+    "top_share": 0.10609904716827656
    },
    "spike": null,
+   "cluster": null,
+   "size": {
+    "weight": 0.2,
+    "dollars": 1400.0,
+    "capped": true
+   },
+   "earnings": {
+    "date": "2026-12-17",
+    "sessions": 56
+   },
    "verdict": "neutral",
    "why": [
     "%B 0.67 \u2014 no measured edge either way"
@@ -3556,7 +5579,32 @@
     "p10": null,
     "median": null
    },
+   "dip_history": {
+    "n": 209,
+    "episodes": 13,
+    "horizon": 60,
+    "win_rate": 0.5384615384615384,
+    "win_ci": [
+     0.2914343243183205,
+     0.7679424569851186
+    ],
+    "median": 0.0008620064550595163,
+    "p10": -0.32006713354803684,
+    "worst": -0.39759034933277626,
+    "cvar10": -0.39759034933277626,
+    "top_share": 0.36859193685137637
+   },
    "spike": null,
+   "cluster": "compute",
+   "size": {
+    "weight": 0.06809565724889768,
+    "dollars": 476.66960074228376,
+    "capped": false
+   },
+   "earnings": {
+    "date": "2026-11-30",
+    "sessions": 43
+   },
    "verdict": "no_hold_data",
    "why": [
     "hold gate not measurable \u2014 under 4 independent 2-year windows of history"
@@ -3590,7 +5638,32 @@
     "p10": -0.3645177541045368,
     "median": 0.4727244067501424
    },
+   "dip_history": {
+    "n": 395,
+    "episodes": 26,
+    "horizon": 60,
+    "win_rate": 0.5769230769230769,
+    "win_ci": [
+     0.3894829692111983,
+     0.744558100972706
+    ],
+    "median": 0.09285665290513978,
+    "p10": -0.3420720830693975,
+    "worst": -0.46039298015536434,
+    "cvar10": -0.41317355050331145,
+    "top_share": 0.13450238636090042
+   },
    "spike": null,
+   "cluster": null,
+   "size": {
+    "weight": 0.0941915722917953,
+    "dollars": 659.3410060425671,
+    "capped": false
+   },
+   "earnings": {
+    "date": "2026-11-24",
+    "sessions": 40
+   },
    "verdict": "neutral",
    "why": [
     "%B 0.67 \u2014 no measured edge either way"
@@ -3612,19 +5685,44 @@
     "lower": 51.17531107242063
    },
    "vs_sma20": 0.015337203378781084,
-   "vs_sma200": 0.08202813937807951,
-   "range_pos": 0.42519276460374117,
+   "vs_sma200": 0.08202813814387078,
+   "range_pos": 0.42519282459263014,
    "range_n": 252,
-   "atr_pct": 0.03177547199793142,
+   "atr_pct": 0.03177547199816901,
    "dollar_volume": 600127474.8340607,
    "hold": {
-    "n": 2008,
+    "n": 2007,
     "n_independent": 4,
-    "positive": 0.5338645418326693,
-    "p10": -0.6955588940675635,
-    "median": 0.07947011932685055
+    "positive": 0.5336322869955157,
+    "p10": -0.6955589225942688,
+    "median": 0.07825219543287676
+   },
+   "dip_history": {
+    "n": 467,
+    "episodes": 30,
+    "horizon": 60,
+    "win_rate": 0.5,
+    "win_ci": [
+     0.33153851227173764,
+     0.6684614877282624
+    ],
+    "median": 0.0012160935546936535,
+    "p10": -0.22889689880722464,
+    "worst": -0.3359810805305945,
+    "cvar10": -0.29408420690636516,
+    "top_share": 0.16074697003327312
    },
    "spike": null,
+   "cluster": null,
+   "size": {
+    "weight": 0.15735407487536657,
+    "dollars": 1101.478524127566,
+    "capped": false
+   },
+   "earnings": {
+    "date": "2026-10-27",
+    "sessions": 20
+   },
    "verdict": "neutral",
    "why": [
     "%B 0.68 \u2014 no measured edge either way"
@@ -3646,19 +5744,44 @@
     "lower": 881.2251224440921
    },
    "vs_sma20": 0.013006118026313684,
-   "vs_sma200": -0.037137772991348794,
-   "range_pos": 0.31120343774221493,
+   "vs_sma200": -0.03713777513726302,
+   "range_pos": 0.31120360841921535,
    "range_n": 252,
-   "atr_pct": 0.017226724188331096,
+   "atr_pct": 0.017226724191085653,
    "dollar_volume": 1921881711.1175537,
    "hold": {
-    "n": 2008,
+    "n": 2007,
     "n_independent": 4,
-    "positive": 0.999003984063745,
-    "p10": 0.269766177567331,
-    "median": 0.5890473294445246
+    "positive": 0.9990034877927254,
+    "p10": 0.2697664306332763,
+    "median": 0.5881590803666163
+   },
+   "dip_history": {
+    "n": 354,
+    "episodes": 30,
+    "horizon": 60,
+    "win_rate": 0.6,
+    "win_ci": [
+     0.42320052498273836,
+     0.7540960567391659
+    ],
+    "median": 0.06599674046560589,
+    "p10": -0.07108436800014617,
+    "worst": -0.11441643688140768,
+    "cvar10": -0.09013139121492149,
+    "top_share": 0.10346078583164146
    },
    "spike": null,
+   "cluster": null,
+   "size": {
+    "weight": 0.2,
+    "dollars": 1400.0,
+    "capped": true
+   },
+   "earnings": {
+    "date": "2026-12-10",
+    "sessions": 51
+   },
    "verdict": "neutral",
    "why": [
     "%B 0.70 \u2014 no measured edge either way"
@@ -3682,19 +5805,44 @@
     "lower": 548.5056138339253
    },
    "vs_sma20": 0.07226809457862537,
-   "vs_sma200": 0.1436580273423862,
-   "range_pos": 0.7548372531028155,
+   "vs_sma200": 0.14365802622683366,
+   "range_pos": 0.7548373123008373,
    "range_n": 252,
-   "atr_pct": 0.03914765421898039,
+   "atr_pct": 0.03914765429479965,
    "dollar_volume": 10575912087.374878,
    "hold": {
-    "n": 2008,
+    "n": 2007,
     "n_independent": 4,
-    "positive": 0.7918326693227091,
-    "p10": -0.28084699152807147,
-    "median": 0.2822709837162427
+    "positive": 0.7917289486796213,
+    "p10": -0.28084676678741094,
+    "median": 0.2822709008632849
+   },
+   "dip_history": {
+    "n": 400,
+    "episodes": 30,
+    "horizon": 60,
+    "win_rate": 0.5666666666666667,
+    "win_ci": [
+     0.3919700954540873,
+     0.7262276256938489
+    ],
+    "median": 0.026067205004634664,
+    "p10": -0.1687430021412729,
+    "worst": -0.3166656155647528,
+    "cvar10": -0.24902766959906808,
+    "top_share": 0.2187956237260315
    },
    "spike": null,
+   "cluster": "platform",
+   "size": {
+    "weight": 0.1277215733629332,
+    "dollars": 894.0510135405323,
+    "capped": false
+   },
+   "earnings": {
+    "date": "2026-10-28",
+    "sessions": 21
+   },
    "verdict": "neutral",
    "why": [
     "%B 0.70 \u2014 no measured edge either way"
@@ -3723,13 +5871,38 @@
    "atr_pct": 0.055227816833439594,
    "dollar_volume": 10353853731.195831,
    "hold": {
-    "n": 2008,
+    "n": 2007,
     "n_independent": 4,
-    "positive": 0.4915338645418327,
-    "p10": -0.3780799463112995,
-    "median": -0.012162261700427668
+    "positive": 0.49128051818634777,
+    "p10": -0.37807990893880505,
+    "median": -0.013216020083512747
+   },
+   "dip_history": {
+    "n": 440,
+    "episodes": 33,
+    "horizon": 60,
+    "win_rate": 0.5757575757575758,
+    "win_ci": [
+     0.4080697369146003,
+     0.7276464100497011
+    ],
+    "median": 0.03188334595028852,
+    "p10": -0.20898472954575809,
+    "worst": -0.2692999629895383,
+    "cvar10": -0.24039235539051684,
+    "top_share": 0.33120211677190353
    },
    "spike": null,
+   "cluster": null,
+   "size": {
+    "weight": 0.09053408747043894,
+    "dollars": 633.7386122930726,
+    "capped": false
+   },
+   "earnings": {
+    "date": "2026-10-22",
+    "sessions": 17
+   },
    "verdict": "neutral",
    "why": [
     "%B 0.71 \u2014 no measured edge either way"
@@ -3757,13 +5930,38 @@
    "atr_pct": 0.03550065552414402,
    "dollar_volume": 649136383.56781,
    "hold": {
-    "n": 2008,
+    "n": 2007,
     "n_independent": 4,
-    "positive": 0.8819721115537849,
+    "positive": 0.8819133034379671,
     "p10": -0.08416835516877352,
-    "median": 0.6092523584856735
+    "median": 0.6080421799465288
+   },
+   "dip_history": {
+    "n": 382,
+    "episodes": 31,
+    "horizon": 60,
+    "win_rate": 0.7419354838709677,
+    "win_ci": [
+     0.5675352757228489,
+     0.8629845626313024
+    ],
+    "median": 0.07605150738499189,
+    "p10": -0.1222711697360731,
+    "worst": -0.3403607041890625,
+    "cvar10": -0.2201791641894534,
+    "top_share": 0.11352753967783615
    },
    "spike": null,
+   "cluster": null,
+   "size": {
+    "weight": 0.14084246970029882,
+    "dollars": 985.8972879020918,
+    "capped": false
+   },
+   "earnings": {
+    "date": "2026-08-26",
+    "sessions": null
+   },
    "verdict": "neutral",
    "why": [
     "%B 0.71 \u2014 no measured edge either way"
@@ -3785,19 +5983,44 @@
     "lower": 379.29020528057947
    },
    "vs_sma20": 0.03842368610161451,
-   "vs_sma200": 0.11856073091190344,
+   "vs_sma200": 0.11856072604400314,
    "range_pos": 0.8054647194964473,
    "range_n": 252,
-   "atr_pct": 0.03358345460074817,
+   "atr_pct": 0.03358345460404971,
    "dollar_volume": 761023630.0567627,
    "hold": {
-    "n": 2008,
+    "n": 2007,
     "n_independent": 4,
-    "positive": 0.9940239043824701,
-    "p10": 0.13952842683756628,
-    "median": 0.46507367781548403
+    "positive": 0.9940209267563528,
+    "p10": 0.13952873711578273,
+    "median": 0.4650727884039907
+   },
+   "dip_history": {
+    "n": 377,
+    "episodes": 28,
+    "horizon": 60,
+    "win_rate": 0.75,
+    "win_ci": [
+     0.566439747592954,
+     0.8732366505779922
+    ],
+    "median": 0.07900015092724355,
+    "p10": -0.11258722560820578,
+    "worst": -0.18873943240020807,
+    "cvar10": -0.14105935194933172,
+    "top_share": 0.15794248250581838
    },
    "spike": null,
+   "cluster": "power",
+   "size": {
+    "weight": 0.14888283706813973,
+    "dollars": 1042.1798594769782,
+    "capped": false
+   },
+   "earnings": {
+    "date": "2026-11-03",
+    "sessions": 25
+   },
    "verdict": "neutral",
    "why": [
     "%B 0.72 \u2014 no measured edge either way"
@@ -3825,13 +6048,38 @@
    "atr_pct": 0.048277849560464374,
    "dollar_volume": 1026183645.6176758,
    "hold": {
-    "n": 2008,
+    "n": 2007,
     "n_independent": 4,
-    "positive": 0.771414342629482,
+    "positive": 0.7713004484304933,
     "p10": -0.615098890367445,
-    "median": 1.35686280547419
+    "median": 1.3542026154171327
+   },
+   "dip_history": {
+    "n": 385,
+    "episodes": 29,
+    "horizon": 60,
+    "win_rate": 0.6896551724137931,
+    "win_ci": [
+     0.5076952952728147,
+     0.8272457551023193
+    ],
+    "median": 0.12816930839396568,
+    "p10": -0.2532107436325487,
+    "worst": -0.5236604993861893,
+    "cvar10": -0.38354250069447343,
+    "top_share": 0.1707835865223953
    },
    "spike": null,
+   "cluster": null,
+   "size": {
+    "weight": 0.10356716476648108,
+    "dollars": 724.9701533653675,
+    "capped": false
+   },
+   "earnings": {
+    "date": "2026-11-03",
+    "sessions": 25
+   },
    "verdict": "neutral",
    "why": [
     "%B 0.72 \u2014 no measured edge either way"
@@ -3855,19 +6103,44 @@
     "lower": 197.1675183264304
    },
    "vs_sma20": 0.07349999023456477,
-   "vs_sma200": 0.5427688875935028,
-   "range_pos": 0.7344125783057638,
+   "vs_sma200": 0.5427688890352651,
+   "range_pos": 0.7344125699561012,
    "range_n": 252,
-   "atr_pct": 0.05370245836491473,
+   "atr_pct": 0.05370245836476357,
    "dollar_volume": 4715839572.075653,
    "hold": {
-    "n": 2008,
+    "n": 2007,
     "n_independent": 4,
-    "positive": 0.8550796812749004,
-    "p10": -0.07669226509240512,
-    "median": 0.4501735626800569
+    "positive": 0.8550074738415545,
+    "p10": -0.07669250567891095,
+    "median": 0.4486626133338516
+   },
+   "dip_history": {
+    "n": 430,
+    "episodes": 32,
+    "horizon": 60,
+    "win_rate": 0.59375,
+    "win_ci": [
+     0.4225972657298823,
+     0.744805975196862
+    ],
+    "median": 0.05495696374052117,
+    "p10": -0.18624786820311545,
+    "worst": -0.47888587390059945,
+    "cvar10": -0.3110680701048431,
+    "top_share": 0.1705186500903246
    },
    "spike": null,
+   "cluster": "compute",
+   "size": {
+    "weight": 0.09310560730829986,
+    "dollars": 651.739251158099,
+    "capped": false
+   },
+   "earnings": {
+    "date": "2026-12-01",
+    "sessions": 44
+   },
    "verdict": "neutral",
    "why": [
     "%B 0.73 \u2014 no measured edge either way"
@@ -3889,19 +6162,44 @@
     "lower": 916.4633126534397
    },
    "vs_sma20": 0.01755679124118137,
-   "vs_sma200": 0.031153066108071892,
+   "vs_sma200": 0.031153069789521037,
    "range_pos": 0.7169801111745187,
    "range_n": 252,
-   "atr_pct": 0.022253128308745106,
+   "atr_pct": 0.022253128304037896,
    "dollar_volume": 560533317.9321289,
    "hold": {
-    "n": 2008,
+    "n": 2007,
     "n_independent": 4,
-    "positive": 0.9656374501992032,
-    "p10": 0.07421367752281194,
-    "median": 0.5958539944747179
+    "positive": 0.9656203288490284,
+    "p10": 0.07421348103327685,
+    "median": 0.595854356889254
+   },
+   "dip_history": {
+    "n": 419,
+    "episodes": 31,
+    "horizon": 60,
+    "win_rate": 0.6774193548387096,
+    "win_ci": [
+     0.5014068555995079,
+     0.8143076925268695
+    ],
+    "median": 0.07025811843852758,
+    "p10": -0.11300790818058204,
+    "worst": -0.3751032690858366,
+    "cvar10": -0.23336442389885378,
+    "top_share": 0.13256928662901263
    },
    "spike": null,
+   "cluster": "humanoid",
+   "size": {
+    "weight": 0.2,
+    "dollars": 1400.0,
+    "capped": true
+   },
+   "earnings": {
+    "date": "2026-11-05",
+    "sessions": 27
+   },
    "verdict": "neutral",
    "why": [
     "%B 0.73 \u2014 no measured edge either way"
@@ -3923,19 +6221,44 @@
     "lower": 104.49005032447519
    },
    "vs_sma20": 0.012487337122651043,
-   "vs_sma200": -0.07918986517170601,
+   "vs_sma200": -0.07918986665908223,
    "range_pos": 0.2626840246300383,
    "range_n": 252,
-   "atr_pct": 0.01968389009682102,
+   "atr_pct": 0.01968389009697888,
    "dollar_volume": 2379376226.727295,
    "hold": {
-    "n": 2008,
+    "n": 2007,
     "n_independent": 4,
-    "positive": 0.9795816733067729,
-    "p10": 0.0763556390146003,
-    "median": 0.43162137592823835
+    "positive": 0.979571499750872,
+    "p10": 0.07635519007127622,
+    "median": 0.43162168165940096
+   },
+   "dip_history": {
+    "n": 367,
+    "episodes": 31,
+    "horizon": 60,
+    "win_rate": 0.6774193548387096,
+    "win_ci": [
+     0.5014068555995079,
+     0.8143076925268695
+    ],
+    "median": 0.06606493715549844,
+    "p10": -0.09040056943690078,
+    "worst": -0.1456955311859096,
+    "cvar10": -0.127934153571961,
+    "top_share": 0.13010529666097248
    },
    "spike": null,
+   "cluster": null,
+   "size": {
+    "weight": 0.2,
+    "dollars": 1400.0,
+    "capped": true
+   },
+   "earnings": {
+    "date": "2026-11-19",
+    "sessions": 37
+   },
    "verdict": "neutral",
    "why": [
     "%B 0.73 \u2014 no measured edge either way"
@@ -3957,19 +6280,44 @@
     "lower": 410.8983566862928
    },
    "vs_sma20": 0.015341258231588384,
-   "vs_sma200": 0.024204275726315894,
-   "range_pos": 0.6203784646880025,
+   "vs_sma200": 0.024204278324634343,
+   "range_pos": 0.6203783941395312,
    "range_n": 252,
-   "atr_pct": 0.02372966366369579,
+   "atr_pct": 0.023729663667895872,
    "dollar_volume": 300624834.1064453,
    "hold": {
-    "n": 2008,
+    "n": 2007,
     "n_independent": 4,
-    "positive": 0.848605577689243,
-    "p10": -0.0334389474561696,
-    "median": 0.18664219753616673
+    "positive": 0.84853014449427,
+    "p10": -0.03343860714080904,
+    "median": 0.18601346973659427
+   },
+   "dip_history": {
+    "n": 402,
+    "episodes": 30,
+    "horizon": 60,
+    "win_rate": 0.6666666666666666,
+    "win_ci": [
+     0.48779725813830266,
+     0.807697044731538
+    ],
+    "median": 0.08252576580801407,
+    "p10": -0.1997798866159909,
+    "worst": -0.24577135559214536,
+    "cvar10": -0.22057695554865508,
+    "top_share": 0.12282706832176937
    },
    "spike": null,
+   "cluster": "humanoid",
+   "size": {
+    "weight": 0.2,
+    "dollars": 1400.0,
+    "capped": true
+   },
+   "earnings": {
+    "date": "2026-11-05",
+    "sessions": 27
+   },
    "verdict": "neutral",
    "why": [
     "%B 0.74 \u2014 no measured edge either way"
@@ -3993,19 +6341,44 @@
     "lower": 889.1490117637022
    },
    "vs_sma20": 0.0537708052916559,
-   "vs_sma200": 0.5849706206195668,
+   "vs_sma200": 0.5849706213469448,
    "range_pos": 0.8491100373526762,
    "range_n": 252,
-   "atr_pct": 0.04585367694676925,
+   "atr_pct": 0.04585367694677023,
    "dollar_volume": 30325490235.812378,
    "hold": {
-    "n": 2008,
+    "n": 2007,
     "n_independent": 4,
-    "positive": 0.795816733067729,
-    "p10": -0.13635578445631558,
-    "median": 0.5383362289392575
+    "positive": 0.7957149975087194,
+    "p10": -0.13635581183450662,
+    "median": 0.5378250891635481
+   },
+   "dip_history": {
+    "n": 409,
+    "episodes": 29,
+    "horizon": 60,
+    "win_rate": 0.5862068965517241,
+    "win_ci": [
+     0.40737528478515245,
+     0.7448706472035449
+    ],
+    "median": 0.07460636545987342,
+    "p10": -0.1658399541533867,
+    "worst": -0.23615970627951777,
+    "cvar10": -0.19046776756490214,
+    "top_share": 0.23810928693778435
    },
    "spike": null,
+   "cluster": "memory",
+   "size": {
+    "weight": 0.10904250941106224,
+    "dollars": 763.2975658774357,
+    "capped": false
+   },
+   "earnings": {
+    "date": "2026-09-30",
+    "sessions": 1
+   },
    "verdict": "neutral",
    "why": [
     "%B 0.74 \u2014 no measured edge either way"
@@ -4033,13 +6406,38 @@
    "atr_pct": 0.055444270152792165,
    "dollar_volume": 1958495958.4846497,
    "hold": {
-    "n": 2008,
+    "n": 2007,
     "n_independent": 4,
-    "positive": 0.6449203187250996,
+    "positive": 0.645241654210264,
     "p10": -0.4080356296393337,
     "median": 0.4437362453790352
    },
+   "dip_history": {
+    "n": 516,
+    "episodes": 32,
+    "horizon": 60,
+    "win_rate": 0.5,
+    "win_ci": [
+     0.33630614316859386,
+     0.6636938568314061
+    ],
+    "median": 0.03156515800273629,
+    "p10": -0.3689815315822337,
+    "worst": -0.4395180667739317,
+    "cvar10": -0.4194270220432721,
+    "top_share": 0.23890397915271488
+   },
    "spike": null,
+   "cluster": null,
+   "size": {
+    "weight": 0.09018064420761793,
+    "dollars": 631.2645094533254,
+    "capped": false
+   },
+   "earnings": {
+    "date": "2026-10-29",
+    "sessions": 22
+   },
    "verdict": "neutral",
    "why": [
     "%B 0.74 \u2014 no measured edge either way"
@@ -4062,19 +6460,44 @@
     "lower": 314.19298074699395
    },
    "vs_sma20": 0.02442699639630752,
-   "vs_sma200": 0.1762343511187794,
-   "range_pos": 0.9723894585047401,
+   "vs_sma200": 0.17623435330224058,
+   "range_pos": 0.9723894628614276,
    "range_n": 252,
-   "atr_pct": 0.020179576938248834,
+   "atr_pct": 0.020179576938121536,
    "dollar_volume": 13102641857.90863,
    "hold": {
-    "n": 2008,
+    "n": 2007,
     "n_independent": 4,
-    "positive": 0.9915338645418327,
-    "p10": 0.16248898916438193,
-    "median": 0.4981588559209651
+    "positive": 0.9915296462381664,
+    "p10": 0.16248871981893376,
+    "median": 0.49784849530859354
+   },
+   "dip_history": {
+    "n": 385,
+    "episodes": 27,
+    "horizon": 60,
+    "win_rate": 0.7037037037037037,
+    "win_ci": [
+     0.515189666191624,
+     0.8414714668235244
+    ],
+    "median": 0.05973073328990686,
+    "p10": -0.09259652257430195,
+    "worst": -0.294816367998901,
+    "cvar10": -0.16618055090572256,
+    "top_share": 0.1293419629079585
    },
    "spike": null,
+   "cluster": "megacap",
+   "size": {
+    "weight": 0.2,
+    "dollars": 1400.0,
+    "capped": true
+   },
+   "earnings": {
+    "date": "2026-10-29",
+    "sessions": 22
+   },
    "verdict": "neutral",
    "why": [
     "%B 0.75 \u2014 no measured edge either way"
@@ -4096,19 +6519,44 @@
     "lower": 200.4815204595713
    },
    "vs_sma20": 0.01772552713398068,
-   "vs_sma200": -0.07514595849108441,
-   "range_pos": 0.26616491912957313,
+   "vs_sma200": -0.07514596065073287,
+   "range_pos": 0.2661650475366662,
    "range_n": 252,
-   "atr_pct": 0.02129575928396538,
+   "atr_pct": 0.021295759290389876,
    "dollar_volume": 664917780.5053711,
    "hold": {
-    "n": 2008,
+    "n": 2007,
     "n_independent": 4,
-    "positive": 0.8829681274900398,
-    "p10": -0.022412254707958712,
-    "median": 0.19616888640792074
+    "positive": 0.8829098156452416,
+    "p10": -0.022412315571612162,
+    "median": 0.19615765318696843
+   },
+   "dip_history": {
+    "n": 416,
+    "episodes": 30,
+    "horizon": 60,
+    "win_rate": 0.5666666666666667,
+    "win_ci": [
+     0.3919700954540873,
+     0.7262276256938489
+    ],
+    "median": 0.016021889742122264,
+    "p10": -0.08605955870634474,
+    "worst": -0.15343477268028727,
+    "cvar10": -0.12276635113265925,
+    "top_share": 0.21100980224156138
    },
    "spike": null,
+   "cluster": null,
+   "size": {
+    "weight": 0.2,
+    "dollars": 1400.0,
+    "capped": true
+   },
+   "earnings": {
+    "date": "2026-10-22",
+    "sessions": 17
+   },
    "verdict": "neutral",
    "why": [
     "%B 0.75 \u2014 no measured edge either way"
@@ -4130,19 +6578,41 @@
     "lower": 692.5459763925967
    },
    "vs_sma20": 0.0210300551144591,
-   "vs_sma200": 0.10803611772603738,
+   "vs_sma200": 0.10803612128698425,
    "range_pos": 0.9425865224188189,
    "range_n": 252,
-   "atr_pct": 0.01332262779296671,
+   "atr_pct": 0.013322627792919126,
    "dollar_volume": 23845563157.51648,
    "hold": {
-    "n": 2008,
+    "n": 2007,
     "n_independent": 4,
-    "positive": 0.9083665338645418,
-    "p10": 0.006260710383174661,
-    "median": 0.46599857041957327
+    "positive": 0.9083208769307424,
+    "p10": 0.006260629235414372,
+    "median": 0.46562195193769673
+   },
+   "dip_history": {
+    "n": 332,
+    "episodes": 28,
+    "horizon": 60,
+    "win_rate": 0.75,
+    "win_ci": [
+     0.566439747592954,
+     0.8732366505779922
+    ],
+    "median": 0.07075866036397693,
+    "p10": -0.05453359890995191,
+    "worst": -0.16305349697768856,
+    "cvar10": -0.10584249889866904,
+    "top_share": 0.11613600554766211
    },
    "spike": null,
+   "cluster": "index",
+   "size": {
+    "weight": 0.2,
+    "dollars": 1400.0,
+    "capped": true
+   },
+   "earnings": null,
    "verdict": "neutral",
    "why": [
     "%B 0.76 \u2014 no measured edge either way"
@@ -4177,7 +6647,32 @@
     "p10": null,
     "median": null
    },
+   "dip_history": {
+    "n": 258,
+    "episodes": 18,
+    "horizon": 60,
+    "win_rate": 0.5555555555555556,
+    "win_ci": [
+     0.3371606942825164,
+     0.7544076889861088
+    ],
+    "median": 0.08796294374884606,
+    "p10": -0.3255033632220623,
+    "worst": -0.4366319866988929,
+    "cvar10": -0.3810676749604776,
+    "top_share": 0.2603121086337132
+   },
    "spike": null,
+   "cluster": "platform",
+   "size": {
+    "weight": 0.13947974521866568,
+    "dollars": 976.3582165306598,
+    "capped": false
+   },
+   "earnings": {
+    "date": "2026-11-02",
+    "sessions": 24
+   },
    "verdict": "no_hold_data",
    "why": [
     "hold gate not measurable \u2014 under 4 independent 2-year windows of history"
@@ -4201,19 +6696,44 @@
     "lower": 264.78699197528175
    },
    "vs_sma20": 0.0595001565233908,
-   "vs_sma200": 0.15949569177734357,
-   "range_pos": 0.6119683892741965,
+   "vs_sma200": 0.15949569308203904,
+   "range_pos": 0.611968398976437,
    "range_n": 252,
-   "atr_pct": 0.04594886505071604,
-   "dollar_volume": 2814212227.015686,
+   "atr_pct": 0.04594886505072763,
+   "dollar_volume": 2842720807.269287,
    "hold": {
-    "n": 2008,
+    "n": 2007,
     "n_independent": 4,
-    "positive": 0.9317729083665338,
-    "p10": 0.0740652877285144,
-    "median": 0.6769834707792395
+    "positive": 0.931738913801694,
+    "p10": 0.07406545389984376,
+    "median": 0.6769834433135922
+   },
+   "dip_history": {
+    "n": 366,
+    "episodes": 28,
+    "horizon": 60,
+    "win_rate": 0.6428571428571429,
+    "win_ci": [
+     0.4582997758222723,
+     0.7929438802754113
+    ],
+    "median": 0.07455350328533927,
+    "p10": -0.14762883805147808,
+    "worst": -0.23285652295108095,
+    "cvar10": -0.18138622359693787,
+    "top_share": 0.14238537298067458
    },
    "spike": null,
+   "cluster": "equipment",
+   "size": {
+    "weight": 0.10881661591597509,
+    "dollars": 761.7163114118257,
+    "capped": false
+   },
+   "earnings": {
+    "date": "2026-10-21",
+    "sessions": 16
+   },
    "verdict": "neutral",
    "why": [
     "%B 0.78 \u2014 no measured edge either way"
@@ -4247,7 +6767,32 @@
     "p10": null,
     "median": null
    },
+   "dip_history": {
+    "n": 247,
+    "episodes": 17,
+    "horizon": 60,
+    "win_rate": 0.47058823529411764,
+    "win_ci": [
+     0.26164801196088106,
+     0.6903710268845051
+    ],
+    "median": -0.022533623874621322,
+    "p10": -0.31406857230109186,
+    "worst": -0.3332422619388973,
+    "cvar10": -0.32365541711999457,
+    "top_share": 0.43347178548112164
+   },
    "spike": null,
+   "cluster": null,
+   "size": {
+    "weight": 0.11088130624628655,
+    "dollars": 776.1691437240058,
+    "capped": false
+   },
+   "earnings": {
+    "date": "2026-11-10",
+    "sessions": 30
+   },
    "verdict": "no_hold_data",
    "why": [
     "hold gate not measurable \u2014 under 4 independent 2-year windows of history"
@@ -4273,16 +6818,38 @@
    "vs_sma200": 0.2342114609188335,
    "range_pos": 0.41329565680742475,
    "range_n": 252,
-   "atr_pct": 0.08825489607740965,
+   "atr_pct": 0.08825489607740966,
    "dollar_volume": 8141108677.409363,
    "hold": {
-    "n": 2008,
+    "n": 2007,
     "n_independent": 4,
-    "positive": 0.7574701195219123,
-    "p10": -0.5223268473969536,
-    "median": 0.7332901302674459
+    "positive": 0.7573492775286498,
+    "p10": -0.5223266704599583,
+    "median": 0.7331491473011642
+   },
+   "dip_history": {
+    "n": 397,
+    "episodes": 30,
+    "horizon": 60,
+    "win_rate": 0.6333333333333333,
+    "win_ci": [
+     0.45513246433604937,
+     0.7812629779598231
+    ],
+    "median": 0.08746404380957307,
+    "p10": -0.42647547844059974,
+    "worst": -0.6077609359779025,
+    "cvar10": -0.5719519487301598,
+    "top_share": 0.2799476709994623
    },
    "spike": null,
+   "cluster": "semis ETF",
+   "size": {
+    "weight": 0.05665408064856172,
+    "dollars": 396.578564539932,
+    "capped": false
+   },
+   "earnings": null,
    "verdict": "leveraged",
    "why": [
     "daily-reset leveraged product \u2014 the %B and forward-return thresholds on this page were measured on ordinary long instruments and do not transfer"
@@ -4310,13 +6877,38 @@
    "atr_pct": 0.034172928141556924,
    "dollar_volume": 590218988.204956,
    "hold": {
-    "n": 2008,
+    "n": 2007,
     "n_independent": 4,
-    "positive": 0.9282868525896414,
-    "p10": 0.04594783849784401,
-    "median": 1.0381614942453088
+    "positive": 0.9282511210762332,
+    "p10": 0.04594794555245363,
+    "median": 1.0381613511930765
+   },
+   "dip_history": {
+    "n": 374,
+    "episodes": 30,
+    "horizon": 60,
+    "win_rate": 0.7333333333333333,
+    "win_ci": [
+     0.5555169795568831,
+     0.8581750444608938
+    ],
+    "median": 0.06653332175729454,
+    "p10": -0.07868023873222363,
+    "worst": -0.15712465245781115,
+    "cvar10": -0.12074482930011891,
+    "top_share": 0.1378824740449546
    },
    "spike": null,
+   "cluster": "power",
+   "size": {
+    "weight": 0.14631464939990357,
+    "dollars": 1024.202545799325,
+    "capped": false
+   },
+   "earnings": {
+    "date": "2026-10-29",
+    "sessions": 22
+   },
    "verdict": "neutral",
    "why": [
     "%B 0.79 \u2014 no measured edge either way"
@@ -4346,13 +6938,38 @@
    "atr_pct": 0.04181146416951037,
    "dollar_volume": 11954577291.81366,
    "hold": {
-    "n": 2008,
+    "n": 2007,
     "n_independent": 4,
-    "positive": 0.8869521912350598,
+    "positive": 0.8868958644743398,
     "p10": -0.027405244441274346,
-    "median": 1.0157894046211329
+    "median": 1.0144730989541761
+   },
+   "dip_history": {
+    "n": 430,
+    "episodes": 30,
+    "horizon": 60,
+    "win_rate": 0.5,
+    "win_ci": [
+     0.33153851227173764,
+     0.6684614877282624
+    ],
+    "median": 0.039999977487032545,
+    "p10": -0.21522834563157545,
+    "worst": -0.3404787697240055,
+    "cvar10": -0.28100890595423367,
+    "top_share": 0.18978199745869853
    },
    "spike": null,
+   "cluster": "compute",
+   "size": {
+    "weight": 0.11958442736492556,
+    "dollars": 837.0909915544789,
+    "capped": false
+   },
+   "earnings": {
+    "date": "2026-11-03",
+    "sessions": 25
+   },
    "verdict": "neutral",
    "why": [
     "%B 0.80 \u2014 no measured edge either way"
@@ -4374,19 +6991,41 @@
     "lower": 475.9566416705134
    },
    "vs_sma20": 0.05966845469614457,
-   "vs_sma200": 0.24809022264761116,
-   "range_pos": 0.7578565415404591,
+   "vs_sma200": 0.24809022646225776,
+   "range_pos": 0.7578565224626044,
    "range_n": 252,
-   "atr_pct": 0.0309555220438374,
-   "dollar_volume": 4142066141.9555664,
+   "atr_pct": 0.030955522043775184,
+   "dollar_volume": 4152552914.5446777,
    "hold": {
-    "n": 2008,
+    "n": 2007,
     "n_independent": 4,
-    "positive": 0.9497011952191236,
-    "p10": 0.07299963186305458,
-    "median": 0.5448708883977562
+    "positive": 0.9496761335326358,
+    "p10": 0.0729999056493078,
+    "median": 0.5443039042145013
+   },
+   "dip_history": {
+    "n": 357,
+    "episodes": 29,
+    "horizon": 60,
+    "win_rate": 0.7241379310344828,
+    "win_ci": [
+     0.5428252365556403,
+     0.8530141866149725
+    ],
+    "median": 0.05503296398470936,
+    "p10": -0.1685361303732421,
+    "worst": -0.18878738530633654,
+    "cvar10": -0.18094126627795504,
+    "top_share": 0.18970983346425663
    },
    "spike": null,
+   "cluster": "semis ETF",
+   "size": {
+    "weight": 0.16152207005035618,
+    "dollars": 1130.6544903524932,
+    "capped": false
+   },
+   "earnings": null,
    "verdict": "neutral",
    "why": [
     "%B 0.80 \u2014 no measured edge either way"
@@ -4410,19 +7049,44 @@
     "lower": 211.125237508606
    },
    "vs_sma20": 0.02982370420729219,
-   "vs_sma200": 0.14803785110035106,
+   "vs_sma200": 0.14803785153972338,
    "range_pos": 0.9099208140555214,
    "range_n": 252,
-   "atr_pct": 0.026318348705521563,
+   "atr_pct": 0.026318348702662198,
    "dollar_volume": 25050867786.593628,
    "hold": {
-    "n": 2008,
+    "n": 2007,
     "n_independent": 4,
-    "positive": 0.9546812749003984,
-    "p10": 0.09493627081323996,
-    "median": 1.303593433640121
+    "positive": 0.9546586945690084,
+    "p10": 0.09493634191519296,
+    "median": 1.301868367854825
+   },
+   "dip_history": {
+    "n": 375,
+    "episodes": 29,
+    "horizon": 60,
+    "win_rate": 0.7931034482758621,
+    "win_ci": [
+     0.6160955339174228,
+     0.9015406348441479
+    ],
+    "median": 0.11254061823971107,
+    "p10": -0.13319345151414608,
+    "worst": -0.4612249776432924,
+    "cvar10": -0.2587570656053403,
+    "top_share": 0.14238203652538392
    },
    "spike": null,
+   "cluster": "compute",
+   "size": {
+    "weight": 0.18998152416356698,
+    "dollars": 1329.8706691449688,
+    "capped": false
+   },
+   "earnings": {
+    "date": "2026-11-17",
+    "sessions": 35
+   },
    "verdict": "neutral",
    "why": [
     "%B 0.80 \u2014 no measured edge either way"
@@ -4450,13 +7114,38 @@
    "atr_pct": 0.0557757395752802,
    "dollar_volume": 1258743573.5557556,
    "hold": {
-    "n": 2008,
+    "n": 2007,
     "n_independent": 4,
-    "positive": 0.7654382470119522,
+    "positive": 0.7658196312904834,
     "p10": -0.40784312992176597,
     "median": 0.8442424404872899
    },
+   "dip_history": {
+    "n": 470,
+    "episodes": 31,
+    "horizon": 60,
+    "win_rate": 0.5483870967741935,
+    "win_ci": [
+     0.37771879603669134,
+     0.7083851716341388
+    ],
+    "median": 0.059742236058984544,
+    "p10": -0.20075224589282825,
+    "worst": -0.440827876257753,
+    "cvar10": -0.344473142198134,
+    "top_share": 0.3627374070591383
+   },
    "spike": null,
+   "cluster": "compute",
+   "size": {
+    "weight": 0.08964471001324022,
+    "dollars": 627.5129700926815,
+    "capped": false
+   },
+   "earnings": {
+    "date": "2026-11-03",
+    "sessions": 25
+   },
    "verdict": "neutral",
    "why": [
     "%B 0.80 \u2014 no measured edge either way"
@@ -4484,13 +7173,38 @@
    "atr_pct": 0.03650853875248023,
    "dollar_volume": 1055585100.8476257,
    "hold": {
-    "n": 2008,
+    "n": 2007,
     "n_independent": 4,
-    "positive": 0.8565737051792829,
+    "positive": 0.8565022421524664,
     "p10": -0.12226535405545791,
-    "median": 0.9930955840320121
+    "median": 0.9930719219331685
+   },
+   "dip_history": {
+    "n": 388,
+    "episodes": 31,
+    "horizon": 60,
+    "win_rate": 0.7741935483870968,
+    "win_ci": [
+     0.6018723994130262,
+     0.8860500840550121
+    ],
+    "median": 0.18067911604611586,
+    "p10": -0.12483975934970304,
+    "worst": -0.20633132172881707,
+    "cvar10": -0.16861165090055033,
+    "top_share": 0.09205487506370312
    },
    "spike": null,
+   "cluster": "network",
+   "size": {
+    "weight": 0.1369542625055165,
+    "dollars": 958.6798375386156,
+    "capped": false
+   },
+   "earnings": {
+    "date": "2026-11-03",
+    "sessions": 25
+   },
    "verdict": "neutral",
    "why": [
     "%B 0.80 \u2014 no measured edge either way"
@@ -4519,13 +7233,38 @@
    "atr_pct": 0.04664804093510525,
    "dollar_volume": 765973030.2993774,
    "hold": {
-    "n": 2008,
+    "n": 2007,
     "n_independent": 4,
-    "positive": 0.7385458167330677,
+    "positive": 0.7384155455904334,
     "p10": -0.3865804042918335,
-    "median": 0.3504330545419103
+    "median": 0.3488661691186168
+   },
+   "dip_history": {
+    "n": 450,
+    "episodes": 32,
+    "horizon": 60,
+    "win_rate": 0.59375,
+    "win_ci": [
+     0.4225972657298823,
+     0.744805975196862
+    ],
+    "median": 0.0518064229672337,
+    "p10": -0.18403546602830112,
+    "worst": -0.38504935970657495,
+    "cvar10": -0.29572700922434575,
+    "top_share": 0.15646202380788443
    },
    "spike": null,
+   "cluster": "humanoid",
+   "size": {
+    "weight": 0.10718563737662178,
+    "dollars": 750.2994616363525,
+    "capped": false
+   },
+   "earnings": {
+    "date": "2026-11-02",
+    "sessions": 24
+   },
    "verdict": "neutral",
    "why": [
     "%B 0.81 \u2014 no measured edge either way"
@@ -4559,7 +7298,32 @@
     "p10": null,
     "median": null
    },
+   "dip_history": {
+    "n": 98,
+    "episodes": 6,
+    "horizon": 60,
+    "win_rate": 0.5,
+    "win_ci": [
+     0.18761280689940868,
+     0.8123871931005913
+    ],
+    "median": 0.23820919597393186,
+    "p10": -0.5344499769523037,
+    "worst": -0.5344499769523037,
+    "cvar10": -0.5344499769523037,
+    "top_share": 0.7599259513181875
+   },
    "spike": null,
+   "cluster": "compute",
+   "size": {
+    "weight": 0.07544399714014648,
+    "dollars": 528.1079799810253,
+    "capped": false
+   },
+   "earnings": {
+    "date": "2026-11-03",
+    "sessions": 25
+   },
    "verdict": "no_hold_data",
    "why": [
     "hold gate not measurable \u2014 under 4 independent 2-year windows of history"
@@ -4587,13 +7351,35 @@
    "atr_pct": 0.02680439560865893,
    "dollar_volume": 4012948219.2840576,
    "hold": {
-    "n": 2008,
+    "n": 2007,
     "n_independent": 4,
-    "positive": 0.9741035856573705,
-    "p10": 0.11267746652822264,
+    "positive": 0.974090682610862,
+    "p10": 0.11267754226253546,
     "median": 0.7266924109112396
    },
+   "dip_history": {
+    "n": 348,
+    "episodes": 28,
+    "horizon": 60,
+    "win_rate": 0.7142857142857143,
+    "win_ci": [
+     0.529403642629825,
+     0.8474618415167003
+    ],
+    "median": 0.06325234185697637,
+    "p10": -0.13510663672465228,
+    "worst": -0.1696518978997631,
+    "cvar10": -0.1484022600352182,
+    "top_share": 0.12118440675878824
+   },
    "spike": null,
+   "cluster": "index",
+   "size": {
+    "weight": 0.18653656933733634,
+    "dollars": 1305.7559853613543,
+    "capped": false
+   },
+   "earnings": null,
    "verdict": "neutral",
    "why": [
     "%B 0.82 \u2014 no measured edge either way"
@@ -4617,19 +7403,44 @@
     "lower": 163.4463293905718
    },
    "vs_sma20": 0.05633172625491123,
-   "vs_sma200": 0.07509655113911373,
+   "vs_sma200": 0.07509654740985305,
    "range_pos": 0.44898122821535597,
    "range_n": 252,
-   "atr_pct": 0.041752799725828287,
+   "atr_pct": 0.04175279972769738,
    "dollar_volume": 1879320485.2981567,
    "hold": {
-    "n": 2008,
+    "n": 2007,
     "n_independent": 4,
     "positive": 1.0,
-    "p10": 0.31300955426090704,
-    "median": 0.8869957326373672
+    "p10": 0.3130097763378521,
+    "median": 0.8869949491858224
+   },
+   "dip_history": {
+    "n": 359,
+    "episodes": 29,
+    "horizon": 60,
+    "win_rate": 0.8275862068965517,
+    "win_ci": [
+     0.6545119942718488,
+     0.9240225472852007
+    ],
+    "median": 0.08025324348675511,
+    "p10": -0.056118279750112854,
+    "worst": -0.19412886400314566,
+    "cvar10": -0.11870816763776593,
+    "top_share": 0.14344545549184964
    },
    "spike": null,
+   "cluster": "equipment",
+   "size": {
+    "weight": 0.11975244852103105,
+    "dollars": 838.2671396472174,
+    "capped": false
+   },
+   "earnings": {
+    "date": "2026-10-28",
+    "sessions": 21
+   },
    "verdict": "neutral",
    "why": [
     "%B 0.82 \u2014 no measured edge either way"
@@ -4651,19 +7462,44 @@
     "lower": 142.80173335422796
    },
    "vs_sma20": 0.025167131706464785,
-   "vs_sma200": 0.1305838660136016,
-   "range_pos": 0.9814700511683148,
+   "vs_sma200": 0.1305838717798713,
+   "range_pos": 0.9814697194960794,
    "range_n": 252,
-   "atr_pct": 0.023372284168214342,
+   "atr_pct": 0.02337228417770059,
    "dollar_volume": 790233529.3373108,
    "hold": {
-    "n": 2008,
+    "n": 2007,
     "n_independent": 4,
-    "positive": 0.7709163346613546,
-    "p10": -0.08674108830051985,
-    "median": 0.1636301551170083
+    "positive": 0.770802192326856,
+    "p10": -0.08674142628377113,
+    "median": 0.16363016720583534
+   },
+   "dip_history": {
+    "n": 485,
+    "episodes": 32,
+    "horizon": 60,
+    "win_rate": 0.71875,
+    "win_ci": [
+     0.546251630618882,
+     0.8443559315435214
+    ],
+    "median": 0.029871490713051063,
+    "p10": -0.11193608138923439,
+    "worst": -0.13909349062812704,
+    "cvar10": -0.13365336883669052,
+    "top_share": 0.10009485672467329
    },
    "spike": null,
+   "cluster": null,
+   "size": {
+    "weight": 0.2,
+    "dollars": 1400.0,
+    "capped": true
+   },
+   "earnings": {
+    "date": "2026-10-29",
+    "sessions": 22
+   },
    "verdict": "neutral",
    "why": [
     "%B 0.83 \u2014 no measured edge either way"
@@ -4691,13 +7527,38 @@
    "atr_pct": 0.04706288509758535,
    "dollar_volume": 2069795892.640686,
    "hold": {
-    "n": 2008,
+    "n": 2007,
     "n_independent": 4,
-    "positive": 0.974601593625498,
+    "positive": 0.9745889387144993,
     "p10": 0.16746757482127972,
     "median": 0.7078605400491322
    },
+   "dip_history": {
+    "n": 413,
+    "episodes": 32,
+    "horizon": 60,
+    "win_rate": 0.78125,
+    "win_ci": [
+     0.6124466920955516,
+     0.8897630306846815
+    ],
+    "median": 0.10726825072776891,
+    "p10": -0.1111110881565891,
+    "worst": -0.18164266272396312,
+    "cvar10": -0.16719270699950736,
+    "top_share": 0.1320148587244055
+   },
    "spike": null,
+   "cluster": null,
+   "size": {
+    "weight": 0.1062408305320095,
+    "dollars": 743.6858137240665,
+    "capped": false
+   },
+   "earnings": {
+    "date": "2026-11-19",
+    "sessions": 37
+   },
    "verdict": "neutral",
    "why": [
     "%B 0.84 \u2014 no measured edge either way"
@@ -4731,7 +7592,32 @@
     "p10": null,
     "median": null
    },
+   "dip_history": {
+    "n": 317,
+    "episodes": 21,
+    "horizon": 60,
+    "win_rate": 0.6666666666666666,
+    "win_ci": [
+     0.45373075657210293,
+     0.8280546356731631
+    ],
+    "median": 0.06240093489090959,
+    "p10": -0.26411027112366037,
+    "worst": -0.34666665395100915,
+    "cvar10": -0.3110095211449014,
+    "top_share": 0.22287879251263598
+   },
    "spike": null,
+   "cluster": null,
+   "size": {
+    "weight": 0.10576799719854825,
+    "dollars": 740.3759803898378,
+    "capped": false
+   },
+   "earnings": {
+    "date": "2026-12-01",
+    "sessions": 44
+   },
    "verdict": "no_hold_data",
    "why": [
     "hold gate not measurable \u2014 under 4 independent 2-year windows of history"
@@ -4753,19 +7639,44 @@
     "lower": 198.57815602208277
    },
    "vs_sma20": 0.031357210255169576,
-   "vs_sma200": 0.006026695990040354,
-   "range_pos": 0.39202004277607827,
+   "vs_sma200": 0.006026699226716836,
+   "range_pos": 0.392020157821941,
    "range_n": 252,
-   "atr_pct": 0.02767051657135679,
+   "atr_pct": 0.02767051657513274,
    "dollar_volume": 387358392.1142578,
    "hold": {
-    "n": 2008,
+    "n": 2007,
     "n_independent": 4,
-    "positive": 0.8316733067729084,
+    "positive": 0.8315894369706028,
     "p10": -0.07919810832951413,
-    "median": 0.2563994654597763
+    "median": 0.2562436226609994
+   },
+   "dip_history": {
+    "n": 415,
+    "episodes": 32,
+    "horizon": 60,
+    "win_rate": 0.65625,
+    "win_ci": [
+     0.4831077350878594,
+     0.7958976664567146
+    ],
+    "median": 0.04976449118115922,
+    "p10": -0.14424282733174654,
+    "worst": -0.22524948070999984,
+    "cvar10": -0.19655748468333067,
+    "top_share": 0.11934823101254287
    },
    "spike": null,
+   "cluster": "humanoid",
+   "size": {
+    "weight": 0.18069774687522308,
+    "dollars": 1264.8842281265615,
+    "capped": false
+   },
+   "earnings": {
+    "date": "2026-10-28",
+    "sessions": 21
+   },
    "verdict": "neutral",
    "why": [
     "%B 0.84 \u2014 no measured edge either way"
@@ -4788,19 +7699,44 @@
     "lower": 753.7477357521462
    },
    "vs_sma20": 0.0802833611414584,
-   "vs_sma200": 0.4456320441122439,
-   "range_pos": 0.8062633229725207,
+   "vs_sma200": 0.4456320444582913,
+   "range_pos": 0.806263211383661,
    "range_n": 252,
-   "atr_pct": 0.054580173647986695,
+   "atr_pct": 0.05458017376298727,
    "dollar_volume": 3735064217.782593,
    "hold": {
-    "n": 2008,
+    "n": 2007,
     "n_independent": 4,
-    "positive": 0.8017928286852589,
+    "positive": 0.8016940707523668,
     "p10": -0.13174598380314406,
-    "median": 0.5673833340545233
+    "median": 0.5673829574637739
+   },
+   "dip_history": {
+    "n": 400,
+    "episodes": 31,
+    "horizon": 60,
+    "win_rate": 0.6774193548387096,
+    "win_ci": [
+     0.5014068555995079,
+     0.8143076925268695
+    ],
+    "median": 0.11716843717814274,
+    "p10": -0.17898075380722456,
+    "worst": -0.26472499569313557,
+    "cvar10": -0.2353295819585878,
+    "top_share": 0.2612679956841377
    },
    "spike": null,
+   "cluster": "memory",
+   "size": {
+    "weight": 0.09160835620847135,
+    "dollars": 641.2584934592994,
+    "capped": false
+   },
+   "earnings": {
+    "date": "2026-10-27",
+    "sessions": 20
+   },
    "verdict": "neutral",
    "why": [
     "%B 0.84 \u2014 no measured edge either way"
@@ -4822,19 +7758,44 @@
     "lower": 48.04255679423283
    },
    "vs_sma20": 0.02024736440132191,
-   "vs_sma200": 0.10421164567880625,
+   "vs_sma200": 0.10421164429698915,
    "range_pos": 0.8636672575449804,
    "range_n": 252,
-   "atr_pct": 0.019531602825336856,
+   "atr_pct": 0.01953160282535002,
    "dollar_volume": 343692034.3141556,
    "hold": {
-    "n": 2008,
+    "n": 2007,
     "n_independent": 4,
-    "positive": 0.99800796812749,
-    "p10": 0.1055511885570295,
-    "median": 0.485631753632189
+    "positive": 0.9980069755854509,
+    "p10": 0.10555148106251244,
+    "median": 0.48447750536552503
+   },
+   "dip_history": {
+    "n": 424,
+    "episodes": 30,
+    "horizon": 60,
+    "win_rate": 0.6666666666666666,
+    "win_ci": [
+     0.48779725813830266,
+     0.807697044731538
+    ],
+    "median": 0.05912141989168074,
+    "p10": -0.1262950661929063,
+    "worst": -0.16094135941207377,
+    "cvar10": -0.1533984631048945,
+    "top_share": 0.11291744622818571
    },
    "spike": null,
+   "cluster": null,
+   "size": {
+    "weight": 0.2,
+    "dollars": 1400.0,
+    "capped": true
+   },
+   "earnings": {
+    "date": "2026-10-14",
+    "sessions": 11
+   },
    "verdict": "neutral",
    "why": [
     "%B 0.85 \u2014 no measured edge either way"
@@ -4868,7 +7829,32 @@
     "p10": null,
     "median": null
    },
+   "dip_history": {
+    "n": 307,
+    "episodes": 18,
+    "horizon": 60,
+    "win_rate": 0.5555555555555556,
+    "win_ci": [
+     0.3371606942825164,
+     0.7544076889861088
+    ],
+    "median": 0.024766640760683023,
+    "p10": -0.27775891657937335,
+    "worst": -0.38511110941569016,
+    "cvar10": -0.33143501299753175,
+    "top_share": 0.23769216901134235
+   },
    "spike": null,
+   "cluster": "humanoid",
+   "size": {
+    "weight": 0.10237830317383126,
+    "dollars": 716.6481222168188,
+    "capped": false
+   },
+   "earnings": {
+    "date": "2026-10-29",
+    "sessions": 22
+   },
    "verdict": "no_hold_data",
    "why": [
     "hold gate not measurable \u2014 under 4 independent 2-year windows of history"
@@ -4890,19 +7876,44 @@
     "lower": 123.59486425969338
    },
    "vs_sma20": 0.08015278583156715,
-   "vs_sma200": 0.15253781108985054,
-   "range_pos": 0.7116993524086123,
+   "vs_sma200": 0.15253781041704628,
+   "range_pos": 0.711699371500842,
    "range_n": 252,
-   "atr_pct": 0.04556979792374371,
+   "atr_pct": 0.045569797923738414,
    "dollar_volume": 300079658.0875397,
    "hold": {
-    "n": 2008,
+    "n": 2007,
     "n_independent": 4,
-    "positive": 0.7305776892430279,
-    "p10": -0.20800752158433877,
-    "median": 0.4275092353012473
+    "positive": 0.7304434479322371,
+    "p10": -0.20800763544554013,
+    "median": 0.4274632708959365
+   },
+   "dip_history": {
+    "n": 425,
+    "episodes": 33,
+    "horizon": 60,
+    "win_rate": 0.6363636363636364,
+    "win_ci": [
+     0.46615872621534094,
+     0.7781303383204013
+    ],
+    "median": 0.08688080395203501,
+    "p10": -0.1658578919916328,
+    "worst": -0.2351152874955834,
+    "cvar10": -0.20058542893928544,
+    "top_share": 0.09898818452746957
    },
    "spike": null,
+   "cluster": "equipment",
+   "size": {
+    "weight": 0.1097217944298888,
+    "dollars": 768.0525610092216,
+    "capped": false
+   },
+   "earnings": {
+    "date": "2026-11-04",
+    "sessions": 26
+   },
    "verdict": "neutral",
    "why": [
     "%B 0.85 \u2014 no measured edge either way"
@@ -4926,19 +7937,44 @@
     "lower": 486.5444135336852
    },
    "vs_sma20": 0.018796584355050827,
-   "vs_sma200": 0.18227683360644886,
-   "range_pos": 0.8467408131476759,
+   "vs_sma200": 0.1822768357006721,
+   "range_pos": 0.8467410917822557,
    "range_n": 252,
-   "atr_pct": 0.023425244048708924,
+   "atr_pct": 0.023425244046156684,
    "dollar_volume": 11327414280.644226,
    "hold": {
-    "n": 2008,
+    "n": 2007,
     "n_independent": 4,
-    "positive": 0.9621513944223108,
-    "p10": 0.10033900640126747,
-    "median": 0.6677769415952235
+    "positive": 0.9621325361235675,
+    "p10": 0.1003390158953974,
+    "median": 0.6675877133499355
+   },
+   "dip_history": {
+    "n": 346,
+    "episodes": 27,
+    "horizon": 60,
+    "win_rate": 0.7037037037037037,
+    "win_ci": [
+     0.515189666191624,
+     0.8414714668235244
+    ],
+    "median": 0.0665136505244297,
+    "p10": -0.09257957222214797,
+    "worst": -0.188731341964385,
+    "cvar10": -0.12819262293170655,
+    "top_share": 0.1317338766234982
    },
    "spike": null,
+   "cluster": "platform",
+   "size": {
+    "weight": 0.2,
+    "dollars": 1400.0,
+    "capped": true
+   },
+   "earnings": {
+    "date": "2026-10-28",
+    "sessions": 21
+   },
    "verdict": "neutral",
    "why": [
     "%B 0.85 \u2014 no measured edge either way"
@@ -4972,7 +8008,32 @@
     "p10": null,
     "median": null
    },
+   "dip_history": {
+    "n": 267,
+    "episodes": 22,
+    "horizon": 60,
+    "win_rate": 0.6363636363636364,
+    "win_ci": [
+     0.4295134934371804,
+     0.802670272273921
+    ],
+    "median": 0.10709088368493402,
+    "p10": -0.14676175152857052,
+    "worst": -0.3452075643305741,
+    "cvar10": -0.30371415176981814,
+    "top_share": 0.1847058001366703
+   },
    "spike": null,
+   "cluster": "equipment",
+   "size": {
+    "weight": 0.09326247599016813,
+    "dollars": 652.8373319311769,
+    "capped": false
+   },
+   "earnings": {
+    "date": "2026-11-05",
+    "sessions": 27
+   },
    "verdict": "no_hold_data",
    "why": [
     "hold gate not measurable \u2014 under 4 independent 2-year windows of history"
@@ -4995,19 +8056,44 @@
     "lower": 216.70059504387854
    },
    "vs_sma20": 0.03581460718775831,
-   "vs_sma200": -0.029578476262404285,
+   "vs_sma200": -0.02957848082279113,
    "range_pos": 0.37115456898662497,
    "range_n": 252,
-   "atr_pct": 0.032298110708530114,
+   "atr_pct": 0.03229811069202975,
    "dollar_volume": 792724056.7901611,
    "hold": {
-    "n": 2008,
+    "n": 2007,
     "n_independent": 4,
-    "positive": 0.7126494023904383,
-    "p10": -0.11728132081403808,
-    "median": 0.15494538954934822
+    "positive": 0.7130044843049327,
+    "p10": -0.11728125146101764,
+    "median": 0.15494531917328414
+   },
+   "dip_history": {
+    "n": 442,
+    "episodes": 30,
+    "horizon": 60,
+    "win_rate": 0.5666666666666667,
+    "win_ci": [
+     0.3919700954540873,
+     0.7262276256938489
+    ],
+    "median": 0.009158738373025166,
+    "p10": -0.1419533648667758,
+    "worst": -0.2158439630436334,
+    "cvar10": -0.2028986352732548,
+    "top_share": 0.17318742173941443
    },
    "spike": null,
+   "cluster": "humanoid",
+   "size": {
+    "weight": 0.1548078167071815,
+    "dollars": 1083.6547169502705,
+    "capped": false
+   },
+   "earnings": {
+    "date": "2026-10-27",
+    "sessions": 20
+   },
    "verdict": "neutral",
    "why": [
     "%B 0.86 \u2014 no measured edge either way"
@@ -5030,18 +8116,43 @@
    },
    "vs_sma20": 0.0860849827846577,
    "vs_sma200": 0.06155165326848566,
-   "range_pos": 0.597374964631772,
+   "range_pos": 0.5973749351948002,
    "range_n": 252,
-   "atr_pct": 0.04147502605068832,
+   "atr_pct": 0.04147502605068233,
    "dollar_volume": 927110846.6308594,
    "hold": {
-    "n": 2008,
+    "n": 2007,
     "n_independent": 4,
-    "positive": 0.9706175298804781,
-    "p10": 0.22729505279516404,
-    "median": 0.6303760235846807
+    "positive": 0.9706028898854011,
+    "p10": 0.22729482033416715,
+    "median": 0.6303762973650435
+   },
+   "dip_history": {
+    "n": 394,
+    "episodes": 31,
+    "horizon": 60,
+    "win_rate": 0.7419354838709677,
+    "win_ci": [
+     0.5675352757228489,
+     0.8629845626313024
+    ],
+    "median": 0.11704013441878724,
+    "p10": -0.12800868441098634,
+    "worst": -0.2861158809701526,
+    "cvar10": -0.2389654613774984,
+    "top_share": 0.12017676409811513
    },
    "spike": null,
+   "cluster": null,
+   "size": {
+    "weight": 0.1205544752133493,
+    "dollars": 843.8813264934452,
+    "capped": false
+   },
+   "earnings": {
+    "date": "2026-10-29",
+    "sessions": 22
+   },
    "verdict": "neutral",
    "why": [
     "%B 0.86 \u2014 no measured edge either way"
@@ -5064,19 +8175,44 @@
     "lower": 1578.6875500532678
    },
    "vs_sma20": 0.04802464287243935,
-   "vs_sma200": 0.16153760593402433,
+   "vs_sma200": 0.16153760825835306,
    "range_pos": 0.7961212760360191,
    "range_n": 252,
-   "atr_pct": 0.0294010705909954,
+   "atr_pct": 0.029401070591006512,
    "dollar_volume": 2297552155.8410645,
    "hold": {
-    "n": 2008,
+    "n": 2007,
     "n_independent": 4,
-    "positive": 0.9292828685258964,
-    "p10": 0.05478050948666224,
-    "median": 0.564838625911996
+    "positive": 0.9292476332835077,
+    "p10": 0.0547806152446757,
+    "median": 0.5644419185354026
+   },
+   "dip_history": {
+    "n": 377,
+    "episodes": 31,
+    "horizon": 60,
+    "win_rate": 0.7741935483870968,
+    "win_ci": [
+     0.6018723994130262,
+     0.8860500840550121
+    ],
+    "median": 0.09986704485472253,
+    "p10": -0.12373878207627442,
+    "worst": -0.2504519148962373,
+    "cvar10": -0.1837732068606068,
+    "top_share": 0.12712938047280734
    },
    "spike": null,
+   "cluster": "equipment",
+   "size": {
+    "weight": 0.17006183446698872,
+    "dollars": 1190.432841268921,
+    "capped": false
+   },
+   "earnings": {
+    "date": "2026-10-14",
+    "sessions": 11
+   },
    "verdict": "neutral",
    "why": [
     "%B 0.86 \u2014 no measured edge either way"
@@ -5110,7 +8246,32 @@
     "p10": null,
     "median": null
    },
+   "dip_history": {
+    "n": 279,
+    "episodes": 17,
+    "horizon": 60,
+    "win_rate": 0.47058823529411764,
+    "win_ci": [
+     0.26164801196088106,
+     0.6903710268845051
+    ],
+    "median": -0.02925328107286085,
+    "p10": -0.4265091927572314,
+    "worst": -0.45460886095606223,
+    "cvar10": -0.44055902685664683,
+    "top_share": 0.44400059248985924
+   },
    "spike": null,
+   "cluster": null,
+   "size": {
+    "weight": 0.09397706419485195,
+    "dollars": 657.8394493639637,
+    "capped": false
+   },
+   "earnings": {
+    "date": "2026-11-09",
+    "sessions": 29
+   },
    "verdict": "no_hold_data",
    "why": [
     "hold gate not measurable \u2014 under 4 independent 2-year windows of history"
@@ -5133,19 +8294,44 @@
     "lower": 402.7809602824312
    },
    "vs_sma20": 0.04995359642083441,
-   "vs_sma200": 0.18520736873099897,
-   "range_pos": 0.886306152206623,
+   "vs_sma200": 0.18520736257825354,
+   "range_pos": 0.8863061353573688,
    "range_n": 252,
-   "atr_pct": 0.023523336829786162,
+   "atr_pct": 0.023523336758940517,
    "dollar_volume": 4586024291.4123535,
    "hold": {
-    "n": 2008,
+    "n": 2007,
     "n_independent": 4,
-    "positive": 0.828187250996016,
-    "p10": -0.15959178882380431,
-    "median": 0.876735615717686
+    "positive": 0.828101644245142,
+    "p10": -0.15959206297377204,
+    "median": 0.8767366422292204
+   },
+   "dip_history": {
+    "n": 394,
+    "episodes": 31,
+    "horizon": 60,
+    "win_rate": 0.7419354838709677,
+    "win_ci": [
+     0.5675352757228489,
+     0.8629845626313024
+    ],
+    "median": 0.09891365079312653,
+    "p10": -0.12210846637461759,
+    "worst": -0.23809112348160066,
+    "cvar10": -0.17914289604099043,
+    "top_share": 0.13208060374784877
    },
    "spike": null,
+   "cluster": "compute",
+   "size": {
+    "weight": 0.2,
+    "dollars": 1400.0,
+    "capped": true
+   },
+   "earnings": {
+    "date": "2026-10-15",
+    "sessions": 12
+   },
    "verdict": "neutral",
    "why": [
     "%B 0.88 \u2014 no measured edge either way"
@@ -5173,13 +8359,38 @@
    "atr_pct": 0.03328673378431869,
    "dollar_volume": 694670325.2349854,
    "hold": {
-    "n": 2008,
+    "n": 2007,
     "n_independent": 4,
-    "positive": 0.9770916334661355,
+    "positive": 0.9770802192326856,
     "p10": 0.24064652525471453,
-    "median": 0.710872084438041
+    "median": 0.7105972286923439
+   },
+   "dip_history": {
+    "n": 384,
+    "episodes": 32,
+    "horizon": 60,
+    "win_rate": 0.6875,
+    "win_ci": [
+     0.514330003019676,
+     0.8204764788338126
+    ],
+    "median": 0.06577709452948133,
+    "p10": -0.09573007006835021,
+    "worst": -0.2525562070444657,
+    "cvar10": -0.15629097414693496,
+    "top_share": 0.15385949345953545
    },
    "spike": null,
+   "cluster": null,
+   "size": {
+    "weight": 0.15020999153589198,
+    "dollars": 1051.469940751244,
+    "capped": false
+   },
+   "earnings": {
+    "date": "2026-10-26",
+    "sessions": 19
+   },
    "verdict": "neutral",
    "why": [
     "%B 0.88 \u2014 no measured edge either way"
@@ -5202,19 +8413,44 @@
     "lower": 318.54526027948395
    },
    "vs_sma20": 0.09761529023121907,
-   "vs_sma200": 0.21422268627273833,
-   "range_pos": 0.765925814513645,
+   "vs_sma200": 0.2142226845909596,
+   "range_pos": 0.7659258043618864,
    "range_n": 252,
-   "atr_pct": 0.05050193365719964,
+   "atr_pct": 0.05050193364541361,
    "dollar_volume": 947261564.3615723,
    "hold": {
-    "n": 2008,
+    "n": 2007,
     "n_independent": 4,
-    "positive": 0.7504980079681275,
-    "p10": -0.19181629294803193,
-    "median": 0.4965609313140624
+    "positive": 0.750373692077728,
+    "p10": -0.19181634994960595,
+    "median": 0.4957664300103519
+   },
+   "dip_history": {
+    "n": 407,
+    "episodes": 27,
+    "horizon": 60,
+    "win_rate": 0.5925925925925926,
+    "win_ci": [
+     0.4072638305536409,
+     0.7548548662714265
+    ],
+    "median": 0.08863175971866699,
+    "p10": -0.20307423666105606,
+    "worst": -0.39210095289708335,
+    "cvar10": -0.29767424375913615,
+    "top_share": 0.15945866931262834
    },
    "spike": null,
+   "cluster": "equipment",
+   "size": {
+    "weight": 0.09900611004533448,
+    "dollars": 693.0427703173414,
+    "capped": false
+   },
+   "earnings": {
+    "date": "2026-10-21",
+    "sessions": 16
+   },
    "verdict": "neutral",
    "why": [
     "%B 0.88 \u2014 no measured edge either way"
@@ -5238,19 +8474,44 @@
     "lower": 409.50048514127434
    },
    "vs_sma20": 0.07437361651297736,
-   "vs_sma200": 0.15399569191069484,
-   "range_pos": 0.5466800691994175,
+   "vs_sma200": 0.15399569358053,
+   "range_pos": 0.5466800425659107,
    "range_n": 252,
-   "atr_pct": 0.04062829935604496,
+   "atr_pct": 0.04062829935608931,
    "dollar_volume": 3315868278.4194946,
    "hold": {
-    "n": 2008,
+    "n": 2007,
     "n_independent": 4,
-    "positive": 0.9223107569721115,
-    "p10": 0.01552970459215608,
-    "median": 0.5141707525868167
+    "positive": 0.922272047832586,
+    "p10": 0.01552982375525147,
+    "median": 0.5141709867170525
+   },
+   "dip_history": {
+    "n": 387,
+    "episodes": 30,
+    "horizon": 60,
+    "win_rate": 0.7,
+    "win_ci": [
+     0.5212387898833981,
+     0.8333543735604105
+    ],
+    "median": 0.16829505989003302,
+    "p10": -0.1256905547874022,
+    "worst": -0.20791461832552505,
+    "cvar10": -0.16582352118129395,
+    "top_share": 0.13285646868408701
    },
    "spike": null,
+   "cluster": "equipment",
+   "size": {
+    "weight": 0.12306692820630227,
+    "dollars": 861.4684974441159,
+    "capped": false
+   },
+   "earnings": {
+    "date": "2026-11-12",
+    "sessions": 32
+   },
    "verdict": "neutral",
    "why": [
     "%B 0.89 \u2014 no measured edge either way"
@@ -5278,13 +8539,38 @@
    "atr_pct": 0.013698711535766482,
    "dollar_volume": 569451827.799797,
    "hold": {
-    "n": 2008,
+    "n": 2007,
     "n_independent": 4,
-    "positive": 0.40239043824701193,
+    "positive": 0.4020926756352765,
     "p10": -0.6103850250424572,
-    "median": -0.08557780979707696
+    "median": -0.08603147978022263
+   },
+   "dip_history": {
+    "n": 531,
+    "episodes": 33,
+    "horizon": 60,
+    "win_rate": 0.48484848484848486,
+    "win_ci": [
+     0.32503781646924224,
+     0.6478189541378976
+    ],
+    "median": -0.0328389941807008,
+    "p10": -0.18963828613810552,
+    "worst": -0.48320278259751726,
+    "cvar10": -0.3958700580444419,
+    "top_share": 0.3494361909155874
    },
    "spike": null,
+   "cluster": null,
+   "size": {
+    "weight": 0.2,
+    "dollars": 1400.0,
+    "capped": true
+   },
+   "earnings": {
+    "date": "2026-11-05",
+    "sessions": 27
+   },
    "verdict": "neutral",
    "why": [
     "%B 0.89 \u2014 no measured edge either way"
@@ -5312,13 +8598,38 @@
    "atr_pct": 0.046704065107570504,
    "dollar_volume": 21545471.534729004,
    "hold": {
-    "n": 2008,
+    "n": 2007,
     "n_independent": 4,
-    "positive": 0.704183266932271,
+    "positive": 0.7040358744394619,
     "p10": -0.310212349437054,
-    "median": 0.19600249246270685
+    "median": 0.19520873817438367
+   },
+   "dip_history": {
+    "n": 460,
+    "episodes": 32,
+    "horizon": 60,
+    "win_rate": 0.625,
+    "win_ci": [
+     0.45254100589525126,
+     0.7706633153404079
+    ],
+    "median": 0.03537650869521003,
+    "p10": -0.2404966465138224,
+    "worst": -0.4178120483391955,
+    "cvar10": -0.30238081291453694,
+    "top_share": 0.09927516743776585
    },
    "spike": null,
+   "cluster": "humanoid",
+   "size": {
+    "weight": 0.10705706213118318,
+    "dollars": 749.3994349182823,
+    "capped": false
+   },
+   "earnings": {
+    "date": "2026-11-04",
+    "sessions": 26
+   },
    "verdict": "neutral",
    "why": [
     "%B 0.91 \u2014 no measured edge either way"
@@ -5340,19 +8651,44 @@
     "lower": 76.36435093780521
    },
    "vs_sma20": 0.045929804436591004,
-   "vs_sma200": 0.1505699088553234,
+   "vs_sma200": 0.1505699121376045,
    "range_pos": 0.8811233115704119,
    "range_n": 252,
-   "atr_pct": 0.03348597973903714,
+   "atr_pct": 0.03348597966315466,
    "dollar_volume": 942902610.0112915,
    "hold": {
-    "n": 2008,
+    "n": 2007,
     "n_independent": 4,
-    "positive": 0.9825697211155379,
-    "p10": 0.14323234489329062,
-    "median": 0.4505606260014663
+    "positive": 0.9825610363726955,
+    "p10": 0.14323252029939715,
+    "median": 0.4492061562599605
+   },
+   "dip_history": {
+    "n": 390,
+    "episodes": 28,
+    "horizon": 60,
+    "win_rate": 0.7142857142857143,
+    "win_ci": [
+     0.529403642629825,
+     0.8474618415167003
+    ],
+    "median": 0.0667028170809123,
+    "p10": -0.12104024084826648,
+    "worst": -0.2013865601905206,
+    "cvar10": -0.1638163006578356,
+    "top_share": 0.265397116527275
    },
    "spike": null,
+   "cluster": "humanoid",
+   "size": {
+    "weight": 0.14931622279821208,
+    "dollars": 1045.2135595874845,
+    "capped": false
+   },
+   "earnings": {
+    "date": "2026-10-28",
+    "sessions": 21
+   },
    "verdict": "neutral",
    "why": [
     "%B 0.91 \u2014 no measured edge either way"
@@ -5380,13 +8716,38 @@
    "atr_pct": 0.025032310085468683,
    "dollar_volume": 184893108.68530273,
    "hold": {
-    "n": 2008,
+    "n": 2007,
     "n_independent": 4,
-    "positive": 0.3256972111553785,
+    "positive": 0.32536123567513703,
     "p10": -0.453334333108384,
-    "median": -0.1284723279477361
+    "median": -0.12889391896956126
+   },
+   "dip_history": {
+    "n": 537,
+    "episodes": 31,
+    "horizon": 60,
+    "win_rate": 0.4838709677419355,
+    "win_ci": [
+     0.3196998603127883,
+     0.6515988171302683
+    ],
+    "median": -0.015047314118111776,
+    "p10": -0.18088809296250552,
+    "worst": -0.2989607803801686,
+    "cvar10": -0.25521006129075624,
+    "top_share": 0.14382030742689517
    },
    "spike": null,
+   "cluster": null,
+   "size": {
+    "weight": 0.19974185294638516,
+    "dollars": 1398.192970624696,
+    "capped": false
+   },
+   "earnings": {
+    "date": "2026-10-28",
+    "sessions": 21
+   },
    "verdict": "neutral",
    "why": [
     "%B 0.93 \u2014 no measured edge either way"
@@ -5408,19 +8769,44 @@
     "lower": 291.61986560169
    },
    "vs_sma20": 0.04223103364442138,
-   "vs_sma200": 0.0629519447355773,
-   "range_pos": 0.6551969297638381,
+   "vs_sma200": 0.06295194068130194,
+   "range_pos": 0.6551969569958153,
    "range_n": 252,
-   "atr_pct": 0.03893212350794361,
+   "atr_pct": 0.03893212353959344,
    "dollar_volume": 309695586.8331909,
    "hold": {
-    "n": 2008,
+    "n": 2007,
     "n_independent": 4,
-    "positive": 0.950199203187251,
-    "p10": 0.08433884530573321,
-    "median": 0.7850105455565286
+    "positive": 0.9501743896362731,
+    "p10": 0.08433877017631941,
+    "median": 0.785010559663823
+   },
+   "dip_history": {
+    "n": 392,
+    "episodes": 31,
+    "horizon": 60,
+    "win_rate": 0.6129032258064516,
+    "win_ci": [
+     0.4382380114113197,
+     0.7626712464872843
+    ],
+    "median": 0.05758154078283484,
+    "p10": -0.12353644816190301,
+    "worst": -0.14760325353610904,
+    "cvar10": -0.14188007351983026,
+    "top_share": 0.18210235624727789
    },
    "spike": null,
+   "cluster": "humanoid",
+   "size": {
+    "weight": 0.12842864825791145,
+    "dollars": 899.0005378053802,
+    "capped": false
+   },
+   "earnings": {
+    "date": "2026-09-30",
+    "sessions": 1
+   },
    "verdict": "neutral",
    "why": [
     "%B 0.95 \u2014 no measured edge either way"
@@ -5454,7 +8840,32 @@
     "p10": null,
     "median": null
    },
+   "dip_history": {
+    "n": 425,
+    "episodes": 23,
+    "horizon": 60,
+    "win_rate": 0.5217391304347826,
+    "win_ci": [
+     0.3296242986421849,
+     0.7076313046005427
+    ],
+    "median": 0.0503955963466558,
+    "p10": -0.3607486938971439,
+    "worst": -0.4898228190729722,
+    "cvar10": -0.47406035544635144,
+    "top_share": 0.2659904489888369
+   },
    "spike": null,
+   "cluster": null,
+   "size": {
+    "weight": 0.07773443804469786,
+    "dollars": 544.1410663128851,
+    "capped": false
+   },
+   "earnings": {
+    "date": "2026-11-05",
+    "sessions": 27
+   },
    "verdict": "no_hold_data",
    "why": [
     "hold gate not measurable \u2014 under 4 independent 2-year windows of history"
@@ -5476,19 +8887,44 @@
     "lower": 344.22954839521367
    },
    "vs_sma20": 0.06709446030318977,
-   "vs_sma200": 0.11297335054674051,
+   "vs_sma200": 0.11297334528883618,
    "range_pos": 0.7803564760055439,
    "range_n": 252,
-   "atr_pct": 0.028180803648620363,
-   "dollar_volume": 1231823612.0819092,
+   "atr_pct": 0.02818080364879363,
+   "dollar_volume": 1250278796.9818115,
    "hold": {
-    "n": 2008,
+    "n": 2007,
     "n_independent": 4,
-    "positive": 0.9815737051792829,
-    "p10": 0.15115260911243067,
-    "median": 0.3797332834766032
+    "positive": 0.9815645241654211,
+    "p10": 0.151153041284263,
+    "median": 0.378686938540739
+   },
+   "dip_history": {
+    "n": 417,
+    "episodes": 33,
+    "horizon": 60,
+    "win_rate": 0.6060606060606061,
+    "win_ci": [
+     0.4368314280651038,
+     0.7531711776849179
+    ],
+    "median": 0.038149609382957195,
+    "p10": -0.06423878234004732,
+    "worst": -0.17870489696860903,
+    "cvar10": -0.13989694726641655,
+    "top_share": 0.12625186951272666
    },
    "spike": null,
+   "cluster": null,
+   "size": {
+    "weight": 0.17742574208716866,
+    "dollars": 1241.9801946101807,
+    "capped": false
+   },
+   "earnings": {
+    "date": "2026-11-24",
+    "sessions": 40
+   },
    "verdict": "neutral",
    "why": [
     "%B 0.97 \u2014 no measured edge either way"
@@ -5516,13 +8952,38 @@
    "atr_pct": 0.027830281400529178,
    "dollar_volume": 955585981.4086914,
    "hold": {
-    "n": 2008,
+    "n": 2007,
     "n_independent": 4,
-    "positive": 0.8466135458167331,
+    "positive": 0.8465371200797209,
     "p10": -0.06852372212851787,
-    "median": 0.4718071485179045
+    "median": 0.47119000374651376
+   },
+   "dip_history": {
+    "n": 422,
+    "episodes": 30,
+    "horizon": 60,
+    "win_rate": 0.5333333333333333,
+    "win_ci": [
+     0.3614201328152505,
+     0.6976787277587178
+    ],
+    "median": 0.056715449736590484,
+    "p10": -0.13558131050366284,
+    "worst": -0.26310136717475363,
+    "cvar10": -0.19532075156886608,
+    "top_share": 0.11447074150764297
    },
    "spike": null,
+   "cluster": null,
+   "size": {
+    "weight": 0.1796604183781242,
+    "dollars": 1257.6229286468692,
+    "capped": false
+   },
+   "earnings": {
+    "date": "2026-10-20",
+    "sessions": 15
+   },
    "verdict": "neutral",
    "why": [
     "%B 0.97 \u2014 no measured edge either way"
@@ -5544,19 +9005,44 @@
     "lower": 249.35676268509525
    },
    "vs_sma20": 0.05349022232424816,
-   "vs_sma200": 0.13580972001636016,
+   "vs_sma200": 0.13580972213825415,
    "range_pos": 0.7092372188241457,
    "range_n": 252,
-   "atr_pct": 0.029178473150808484,
+   "atr_pct": 0.029178473150804816,
    "dollar_volume": 1688999750.7080078,
    "hold": {
-    "n": 2008,
+    "n": 2007,
     "n_independent": 4,
-    "positive": 0.8829681274900398,
-    "p10": -0.01770252643895709,
-    "median": 0.30108477867104644
+    "positive": 0.8829098156452416,
+    "p10": -0.017702424727188748,
+    "median": 0.3009496156903939
+   },
+   "dip_history": {
+    "n": 427,
+    "episodes": 32,
+    "horizon": 60,
+    "win_rate": 0.65625,
+    "win_ci": [
+     0.4831077350878594,
+     0.7958976664567146
+    ],
+    "median": 0.03924740382992198,
+    "p10": -0.11294608680849294,
+    "worst": -0.15511877383381334,
+    "cvar10": -0.13707492537117136,
+    "top_share": 0.16890468712391016
    },
    "spike": null,
+   "cluster": null,
+   "size": {
+    "weight": 0.17135920629425008,
+    "dollars": 1199.5144440597505,
+    "capped": false
+   },
+   "earnings": {
+    "date": "2026-10-27",
+    "sessions": 20
+   },
    "verdict": "neutral",
    "why": [
     "%B 0.98 \u2014 no measured edge either way"
@@ -5578,19 +9064,44 @@
     "lower": 69.08793486697729
    },
    "vs_sma20": 0.05995107915224063,
-   "vs_sma200": 0.000434766466790526,
-   "range_pos": 0.5559155682783353,
+   "vs_sma200": 0.00043476769098416135,
+   "range_pos": 0.5559155994608141,
    "range_n": 252,
-   "atr_pct": 0.035930204335367505,
+   "atr_pct": 0.03593020433555604,
    "dollar_volume": 687731887.8486633,
    "hold": {
-    "n": 2008,
+    "n": 2007,
     "n_independent": 4,
-    "positive": 0.7609561752988048,
-    "p10": -0.16483351224259857,
-    "median": 0.15701737073118172
+    "positive": 0.7608370702541106,
+    "p10": -0.16483374807168671,
+    "median": 0.15691861613312175
+   },
+   "dip_history": {
+    "n": 471,
+    "episodes": 32,
+    "horizon": 60,
+    "win_rate": 0.5625,
+    "win_ci": [
+     0.3932530203122613,
+     0.7183491403055682
+    ],
+    "median": 0.06949866051000075,
+    "p10": -0.17299839919283788,
+    "worst": -0.26555627592108155,
+    "cvar10": -0.22318845988622668,
+    "top_share": 0.14618456621448522
    },
    "spike": null,
+   "cluster": null,
+   "size": {
+    "weight": 0.13915868535854856,
+    "dollars": 974.1107975098399,
+    "capped": false
+   },
+   "earnings": {
+    "date": "2026-11-05",
+    "sessions": 27
+   },
    "verdict": "neutral",
    "why": [
     "%B 0.99 \u2014 no measured edge either way"
@@ -5612,19 +9123,44 @@
     "lower": 223.1769645591088
    },
    "vs_sma20": 0.030129675168014014,
-   "vs_sma200": 0.09705917827294863,
+   "vs_sma200": 0.09705917556191435,
    "range_pos": 0.8369682982753746,
    "range_n": 252,
-   "atr_pct": 0.02180791302246508,
+   "atr_pct": 0.021807913022611845,
    "dollar_volume": 514957424.1897583,
    "hold": {
-    "n": 2008,
+    "n": 2007,
     "n_independent": 4,
-    "positive": 0.8047808764940239,
-    "p10": -0.07012288010288104,
-    "median": 0.29765870393439764
+    "positive": 0.8046836073741903,
+    "p10": -0.070122643016574,
+    "median": 0.2973184200161916
+   },
+   "dip_history": {
+    "n": 408,
+    "episodes": 29,
+    "horizon": 60,
+    "win_rate": 0.6551724137931034,
+    "win_ci": [
+     0.47344776507155983,
+     0.8005949125080951
+    ],
+    "median": 0.0610118450569741,
+    "p10": -0.15385685613745803,
+    "worst": -0.26914878117254804,
+    "cvar10": -0.19707111198278374,
+    "top_share": 0.13684015709422262
    },
    "spike": null,
+   "cluster": null,
+   "size": {
+    "weight": 0.2,
+    "dollars": 1400.0,
+    "capped": true
+   },
+   "earnings": {
+    "date": "2026-11-19",
+    "sessions": 37
+   },
    "verdict": "neutral",
    "why": [
     "%B 1.00 \u2014 no measured edge either way"
@@ -5650,7 +9186,7 @@
    "range_pos": 0.8951681240447836,
    "range_n": 252,
    "atr_pct": 0.04802349756638614,
-   "dollar_volume": 943083544.1070557,
+   "dollar_volume": 943303535.5041504,
    "hold": {
     "n": 0,
     "n_independent": 0,
@@ -5658,7 +9194,32 @@
     "p10": null,
     "median": null
    },
+   "dip_history": {
+    "n": 308,
+    "episodes": 21,
+    "horizon": 60,
+    "win_rate": 0.6190476190476191,
+    "win_ci": [
+     0.40878295815501514,
+     0.7924923220201749
+    ],
+    "median": 0.0629699106597601,
+    "p10": -0.22660129522186478,
+    "worst": -0.34181208258507234,
+    "cvar10": -0.3154171096717007,
+    "top_share": 0.22685219095590706
+   },
    "spike": null,
+   "cluster": null,
+   "size": {
+    "weight": 0.10411569863457282,
+    "dollars": 728.8098904420098,
+    "capped": false
+   },
+   "earnings": {
+    "date": "2026-11-05",
+    "sessions": 27
+   },
    "verdict": "no_hold_data",
    "why": [
     "hold gate not measurable \u2014 under 4 independent 2-year windows of history"
@@ -5681,18 +9242,43 @@
    },
    "vs_sma20": 0.05437960742043568,
    "vs_sma200": 0.10055032644255846,
-   "range_pos": 0.9190306665384187,
+   "range_pos": 0.9190306510858046,
    "range_n": 252,
-   "atr_pct": 0.0202220855394311,
+   "atr_pct": 0.020222085539485124,
    "dollar_volume": 298079804.7180176,
    "hold": {
-    "n": 2008,
+    "n": 2007,
     "n_independent": 4,
-    "positive": 0.9905378486055777,
-    "p10": 0.15269358372131547,
-    "median": 0.35606704550227053
+    "positive": 0.9905331340308918,
+    "p10": 0.15269340751136773,
+    "median": 0.356044241135272
+   },
+   "dip_history": {
+    "n": 387,
+    "episodes": 30,
+    "horizon": 60,
+    "win_rate": 0.6666666666666666,
+    "win_ci": [
+     0.48779725813830266,
+     0.807697044731538
+    ],
+    "median": 0.06231940901866162,
+    "p10": -0.06313383481575607,
+    "worst": -0.24126766289644652,
+    "cvar10": -0.17087370402499355,
+    "top_share": 0.10922098949340828
    },
    "spike": null,
+   "cluster": "humanoid",
+   "size": {
+    "weight": 0.2,
+    "dollars": 1400.0,
+    "capped": true
+   },
+   "earnings": {
+    "date": "2026-10-29",
+    "sessions": 22
+   },
    "verdict": "extended",
    "why": [
     "%B 1.02 \u2014 the stall zone (\u22122.65 pts vs null @60d)"
@@ -5717,16 +9303,41 @@
    "vs_sma200": 0.11163410606971613,
    "range_pos": 0.8931178981869965,
    "range_n": 252,
-   "atr_pct": 0.02299065197408148,
+   "atr_pct": 0.022990651974080668,
    "dollar_volume": 333703921.34017944,
    "hold": {
-    "n": 2008,
+    "n": 2007,
     "n_independent": 4,
-    "positive": 0.8466135458167331,
-    "p10": -0.034139810451925046,
-    "median": 0.280893945549044
+    "positive": 0.8465371200797209,
+    "p10": -0.03413990283290058,
+    "median": 0.28049500722048504
+   },
+   "dip_history": {
+    "n": 414,
+    "episodes": 31,
+    "horizon": 60,
+    "win_rate": 0.6451612903225806,
+    "win_ci": [
+     0.469476380428149,
+     0.7888355225843418
+    ],
+    "median": 0.032848447008076764,
+    "p10": -0.08054859062615871,
+    "worst": -0.20186152010971226,
+    "cvar10": -0.13086917473941098,
+    "top_share": 0.11784678042319639
    },
    "spike": null,
+   "cluster": "humanoid",
+   "size": {
+    "weight": 0.2,
+    "dollars": 1400.0,
+    "capped": true
+   },
+   "earnings": {
+    "date": "2026-11-04",
+    "sessions": 26
+   },
    "verdict": "extended",
    "why": [
     "%B 1.05 \u2014 the stall zone (\u22122.65 pts vs null @60d)"
@@ -5748,19 +9359,44 @@
     "lower": 323.36316438097
    },
    "vs_sma20": 0.05521044024849742,
-   "vs_sma200": 0.033244342763129486,
-   "range_pos": 0.7020247996230579,
+   "vs_sma200": 0.033244340945890016,
+   "range_pos": 0.7020247368326782,
    "range_n": 252,
-   "atr_pct": 0.020529488649227334,
+   "atr_pct": 0.020529488635230374,
    "dollar_volume": 522018770.6726074,
    "hold": {
-    "n": 2008,
+    "n": 2007,
     "n_independent": 4,
-    "positive": 0.899402390438247,
-    "p10": -0.0020933463119520157,
-    "median": 0.3631470373263179
+    "positive": 0.8993522670652716,
+    "p10": -0.002093232493660113,
+    "median": 0.3620674474334762
+   },
+   "dip_history": {
+    "n": 394,
+    "episodes": 29,
+    "horizon": 60,
+    "win_rate": 0.7241379310344828,
+    "win_ci": [
+     0.5428252365556403,
+     0.8530141866149725
+    ],
+    "median": 0.037879999350158844,
+    "p10": -0.08075406616346403,
+    "worst": -0.4915204987229277,
+    "cvar10": -0.2400621475914754,
+    "top_share": 0.1660365589470536
    },
    "spike": null,
+   "cluster": null,
+   "size": {
+    "weight": 0.2,
+    "dollars": 1400.0,
+    "capped": true
+   },
+   "earnings": {
+    "date": "2026-11-03",
+    "sessions": 25
+   },
    "verdict": "extended",
    "why": [
     "%B 1.07 \u2014 the stall zone (\u22122.65 pts vs null @60d)"
