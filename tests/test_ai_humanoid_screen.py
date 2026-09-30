@@ -900,3 +900,12 @@ def test_earnings_pill_only_within_five_sessions():
     assert ar._earn_pill({"earnings": None}) == "" and ar._earn_pill(None) == ""
     assert "reported last session" in ar._earn_pill({"earnings": {"date": "x", "sessions": -1}})
     assert ar._earn_pill({"earnings": {"date": "x", "sessions": -2}}) == ""
+
+
+def test_robustness_section_quotes_the_stored_grid():
+    from pathlib import Path
+    r = json.loads((Path(ar.__file__).resolve().parent / "quarterly_rotation" / "results"
+                    / "robustness_v1.json").read_text())
+    h = ar._robustness_section()
+    assert f"<b>{r['ai']['grid']['0.20|60|next_open']['edge']*100:+.2f}</b>" in h
+    assert ("demoted" in h) and (("not demoted" in h) == (not r["ai"]["verdict"]["demoted"]))

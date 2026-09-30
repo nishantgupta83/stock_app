@@ -634,6 +634,52 @@ def _regime_html(data) -> str:
             + '</div></section>')
 
 
+def _robustness_section() -> str:
+    """The demote-only robustness grid, read from its committed result file."""
+    from pathlib import Path
+    f = Path(__file__).resolve().parent / "quarterly_rotation" / "results" / "robustness_v1.json"
+    try:
+        r = json.loads(f.read_text())
+        g, v = r["ai"]["grid"], r["ai"]["verdict"]
+    except (OSError, ValueError, KeyError):
+        return ""
+    holds = (20, 40, 60, 90)
+    head = "".join(f"<th>{h}d</th>" for h in holds)
+    body = []
+    for th in ("0.10", "0.15", "0.20", "0.25", "0.30"):
+        cells = []
+        for h in holds:
+            c = g.get(f"{th}|{h}|next_open") or {}
+            e = c.get("edge")
+            mark = ' class="pos"' if (e or 0) > 0 else ' class="neg"' if (e or 0) < 0 else ""
+            b = "<b>%s</b>" if (th == "0.20" and h == 60) else "%s"
+            cells.append(f"<td{mark}>" + (b % ("—" if e is None else f"{e*100:+.2f}")) + "</td>")
+        body.append(f"<tr><td>%B &lt; {th}</td>{''.join(cells)}</tr>")
+    years = r["ai"].get("by_year") or {}
+    yr = " · ".join(f"{y} {_p(x['edge'], 1)}" for y, x in years.items() if x.get("edge") is not None)
+    idx = r.get("indices") or {}
+    ix = " · ".join(f"{t} {_p(x['default']['edge'], 2)}" for t, x in idx.items())
+    reg = r["ai"].get("by_regime") or {}
+    rg = " · ".join(f"{k.replace('qqq_', 'QQQ ').replace('_', ' ')} {_p(x['edge'], 2)}"
+                    for k, x in reg.items() if x.get("edge") is not None)
+    return (
+        '<section id="robustness"><h2>Is %B &lt; 0.20 / 60 days a lucky setting?</h2>'
+        '<p class="sub">Daily entries at the next open on the 34 AI stocks over 10 years, edge vs every '
+        'session for the same names. The rule was fixed before this ran: the grid can only demote '
+        'the default, never pick a different cell. Result: <b>'
+        + ("demoted" if v["demoted"] else "not demoted — it sits on a plateau")
+        + '</b>. Deeper dips test a little better and every cell is positive, but the default edge is '
+        + ("—" if v["default_edge"] is None else f"{v['default_edge']*100:+.2f} pts") + ' over 10 years, well below the +3.47 pts measured on 2023+ alone.</p>'
+        '<div class="tw"><table class="tsoxx"><tr><th>edge vs null, pts</th>' + head + '</tr>' + "".join(body) + '</table></div>'
+        '<p class="sub"><b>By year (default cell):</b> ' + html.escape(yr) + '<br>'
+        '<b>By market:</b> ' + html.escape(rg) + '<br>'
+        '<b>Same rule on indices since 1999</b> (no hand-picked names): ' + html.escape(ix) + ' — '
+        + ("positive on at least 2 of 3" if r.get("indices_transfer") else "does not transfer")
+        + '. Episodes are counted per name, and the names dip together, so the independent '
+        'count is far lower than the raw one. Source: <code>scripts/quarterly_rotation/robustness.py</code>.</p>'
+        '</section>')
+
+
 def render(data: dict) -> str:
     from ai_humanoid_screen import PINNED, AI_HUMANOID
     script = (SCRIPT
@@ -654,7 +700,7 @@ def render(data: dict) -> str:
         return f'<div class="tw"><table>{th}{"".join(_row(r) for r in rs)}</table></div>' if rs \
             else '<p class="none">Nothing in this group today.</p>'
 
-    rotation_html = _rotation_section()
+    rotation_html = _rotation_section() + _robustness_section()
     regime_html = _regime_html(data)
     pinned_html = ""
     for tag, ttl, sub in PINNED:
