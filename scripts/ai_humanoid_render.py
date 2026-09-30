@@ -98,7 +98,8 @@ async function quote(sym) {
   if (!r.ok || j.error) throw new Error(j.error || ('HTTP ' + r.status));
   return j;
 }
-function card(q, a, v, cash, pf) {
+function card(q, a, v, cash, pf, risk) {
+  const sz = (a.atr_pct > 0 && pf > 0) ? Math.min(0.20, (risk || 0.01) / (2 * a.atr_pct)) * pf : null;
   const shares = (cash > 0 && a.close) ? Math.floor(cash / a.close) : 0;
   const atrD = a.atr_pct ? a.atr_pct * a.close * shares : null;
   const chk = [
@@ -122,6 +123,7 @@ function card(q, a, v, cash, pf) {
     + '<div><span>ATR(14)</span><span>' + pc(a.atr_pct, 1) + '</span></div>'
     + '<div><span>Exit level (20d mid)</span><span>' + (a.band ? usd(a.band.mid) + ' (' + pcs(a.band.mid / a.close - 1) + ')' : '—') + '</span></div>'
     + '<div><span>Shares for ' + usd(cash) + '</span><span>' + (shares || '—') + '</span></div>'
+    + '<div><span>Volatility-scaled size (2-ATR stop = ' + pc(risk || 0.01, 1) + ' of portfolio, 20% cap)</span><span>' + (sz ? usd(sz) : '—') + '</span></div>'
     + '<div><span>Share of portfolio</span><span>' + (pf > 0 && a.close ? pc(shares * a.close / pf, 1) : '—') + '</span></div>'
     + '<div><span>A quiet day moves it</span><span>' + (atrD ? '± ' + usd(atrD) : '—') + '</span></div>'
     + '<div><span>Min sane stop (1 ATR)</span><span>' + (atrD ? usd(atrD) : '—') + '</span></div>'
@@ -136,14 +138,14 @@ function card(q, a, v, cash, pf) {
     go.disabled = true; go.textContent = '…'; err.hidden = true;
     try {
       const q = await quote(s), a = analyse(q.symbol, q.bars);
-      out.innerHTML = card(q, a, verdict(a), parseFloat($('q-cash').value) || 0, parseFloat($('q-pf').value) || 0);
+      out.innerHTML = card(q, a, verdict(a), parseFloat($('q-cash').value) || 0, parseFloat($('q-pf').value) || 0, (parseFloat($('q-risk').value) || 1) / 100);
       out.hidden = false;
     } catch (e) { err.textContent = s + ': ' + e.message; err.hidden = false; out.hidden = true; }
     finally { go.disabled = false; go.textContent = 'Check'; }
   }
   go.addEventListener('click', run);
   sym.addEventListener('keydown', function (e) { if (e.key === 'Enter') { e.preventDefault(); run(); } });
-  ['q-cash', 'q-pf'].forEach(function (i) { $(i).addEventListener('input', function () { if (!out.hidden) run(); }); });
+  ['q-cash', 'q-pf', 'q-risk'].forEach(function (i) { $(i).addEventListener('input', function () { if (!out.hidden) run(); }); });
   run();
 
   // Refresh only the pinned sections. A live refresh of all 146 rows would be 146 upstream
@@ -309,6 +311,41 @@ VERDICT = {
 }
 
 
+def _earn_pill(r) -> str:
+    """Pill when the next earnings report is within 5 sessions of the row's bar date."""
+    es = ((r or {}).get("earnings") or {}).get("sessions")
+    if es is None or es > 5 or es < -1:
+        return ""
+    when = ("reported last session" if es == -1 else "today" if es == 0
+            else f"in {es} session" + ("" if es == 1 else "s"))
+    return f'<span class="earn">earnings {when}</span>'
+
+
+def _dips_cell(d):
+    """This name's own past %B<0.20 dips, 60-session fixed hold, non-overlapping episodes."""
+    if not d or not d.get("episodes"):
+        return "—"
+    lo, hi = d["win_ci"]
+    title = (f"{d['episodes']} non-overlapping episodes ({d['n']} daily entries) · "
+             f"win {d['win_rate']*100:.0f}% (95% CI {lo*100:.0f}–{hi*100:.0f}%) · "
+             f"median {d['median']*100:+.1f}% · p10 {d['p10']*100:+.1f}% · worst {d['worst']*100:+.1f}% · "
+             f"CVaR10 {d['cvar10']*100:+.1f}%"
+             + (f" · top episode = {d['top_share']*100:.0f}% of gains" if d.get("top_share") is not None else "")
+             + " · next open, fixed 60-session hold")
+    few = '<span class="stale">few</span>' if d["episodes"] < 5 else ""
+    return (f'<span title="{html.escape(title)}">{d["win_rate"]*100:.0f}% of {d["episodes"]}{few}'
+            f'<br><span class="tiny">med {d["median"]*100:+.0f}% · CVaR {d["cvar10"]*100:+.0f}%</span></span>')
+
+
+def _size_cell(r):
+    z = r.get("size")
+    if not z or r.get("verdict") == "leveraged":
+        return "—"
+    half = ""
+    return (f'${z["dollars"]:,.0f}<br><span class="tiny">{z["weight"]*100:.0f}%'
+            f'{" cap" if z["capped"] else ""}</span>{half}')
+
+
 def _row(r):
     label, cls = VERDICT.get(r["verdict"], (r["verdict"], "v-mid"))
     dv = r.get("dollar_volume")
@@ -323,16 +360,20 @@ def _row(r):
     # A stale row's numbers are from an older session than the header claims. Say so on the
     # row rather than letting one as_of speak for a table of mixed dates.
     st = f'<span class="stale">{html.escape(str(r.get("as_of")))}</span>' if r.get("stale") else ""
+    ear_s = _earn_pill(r)
+    cl = r.get("cluster")
+    cl_s = f'<span class="tiny">{html.escape(cl)}</span> ' if cl else ""
     hn = h.get("n_independent")
     hn_s = f'<span class="tiny">{hn}w</span>' if hn else ""
     return f"""<tr class="{cls}">
-<td class="tk"><b>{html.escape(r['ticker'])}</b>{st}<br>{tag}</td>
+<td class="tk"><b>{html.escape(r['ticker'])}</b>{st}{ear_s}<br>{cl_s}{tag}</td>
 <td>{_f(r['close'])}</td><td>{_p(r.get('chg'), 2)}</td>
 <td class="pb">{'—' if r.get('pct_b') is None else f"{r['pct_b']:.2f}"}</td>
 <td>{_p(r.get('vs_sma20'))}</td><td>{_p(r.get('vs_sma200'))}</td><td>{rng}</td>
 <td>{_p(r.get('atr_pct'), 1, plus=False)}</td><td>{dvs}</td>
 <td>{'—' if h.get('positive') is None else f"{h['positive']*100:.0f}%"} {hn_s}</td>
-<td>{_p(h.get('p10'))}</td><td>{socs}</td>
+<td>{_p(h.get('p10'))}</td><td>{_dips_cell(r.get('dip_history'))}</td>
+<td>{_size_cell(r)}</td><td>{socs}</td>
 <td class="vd">{label}{'<br><span class="sp">SPIKE ' + _p(sp['move'], 1) + f" · {sp['vol_mult']:.1f}x</span>" if sp else ''}</td>
 </tr>"""
 
@@ -454,7 +495,7 @@ def _soxx_section(data):
             '<td class="c-1d %s">%s</td><td class="c-ctr %s"><b>%s</b></td>'
             '<td class="c-5d hide-sm">%s</td><td class="c-20d hide-sm">%s</td><td class="c-spark">%s</td>'
             '<td class="c-vs20"><span class="pill %s">%s</span></td></tr>'
-            % (k, w, html.escape(k), stale_pill, w, cls, _p(r1, 2), cls, _p(ctr, 3), _p(L["ret5"]),
+            % (k, w, html.escape(k), stale_pill + (("<br>" + _earn_pill(rows.get(k))) if _earn_pill(rows.get(k)) else ""), w, cls, _p(r1, 2), cls, _p(ctr, 3), _p(L["ret5"]),
                _p(L["ret20"]), _spark(ser[k]["closes"]), "p-st" if above is None else ("p-up" if above else "p-dn"),
                "n/a" if above is None else ("above 20d" if above else "BELOW 20d")))
 
@@ -485,6 +526,12 @@ def _soxx_section(data):
     if not t.get("tiles_ok", True):
         partial += ('<div class="cn warn">Fewer than 6 holdings have a 1-day return, so the tiles '
                     'below would describe a sliver of the fund and are not shown.</div>')
+    ss = data.get("soxx_stats") or {}
+    if ss:
+        partial += ('<div class="cn">SOXX 20-day realized vol <b>%s</b> (annualized) · 5-day drawdown '
+                    '<b>%s</b> · median holding vs its 20-day <b>%s</b> — the median keeps one or two '
+                    'large holdings from masking the rest.</div>'
+                    % (_p(ss.get("rvol20"), 0, plus=False), _p(ss.get("dd5"), 1), _p(ss.get("median_vs20"), 1)))
     aw = t.get("above_20d_weight")
     return (
         '<section class="pin soxx" id="soxx-movers" data-nightly="%s"><div class="pinhd"><h2>What is moving SOXX</h2>'
@@ -566,6 +613,27 @@ def _rotation_section() -> str:
         '</section>')
 
 
+def _regime_html(data) -> str:
+    g = data.get("regime")
+    if not g:
+        return ""
+    def tile(label, val):
+        return f'<div class="stat"><span>{label}</span><b class="sm">{val}</b></div>'
+    vix = "—" if g.get("vix") is None else f"{g['vix']:.1f}" + (
+        "" if g.get("vix_5d") is None else f" ({g['vix_5d']*100:+.0f}% 5d)")
+    return ('<section id="regime"><h2>Market backdrop: ' + html.escape(g["state"]) + '</h2>'
+            '<p class="sub">Descriptive only. Nothing on this page was measured by regime, so it does '
+            'not change a verdict. Broad risk-off = QQQ below its 200-day with VIX ≥ 25 or up 20% in '
+            '5 days; sector washout = SOXX below its 200-day or under 40% of the AI list above theirs.</p>'
+            '<div class="stats">'
+            + tile("QQQ vs 200-day", _p(g.get("qqq_vs200"), 1))
+            + tile("SOXX vs 200-day", _p(g.get("soxx_vs200"), 1))
+            + tile("VIX", vix)
+            + tile("AI list above 200-day", "—" if g.get("ai_above_200") is None else f"{g['ai_above_200']*100:.0f}%")
+            + tile("AI list, equal weight 5d / 20d", f"{_p(g.get('ai_ew_5d'), 1)} / {_p(g.get('ai_ew_20d'), 1)}")
+            + '</div></section>')
+
+
 def render(data: dict) -> str:
     from ai_humanoid_screen import PINNED, AI_HUMANOID
     script = (SCRIPT
@@ -579,13 +647,15 @@ def render(data: dict) -> str:
     ext = [r for r in rows if r["verdict"] == "extended"][:15]
     th = ("<tr><th>Ticker</th><th>Close</th><th>1d</th><th>%B</th><th>vs 20d</th>"
           "<th>vs 200d</th><th>range</th><th>ATR</th><th>$vol/d</th>"
-          "<th>2y pos</th><th>2y p10</th><th>msgs</th><th>Verdict</th></tr>")
+          "<th>2y pos</th><th>2y p10</th><th title='this name&#39;s past %B&lt;0.20 dips, next open, fixed 60-session hold, non-overlapping'>60d dips</th>"
+          "<th title='a 2-ATR stop loses 1% of a $7,000 portfolio; 20% cap'>size</th><th>msgs</th><th>Verdict</th></tr>")
 
     def table(rs):
         return f'<div class="tw"><table>{th}{"".join(_row(r) for r in rs)}</table></div>' if rs \
             else '<p class="none">Nothing in this group today.</p>'
 
     rotation_html = _rotation_section()
+    regime_html = _regime_html(data)
     pinned_html = ""
     for tag, ttl, sub in PINNED:
         pinned_html += (
@@ -637,6 +707,8 @@ tr.v-no td.vd{{color:var(--no)}} tr.v-no{{background:var(--no-bg)}}
 .stale{{display:inline-block;background:var(--warn-bg);color:var(--warn);font-size:9px;
 padding:1px 4px;border-radius:2px;margin-left:5px;letter-spacing:.03em}}
 .tiny{{color:var(--muted);font-size:9.5px}}
+.earn{{display:inline-block;background:var(--warn-bg);color:var(--warn);font-size:9px;font-weight:700;
+  padding:1px 5px;border-radius:2px;margin-left:5px;letter-spacing:.03em}}
 .tag{{display:inline-block;background:var(--sunk);color:var(--muted);font-size:9.5px;
 padding:1px 5px;border-radius:2px;margin:2px 3px 0 0;letter-spacing:.03em}}
 .none{{color:var(--muted);font-size:13px;padding:12px;background:var(--sunk);border-radius:3px}}
@@ -725,8 +797,11 @@ td.pos{{color:var(--go)}} td.neg{{color:var(--no)}} .stat b.pos{{color:var(--go)
 Measured on the AI complex over the 2023+ wave, forward 60 days: buying dips beat simply
 holding by <b>+3.47 pts</b>, while buying strength lost <b>2.65 pts</b> and top-quartile
 12-month momentum lost <b>3.01 pts</b>. Owning the complex at all was worth <b>+17.95%</b>,
-which is roughly five times what the timing overlay adds.</p>
+which is roughly five times what the timing overlay adds. These are daily entries on the
+names as they stand today (in-sample, overlapping); the quarterly portfolio test further down
+did not confirm the dip rule.</p>
 </header>
+{regime_html}
 
 <div class="rules">
 <div class="rule"><b>1. Is it on sale?</b><span class="th">%B &lt; 0.20</span>
@@ -760,11 +835,11 @@ horizon, not by exiting at the midband.</div>
 <div class="ev"><b>Why there are two signals.</b> Meta launched Muse on 2026-09-08 and ran
 +20.3% before the first analyst upgrade on 09-21 — following that upgrade captured 2% of
 the move. Replaying these rules over those sessions:
-<table>
+<div class="tw"><table>
 <tr><td><b>%B &lt; 0.20 dip rule</b></td><td>2026-08-21 @ 549.47</td><td><b>+35.4%</b></td><td>18 days <i>before</i> the launch, and META was 11.8% below its 200-day</td></tr>
 <tr><td><b>move + volume spike</b></td><td>2026-09-09 @ 653.17</td><td><b>+13.9%</b></td><td>the day <i>after</i> the launch</td></tr>
 <tr><td>follow the analyst</td><td>2026-09-21 @ 741.25</td><td>+0.4%</td><td>the move was over</td></tr>
-</table>
+</table></div>
 The dip rule caught it by accident — it was buying a drawdown, not predicting a product.
 The spike rule reacts to the catalyst, late but not uselessly. They are labelled separately
 so a reaction is never mistaken for a setup.</div>
@@ -785,6 +860,8 @@ Cached 10 minutes.</p>
       <input id="q-cash" type="number" inputmode="numeric" value="500" step="50" min="0"></div>
     <div class="fld"><label for="q-pf">Whole portfolio ($)</label>
       <input id="q-pf" type="number" inputmode="numeric" value="7000" step="100" min="0"></div>
+    <div class="fld"><label for="q-risk">Risk per position (%)</label>
+      <input id="q-risk" type="number" inputmode="decimal" value="1" step="0.25" min="0.1"></div>
     <div class="fld" style="flex:0 0 auto"><label>&nbsp;</label><button id="q-go" type="button">Check</button></div>
   </div>
   <div id="q-out" class="qout" hidden></div>

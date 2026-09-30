@@ -777,3 +777,126 @@ def test_rotation_section_quotes_the_stored_results():
         assert f"{res['mean_net_excess']*100:+.1f} pts" in html_
         assert ("promoted" in html_) and res["verdict"]["promote"] is False
     assert "not promoted" in html_
+
+
+# ------------------------------------------------------------------ review round: evidence, sizing, regime
+
+def test_pct_b_series_matches_pct_b_at_every_point():
+    closes = [100 + 5 * math.sin(i / 3) + i * 0.1 for i in range(80)]
+    series = ah._pct_b_series(closes)
+    for end in (20, 35, 80):
+        assert abs(series[end - 1] - ah.pct_b(closes[:end])[0]) < 1e-9
+    assert series[18] is None
+
+
+def test_zscore_threshold_is_just_pct_b():
+    # with population std, %B = (z + 2) / 4, so "z < -1.25" is "%B < 0.1875" -- not a new filter
+    closes = [100 + 7 * ((i * 37) % 11) / 11 for i in range(40)]
+    w = closes[-20:]
+    m = sum(w) / 20
+    sd = math.sqrt(sum((x - m) ** 2 for x in w) / 20)
+    z = (w[-1] - m) / sd
+    assert abs(ah.pct_b(closes)[0] - (z + 2) / 4) < 1e-12
+
+
+def _dip_bars(n_cycles=6, horizon=10):
+    """Flat, then a sharp dip, then a known recovery; repeated. Opens == closes."""
+    closes = []
+    for k in range(n_cycles):
+        closes += [100.0] * 25 + [90.0, 90.0] + [90.0 * (1.05 if k % 3 else 0.9)] * (horizon + 5)
+        closes += [100.0] * 5
+    return _bars(closes)
+
+
+def test_dip_history_counts_non_overlapping_episodes():
+    h = ah.dip_history(_dip_bars(), horizon=10)
+    assert h["episodes"] == 6                       # one per engineered dip
+    assert h["n"] >= h["episodes"]
+    # cycles 0 and 3 fall a further 10%, the other four gain 5% (entry at next open = 90)
+    assert abs(h["win_rate"] - 4 / 6) < 1e-12
+    assert abs(h["worst"] - (-0.10)) < 1e-9
+    lo, hi = h["win_ci"]
+    assert lo < 4 / 6 < hi and 0 <= lo and hi <= 1
+    assert abs(h["cvar10"] - (-0.10)) < 1e-9        # worst 10% of 6 -> the single worst
+    assert abs(h["top_share"] - 0.25) < 1e-9        # four equal gains
+
+
+def test_dip_history_never_uses_an_unfinished_hold():
+    b = _dip_bars(n_cycles=1, horizon=10)[:30]      # dip exists, but no 10-session future
+    assert ah.dip_history(b, horizon=10)["episodes"] == 0
+
+
+def test_wilson_interval_bounds():
+    assert ah._wilson(0, 0) is None
+    lo, hi = ah._wilson(10, 10)
+    assert hi == 1.0 and 0.6 < lo < 0.8
+
+
+def test_position_size_scales_inversely_with_atr_and_caps():
+    a = ah.position_size(0.03, portfolio=7000)      # 1% / (2 * 3%) = 16.7%
+    assert abs(a["weight"] - 0.01 / 0.06) < 1e-12 and not a["capped"]
+    b = ah.position_size(0.06, portfolio=7000)
+    assert abs(b["dollars"] - a["dollars"] / 2) < 1e-9
+    c = ah.position_size(0.01, portfolio=7000)      # would be 50% -> capped at 20%
+    assert c["weight"] == ah.MAX_POSITION and c["capped"]
+    assert ah.position_size(None) is None and ah.position_size(float("nan")) is None
+
+
+def test_sessions_until_skips_weekends_and_holidays():
+    assert ah.sessions_until("2026-09-28", "2026-09-30") == 2          # Mon -> Wed
+    assert ah.sessions_until("2026-09-25", "2026-09-28") == 1          # Fri -> Mon
+    assert ah.sessions_until("2026-11-25", "2026-11-27") == 1          # Thanksgiving skipped
+    assert ah.sessions_until("2026-09-28", "2026-09-01") is None       # already past
+    assert ah.sessions_until("2026-09-28", "2031-01-02") is None       # calendar not covered
+
+
+def test_cluster_label_priority():
+    assert ah.cluster(["ndx100", "ai_compute"]) == "compute"
+    assert ah.cluster(["ai_memory"]) == "memory"
+    assert ah.cluster(["ndx100"]) is None
+
+
+def _closes_bars(closes):
+    return [{"date": f"d{i}", "close": c, "open": c} for i, c in enumerate(closes)]
+
+
+def test_regime_states():
+    up = [100 + i * 0.1 for i in range(260)]
+    down = [200 - i * 0.2 for i in range(260)]
+    rows = [{"ticker": "X", "tags": ["ai_compute"], "vs_sma200": 0.1}]
+    base = {"X": _closes_bars(up)}
+    r = ah.regime(rows, {**base, "QQQ": _closes_bars(up), "SOXX": _closes_bars(up)}, [14.0] * 10)
+    assert r["state"] == "normal — QQQ above its 200-day" and r["ai_above_200"] == 1.0
+    r = ah.regime(rows, {**base, "QQQ": _closes_bars(up), "SOXX": _closes_bars(down)}, [14.0] * 10)
+    assert r["state"] == "sector washout"
+    r = ah.regime(rows, {**base, "QQQ": _closes_bars(down), "SOXX": _closes_bars(down)},
+                  [14, 14, 14, 14, 14, 14, 15, 16, 18, 20.0])
+    assert r["state"] == "broad risk-off" and r["vix_5d"] > 0.2
+
+
+def test_build_adds_review_fields_without_changing_verdicts():
+    closes = [100 + 10 * math.sin(i / 9) + i * 0.02 for i in range(2200)]
+    bars = {"NVDA": _bars(closes, vols=[5e6] * 2200)}
+    for b in bars["NVDA"]:
+        b["date"] = "2026-01-02"
+    bars["NVDA"][-1]["date"] = "2026-09-28"
+    d0 = ah.build({"NVDA": ["ai_compute"]}, bars, social=False)
+    d1 = ah.build({"NVDA": ["ai_compute"]}, bars, social=False, vix=[15.0] * 10,
+                  earnings={"NVDA": "2026-09-30"})
+    assert [r["verdict"] for r in d0["rows"]] == [r["verdict"] for r in d1["rows"]]
+    row = d1["rows"][0]
+    # bar date Mon 09-28 -> reader is on Tue 09-29 -> Wed 09-30 is 1 session away
+    assert row["earnings"] == {"date": "2026-09-30", "sessions": 1}
+    assert row["cluster"] == "compute" and row["size"]["weight"] > 0
+    assert row["dip_history"]["episodes"] >= 1
+    assert "state" in d1["regime"] and d0["rows"][0]["earnings"] is None
+
+
+def test_earnings_pill_only_within_five_sessions():
+    assert "in 2 sessions" in ar._earn_pill({"earnings": {"date": "2026-09-30", "sessions": 2}})
+    assert "today" in ar._earn_pill({"earnings": {"date": "2026-09-30", "sessions": 0}})
+    assert "in 1 session<" in ar._earn_pill({"earnings": {"date": "x", "sessions": 1}})
+    assert ar._earn_pill({"earnings": {"date": "x", "sessions": 6}}) == ""
+    assert ar._earn_pill({"earnings": None}) == "" and ar._earn_pill(None) == ""
+    assert "reported last session" in ar._earn_pill({"earnings": {"date": "x", "sessions": -1}})
+    assert ar._earn_pill({"earnings": {"date": "x", "sessions": -2}}) == ""

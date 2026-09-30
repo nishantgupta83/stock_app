@@ -195,6 +195,177 @@ def hold_period(closes: list[float], horizon: int = HOLD_DAYS) -> dict:
             "median": f[n // 2]}
 
 
+DIP_HORIZON = 60                   # the fixed hold every page figure uses
+RISK_PER_POSITION = 0.01           # share of the portfolio a 2-ATR stop may lose
+MAX_POSITION = 0.20                # cap per name, whatever the ATR says
+DEFAULT_PORTFOLIO = 7000
+EARNINGS_WARN_SESSIONS = 5
+
+
+def _pct_b_series(closes: list[float]) -> list[float | None]:
+    """%B for every session (None until BAND_N closes exist). Same maths as pct_b()."""
+    out: list[float | None] = [None] * len(closes)
+    for i in range(BAND_N - 1, len(closes)):
+        w = closes[i - BAND_N + 1: i + 1]
+        m = sum(w) / BAND_N
+        sd = math.sqrt(sum((x - m) ** 2 for x in w) / BAND_N)
+        out[i] = ((w[-1] - (m - BAND_K * sd)) / (2 * BAND_K * sd)) if sd > 0 else None
+    return out
+
+
+def _wilson(k: int, n: int, z: float = 1.96) -> tuple[float, float] | None:
+    if n <= 0:
+        return None
+    p = k / n
+    d = 1 + z * z / n
+    c = (p + z * z / (2 * n)) / d
+    h = z * math.sqrt(p * (1 - p) / n + z * z / (4 * n * n)) / d
+    return max(0.0, c - h), min(1.0, c + h)
+
+
+def dip_history(bars: list[dict], horizon: int = DIP_HORIZON) -> dict:
+    """This name's own past dips: every session with %B < DIP_PCT_B, bought at the NEXT open,
+    held `horizon` sessions to the close. Daily entries overlap (a 3-week dip is ~15 entries
+    of one event), so the win-rate interval, the tail and the top-event share are computed on
+    NON-OVERLAPPING episodes -- the first entry, then nothing until its hold has ended."""
+    rows = [b for b in bars if sb.finite(b.get("close")) and sb.finite(b.get("open"))]
+    closes = [b["close"] for b in rows]
+    opens = [b["open"] for b in rows]
+    pbs = _pct_b_series(closes)
+    all_rets, eps = [], []
+    next_free = 0
+    for i, pb in enumerate(pbs):
+        if pb is None or pb >= DIP_PCT_B or i + horizon >= len(rows):
+            continue
+        r = closes[i + horizon] / opens[i + 1] - 1
+        all_rets.append(r)
+        if i >= next_free:
+            eps.append(r)
+            next_free = i + 1 + horizon
+    n_ep = len(eps)
+    if not n_ep:
+        return {"n": len(all_rets), "episodes": 0}
+    srt = sorted(eps)
+    tail = srt[:max(1, round(n_ep * 0.10))]
+    gains = [r for r in eps if r > 0]
+    wins = len(gains)
+    return {
+        "n": len(all_rets), "episodes": n_ep, "horizon": horizon,
+        "win_rate": wins / n_ep, "win_ci": _wilson(wins, n_ep),
+        "median": srt[n_ep // 2], "p10": srt[int(n_ep * 0.10)], "worst": srt[0],
+        "cvar10": sum(tail) / len(tail),
+        "top_share": (max(gains) / sum(gains)) if gains else None,
+    }
+
+
+def position_size(atr: float | None, portfolio: float = DEFAULT_PORTFOLIO,
+                  risk: float = RISK_PER_POSITION, cap: float = MAX_POSITION) -> dict | None:
+    """Volatility-scaled size: a stop 2 ATRs away loses at most `risk` of the portfolio."""
+    atr = sb.finite(atr)
+    if atr is None or atr <= 0:
+        return None
+    w = min(cap, risk / (2 * atr))
+    return {"weight": w, "dollars": w * portfolio, "capped": w >= cap}
+
+
+CLUSTERS = [("ai_compute", "compute"), ("ai_memory", "memory"), ("ai_equipment", "equipment"),
+            ("ai_network", "network"), ("ai_power", "power"), ("ai_platform", "platform"),
+            ("humanoid_disclosed", "humanoid"), ("humanoid_association", "humanoid"),
+            ("humanoid_oem", "humanoid"), ("humanoid_materials", "materials"),
+            ("humanoid_etf", "humanoid ETF"), ("semis_etf", "semis ETF"),
+            ("benchmark", "index"), ("megacap", "megacap")]
+
+
+def cluster(tags: list[str]) -> str | None:
+    for tag, label in CLUSTERS:
+        if tag in tags:
+            return label
+    return None
+
+
+def sessions_until(start: str, target: str) -> int | None:
+    """Trading sessions after `start` up to and including `target` (0 = same day)."""
+    a, b = date.fromisoformat(start[:10]), date.fromisoformat(target[:10])
+    if b < a or not sb.calendar_covered(b):
+        return None
+    n, d = 0, a
+    while d < b:
+        d += timedelta(days=1)
+        n += sb.is_trading_day(d)
+    return n
+
+
+def fetch_earnings(tickers: list[str]) -> dict[str, str]:
+    """Next earnings date per ticker from yfinance's calendar. Any failure = no entry."""
+    try:
+        import yfinance as yf
+        from concurrent.futures import ThreadPoolExecutor
+    except Exception:
+        return {}
+
+    def one(t):
+        try:
+            d = (yf.Ticker(t).calendar or {}).get("Earnings Date") or []
+            return t, (min(d).isoformat() if d else None)
+        except Exception:
+            return t, None
+    with ThreadPoolExecutor(8) as ex:
+        return {t: d for t, d in ex.map(one, tickers) if d}
+
+
+def regime(rows: list[dict], bars: dict[str, list[dict]], vix: list[float] | None) -> dict:
+    """Descriptive market backdrop. Not a gate: nothing on the page is measured by it."""
+    def vs200(t):
+        c = [b["close"] for b in bars.get(t) or [] if sb.finite(b.get("close"))]
+        s = sma(c, 200)
+        return (c[-1] / s - 1) if s else None
+    ai = [r for r in rows if any(g.startswith(("ai_", "humanoid_")) for g in r["tags"])
+          and "leveraged" not in r["tags"] and "humanoid_etf" not in r["tags"]]
+    above = [r["vs_sma200"] > 0 for r in ai if sb.finite(r.get("vs_sma200")) is not None]
+
+    def ew(n):
+        rets = []
+        for r in ai:
+            c = [b["close"] for b in bars.get(r["ticker"]) or [] if sb.finite(b.get("close"))]
+            if len(c) > n:
+                rets.append(c[-1] / c[-1 - n] - 1)
+        return (sum(rets) / len(rets)) if rets else None
+    v = [x for x in (vix or []) if sb.finite(x) is not None]
+    out = {"qqq_vs200": vs200("QQQ"), "soxx_vs200": vs200("SOXX"),
+           "vix": v[-1] if v else None,
+           "vix_5d": (v[-1] / v[-6] - 1) if len(v) > 5 else None,
+           "ai_above_200": (sum(above) / len(above)) if above else None,
+           "ai_ew_5d": ew(5), "ai_ew_20d": ew(20)}
+    q, sx, pa = out["qqq_vs200"], out["soxx_vs200"], out["ai_above_200"]
+    vx, v5 = out["vix"], out["vix_5d"]
+    if q is not None and q < 0 and ((vx is not None and vx >= 25) or (v5 is not None and v5 >= 0.20)):
+        out["state"] = "broad risk-off"
+    elif (sx is not None and sx < 0) or (pa is not None and pa < 0.40):
+        out["state"] = "sector washout"
+    elif q is not None and q > 0:
+        out["state"] = "normal — QQQ above its 200-day"
+    else:
+        out["state"] = "mixed"
+    return out
+
+
+def soxx_stats(bars: dict[str, list[dict]]) -> dict | None:
+    c = [b["close"] for b in bars.get("SOXX") or [] if sb.finite(b.get("close"))]
+    if len(c) < 22:
+        return None
+    lr = [math.log(c[i] / c[i - 1]) for i in range(len(c) - 20, len(c))]
+    m = sum(lr) / 20
+    dists = []
+    for t in SOXX_WEIGHTS:
+        h = [b["close"] for b in bars.get(t) or [] if sb.finite(b.get("close"))]
+        s = sma(h, 20)
+        if s:
+            dists.append(h[-1] / s - 1)
+    return {"rvol20": math.sqrt(sum((x - m) ** 2 for x in lr) / 19) * math.sqrt(252),
+            "dd5": c[-1] / max(c[-5:]) - 1,
+            "median_vs20": statistics.median(dists) if dists else None}
+
+
 def spike(bars: list[dict]) -> dict | None:
     """SIGNAL 2 — the catalyst reactor. A >=5% close-to-close move on >=2x the 20-day
     average volume. This is what fired on META the day AFTER Muse launched (+6.55% on
@@ -467,7 +638,9 @@ def soxx_trend(bars: dict[str, list[dict]], reference: str | None) -> dict | Non
     }
 
 
-def build(tickers: dict[str, list[str]], bars: dict[str, list[dict]], social: bool) -> dict:
+def build(tickers: dict[str, list[str]], bars: dict[str, list[dict]], social: bool,
+          vix: list[float] | None = None, earnings: dict[str, str] | None = None,
+          vix_bars: list[dict] | None = None) -> dict:
     reference, _coverage = reference_session(bars)
     rows = []
     for t, tags in tickers.items():
@@ -498,8 +671,17 @@ def build(tickers: dict[str, list[str]], bars: dict[str, list[dict]], social: bo
             "atr_pct": atr_pct(b),
             "dollar_volume": statistics.median(dv) if dv else None,
             "hold": hold_period(closes),
+            "dip_history": dip_history(b),
             "spike": spike(b),
+            "cluster": cluster(tags),
         }
+        row["size"] = position_size(row["atr_pct"])
+        ed = (earnings or {}).get(t)
+        # as_of is the LAST COMPLETED session (fetch drops today's bar), so the reader is on
+        # the next one: subtract 1. 0 = reports on the reader's day, -1 = reported on as_of.
+        n_raw = sessions_until(row["as_of"], ed) if ed else None
+        n_until = (n_raw - 1) if n_raw is not None else None
+        row["earnings"] = {"date": ed, "sessions": n_until} if ed else None
         row["verdict"], row["why"] = classify(row, tags)
         rows.append(row)
 
@@ -519,11 +701,19 @@ def build(tickers: dict[str, list[str]], bars: dict[str, list[dict]], social: bo
             # the tagged bull/bear ratio is near-useless (9 of 20 names read 100% bullish
             # in a live pull); message VOLUME is the part that carries information.
             r["social"] = {"messages_12h": s["last12h"], "bull": s["bull"], "bear": s["bear"]} if s else None
+    aligned = ({t: [x for x in b if x["date"] <= reference] for t, b in bars.items()}
+               if reference else bars)
+    if reference and vix_bars:
+        vix = [x["close"] for x in vix_bars if x["date"] <= reference]
     return {
         "generated_at": datetime.now(timezone.utc).isoformat(timespec="seconds"),
         "as_of": freshest,
         "n_stale": sum(1 for r in rows if r["stale"]),
         "soxx_trend": soxx_trend(bars, reference),
+        "soxx_stats": soxx_stats(aligned),
+        "regime": regime(rows, aligned, vix),
+        "sizing": {"risk": RISK_PER_POSITION, "cap": MAX_POSITION, "portfolio": DEFAULT_PORTFOLIO,
+                   "dip_horizon": DIP_HORIZON, "earnings_warn": EARNINGS_WARN_SESSIONS},
         "n_universe": len(tickers), "n_resolved": len(rows),
         "thresholds": {"dip_pct_b": DIP_PCT_B, "extended_pct_b": EXTENDED_PCT_B,
                        "spike_move": SPIKE_MOVE, "spike_vol": SPIKE_VOL,
@@ -543,7 +733,11 @@ def main() -> int:
     print(f"universe: {len(tags)} tickers ({len(NDX)} NDX + theme overlay)", file=sys.stderr)
     bars = fetch(sorted(tags))
     print(f"resolved: {len(bars)}", file=sys.stderr)
-    data = build(tags, bars, social=not a.no_social)
+    vix_bars = fetch(["^VIX"]).get("^VIX") or []
+    vix = [b["close"] for b in vix_bars]
+    earnings = fetch_earnings(sorted(t for t in tags if t in bars))
+    print(f"earnings dates: {len(earnings)}", file=sys.stderr)
+    data = build(tags, bars, social=not a.no_social, vix=vix, earnings=earnings, vix_bars=vix_bars)
 
     out = REPO / a.out
     out.mkdir(parents=True, exist_ok=True)
