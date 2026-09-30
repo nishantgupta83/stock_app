@@ -168,6 +168,87 @@
     ]
    },
    "sent": "telegram"
+  },
+  "t1100et": {
+   "at": "2026-09-30T08:00:30-07:00",
+   "late_min": 0,
+   "per": {
+    "SOXL": {
+     "price": 146.5998992919922,
+     "vwap": 148.0824665915856,
+     "vs_vwap": -0.010011767994669851,
+     "above_vwap": false,
+     "session_open": 147.9499969482422,
+     "from_open": -0.009125364542740155,
+     "vwap_events": {
+      "n_below": 18,
+      "first_below": 1,
+      "last_below": 18,
+      "n_bars": 19
+     },
+     "opening_range": {
+      "high": 150.77000427246094,
+      "low": 146.22000122070312,
+      "complete": true
+     },
+     "or_break": "inside",
+     "atr": 11.955442640601131,
+     "atr_pct": 0.08155150650403059,
+     "noise_dollars": 298.8860660150283,
+     "anchors": {
+      "peak": {
+       "date": "2026-06-22",
+       "px": 300.7699890136719,
+       "avwap": 143.3605971522503
+      },
+      "trough": {
+       "date": "2026-07-29",
+       "px": 91.98999786376953,
+       "avwap": 123.8729219428182
+      }
+     }
+    },
+    "SOXS": {
+     "price": 33.375,
+     "vwap": 32.99853247433006,
+     "vs_vwap": 0.011408614184973187,
+     "above_vwap": true,
+     "session_open": 33.06999969482422,
+     "from_open": 0.009222869912016263,
+     "vwap_events": {
+      "n_below": 1,
+      "first_below": 0,
+      "last_below": 0,
+      "n_bars": 19
+     },
+     "opening_range": {
+      "high": 33.44070053100586,
+      "low": 32.41999816894531,
+      "complete": true
+     },
+     "or_break": "inside",
+     "atr": 3.9084641960354376,
+     "atr_pct": 0.11710754145424532,
+     "noise_dollars": 97.71160490088594,
+     "anchors": {
+      "peak": {
+       "date": "2025-09-30",
+       "px": 1239.423386129532,
+       "avwap": 81.69395937107996
+      },
+      "trough": {
+       "date": "2026-09-22",
+       "px": 32.41999816894531,
+       "avwap": 33.60475331449633
+      }
+     }
+    }
+   },
+   "triggers": {
+    "SOXL": [],
+    "SOXS": []
+   },
+   "sent": "telegram"
   }
  },
  "fired": [
