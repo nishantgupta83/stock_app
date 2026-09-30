@@ -349,6 +349,76 @@ def regime(rows: list[dict], bars: dict[str, list[dict]], vix: list[float] | Non
     return out
 
 
+THEMES: list[tuple[str, str, list[str]]] = [
+    ("compute", "AI compute", ["ai_compute"]),
+    ("memory", "AI memory", ["ai_memory"]),
+    ("equipment", "Chip equipment", ["ai_equipment"]),
+    ("network", "AI networking", ["ai_network"]),
+    ("power", "AI power", ["ai_power"]),
+    ("platform", "AI platforms", ["ai_platform"]),
+    ("humanoid", "Humanoid supply chain", ["humanoid_disclosed", "humanoid_association", "humanoid_oem"]),
+    ("materials", "Magnets & materials", ["humanoid_materials"]),
+]
+THEME_BREAK_DIP_SHARE = 0.40       # display threshold, not a tested rule
+
+
+def _ew_basket(bars: dict[str, list[dict]], members: list[str], axis: list[str]) -> list[float] | None:
+    """Equal-weight index of `members` on a shared date axis (each rebased to 1 at the axis
+    start, carried forward over a missing session). Members without a bar at the start are
+    left out rather than entering part-way."""
+    legs = []
+    for t in members:
+        by = {b["date"]: b["close"] for b in bars.get(t) or [] if sb.finite(b.get("close"))}
+        if axis[0] not in by:
+            continue
+        last, leg = by[axis[0]], []
+        for d in axis:
+            last = by.get(d, last)
+            leg.append(last / by[axis[0]])
+        legs.append(leg)
+    if not legs:
+        return None
+    return [sum(x) / len(legs) for x in zip(*legs)]
+
+
+def theme_health(rows: list[dict], bars: dict[str, list[dict]]) -> list[dict]:
+    """Per theme: its equal-weight basket vs its own 200-day, and how many members are in the
+    dip band. A theme whose basket is below its 200-day while many members dip at once is the
+    late-2021 COVID-winner pattern (one-off analysis, not a committed result) -- a theme
+    breaking, not a stock on sale. Descriptive; no verdict reads it."""
+    ref = [b["date"] for b in bars.get("QQQ") or []]
+    axis = ref[-260:]
+    by_tk = {r["ticker"]: r for r in rows}
+    out = []
+    for key, label, tags in THEMES:
+        members = [r["ticker"] for r in rows if any(g in r["tags"] for g in tags)
+                   and "leveraged" not in r["tags"]]
+        if not members:
+            continue
+        basket = _ew_basket(bars, members, axis) if len(axis) >= 200 else None
+        vs200 = (basket[-1] / (sum(basket[-200:]) / 200) - 1) if basket else None
+        r20 = (basket[-1] / basket[-21] - 1) if basket and len(basket) > 20 else None
+        pbs = [sb.finite(by_tk[t].get("pct_b")) for t in members]
+        pbs = [x for x in pbs if x is not None]
+        dips = sum(1 for x in pbs if x < DIP_PCT_B)
+        ab = [by_tk[t]["vs_sma200"] > 0 for t in members if sb.finite(by_tk[t].get("vs_sma200")) is not None]
+        dip_share = (dips / len(pbs)) if pbs else None
+        n_legs = sum(1 for t in members if any(b["date"] == axis[0] for b in bars.get(t) or [])) if axis else 0
+        if vs200 is None:
+            state = "no data"
+        elif vs200 < 0 and dip_share is not None and dip_share >= THEME_BREAK_DIP_SHARE:
+            state = "breaking"
+        elif vs200 < 0:
+            state = "weak"
+        else:
+            state = "leading" if (ab and sum(ab) / len(ab) >= 0.60) else "mixed"
+        out.append({"key": key, "label": label, "n": len(members), "members": members,
+                    "basket_vs200": vs200, "basket_20d": r20, "dips": dips, "n_pb": len(pbs), "n_legs": n_legs,
+                    "dip_share": dip_share, "above_200": (sum(ab) / len(ab)) if ab else None,
+                    "state": state})
+    return out
+
+
 def soxx_stats(bars: dict[str, list[dict]]) -> dict | None:
     c = [b["close"] for b in bars.get("SOXX") or [] if sb.finite(b.get("close"))]
     if len(c) < 22:
@@ -712,6 +782,7 @@ def build(tickers: dict[str, list[str]], bars: dict[str, list[dict]], social: bo
         "soxx_trend": soxx_trend(bars, reference),
         "soxx_stats": soxx_stats(aligned),
         "regime": regime(rows, aligned, vix),
+        "themes": theme_health(rows, aligned),
         "sizing": {"risk": RISK_PER_POSITION, "cap": MAX_POSITION, "portfolio": DEFAULT_PORTFOLIO,
                    "dip_horizon": DIP_HORIZON, "earnings_warn": EARNINGS_WARN_SESSIONS},
         "n_universe": len(tickers), "n_resolved": len(rows),

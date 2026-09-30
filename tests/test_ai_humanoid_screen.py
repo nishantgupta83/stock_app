@@ -909,3 +909,56 @@ def test_robustness_section_quotes_the_stored_grid():
     h = ar._robustness_section()
     assert f"<b>{r['ai']['grid']['0.20|60|next_open']['edge']*100:+.2f}</b>" in h
     assert ("demoted" in h) and (("not demoted" in h) == (not r["ai"]["verdict"]["demoted"]))
+
+
+def _dated(closes):
+    return [{"date": f"d{i:04d}", "close": c, "open": c} for i, c in enumerate(closes)]
+
+
+def test_ew_basket_excludes_members_without_start_bar_and_carries_forward():
+    axis = ["d0", "d1", "d2"]
+    bars = {"A": [{"date": "d0", "close": 10.0}, {"date": "d2", "close": 20.0}],   # gap at d1
+            "B": [{"date": "d0", "close": 5.0}, {"date": "d1", "close": 5.0}, {"date": "d2", "close": 5.0}],
+            "LATE": [{"date": "d1", "close": 1.0}, {"date": "d2", "close": 9.0}]}
+    assert ah._ew_basket(bars, ["A", "B", "LATE"], axis) == [1.0, 1.0, 1.5]
+    assert ah._ew_basket(bars, ["LATE"], axis) is None
+
+
+def _theme_case(member_closes, pct_b):
+    n = len(member_closes)
+    bars = {"QQQ": _dated([100.0] * n), "X": _dated(member_closes)}
+    rows = [{"ticker": "X", "tags": ["ai_compute"], "pct_b": pct_b,
+             "vs_sma200": member_closes[-1] / (sum(member_closes[-200:]) / 200) - 1}]
+    return next(t for t in ah.theme_health(rows, bars) if t["key"] == "compute")
+
+
+def test_theme_health_states():
+    up = [100 + i * 0.2 for i in range(260)]
+    down = [200 - i * 0.2 for i in range(260)]
+    assert _theme_case(up, 0.5)["state"] == "leading"
+    assert _theme_case(down, 0.5)["state"] == "weak"
+    br = _theme_case(down, 0.05)
+    assert br["state"] == "breaking" and br["dips"] == 1 and br["basket_vs200"] < 0
+    assert _theme_case(up[:150], 0.5)["state"] == "no data"
+
+
+def test_themes_html_renders_and_is_optional():
+    assert ar._themes_html({}) == ""
+    th = [{"key": "compute", "label": "AI compute", "n": 4, "basket_vs200": -0.08, "basket_20d": -0.02,
+           "above_200": 0.25, "dips": 2, "n_pb": 4, "n_legs": 3, "dip_share": 0.5, "state": "breaking"}]
+    out = ar._themes_html({"themes": th})
+    assert "AI compute" in out and "breaking" in out and "2/4" in out and "not a tested rule" in out and "3 in basket" in out
+
+
+def test_theme_health_denominators_and_mixed():
+    up = [100 + i * 0.2 for i in range(260)]
+    bars = {"QQQ": _dated([100.0] * 260), "X": _dated(up), "Y": _dated(up), "Z": _dated(up),
+            "NEW": _dated(up)[100:]}
+    tags = ["ai_compute"]
+    rows = [{"ticker": "X", "tags": tags, "pct_b": 0.05, "vs_sma200": 0.1},
+            {"ticker": "Y", "tags": tags, "pct_b": None, "vs_sma200": 0.1},
+            {"ticker": "Z", "tags": tags, "pct_b": 0.5, "vs_sma200": -0.1},
+            {"ticker": "NEW", "tags": tags, "pct_b": 0.5, "vs_sma200": -0.1}]
+    t = next(x for x in ah.theme_health(rows, bars) if x["key"] == "compute")
+    assert t["n"] == 4 and t["n_legs"] == 3 and t["n_pb"] == 3 and t["dips"] == 1
+    assert abs(t["dip_share"] - 1 / 3) < 1e-9 and t["state"] == "mixed"

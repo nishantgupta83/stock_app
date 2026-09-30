@@ -634,6 +634,30 @@ def _regime_html(data) -> str:
             + '</div></section>')
 
 
+def _themes_html(data) -> str:
+    th = data.get("themes")
+    if not th:
+        return ""
+    cls = {"breaking": "p-dn", "weak": "p-st", "leading": "p-up"}
+    rows = ""
+    for t in th:
+        share = "—" if t.get("dip_share") is None else f"{t['dips']}/{t['n_pb']}"
+        names = str(t["n"]) + ("" if t.get("n_legs") in (None, t["n"]) else f" ({t['n_legs']} in basket)")
+        ab = "—" if t.get("above_200") is None else f"{t['above_200']*100:.0f}%"
+        rows += ('<tr><td class="tk">' + html.escape(t["label"]) + '</td><td>' + names + '</td>'
+                 '<td>' + _p(t.get("basket_vs200"), 1) + '</td><td>' + _p(t.get("basket_20d"), 1) + '</td>'
+                 '<td>' + ab + '</td><td>' + share + '</td>'
+                 '<td><span class="pill ' + cls.get(t["state"], "") + '">' + html.escape(t["state"]) + '</span></td></tr>')
+    return ('<section id="themes"><h2>Theme health</h2>'
+            '<p class="sub">Descriptive only; no verdict reads it. A theme leads for a few years and then hands '
+            'over (the COVID winners kept dipping through late 2021 H2 and did not recover; a one-off analysis, not a committed result). '
+            '"Breaking" = the theme\'s equal-weight basket is under its own 200-day while at least 40% of '
+            'its names sit in the dip band at once; that threshold is a display choice, not a tested rule.</p>'
+            '<div class="tw"><table class="tsoxx"><tr><th>Theme</th><th>Names</th><th>Basket vs 200d</th>'
+            '<th>Basket 20d</th><th>Names above 200d</th><th>In dip band</th><th>State</th></tr>'
+            + rows + '</table></div></section>')
+
+
 def _robustness_section() -> str:
     """The demote-only robustness grid, read from its committed result file."""
     from pathlib import Path
@@ -701,7 +725,7 @@ def render(data: dict) -> str:
             else '<p class="none">Nothing in this group today.</p>'
 
     rotation_html = _rotation_section() + _robustness_section()
-    regime_html = _regime_html(data)
+    regime_html = _regime_html(data) + _themes_html(data)
     pinned_html = ""
     for tag, ttl, sub in PINNED:
         pinned_html += (
