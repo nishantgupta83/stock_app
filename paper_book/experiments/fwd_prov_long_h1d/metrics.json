@@ -2,19 +2,19 @@
   "experiment_id": "fwd_prov_long_h1d",
   "config_hash": "f1b6a019435833a8a180b7609cacb0bb88f94948ae54ed6bd9d36175e615b9cc",
   "forward_epoch": "2026-08-03",
-  "captured_at": "2026-09-30T01:38:57.627689+00:00",
+  "captured_at": "2026-10-01T01:37:09.022573+00:00",
   "sync_ok": true,
-  "n_admitted": 179,
-  "n_open": 5,
-  "n_cohorts_forward": 32,
+  "n_admitted": 181,
+  "n_open": 2,
+  "n_cohorts_forward": 33,
   "forward": {
-    "n_cohorts": 32,
-    "n_positions": 174,
-    "weeks": 7.4,
-    "mean_cohort_excess": 0.007893,
-    "mean_cohort_net": 0.006821,
-    "profit_factor": 2.8681,
-    "top_cohort_excess_share": 0.3362,
+    "n_cohorts": 33,
+    "n_positions": 179,
+    "weeks": 8.0,
+    "mean_cohort_excess": 0.008064,
+    "mean_cohort_net": 0.007009,
+    "profit_factor": 2.9683,
+    "top_cohort_excess_share": 0.319,
     "max_drawdown": 0.0979,
     "subperiods_positive": 2,
     "cohorts": {
@@ -209,15 +209,21 @@
         "net": 0.016919333333333335,
         "qqq": -0.008481,
         "excess": 0.02540033333333333
+      },
+      "2026-09-29": {
+        "n": 3,
+        "net": 0.013031333333333332,
+        "qqq": -0.000513,
+        "excess": 0.013544333333333334
       }
     },
-    "mean_position_excess": 0.008316,
+    "mean_position_excess": 0.008491,
     "top_ticker": "AI",
-    "top_ticker_excess_share": 0.3639,
-    "top_ticker_positions": 13,
-    "mean_position_excess_ex_top_ticker": 0.00622,
-    "n_positions_ex_top_ticker": 74,
-    "n_positions_deduped": 87
+    "top_ticker_excess_share": 0.4208,
+    "top_ticker_positions": 14,
+    "mean_position_excess_ex_top_ticker": 0.005824,
+    "n_positions_ex_top_ticker": 76,
+    "n_positions_deduped": 90
   },
   "replay": {
     "n_cohorts": 0,
@@ -239,11 +245,11 @@
     "n_positions_deduped": 0
   },
   "tier": {
-    "status": "inconclusive",
-    "reason": "insufficient_sample",
-    "have_cohorts": 32,
-    "need_cohorts": 30,
-    "have_weeks": 7.4,
-    "need_weeks": 8
+    "status": "continue",
+    "mean_cohort_excess": 0.008064,
+    "max_drawdown": 0.0979,
+    "n_cohorts": 33,
+    "weeks": 8.0,
+    "profit_factor": 2.9683
   }
 }
