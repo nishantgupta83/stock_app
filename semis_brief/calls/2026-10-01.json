@@ -1,0 +1,529 @@
+{
+ "date": "2026-10-01",
+ "generated_at": "2026-10-01T13:00:37+00:00",
+ "snapshot_cutoff": "2026-10-01T13:00:37.507961+00:00",
+ "prior_session": "2026-09-30",
+ "calendar_verified": true,
+ "weights": {
+  "NVDA": 0.094308205,
+  "MU": 0.0890507,
+  "AMD": 0.0822601,
+  "AVGO": 0.0747613,
+  "INTC": 0.050920602,
+  "MRVL": 0.0465602,
+  "TSM": 0.0465258,
+  "AMAT": 0.0459298,
+  "LRCX": 0.0427297,
+  "KLAC": 0.041171398
+ },
+ "weights_source": "yfinance",
+ "premarket": {
+  "NVDA": {
+   "price": 229.9287,
+   "ts": "2026-10-01T12:55:00+00:00",
+   "prior_close": 228.3800048828125,
+   "move": 0.006781220264804544
+  },
+  "MU": {
+   "price": 1053.53,
+   "ts": "2026-10-01T12:55:00+00:00",
+   "prior_close": 1065.1099853515625,
+   "move": -0.010872102891552826
+  },
+  "AMD": {
+   "price": 612.33,
+   "ts": "2026-10-01T13:00:34+00:00",
+   "prior_close": 611.760009765625,
+   "move": 0.0009317219584088487
+  },
+  "AVGO": {
+   "price": 351.9387,
+   "ts": "2026-10-01T12:55:00+00:00",
+   "prior_close": 351.19000244140625,
+   "move": 0.0021318874494973272
+  },
+  "INTC": {
+   "price": 118.9474,
+   "ts": "2026-10-01T12:55:00+00:00",
+   "prior_close": 120.2300033569336,
+   "move": -0.010667914173851045
+  },
+  "MRVL": {
+   "price": 263.56,
+   "ts": "2026-10-01T12:55:00+00:00",
+   "prior_close": 264.2099914550781,
+   "move": -0.002460132001437354
+  },
+  "TSM": {
+   "price": 457.507,
+   "ts": "2026-10-01T13:00:09+00:00",
+   "prior_close": 456.19000244140625,
+   "move": 0.002886949629640201
+  },
+  "AMAT": {
+   "price": 516.1397,
+   "ts": "2026-10-01T13:00:26+00:00",
+   "prior_close": 511.3800048828125,
+   "move": 0.009307550298682798
+  },
+  "LRCX": {
+   "price": 333.25,
+   "ts": "2026-10-01T13:00:35+00:00",
+   "prior_close": 328.510009765625,
+   "move": 0.014428754355938045
+  },
+  "KLAC": {
+   "price": 197.01,
+   "ts": "2026-10-01T13:00:30+00:00",
+   "prior_close": 194.92999267578125,
+   "move": 0.01067053507603788
+  },
+  "SOXX": {
+   "price": 569.5906,
+   "ts": "2026-10-01T13:00:33+00:00",
+   "prior_close": 568.6400146484375,
+   "move": 0.0016716821311812957
+  },
+  "SOXL": {
+   "price": 148.7991,
+   "ts": "2026-10-01T12:55:00+00:00",
+   "prior_close": 147.86000061035156,
+   "move": 0.006351274082050162
+  },
+  "SOXS": {
+   "price": 32.92,
+   "ts": "2026-10-01T12:55:00+00:00",
+   "prior_close": 33.08000183105469,
+   "move": -0.004836814455810634
+  }
+ },
+ "implied": {
+  "implied_soxx": 0.0014120242948932355,
+  "n_used": 10,
+  "n_missing": 0,
+  "coverage": 1.0,
+  "contrib": {
+   "NVDA": 0.0010412018435110998,
+   "MU": -0.001576262304810267,
+   "AMD": 0.00012478235057172878,
+   "AVGO": 0.0002594888586437258,
+   "INTC": -0.0008844038831092301,
+   "MRVL": -0.0001864879804539751,
+   "TSM": 0.00021868080017431934,
+   "AMAT": 0.0006959972834204004,
+   "LRCX": 0.0010037747847490776,
+   "KLAC": 0.0007152525421963562
+  },
+  "dispersion": 0.008080424644265788,
+  "n_up": 7,
+  "n_down": 3
+ },
+ "implied_soxx": 0.0014120242948932355,
+ "implied_soxl": 0.004236072884679707,
+ "implied_soxs": -0.004236072884679707,
+ "bias": "no_edge",
+ "components": {
+  "overnight_asia_eu": 0.027474697448286546,
+  "nasdaq_futures": -0.0026431931713468693,
+  "news_net": 4,
+  "social_skew": 30
+ },
+ "overnight": {
+  "2330.TW": {
+   "label": "TSMC (Taiwan)",
+   "move": 0.012096774193548487
+  },
+  "000660.KS": {
+   "label": "SK Hynix",
+   "move": 0.03209459459459452
+  },
+  "005930.KS": {
+   "label": "Samsung",
+   "move": 0.027932960893854775
+  },
+  "8035.T": {
+   "label": "Tokyo Electron",
+   "move": 0.06474820143884896
+  },
+  "ASML.AS": {
+   "label": "ASML (Amsterdam)",
+   "move": 0.0005009561205859825
+  }
+ },
+ "nasdaq_futures": -0.0026431931713468693,
+ "news": [
+  {
+   "ticker": "NVDA",
+   "title": "Nvidia-Backed Nebius Acquires Inferize To Reduce Idle GPU Costs Across AI Inference Workloads",
+   "link": "https://stocktwits.com/news-articles/markets/equity/nbis-stock-gains-premarket-nebius-acquires-inferize-to-target-ai-idle-gpu-tax/cZD05jyRBiY?.tsrc=rss",
+   "published": "2026-10-01 12:49:02+00:00",
+   "tag": 0
+  },
+  {
+   "ticker": "NVDA",
+   "title": "Nvidia Knows It Could Trigger a Credit Risk Shock and Collapse Markets",
+   "link": "https://247wallst.com/investing/2026/10/01/nvidia-knows-it-could-trigger-a-credit-risk-shock-and-collapse-markets/?.tsrc=rss",
+   "published": "2026-10-01 12:45:47+00:00",
+   "tag": 0
+  },
+  {
+   "ticker": "NVDA",
+   "title": "The Only Way I Stop Adding Broadcom is an AI Collapse",
+   "link": "https://247wallst.com/investing/2026/10/01/the-only-way-i-stop-adding-broadcom-is-an-ai-collapse/?.tsrc=rss",
+   "published": "2026-10-01 12:45:41+00:00",
+   "tag": 0
+  },
+  {
+   "ticker": "MRVL",
+   "title": "Buy Any Marvell Technology Pullbacks When They Happen",
+   "link": "https://247wallst.com/investing/2026/10/01/buy-any-marvell-technology-pullbacks-when-they-happen/?.tsrc=rss",
+   "published": "2026-10-01 12:45:09+00:00",
+   "tag": 0
+  },
+  {
+   "ticker": "NVDA",
+   "title": "Nvidia\u2019s Latest Move is a Green Light to Keep Loading Up",
+   "link": "https://247wallst.com/investing/2026/10/01/nvidias-latest-move-is-a-green-light-to-keep-loading-up/?.tsrc=rss",
+   "published": "2026-10-01 12:45:02+00:00",
+   "tag": 0
+  },
+  {
+   "ticker": "AVGO",
+   "title": "Broadcom offering Anthropic $42 billion loan for AI chip leases",
+   "link": "https://qz.com/broadcom-lend-anthropic-42-billion-ai-chips-100126?.tsrc=rss",
+   "published": "2026-10-01 12:41:00+00:00",
+   "tag": 0
+  },
+  {
+   "ticker": "MU",
+   "title": "Stock Market Today: Dow Gains As Yields Waffle; Micron Stock Drops On Earnings (Live Coverage)",
+   "link": "https://finance.yahoo.com/m/5f6e8554-d4a8-3f1c-bce8-2f5074e2e587/stock-market-today%3A-dow-gains.html?.tsrc=rss",
+   "published": "2026-10-01 12:39:03+00:00",
+   "tag": 0
+  },
+  {
+   "ticker": "AMD",
+   "title": "HPE raises networking outlook, lands $1.2 billion Vultr AI order",
+   "link": "https://finance.yahoo.com/technology/ai/articles/hpe-raises-networking-outlook-lands-123217459.html?.tsrc=rss",
+   "published": "2026-10-01 12:32:17+00:00",
+   "tag": 1
+  },
+  {
+   "ticker": "NVDA",
+   "title": "Prediction: Nvidia Stock Will Double After This Historic $150 Billion Move",
+   "link": "https://www.fool.com/investing/2026/10/01/prediction-nvidia-stock-will-double-after-this-historic-usd150-billion-move/?.tsrc=rss",
+   "published": "2026-10-01 12:30:01+00:00",
+   "tag": 0
+  },
+  {
+   "ticker": "NVDA",
+   "title": "Here's What History Says a $1,000 Investment in the Vanguard S&P 500 ETF Could Be Worth in 30 Years",
+   "link": "https://www.fool.com/investing/2026/10/01/history-says-1000-investment-vanguard-sp-500-etf/?.tsrc=rss",
+   "published": "2026-10-01 12:27:00+00:00",
+   "tag": 0
+  }
+ ],
+ "news_net": 4,
+ "filings": [],
+ "truth_social": [
+  {
+   "posted_at": "2026-10-01T02:25:19+00:00",
+   "text": "RT @ realDonaldTrump In New York, I met with Lee Jae Myung, the President of the Republic of Korea, and we agreed to launch 200 Billion Dollars of new Investments in AMERICA! We will build American Energy and American Power across the United States under my 350 BILLION DOLLAR Kor",
+   "url": "https://www.trumpstruth.org/statuses/42048"
+  },
+  {
+   "posted_at": "2026-10-01T00:41:28+00:00",
+   "text": "In New York, I met with Lee Jae Myung, the President of the Republic of Korea, and we agreed to launch 200 Billion Dollars of new Investments in AMERICA! We will build American Energy and American Power across the United States under my 350 BILLION DOLLAR Korea Strategic Trade an",
+   "url": "https://www.trumpstruth.org/statuses/42037"
+  }
+ ],
+ "social": {
+  "SOXL": {
+   "bull": 11,
+   "bear": 1,
+   "msgs": 30,
+   "last12h": 30,
+   "vol_ratio": 1.0
+  },
+  "SOXS": {
+   "bull": 2,
+   "bear": 7,
+   "msgs": 30,
+   "last12h": 22,
+   "vol_ratio": 0.9166666666666666
+  },
+  "SOXX": {
+   "bull": 11,
+   "bear": 0,
+   "msgs": 30,
+   "last12h": 10,
+   "vol_ratio": 0.7142857142857143
+  },
+  "NVDA": {
+   "bull": 12,
+   "bear": 2,
+   "msgs": 30,
+   "last12h": 30,
+   "vol_ratio": 1.0
+  },
+  "MU": {
+   "bull": 6,
+   "bear": 7,
+   "msgs": 30,
+   "last12h": 30,
+   "vol_ratio": 1.0
+  },
+  "AMD": {
+   "bull": 9,
+   "bear": 4,
+   "msgs": 30,
+   "last12h": 30,
+   "vol_ratio": 1.0
+  }
+ },
+ "levels": {
+  "soxl_prior_close": 147.86000061035156,
+  "soxl_prior_high": 150.77000427246094,
+  "soxl_prior_low": 144.41000366210938,
+  "soxl_pm_high": 155.21,
+  "soxl_pm_low": 148.7991,
+  "soxl_gap": 0.006351274082050162,
+  "gap_fill": {
+   "bucket": "up 0-1%",
+   "n": 55,
+   "fill_rate": 0.8909090909090909
+  }
+ },
+ "bands": {
+  "SOXX": {
+   "state": {
+    "as_of": "2026-09-30",
+    "close": 568.6400146484375,
+    "upper": 590.5856634078415,
+    "middle": 535.6170013427734,
+    "lower": 480.64833927770525,
+    "pct_b": 0.80038036278356,
+    "bandwidth": 0.20525361191770825,
+    "zone": "inside"
+   },
+   "open_trade": null,
+   "record_5y": {
+    "n": 24,
+    "win_rate": 0.7916666666666666,
+    "mean": 0.03354375471187052
+   },
+   "record_live": {
+    "n": 0,
+    "win_rate": null,
+    "mean": null
+   },
+   "last_trade": {
+    "signal_date": "2026-07-29",
+    "entry_date": "2026-07-30",
+    "entry": 491.57000732421875,
+    "exit_date": "2026-08-04",
+    "exit": 542.2100219726562,
+    "ret": 0.10261689259702429,
+    "hold_days": 4
+   }
+  },
+  "SOXL": {
+   "state": {
+    "as_of": "2026-09-30",
+    "close": 147.86000061035156,
+    "upper": 162.4672117957341,
+    "middle": 126.9029987335205,
+    "lower": 91.33878567130691,
+    "pct_b": 0.7946360972499281,
+    "bandwidth": 0.5604944472099314,
+    "zone": "inside"
+   },
+   "open_trade": null,
+   "record_5y": {
+    "n": 24,
+    "win_rate": 0.7083333333333334,
+    "mean": 0.07545322936058657
+   },
+   "record_live": {
+    "n": 0,
+    "win_rate": null,
+    "mean": null
+   },
+   "last_trade": {
+    "signal_date": "2026-07-29",
+    "entry_date": "2026-07-30",
+    "entry": 107.37999725341797,
+    "exit_date": "2026-08-07",
+    "exit": 140.25,
+    "ret": 0.3057091785000558,
+    "hold_days": 7
+   }
+  },
+  "SOXS": {
+   "state": {
+    "as_of": "2026-09-30",
+    "close": 33.08000183105469,
+    "upper": 56.429078084344695,
+    "middle": 41.78150043487549,
+    "lower": 27.133922785406288,
+    "pct_b": 0.20297141233669694,
+    "bandwidth": 0.7011513467449678,
+    "zone": "inside"
+   },
+   "open_trade": {
+    "signal_date": "2026-09-18",
+    "entry_date": "2026-09-21",
+    "entry": 38.75,
+    "last": 33.08000183105469,
+    "unrealized": -0.14652253339213708
+   },
+   "record_5y": {
+    "n": 20,
+    "win_rate": 0.5,
+    "mean": -0.05450411367801486
+   },
+   "record_live": {
+    "n": 0,
+    "win_rate": null,
+    "mean": null
+   },
+   "last_trade": {
+    "signal_date": "2026-04-08",
+    "entry_date": "2026-04-09",
+    "entry": 267.6000061035156,
+    "exit_date": "2026-07-07",
+    "exit": 48.0,
+    "ret": -0.8210278067817675,
+    "hold_days": 61
+   }
+  }
+ },
+ "portfolio": [
+  {
+   "ticker": "VTI",
+   "role": "core",
+   "note": "total US market",
+   "close": 374.239990234375,
+   "as_of": "2026-09-30",
+   "chg": -0.00271816741647235,
+   "pct_b": 0.28173186537338885,
+   "vs_sma20": -0.006476349436878359,
+   "vs_sma200": 0.054274820246572375,
+   "range_pos": 0.8614706935416362,
+   "range_n": 251,
+   "dollar_volume": 1081148457.0419312,
+   "thin": false
+  },
+  {
+   "ticker": "RRX",
+   "role": "theme",
+   "note": "frameless motors; ~$30M humanoid orders (JPM note, not an RRX filing)",
+   "close": 155.11000061035156,
+   "as_of": "2026-09-30",
+   "chg": -0.005003520317857335,
+   "pct_b": 0.4791134835879754,
+   "vs_sma20": -0.002658748862386373,
+   "vs_sma200": -0.1774333197439174,
+   "range_pos": 0.24086257330325447,
+   "range_n": 251,
+   "dollar_volume": 188723473.12545776,
+   "thin": false
+  },
+  {
+   "ticker": "NOVT",
+   "role": "theme",
+   "note": "ATI force/torque, global #1; no humanoid revenue disclosed",
+   "close": 142.19000244140625,
+   "as_of": "2026-09-30",
+   "chg": 0.006868724064002629,
+   "pct_b": 0.5163934380479465,
+   "vs_sma20": 0.0022944625178944467,
+   "vs_sma200": 0.01490344487347195,
+   "range_pos": 0.6180066442557999,
+   "range_n": 251,
+   "dollar_volume": 52889304.80957031,
+   "thin": false
+  },
+  {
+   "ticker": "ALGM",
+   "role": "theme",
+   "note": "2 disclosed humanoid joint design wins",
+   "close": 36.349998474121094,
+   "as_of": "2026-09-30",
+   "chg": -0.006830601377668555,
+   "pct_b": 0.7067269128879637,
+   "vs_sma20": 0.028623134733281708,
+   "vs_sma200": -0.09484520111546535,
+   "range_pos": 0.2894061986626073,
+   "range_n": 251,
+   "dollar_volume": 86777260.63652039,
+   "thin": false
+  },
+  {
+   "ticker": "KOID",
+   "role": "theme",
+   "note": "humanoid ETF, 41 holdings, 0.69%",
+   "close": 35.72999954223633,
+   "as_of": "2026-09-30",
+   "chg": -0.00611964439594459,
+   "pct_b": 0.4884123935190231,
+   "vs_sma20": -0.0007830381560411936,
+   "vs_sma200": -0.013828086939118078,
+   "range_pos": 0.5123057351656071,
+   "range_n": 251,
+   "dollar_volume": 5030517.180633545,
+   "thin": false
+  },
+  {
+   "ticker": "MP",
+   "role": "watch",
+   "note": "NdPr + magnets; DoD $110/kg floor",
+   "close": 47.290000915527344,
+   "as_of": "2026-09-30",
+   "chg": 0.04094212189867963,
+   "pct_b": 0.2274411760113024,
+   "vs_sma20": -0.06097970577792333,
+   "vs_sma200": -0.16745154732563639,
+   "range_pos": 0.15177542490874338,
+   "range_n": 251,
+   "dollar_volume": 285951329.3323517,
+   "thin": false
+  },
+  {
+   "ticker": "USAR",
+   "role": "watch",
+   "note": "magnet converter, no mine",
+   "close": 14.079999923706055,
+   "as_of": "2026-09-30",
+   "chg": 0.000355247922463775,
+   "pct_b": 0.0954262038736781,
+   "vs_sma20": -0.11837451524280485,
+   "vs_sma200": -0.27132148538856327,
+   "range_pos": 0.08140404216878497,
+   "range_n": 251,
+   "dollar_volume": 183551547.4661827,
+   "thin": false
+  },
+  {
+   "ticker": "AME",
+   "role": "watch",
+   "note": "no humanoid disclosure found",
+   "close": 247.72999572753906,
+   "as_of": "2026-09-30",
+   "chg": -0.012162066618566447,
+   "pct_b": 0.7760640227435491,
+   "vs_sma20": 0.0302229899778097,
+   "vs_sma200": 0.07809284611717171,
+   "range_pos": 0.8638314662303931,
+   "range_n": 251,
+   "dollar_volume": 308024348.07510376,
+   "thin": false
+  }
+ ],
+ "catalysts": {
+  "earnings_next_7d": [],
+  "macro_today": [
+   "Unemployment Insurance Weekly Claims Report"
+  ]
+ }
+}

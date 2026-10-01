@@ -1,59 +1,59 @@
 {
- "updated": "2026-09-30T13:00:34+00:00",
- "n_graded": 4,
- "n_called": 4,
+ "updated": "2026-10-01T13:00:39+00:00",
+ "n_graded": 5,
+ "n_called": 5,
  "n_no_edge": 0,
  "all": {
   "bias": {
-   "n": 4,
+   "n": 5,
    "hits": 2,
-   "hit_rate": 0.5
+   "hit_rate": 0.4
   },
   "fade_called": {
-   "n": 4,
-   "hits": 2,
-   "hit_rate": 0.5
+   "n": 5,
+   "hits": 3,
+   "hit_rate": 0.6
   },
   "up_day_base_rate": {
-   "n": 4,
+   "n": 5,
    "hits": 2,
-   "hit_rate": 0.5
+   "hit_rate": 0.4
   },
-  "follow_compounded": -0.01769321732355089,
-  "follow_n": 4,
-  "fade_compounded": 0.007760389607112561,
-  "fade_n": 4
+  "follow_compounded": -0.019273050398552538,
+  "follow_n": 5,
+  "fade_compounded": 0.0070574298463998986,
+  "fade_n": 5
  },
  "last20": {
   "bias": {
-   "n": 4,
+   "n": 5,
    "hits": 2,
-   "hit_rate": 0.5
+   "hit_rate": 0.4
   },
   "fade_called": {
-   "n": 4,
-   "hits": 2,
-   "hit_rate": 0.5
+   "n": 5,
+   "hits": 3,
+   "hit_rate": 0.6
   },
   "up_day_base_rate": {
-   "n": 4,
+   "n": 5,
    "hits": 2,
-   "hit_rate": 0.5
+   "hit_rate": 0.4
   },
-  "follow_compounded": -0.01769321732355089,
-  "follow_n": 4,
-  "fade_compounded": 0.007760389607112561,
-  "fade_n": 4
+  "follow_compounded": -0.019273050398552538,
+  "follow_n": 5,
+  "fade_compounded": 0.0070574298463998986,
+  "fade_n": 5
  },
  "fade_gap_null_all_days": {
-  "n": 4,
-  "hits": 2,
-  "hit_rate": 0.5
+  "n": 5,
+  "hits": 3,
+  "hit_rate": 0.6
  },
  "fade_gap_null_last20": {
-  "n": 4,
-  "hits": 2,
-  "hit_rate": 0.5
+  "n": 5,
+  "hits": 3,
+  "hit_rate": 0.6
  },
  "no_edge_days_up_rate": {
   "n": 0,
@@ -62,26 +62,26 @@
  },
  "components": {
   "nasdaq_futures": {
-   "n": 4,
+   "n": 5,
    "hits": 1,
-   "hit_rate": 0.25
+   "hit_rate": 0.2
   },
   "news_net": {
-   "n": 2,
+   "n": 3,
    "hits": 1,
-   "hit_rate": 0.5
+   "hit_rate": 0.3333333333333333
   },
   "overnight_asia_eu": {
-   "n": 4,
+   "n": 5,
    "hits": 3,
-   "hit_rate": 0.75
+   "hit_rate": 0.6
   },
   "social_skew": {
-   "n": 4,
+   "n": 5,
    "hits": 2,
-   "hit_rate": 0.5
+   "hit_rate": 0.4
   }
  },
- "mean_soxl_oc_on_lean_soxl": 0.0008914545211403668,
+ "mean_soxl_oc_on_lean_soxl": 0.00039154005420401666,
  "mean_soxs_oc_on_lean_soxs": -0.006676853556894624
 }
