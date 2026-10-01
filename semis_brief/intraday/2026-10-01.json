@@ -166,6 +166,87 @@
     "SOXS": []
    },
    "sent": "telegram"
+  },
+  "t1100et": {
+   "at": "2026-10-01T08:00:29-07:00",
+   "late_min": 0,
+   "per": {
+    "SOXL": {
+     "price": 148.69000244140625,
+     "vwap": 148.83495762689205,
+     "vs_vwap": -0.0009739323865646243,
+     "above_vwap": false,
+     "session_open": 148.55499267578125,
+     "from_open": 0.0009088201156568498,
+     "vwap_events": {
+      "n_below": 12,
+      "first_below": 2,
+      "last_below": 18,
+      "n_bars": 19
+     },
+     "opening_range": {
+      "high": 151.25,
+      "low": 146.15499877929688,
+      "complete": true
+     },
+     "or_break": "inside",
+     "atr": 11.59671368664134,
+     "atr_pct": 0.07799255831750501,
+     "noise_dollars": 289.9178421660335,
+     "anchors": {
+      "peak": {
+       "date": "2026-06-22",
+       "px": 300.7699890136719,
+       "avwap": 143.4250319505189
+      },
+      "trough": {
+       "date": "2026-07-29",
+       "px": 91.98999786376953,
+       "avwap": 124.3933331531694
+      }
+     }
+    },
+    "SOXS": {
+     "price": 32.896400451660156,
+     "vwap": 32.88279192449506,
+     "vs_vwap": 0.00041384950512557417,
+     "above_vwap": true,
+     "session_open": 32.94499969482422,
+     "from_open": -0.001475162956874998,
+     "vwap_events": {
+      "n_below": 8,
+      "first_below": 0,
+      "last_below": 17,
+      "n_bars": 19
+     },
+     "opening_range": {
+      "high": 33.5,
+      "low": 32.36029815673828,
+      "complete": true
+     },
+     "or_break": "inside",
+     "atr": 3.738944354170333,
+     "atr_pct": 0.11365816024961609,
+     "noise_dollars": 93.47360885425833,
+     "anchors": {
+      "peak": {
+       "date": "2025-10-10",
+       "px": 1184.2846281392433,
+       "avwap": 79.96829254947073
+      },
+      "trough": {
+       "date": "2026-09-22",
+       "px": 32.41999816894531,
+       "avwap": 33.53070707259677
+      }
+     }
+    }
+   },
+   "triggers": {
+    "SOXL": [],
+    "SOXS": []
+   },
+   "sent": "telegram"
   }
  },
  "fired": [
