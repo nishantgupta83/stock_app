@@ -1,6 +1,6 @@
 {
 "experiment_id": "fwd_prov_long_h7d",
-"cursor": "2026-09-29T21:53:02.388453+00:00",
+"cursor": "2026-09-30T14:37:57.685268+00:00",
 "forward_epoch": "2026-08-03",
 "config_hash": "47eb4eb5fda8223568f21fae0301f48c6fe0da43261e959002d84a8c3fd72d35",
 "candidates": [
@@ -1994,6 +1994,17 @@
 "rule_keys": "[\"news_article:neutral:h15d\", \"news_article:neutral:h1d\", \"news_article:neutral:h30d\", \"news_article:neutral:h7d\", \"news_article:positive:h15d\", \"news_article:positive:h1d\", \"news_article:positive:h30d\", \"news_article:positive:h7d\"]",
 "source_agents": "[\"news\"]",
 "raw": "{\"id\": 456, \"created_at\": \"2026-09-29T21:53:02.388453+00:00\", \"ticker\": \"TGT\", \"direction\": \"bullish\", \"score\": 58.433, \"recall_floor\": 30.0, \"rule_keys\": [\"news_article:neutral:h15d\", \"news_article:neutral:h1d\", \"news_article:neutral:h30d\", \"news_article:neutral:h7d\", \"news_article:positive:h15d\", \"news_article:positive:h1d\", \"news_article:positive:h30d\", \"news_article:positive:h7d\"], \"source_agents\": [\"news\"]}"
+},
+{
+"experiment_id": "fwd_prov_long_h7d",
+"candidate_id": 457,
+"created_at": "2026-09-30T14:37:57.685268+00:00",
+"ticker": "TGT",
+"direction": "bullish",
+"score": 40.9,
+"rule_keys": "[\"news_article:neutral:h15d\", \"news_article:neutral:h1d\", \"news_article:neutral:h30d\", \"news_article:neutral:h7d\", \"news_article:positive:h15d\", \"news_article:positive:h1d\", \"news_article:positive:h30d\", \"news_article:positive:h7d\"]",
+"source_agents": "[\"news\"]",
+"raw": "{\"id\": 457, \"created_at\": \"2026-09-30T14:37:57.685268+00:00\", \"ticker\": \"TGT\", \"direction\": \"bullish\", \"score\": 40.9, \"recall_floor\": 30.0, \"rule_keys\": [\"news_article:neutral:h15d\", \"news_article:neutral:h1d\", \"news_article:neutral:h30d\", \"news_article:neutral:h7d\", \"news_article:positive:h15d\", \"news_article:positive:h1d\", \"news_article:positive:h30d\", \"news_article:positive:h7d\"], \"source_agents\": [\"news\"]}"
 }
 ],
 "positions": [
@@ -5032,6 +5043,40 @@
 "created_at": "2026-09-28T17:07:50.763247+00:00",
 "entry_session": "2026-09-29",
 "entry_px": 157.55,
+"exit_session": null,
+"exit_px": null,
+"exit_reason": null,
+"net_return": null,
+"qqq_return": null,
+"excess": null,
+"status": "open"
+},
+{
+"experiment_id": "fwd_prov_long_h7d",
+"candidate_id": 455,
+"ticker": "NVDA",
+"direction": "long",
+"horizon_days": 7,
+"created_at": "2026-09-29T21:07:53.094665+00:00",
+"entry_session": "2026-09-30",
+"entry_px": 229.27,
+"exit_session": null,
+"exit_px": null,
+"exit_reason": null,
+"net_return": null,
+"qqq_return": null,
+"excess": null,
+"status": "open"
+},
+{
+"experiment_id": "fwd_prov_long_h7d",
+"candidate_id": 456,
+"ticker": "TGT",
+"direction": "long",
+"horizon_days": 7,
+"created_at": "2026-09-29T21:53:02.388453+00:00",
+"entry_session": "2026-09-30",
+"entry_px": 159.25,
 "exit_session": null,
 "exit_px": null,
 "exit_reason": null,
