@@ -7,7 +7,7 @@ name: filing_agent
 
 on:
   schedule:
-    - cron: "*/15 * * * *"  # 2026-06-16: */5→*/15 to cut Supabase egress (hot chain; cascades to trade_setup/risk). Paper-trade forward data unaffected (event_paper reads normalized_events directly).
+    - cron: "0 * * * *"  # 2026-10-05: */15→hourly (cut runner/egress use; cron+pinger+orchestrator+dashboard+pulsecheck aligned)
   workflow_dispatch:
 
 concurrency:

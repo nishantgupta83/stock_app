@@ -56,11 +56,11 @@ class AgentExpectation:
 # cron fired late.
 EXPECTED: list[AgentExpectation] = [
     # ----- always-on agents -----
-    AgentExpectation("filing_agent",          "every 15 min, 24/7",    1.0,  False),
-    AgentExpectation("news_agent",            "every 15 min, 24/7",    1.0,  False),
-    AgentExpectation("thesis_agent",          "every 15 min, 24/7",    1.0,  False),
-    AgentExpectation("truth_social_agent",    "every 15 min, 24/7",    1.0,  False),
-    AgentExpectation("paper_trade_agent",     "every 15 min, 24/7",    2.0,  False),
+    AgentExpectation("filing_agent",          "hourly, 24/7",          3.0,  False),
+    AgentExpectation("news_agent",            "hourly, 24/7",          3.0,  False),
+    AgentExpectation("thesis_agent",          "hourly, 24/7",          3.0,  False),
+    AgentExpectation("truth_social_agent",    "hourly, 24/7",          3.0,  False),
+    AgentExpectation("paper_trade_agent",     "hourly, 24/7",          3.0,  False),
     AgentExpectation("site_generator",        "once daily (EOD) via pinger", 30.0, False),
     AgentExpectation("risk_agent",            "every 30 min, 24/7",    2.0,  False),
     AgentExpectation("trade_setup_agent",     "every 30 min, 24/7",    2.0,  False),
