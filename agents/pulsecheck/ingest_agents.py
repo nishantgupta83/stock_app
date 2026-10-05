@@ -1,11 +1,11 @@
 """pulsecheck_ingest — freshness of the Layer-1 ingest agents.
 
 OWNS:
-  * filing_agent_fresh      — SEC EDGAR ingest fired within last 2h (market hours)
+  * filing_agent_fresh      — SEC EDGAR ingest fired within last 3h (market hours)
   * news_agent_fresh        — covered in pulsecheck_news.recent_runs; here we
                               specifically check that the dedupe key is not all
                               the same article (ingest stuck)
-  * truth_social_fresh      — truth_social_agent fired in last 2h
+  * truth_social_fresh      — truth_social_agent fired in last 3h
   * earnings_agent_fresh    — earnings_agent fired in last 6h (cadence is lower)
 
 DOES NOT OWN:
@@ -83,8 +83,8 @@ def _freshness(agent_name: str, hours: int) -> CheckResult:
     )
 
 
-def filing_agent_fresh() -> CheckResult:    return _freshness("filing_agent", 2)
-def truth_social_fresh() -> CheckResult:    return _freshness("truth_social_agent", 2)
+def filing_agent_fresh() -> CheckResult:    return _freshness("filing_agent", 3)
+def truth_social_fresh() -> CheckResult:    return _freshness("truth_social_agent", 3)
 def earnings_agent_fresh() -> CheckResult:
     # earnings_agent.yml cron is `0 12 * * 0` (Sundays only) per the repo's
     # current cadence. A 6h threshold made this warn every weekday-night.

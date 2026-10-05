@@ -1,7 +1,7 @@
 """pulsecheck_thesis — emit-path health for the rubric scoring agent.
 
 OWNS:
-  * recent_runs              — at least 6 thesis_agent runs in the last 60 min
+  * recent_runs              — at least 1 thesis_agent run in the last 3h
   * emit_rate_market_hours   — during US market hours, thesis emits >=1 signal in 6h
                                OR explains why (cap saturated, 0 candidates, etc.)
   * cap_consumption          — daily cap not silently saturated by other lanes
@@ -30,7 +30,7 @@ from pulsecheck._pulse import Check, CheckResult, run_checks, sb_get, sb_count
 
 AGENT = "pulsecheck_thesis"
 THESIS_MODEL_VERSION = "rubric-v1.1"
-RUNS_PER_HOUR_FLOOR = 6      # thesis_agent.yml cron is */5 -> ~12/h expected
+RUNS_PER_3H_FLOOR = 1        # thesis_agent.yml cron is hourly -> ~3 expected in 3h
 CANDIDATE_DRY_HOURS = 3      # 3h of rows_out=0 during market hours = warn
 MARKET_OPEN_UTC = 13         # 9am ET = 13:00 UTC (DST: 14:00 — close enough)
 MARKET_CLOSE_UTC = 21        # 4pm ET = 20:00 UTC; pad +1 for after-hours bleed
@@ -48,14 +48,14 @@ def _in_market_window(dt: datetime | None = None) -> bool:
 
 def recent_runs() -> CheckResult:
     """Was thesis_agent actually running on schedule?"""
-    since = (_now() - timedelta(hours=1)).isoformat()
+    since = (_now() - timedelta(hours=3)).isoformat()
     n = sb_count("stock_job_runs", {
         "agent": "eq.thesis_agent",
         "started_at": f"gte.{since}",
     })
-    status = "ok" if n >= RUNS_PER_HOUR_FLOOR else "warning"
-    return CheckResult(status, f"{n} runs in last 60 min", observed=float(n),
-                       threshold=float(RUNS_PER_HOUR_FLOOR))
+    status = "ok" if n >= RUNS_PER_3H_FLOOR else "warning"
+    return CheckResult(status, f"{n} runs in last 3h", observed=float(n),
+                       threshold=float(RUNS_PER_3H_FLOOR))
 
 
 def cap_consumption() -> CheckResult:
