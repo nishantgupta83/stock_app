@@ -772,20 +772,6 @@ def score_evidence(events: list[dict],
                 add("earnings_inline", 5, e["id"])
             else:
                 add("earnings_scheduled", 5, e["id"])
-        elif et == "momentum":
-            payload = e.get("payload") or {}
-            try:
-                rs = float(payload.get("rel_strength_pct") or 0)
-            except (TypeError, ValueError):
-                rs = 0.0
-            if rs > 10:
-                add("momentum_strong_long", 25, e["id"], f"+{rs:.1f}% vs SPY 20d")
-            elif rs > 5:
-                add("momentum_moderate_long", 15, e["id"], f"+{rs:.1f}% vs SPY 20d")
-            elif rs < -10:
-                add("momentum_strong_short", 20, e["id"], f"{rs:.1f}% vs SPY 20d")
-            elif rs < -5:
-                add("momentum_moderate_short", 10, e["id"], f"{rs:.1f}% vs SPY 20d")
         # Phase 8 — institutional flows from flows_agent. Direction priors are
         # carried in payload.direction_prior so signal_direction() routes the
         # cluster correctly. Calibration will refine these per (institution,
