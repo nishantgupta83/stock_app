@@ -85,10 +85,94 @@
     ]
    },
    "sent": "telegram"
+  },
+  "t1000et": {
+   "at": "2026-10-05T07:00:31-07:00",
+   "late_min": 0,
+   "per": {
+    "SOXL": {
+     "price": 159.13999938964844,
+     "vwap": 161.35271680587354,
+     "vs_vwap": -0.01371354297608307,
+     "above_vwap": false,
+     "session_open": 161.66000366210938,
+     "from_open": -0.015588297756865543,
+     "vwap_events": {
+      "n_below": 6,
+      "first_below": 1,
+      "last_below": 6,
+      "n_bars": 7
+     },
+     "opening_range": {
+      "high": 162.8800048828125,
+      "low": 158.14990234375,
+      "complete": true
+     },
+     "or_break": "inside",
+     "atr": 11.79845387063965,
+     "atr_pct": 0.07413883320277996,
+     "noise_dollars": 294.96134676599127,
+     "anchors": {
+      "peak": {
+       "date": "2026-06-22",
+       "px": 300.7699890136719,
+       "avwap": 143.8607662996998
+      },
+      "trough": {
+       "date": "2026-07-29",
+       "px": 91.98999786376953,
+       "avwap": 125.79961033072618
+      }
+     }
+    },
+    "SOXS": {
+     "price": 30.469999313354492,
+     "vwap": 30.14242706957275,
+     "vs_vwap": 0.010867480678502073,
+     "above_vwap": true,
+     "session_open": 30.09000015258789,
+     "from_open": 0.012628752370874352,
+     "vwap_events": {
+      "n_below": 1,
+      "first_below": 0,
+      "last_below": 0,
+      "n_bars": 6
+     },
+     "opening_range": {
+      "high": 30.73979949951172,
+      "low": 29.8799991607666,
+      "complete": false
+     },
+     "or_break": null,
+     "atr": 3.594175059027655,
+     "atr_pct": 0.11795783196661866,
+     "noise_dollars": 89.85437647569138,
+     "anchors": {
+      "peak": {
+       "date": "2025-10-10",
+       "px": 1184.2846281392433,
+       "avwap": 78.72724287360194
+      },
+      "trough": {
+       "date": "2026-10-02",
+       "px": 29.709999084472656,
+       "avwap": 29.557168353664498
+      }
+     }
+    }
+   },
+   "triggers": {
+    "SOXL": [],
+    "SOXS": [
+     "BACK ABOVE VWAP"
+    ]
+   },
+   "sent": "telegram"
   }
  },
  "fired": [
   "SOXL:VWAP BREAK \u2014 first 5-min close below session VWAP",
+  "SOXS:BACK ABOVE VWAP",
   "SOXS:VWAP BREAK \u2014 first 5-min close below session VWAP"
  ]
 }
