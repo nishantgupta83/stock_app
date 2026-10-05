@@ -62,12 +62,12 @@ HTTP_TIMEOUT = 45
 
 # table -> (age column, retention days, what it is)
 TABLES: dict[str, tuple[str, int, str]] = {
-    "stock_job_runs":          ("started_at", 90, "operational log of every agent run"),
+    "stock_job_runs":          ("started_at", 35, "operational log of every agent run")  # >32d: monthly source_review watchdog gap,
     # fired_at, NOT created_at — sql/0035_thesis_rejections.sql:27. Verified against the
     # migration, not guessed: the first version of this script guessed created_at and
     # PostgREST rejected it with 42703 while the run still exited 0.
-    "stock_thesis_rejections": ("fired_at", 60, "audit of clusters dropped before emit"),
-    "stock_health_pulse":      ("pulsed_at",  30, "hourly health pulse ledger"),
+    "stock_thesis_rejections": ("fired_at", 14, "audit of clusters dropped before emit"),
+    "stock_health_pulse":      ("pulsed_at",  14, "hourly health pulse ledger"),
 }
 
 # Tables this script must never write to, even if someone adds them to TABLES by mistake.
