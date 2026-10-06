@@ -2,19 +2,19 @@
   "experiment_id": "fwd_prov_long_h1d",
   "config_hash": "f1b6a019435833a8a180b7609cacb0bb88f94948ae54ed6bd9d36175e615b9cc",
   "forward_epoch": "2026-08-03",
-  "captured_at": "2026-10-03T01:29:38.719652+00:00",
-  "sync_ok": false,
-  "n_admitted": 189,
-  "n_open": 7,
-  "n_cohorts_forward": 35,
+  "captured_at": "2026-10-06T02:32:25.705188+00:00",
+  "sync_ok": true,
+  "n_admitted": 190,
+  "n_open": 1,
+  "n_cohorts_forward": 36,
   "forward": {
-    "n_cohorts": 35,
-    "n_positions": 182,
-    "weeks": 8.3,
-    "mean_cohort_excess": 0.007374,
-    "mean_cohort_net": 0.006451,
-    "profit_factor": 2.802,
-    "top_cohort_excess_share": 0.329,
+    "n_cohorts": 36,
+    "n_positions": 189,
+    "weeks": 8.4,
+    "mean_cohort_excess": 0.007028,
+    "mean_cohort_net": 0.006311,
+    "profit_factor": 2.706,
+    "top_cohort_excess_share": 0.3356,
     "max_drawdown": 0.0979,
     "subperiods_positive": 2,
     "cohorts": {
@@ -227,15 +227,21 @@
         "net": 0.0,
         "qqq": 0.0,
         "excess": 0.0
+      },
+      "2026-10-02": {
+        "n": 5,
+        "net": 0.0014306,
+        "qqq": 0.006508999999999999,
+        "excess": -0.005078399999999999
       }
     },
-    "mean_position_excess": 0.008131,
+    "mean_position_excess": 0.007451,
     "top_ticker": "AI",
-    "top_ticker_excess_share": 0.4298,
-    "top_ticker_positions": 14,
-    "mean_position_excess_ex_top_ticker": 0.005469,
-    "n_positions_ex_top_ticker": 78,
-    "n_positions_deduped": 92
+    "top_ticker_excess_share": 0.423,
+    "top_ticker_positions": 15,
+    "mean_position_excess_ex_top_ticker": 0.005085,
+    "n_positions_ex_top_ticker": 82,
+    "n_positions_deduped": 97
   },
   "replay": {
     "n_cohorts": 0,
@@ -257,8 +263,11 @@
     "n_positions_deduped": 0
   },
   "tier": {
-    "status": "inconclusive",
-    "reason": "sync_failed",
-    "next": "tier1"
+    "status": "continue",
+    "mean_cohort_excess": 0.007028,
+    "max_drawdown": 0.0979,
+    "n_cohorts": 36,
+    "weeks": 8.4,
+    "profit_factor": 2.706
   }
 }
