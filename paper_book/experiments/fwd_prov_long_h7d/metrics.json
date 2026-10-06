@@ -2,20 +2,20 @@
   "experiment_id": "fwd_prov_long_h7d",
   "config_hash": "47eb4eb5fda8223568f21fae0301f48c6fe0da43261e959002d84a8c3fd72d35",
   "forward_epoch": "2026-08-03",
-  "captured_at": "2026-10-03T01:30:07.400391+00:00",
+  "captured_at": "2026-10-06T02:32:53.207310+00:00",
   "sync_ok": true,
-  "n_admitted": 189,
-  "n_open": 15,
-  "n_cohorts_forward": 32,
+  "n_admitted": 190,
+  "n_open": 12,
+  "n_cohorts_forward": 35,
   "forward": {
-    "n_cohorts": 32,
-    "n_positions": 174,
-    "weeks": 7.4,
-    "mean_cohort_excess": -0.004813,
-    "mean_cohort_net": -0.006209,
-    "profit_factor": 0.7538,
-    "top_cohort_excess_share": -0.6798,
-    "max_drawdown": 0.3288,
+    "n_cohorts": 35,
+    "n_positions": 178,
+    "weeks": 8.3,
+    "mean_cohort_excess": -0.008822,
+    "mean_cohort_net": -0.008334,
+    "profit_factor": 0.6043,
+    "top_cohort_excess_share": -0.3391,
+    "max_drawdown": 0.3893,
     "subperiods_positive": 1,
     "cohorts": {
       "2026-08-04": {
@@ -209,15 +209,33 @@
         "net": -0.031,
         "qqq": -0.001077,
         "excess": -0.029923
+      },
+      "2026-09-29": {
+        "n": 1,
+        "net": -0.031,
+        "qqq": 0.021685,
+        "excess": -0.052685
+      },
+      "2026-09-30": {
+        "n": 1,
+        "net": -0.031,
+        "qqq": 0.02163,
+        "excess": -0.05263
+      },
+      "2026-10-01": {
+        "n": 1,
+        "net": -0.031,
+        "qqq": 0.018437,
+        "excess": -0.049437
       }
     },
-    "mean_position_excess": 0.000345,
+    "mean_position_excess": -0.001197,
     "top_ticker": "XLE",
-    "top_ticker_excess_share": 8.7156,
+    "top_ticker_excess_share": -2.44,
     "top_ticker_positions": 6,
-    "mean_position_excess_ex_top_ticker": -0.002839,
-    "n_positions_ex_top_ticker": 92,
-    "n_positions_deduped": 98
+    "mean_position_excess_ex_top_ticker": -0.004378,
+    "n_positions_ex_top_ticker": 95,
+    "n_positions_deduped": 101
   },
   "replay": {
     "n_cohorts": 0,
@@ -239,11 +257,9 @@
     "n_positions_deduped": 0
   },
   "tier": {
-    "status": "inconclusive",
-    "reason": "insufficient_sample",
-    "have_cohorts": 32,
-    "need_cohorts": 30,
-    "have_weeks": 7.4,
-    "need_weeks": 8
+    "status": "fail",
+    "reason": "max_drawdown_breach",
+    "max_drawdown": 0.3893,
+    "limit": 0.2
   }
 }
