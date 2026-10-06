@@ -6,7 +6,7 @@ name: event_paper_agent
 
 on:
   schedule:
-    - cron: "5 * * * *"  # top of every hour, 5 min in to dodge cron-tower contention
+    - cron: "5 */3 * * 1-5"  # 2026-10-05: every 3h on weekdays (cron+pinger+orchestrator+dashboard+pulsecheck aligned)
   workflow_dispatch:
     inputs:
       backfill_days:

@@ -22,7 +22,7 @@ from datetime import datetime, timezone, timedelta
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-from pulsecheck._pulse import Check, CheckResult, run_checks, sb_get
+from pulsecheck._pulse import Check, CheckResult, run_checks, sb_get, in_trading_session
 
 
 AGENT = "pulsecheck_trade_layers"
@@ -31,6 +31,8 @@ RUNNING_STALE_MIN = 15   # a 'running' row older than this means the job died mi
 
 
 def _latest_run_health(agent_name: str) -> CheckResult:
+    if not in_trading_session():
+        return CheckResult("ok", "outside trading session — 3h weekday cadence not evaluated")
     since = (datetime.now(timezone.utc) - timedelta(hours=LOOKBACK_HOURS)).isoformat()
     rows = sb_get("stock_job_runs", {
         "agent":      f"eq.{agent_name}",

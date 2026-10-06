@@ -19,7 +19,7 @@ from collections import Counter
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-from pulsecheck._pulse import Check, CheckResult, run_checks, sb_get, sb_count
+from pulsecheck._pulse import Check, CheckResult, run_checks, sb_get, sb_count, in_trading_session
 
 
 AGENT = "pulsecheck_news"
@@ -33,13 +33,15 @@ def _now() -> datetime: return datetime.now(timezone.utc)
 
 
 def recent_runs() -> CheckResult:
-    since = (_now() - timedelta(hours=2)).isoformat()
+    if not in_trading_session():
+        return CheckResult("ok", "outside trading session — 3h weekday cadence not evaluated")
+    since = (_now() - timedelta(hours=7)).isoformat()
     n = sb_count("stock_job_runs", {
         "agent":      "eq.news_agent",
         "started_at": f"gte.{since}",
     })
     status = "ok" if n >= RUNS_PER_2H_FLOOR else "warning"
-    return CheckResult(status, f"{n} runs in last 2h",
+    return CheckResult(status, f"{n} runs in last 7h",
                        observed=float(n), threshold=float(RUNS_PER_2H_FLOOR))
 
 

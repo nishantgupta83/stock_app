@@ -30,7 +30,7 @@ from pulsecheck._pulse import Check, CheckResult, run_checks, sb_get, sb_count
 AGENT = "pulsecheck_price_agent"
 # After the 2026-06-02 cron bump (0 */2 * * 1-5) we expect ~6 runs/24h on
 # Mon-Fri (weekdays only). Threshold of 3 tolerates one or two GHA cron drops.
-RUNS_PER_24H_FLOOR = 3
+RUNS_PER_24H_FLOOR = 2
 SKIP_RATE_WARN     = 0.05      # 5% silent-drop rate = early alert
 SKIP_RATE_CRIT     = 0.20
 # Volume guard: the skip RATE is volume-sensitive, so a handful of genuinely

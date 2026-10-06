@@ -6,7 +6,7 @@ name: thesis_agent
 
 on:
   schedule:
-    - cron: "10 * * * *"  # 2026-10-05: */15→hourly (cut runner/egress use; cron+pinger+orchestrator+dashboard+pulsecheck aligned)
+    - cron: "10 */3 * * 1-5"  # 2026-10-05: every 3h on weekdays (cron+pinger+orchestrator+dashboard+pulsecheck aligned)
   workflow_dispatch:
 
 concurrency:

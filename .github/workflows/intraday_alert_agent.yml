@@ -5,7 +5,7 @@ name: intraday_alert_agent
 
 on:
   schedule:
-    - cron: "*/15 13-21 * * 1-5"
+    - cron: "0 14,17,20 * * 1-5"  # 2026-10-05: every 3h on weekdays (cron+pinger+orchestrator+dashboard+pulsecheck aligned)
   workflow_dispatch:
 
 concurrency:

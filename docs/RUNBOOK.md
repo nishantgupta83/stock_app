@@ -20,11 +20,11 @@ external infrastructure, and what to do when something breaks.
 
 | Cadence | Workflows | Purpose |
 |---|---|---|
-| hourly (`0` ingest, `10` thesis) | `filing_agent`, `news_agent`, `truth_social_agent`, `thesis_agent` | Hot path: ingest + score (`*/5` → `*/15` → hourly 2026-10-05) |
+| every 3h, weekdays (`0 */3 * * 1-5` ingest, `10 */3` thesis) | `filing_agent`, `news_agent`, `truth_social_agent`, `thesis_agent` | Hot path: ingest + score (`*/5` → `*/15` → hourly → every 3h on trading days, 2026-10-05) |
 | `5 * * * *` | `event_paper_agent` | Open 4 paper trades per fresh event |
-| `20 * * * *` | `paper_trade_agent` | Probability-calibrated paper forecasts |
+| `20 */3 * * 1-5` | `paper_trade_agent` | Probability-calibrated paper forecasts |
 | `0 22 * * *` | `site_generator` | Dashboard build → Cloudflare Pages. **Daily, not `*/15`** — the every-15-min cadence was ~85% of all Supabase read egress (CLAUDE.md rule #9) |
-| `*/15 13-21 * * 1-5` | `intraday_alert_agent` | Fast-twitch spike detection during US market hours |
+| `0 14,17,20 * * 1-5` | `intraday_alert_agent` | Fast-twitch spike detection during US market hours |
 | `*/30 * * * *` | `trade_setup_agent`, `risk_agent` | Layer 3+4 — signal → setup → risk decision |
 | `15 */2 * * *` | `activist_insider_agent` | 13D + Form 4 cluster detection |
 | `0 13 * * 1-5` | `macro_rates_agent` | Pre-market macro pulse (FRED) |
@@ -270,12 +270,12 @@ For the seven tightest-cadence workflows, this matters:
 
 | Workflow | GHA cron | Why frequent runs matter |
 |---|---|---|
-| `filing_agent` | `0 * * * *` | EDGAR Form 4 / 8-K freshness for intraday alerts |
-| `news_agent` | `0 * * * *` | Catalyst freshness — late news = late signal |
-| `thesis_agent` | `10 * * * *` | Cluster scoring; downstream of all ingest agents |
-| `truth_social_agent` | `0 * * * *` | DJT-driven reaction is minute-sensitive |
+| `filing_agent` | `0 */3 * * 1-5` | EDGAR Form 4 / 8-K freshness for intraday alerts |
+| `news_agent` | `0 */3 * * 1-5` | Catalyst freshness — late news = late signal |
+| `thesis_agent` | `10 */3 * * 1-5` | Cluster scoring; downstream of all ingest agents |
+| `truth_social_agent` | `0 */3 * * 1-5` | DJT-driven reaction is minute-sensitive |
 | `site_generator` | `0 22 * * *` | Dashboard staleness is operator-visible |
-| `paper_trade_agent` | `20 * * * *` | Forecast freshness |
+| `paper_trade_agent` | `20 */3 * * 1-5` | Forecast freshness |
 | `intraday_alert_agent` | `*/15 13-21 * * 1-5` | Market-hours-only fast-twitch alerter |
 
 For the remaining 18 workflows (hourly / daily / weekly cadences) GHA cron drift is

@@ -18,12 +18,12 @@ from datetime import datetime, timezone, timedelta
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-from pulsecheck._pulse import Check, CheckResult, run_checks, sb_get, sb_count
+from pulsecheck._pulse import Check, CheckResult, run_checks, sb_get, sb_count, in_trading_session
 
 
 AGENT = "pulsecheck_realistic_loop"
 LOOP_NAME = "shadow_5k"
-RUNS_PER_DAY_FLOOR = 6       # hourly opens (24/d) + 1 daily mark, but GHA cron
+RUNS_PER_DAY_FLOOR = 2       # hourly opens (24/d) + 1 daily mark, but GHA cron
                              # drops ~30% under runner-pool contention, AND the
                              # workflow no-ops when there are no null-reason
                              # setups. 6/day = 1 every 4h is the floor that
@@ -37,6 +37,8 @@ def _now() -> datetime: return datetime.now(timezone.utc)
 
 
 def recent_runs() -> CheckResult:
+    if not in_trading_session():
+        return CheckResult("ok", "outside trading session — 3h weekday cadence not evaluated")
     since = (_now() - timedelta(hours=24)).isoformat()
     n = sb_count("stock_job_runs", {
         "agent": "eq.workflow_realistic_loop_agent",

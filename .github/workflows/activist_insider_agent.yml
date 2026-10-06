@@ -2,7 +2,7 @@ name: activist_insider_agent
 
 on:
   schedule:
-    - cron: "15 */2 * * *"
+    - cron: "15 */3 * * 1-5"  # 2026-10-05: every 3h on weekdays (cron+pinger+orchestrator+dashboard+pulsecheck aligned)
   workflow_dispatch:
 
 concurrency:

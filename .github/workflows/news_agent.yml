@@ -7,7 +7,7 @@ name: news_agent
 
 on:
   schedule:
-    - cron: "0 * * * *"  # 2026-10-05: */15→hourly (cut runner/egress use; cron+pinger+orchestrator+dashboard+pulsecheck aligned)
+    - cron: "0 */3 * * 1-5"  # 2026-10-05: every 3h on weekdays (cron+pinger+orchestrator+dashboard+pulsecheck aligned)
   workflow_dispatch:
 
 concurrency:
