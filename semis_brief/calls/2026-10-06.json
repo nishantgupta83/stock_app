@@ -1,0 +1,522 @@
+{
+ "date": "2026-10-06",
+ "generated_at": "2026-10-06T13:00:34+00:00",
+ "snapshot_cutoff": "2026-10-06T13:00:34.697559+00:00",
+ "prior_session": "2026-10-05",
+ "calendar_verified": true,
+ "weights": {
+  "INTC": 0.09591231,
+  "AMD": 0.09280071,
+  "MU": 0.0793287,
+  "NVDA": 0.0738637,
+  "AVGO": 0.0677134,
+  "MRVL": 0.044567,
+  "AMAT": 0.03983,
+  "KLAC": 0.039666902,
+  "ADI": 0.039111,
+  "LRCX": 0.0389026
+ },
+ "weights_source": "yfinance",
+ "premarket": {
+  "INTC": {
+   "price": 117.22,
+   "ts": "2026-10-06T13:00:33+00:00",
+   "prior_close": 116.19000244140625,
+   "move": 0.00886476923101176
+  },
+  "AMD": {
+   "price": 645.7,
+   "ts": "2026-10-06T12:55:00+00:00",
+   "prior_close": 631.75,
+   "move": 0.022081519588444953
+  },
+  "MU": {
+   "price": 1067.98,
+   "ts": "2026-10-06T13:00:33+00:00",
+   "prior_close": 1063.9599609375,
+   "move": 0.0037783743844626017
+  },
+  "NVDA": {
+   "price": 241.4295,
+   "ts": "2026-10-06T12:55:00+00:00",
+   "prior_close": 238.89999389648438,
+   "move": 0.01058813799975078
+  },
+  "AVGO": {
+   "price": 364.87,
+   "ts": "2026-10-06T13:00:29+00:00",
+   "prior_close": 362.510009765625,
+   "move": 0.006510138122532982
+  },
+  "MRVL": {
+   "price": 271.9049,
+   "ts": "2026-10-06T12:55:00+00:00",
+   "prior_close": 271.25,
+   "move": 0.002414377880184393
+  },
+  "AMAT": {
+   "price": 545.9046,
+   "ts": "2026-10-06T12:55:00+00:00",
+   "prior_close": 542.280029296875,
+   "move": 0.006683946498683646
+  },
+  "KLAC": {
+   "price": 208.17,
+   "ts": "2026-10-06T13:00:26+00:00",
+   "prior_close": 206.85000610351562,
+   "move": 0.006381406127799583
+  },
+  "ADI": {
+   "price": 419.51,
+   "ts": "2026-10-06T12:55:00+00:00",
+   "prior_close": 419.1000061035156,
+   "move": 0.0009782722274240818
+  },
+  "LRCX": {
+   "price": 348.49,
+   "ts": "2026-10-06T13:00:13+00:00",
+   "prior_close": 345.79998779296875,
+   "move": 0.007779098617672009
+  },
+  "SOXX": {
+   "price": 593.19,
+   "ts": "2026-10-06T13:00:18+00:00",
+   "prior_close": 589.510009765625,
+   "move": 0.006242455892883303
+  },
+  "SOXL": {
+   "price": 167.0108,
+   "ts": "2026-10-06T12:55:00+00:00",
+   "prior_close": 164.27000427246094,
+   "move": 0.016684699922410173
+  },
+  "SOXS": {
+   "price": 29.15,
+   "ts": "2026-10-06T12:55:00+00:00",
+   "prior_close": 29.6200008392334,
+   "move": -0.015867684872272414
+  }
+ },
+ "implied": {
+  "implied_soxx": 0.008811397594596128,
+  "n_used": 10,
+  "n_missing": 0,
+  "coverage": 1.0,
+  "contrib": {
+   "INTC": 0.0013899715659288555,
+   "AMD": 0.0033499967581734117,
+   "MU": 0.0004900038094927737,
+   "NVDA": 0.0012785413621829683,
+   "AVGO": 0.0007206575728704887,
+   "MRVL": 0.00017590685952526922,
+   "AMAT": 0.0004352185544816299,
+   "KLAC": 0.00041381744893608413,
+   "ADI": 6.25493463189129e-05,
+   "LRCX": 0.0004947343166857346
+  },
+  "dispersion": 0.0055599409807468685,
+  "n_up": 10,
+  "n_down": 0
+ },
+ "implied_soxx": 0.008811397594596128,
+ "implied_soxl": 0.026434192783788384,
+ "implied_soxs": -0.026434192783788384,
+ "bias": "lean_soxl",
+ "components": {
+  "overnight_asia_eu": -0.008206168899047305,
+  "nasdaq_futures": 0.004194577352472084,
+  "news_net": 2,
+  "social_skew": 42
+ },
+ "overnight": {
+  "2330.TW": {
+   "label": "TSMC (Taiwan)",
+   "move": 0.003883495145631022
+  },
+  "000660.KS": {
+   "label": "SK Hynix",
+   "move": -0.03693644758283543
+  },
+  "005930.KS": {
+   "label": "Samsung",
+   "move": -0.01449275362318836
+  },
+  "8035.T": {
+   "label": "Tokyo Electron",
+   "move": 0.0031335683509596812
+  },
+  "ASML.AS": {
+   "label": "ASML (Amsterdam)",
+   "move": 0.003381293214196557
+  }
+ },
+ "nasdaq_futures": 0.004194577352472084,
+ "news": [
+  {
+   "ticker": "NVDA",
+   "title": "The Only 2 Artificial Intelligence (AI) Stocks I'd Buy With $1,000 Today and Never Sell",
+   "link": "https://www.fool.com/investing/2026/10/06/the-only-2-artificial-intelligence-ai-stocks-id-bu/?.tsrc=rss",
+   "published": "2026-10-06 12:53:00+00:00",
+   "tag": 0
+  },
+  {
+   "ticker": "NVDA",
+   "title": "ASML vs. Nvidia: Which AI Semiconductor Stock Is a Better Buy in 2026?",
+   "link": "https://www.fool.com/coverage/better-buy/2026/10/06/asml-vs-nvidia-which-ai-semiconductor-stock-better-buy-2026/?.tsrc=rss",
+   "published": "2026-10-06 12:52:01+00:00",
+   "tag": 0
+  },
+  {
+   "ticker": "AMD",
+   "title": "AMD CEO Lisa Su plans major AI chip supply ramp in 2027",
+   "link": "https://qz.com/amd-ai-chip-supply-increase-2027-lisa-su-100626?.tsrc=rss",
+   "published": "2026-10-06 12:46:00+00:00",
+   "tag": 0
+  },
+  {
+   "ticker": "AMD",
+   "title": "The Fed\u2019s Rate Hike Isn\u2019t A Headwind For Nvidia For Several Reasons",
+   "link": "https://247wallst.com/investing/2026/10/06/the-feds-rate-hike-isnt-a-headwind-for-nvidia-for-several-reasons/?.tsrc=rss",
+   "published": "2026-10-06 12:45:12+00:00",
+   "tag": 0
+  },
+  {
+   "ticker": "INTC",
+   "title": "Intel\u2019s Biggest Opportunity\u00a0May Be Its\u00a0Comeback",
+   "link": "https://247wallst.com/investing/2026/10/06/intels-biggest-opportunity-may-be-its-comeback/?.tsrc=rss",
+   "published": "2026-10-06 12:45:10+00:00",
+   "tag": 0
+  },
+  {
+   "ticker": "AMD",
+   "title": "Stock Market Today: Dow Rises Nearly 300 Points As Oil, Yields Fall; AMD, Nvidia, Tesla Shares Rally (Live Coverage)",
+   "link": "https://finance.yahoo.com/m/23879019-ae2b-39de-9232-cdfcba882196/stock-market-today%3A-dow-rises.html?.tsrc=rss",
+   "published": "2026-10-06 12:41:05+00:00",
+   "tag": 0
+  },
+  {
+   "ticker": "MU",
+   "title": "Becton Dickinson to Invest $19 Billion in U.S. in Exchange for Tariff Relief",
+   "link": "https://www.wsj.com/tech/becton-dickinson-to-invest-19-billion-in-u-s-in-exchange-for-tariff-relief-a7d3dd75?.tsrc=rss",
+   "published": "2026-10-06 12:35:00+00:00",
+   "tag": -1
+  },
+  {
+   "ticker": "NVDA",
+   "title": "Warren Buffett's Berkshire Compounded at 19.7% a Year for 61 Years, a 6,099,294% Cumulative Gain. Can Investors Still Learn From That Playbook Today?",
+   "link": "https://www.fool.com/investing/2026/10/06/warren-buffetts-berkshire-compounded-at-197-a-year/?.tsrc=rss",
+   "published": "2026-10-06 12:35:00+00:00",
+   "tag": 0
+  },
+  {
+   "ticker": "NVDA",
+   "title": "Should You Buy Verizon Communications Stock Before Oct. 26?",
+   "link": "https://www.fool.com/investing/2026/10/06/should-you-buy-verizon-communications-stock-before-oct-26/?.tsrc=rss",
+   "published": "2026-10-06 12:34:02+00:00",
+   "tag": 0
+  },
+  {
+   "ticker": "NVDA",
+   "title": "The 10-Year Treasury Just Hit a 24-Year High. Here's Why AGNC Just Hit a 52-Week Low Because of It.",
+   "link": "https://www.fool.com/investing/2026/10/06/the-10-year-treasury-just-hit-a-24-year-high-here-s-why-agnc-just-hit-a-52-week-low-because-of-it/?.tsrc=rss",
+   "published": "2026-10-06 12:31:01+00:00",
+   "tag": 0
+  }
+ ],
+ "news_net": 2,
+ "filings": [],
+ "truth_social": [
+  {
+   "posted_at": "2026-10-06T03:18:50+00:00",
+   "text": "HUGE INVESTMENT WIN for NEBRASKA AND THE U.S.! Beckton Dickenson (BD), one of the largest Medical Device Manufacturers, has agreed to an Investment of 3 BILLION DOLLARS to Onshore Manufacturing of Essential Medical Products (syringes, needles, lab kits, and more) that American Pa",
+   "url": "https://www.trumpstruth.org/statuses/42176"
+  }
+ ],
+ "social": {
+  "SOXL": {
+   "bull": 9,
+   "bear": 3,
+   "msgs": 29,
+   "last12h": 29,
+   "vol_ratio": 0.9666666666666667
+  },
+  "SOXS": {
+   "bull": 2,
+   "bear": 4,
+   "msgs": 30,
+   "last12h": 11,
+   "vol_ratio": 0.4782608695652174
+  },
+  "SOXX": {
+   "bull": 9,
+   "bear": 0,
+   "msgs": 30,
+   "last12h": 10,
+   "vol_ratio": 0.7142857142857143
+  },
+  "NVDA": {
+   "bull": 11,
+   "bear": 1,
+   "msgs": 30,
+   "last12h": 30,
+   "vol_ratio": 1.0
+  },
+  "MU": {
+   "bull": 11,
+   "bear": 1,
+   "msgs": 30,
+   "last12h": 30,
+   "vol_ratio": 1.0
+  },
+  "AMD": {
+   "bull": 10,
+   "bear": 1,
+   "msgs": 30,
+   "last12h": 30,
+   "vol_ratio": 1.0
+  }
+ },
+ "levels": {
+  "soxl_prior_close": 164.27000427246094,
+  "soxl_prior_high": 164.3800048828125,
+  "soxl_prior_low": 158.0800018310547,
+  "soxl_pm_high": 168.1613,
+  "soxl_pm_low": 163.96,
+  "soxl_gap": 0.016684699922410173,
+  "gap_fill": {
+   "bucket": "up 1-2%",
+   "n": 41,
+   "fill_rate": 0.6585365853658537
+  }
+ },
+ "bands": {
+  "SOXX": {
+   "state": {
+    "as_of": "2026-10-05",
+    "close": 589.510009765625,
+    "upper": 606.0045282413788,
+    "middle": 547.17900390625,
+    "lower": 488.3534795711213,
+    "pct_b": 0.8598013476107361,
+    "bandwidth": 0.21501382149234488,
+    "zone": "inside"
+   },
+   "open_trade": null,
+   "record_5y": {
+    "n": 24,
+    "win_rate": 0.7916666666666666,
+    "mean": 0.03354375471187052
+   },
+   "record_live": {
+    "n": 0,
+    "win_rate": null,
+    "mean": null
+   },
+   "last_trade": {
+    "signal_date": "2026-07-29",
+    "entry_date": "2026-07-30",
+    "entry": 491.57000732421875,
+    "exit_date": "2026-08-04",
+    "exit": 542.2100219726562,
+    "ret": 0.10261689259702429,
+    "hold_days": 4
+   }
+  },
+  "SOXL": {
+   "state": {
+    "as_of": "2026-10-05",
+    "close": 164.27000427246094,
+    "upper": 173.77830219643963,
+    "middle": 134.46799964904784,
+    "lower": 95.15769710165605,
+    "pct_b": 0.8790609928209576,
+    "bandwidth": 0.5846789221225712,
+    "zone": "inside"
+   },
+   "open_trade": null,
+   "record_5y": {
+    "n": 24,
+    "win_rate": 0.7083333333333334,
+    "mean": 0.07545322936058657
+   },
+   "record_live": {
+    "n": 0,
+    "win_rate": null,
+    "mean": null
+   },
+   "last_trade": {
+    "signal_date": "2026-07-29",
+    "entry_date": "2026-07-30",
+    "entry": 107.37999725341797,
+    "exit_date": "2026-08-07",
+    "exit": 140.25,
+    "ret": 0.3057091785000558,
+    "hold_days": 7
+   }
+  },
+  "SOXS": {
+   "state": {
+    "as_of": "2026-10-05",
+    "close": 29.6200008392334,
+    "upper": 53.52053018929698,
+    "middle": 38.8475004196167,
+    "lower": 24.17447064993642,
+    "pct_b": 0.1855625686982994,
+    "bandwidth": 0.7554169308803654,
+    "zone": "inside"
+   },
+   "open_trade": {
+    "signal_date": "2026-09-18",
+    "entry_date": "2026-09-21",
+    "entry": 38.75,
+    "last": 29.6200008392334,
+    "unrealized": -0.2358128815681704
+   },
+   "record_5y": {
+    "n": 20,
+    "win_rate": 0.5,
+    "mean": -0.05450411367801486
+   },
+   "record_live": {
+    "n": 0,
+    "win_rate": null,
+    "mean": null
+   },
+   "last_trade": {
+    "signal_date": "2026-04-08",
+    "entry_date": "2026-04-09",
+    "entry": 267.6000061035156,
+    "exit_date": "2026-07-07",
+    "exit": 48.0,
+    "ret": -0.8210278067817675,
+    "hold_days": 61
+   }
+  }
+ },
+ "portfolio": [
+  {
+   "ticker": "VTI",
+   "role": "core",
+   "note": "total US market",
+   "close": 380.6000061035156,
+   "as_of": "2026-10-05",
+   "chg": 0.0069049867366124396,
+   "pct_b": 0.8784443356848868,
+   "vs_sma20": 0.01091396293237401,
+   "vs_sma200": 0.07026069438625848,
+   "range_pos": 0.9490500972427438,
+   "range_n": 251,
+   "dollar_volume": 1084509926.7745972,
+   "thin": false
+  },
+  {
+   "ticker": "RRX",
+   "role": "theme",
+   "note": "frameless motors; ~$30M humanoid orders (JPM note, not an RRX filing)",
+   "close": 161.25999450683594,
+   "as_of": "2026-10-05",
+   "chg": 0.008694560781274507,
+   "pct_b": 0.8413231019302482,
+   "vs_sma20": 0.039739752180848464,
+   "vs_sma200": -0.14561864923560186,
+   "range_pos": 0.2970576917178128,
+   "range_n": 251,
+   "dollar_volume": 187076874.11117554,
+   "thin": false
+  },
+  {
+   "ticker": "NOVT",
+   "role": "theme",
+   "note": "ATI force/torque, global #1; no humanoid revenue disclosed",
+   "close": 150.61000061035156,
+   "as_of": "2026-10-05",
+   "chg": 0.008976996714254337,
+   "pct_b": 0.9095672707165724,
+   "vs_sma20": 0.060398581726484046,
+   "vs_sma200": 0.07179939021607873,
+   "range_pos": 0.7391054263178015,
+   "range_n": 251,
+   "dollar_volume": 51636074.13101196,
+   "thin": false
+  },
+  {
+   "ticker": "ALGM",
+   "role": "theme",
+   "note": "2 disclosed humanoid joint design wins",
+   "close": 38.459999084472656,
+   "as_of": "2026-10-05",
+   "chg": -0.027068042698362382,
+   "pct_b": 0.9222594033496345,
+   "vs_sma20": 0.07806585832437696,
+   "vs_sma200": -0.04637635937274198,
+   "range_pos": 0.3344724193416055,
+   "range_n": 251,
+   "dollar_volume": 86777260.63652039,
+   "thin": false
+  },
+  {
+   "ticker": "KOID",
+   "role": "theme",
+   "note": "humanoid ETF, 41 holdings, 0.69%",
+   "close": 36.849998474121094,
+   "as_of": "2026-10-05",
+   "chg": 0.002993924622457733,
+   "pct_b": 0.8797258403925915,
+   "vs_sma20": 0.028080374997085933,
+   "vs_sma200": 0.014751442270725779,
+   "range_pos": 0.5848445325426566,
+   "range_n": 251,
+   "dollar_volume": 4938173.892402649,
+   "thin": false
+  },
+  {
+   "ticker": "MP",
+   "role": "watch",
+   "note": "NdPr + magnets; DoD $110/kg floor",
+   "close": 46.84000015258789,
+   "as_of": "2026-10-05",
+   "chg": -0.0027677467476396878,
+   "pct_b": 0.2646023917683726,
+   "vs_sma20": -0.04807389166785392,
+   "vs_sma200": -0.17366889685387088,
+   "range_pos": 0.14434353819926138,
+   "range_n": 251,
+   "dollar_volume": 286559005.8441162,
+   "thin": false
+  },
+  {
+   "ticker": "USAR",
+   "role": "watch",
+   "note": "magnet converter, no mine",
+   "close": 13.649999618530273,
+   "as_of": "2026-10-05",
+   "chg": 0.004414971690118508,
+   "pct_b": 0.1278545287157736,
+   "vs_sma20": -0.11161734020848624,
+   "vs_sma200": -0.29250052615009725,
+   "range_pos": 0.06534727240961871,
+   "range_n": 251,
+   "dollar_volume": 184502204.03370857,
+   "thin": false
+  },
+  {
+   "ticker": "AME",
+   "role": "watch",
+   "note": "no humanoid disclosure found",
+   "close": 251.9199981689453,
+   "as_of": "2026-10-05",
+   "chg": -3.9671762499526864e-05,
+   "pct_b": 0.8222309057317955,
+   "vs_sma20": 0.03733106667131536,
+   "vs_sma200": 0.09284994258511703,
+   "range_pos": 0.9167088382367893,
+   "range_n": 251,
+   "dollar_volume": 316536087.45422363,
+   "thin": false
+  }
+ ],
+ "catalysts": {
+  "earnings_next_7d": [],
+  "macro_today": []
+ }
+}
