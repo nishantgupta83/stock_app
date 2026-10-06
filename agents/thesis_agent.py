@@ -89,7 +89,18 @@ DEFAULT_SIGNAL_TTL_HOURS = 72  # 3 days for unknown event types
 # Look back this far for "fresh" events. GitHub cron can be delayed or skipped;
 # dedupe_key prevents duplicate signals, so a wider replay window is safer than
 # missing a valid cluster.
-FRESHNESS_WINDOW_MIN = 180
+FRESHNESS_WINDOW_MIN = 420   # >2x the 3h trading-day cadence so one late/dropped run loses nothing
+WEEKEND_WINDOW_MIN = 4320    # first run after a non-trading day: replay the whole gap (72h)
+
+
+def freshness_window_min(now: datetime) -> int:
+    """Window for the fresh-event read. The workflow runs every 3h on weekdays only, so the
+    first run after a weekend/holiday must reach back across the whole closed gap."""
+    from _market_calendar import is_trading_day
+    if not is_trading_day((now - timedelta(days=1)).date()):
+        return WEEKEND_WINDOW_MIN
+    return FRESHNESS_WINDOW_MIN
+
 # Cluster window widened from 5→30 min after AMD's 2026-05-05 earnings missed
 # clustering: earnings_release landed at 20:00 UTC, the matching 8-K landed at
 # 20:16 UTC, both single-source in different 5-min buckets. Both clearly
@@ -373,7 +384,7 @@ def fetch_fresh_events() -> list[dict]:
 
     Use params= so requests URL-encodes the +00:00 in the ISO timestamp."""
     now = datetime.now(timezone.utc)
-    cutoff = (now - timedelta(minutes=FRESHNESS_WINDOW_MIN)).isoformat()
+    cutoff = (now - timedelta(minutes=freshness_window_min(now))).isoformat()
     params = [
         ("created_at", f"gte.{cutoff}"),
         ("ticker", "not.is.null"),
@@ -2201,7 +2212,7 @@ def main() -> int:
             print(f"Retried dispatch_failed signals: {retried} sent, cap remaining: {cap_remaining}")
 
         events = fetch_fresh_events()
-        print(f"Fresh events in last {FRESHNESS_WINDOW_MIN}m: {len(events)}")
+        print(f"Fresh events in last {freshness_window_min(datetime.now(timezone.utc))}m: {len(events)}")
         if not events:
             # Always carry an emit block (even all-zero) so pulsecheck's
             # insert_failures() distinguishes "ran, nothing to emit" from

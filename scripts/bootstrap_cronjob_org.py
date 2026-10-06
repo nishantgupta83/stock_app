@@ -118,10 +118,10 @@ WORKFLOWS = {
         "schedule": {
             "timezone": "UTC",
             "minutes": [27],
-            "hours": [-1],
+            "hours": [0, 3, 6, 9, 12, 15, 18, 21],
             "mdays": [-1],
             "months": [-1],
-            "wdays": [-1],
+            "wdays": [1, 2, 3, 4, 5],
         },
     },
     "intraday_alert_agent.yml": {
@@ -130,8 +130,8 @@ WORKFLOWS = {
         # Pinger mirrors window: same hours/wdays, staggered minutes.
         "schedule": {
             "timezone": "UTC",
-            "minutes": [7, 22, 37, 52],
-            "hours": [13, 14, 15, 16, 17, 18, 19, 20, 21],
+            "minutes": [7],
+            "hours": [14, 17, 20],
             "mdays": [-1],
             "months": [-1],
             "wdays": [1, 2, 3, 4, 5],
@@ -145,10 +145,10 @@ WORKFLOWS = {
         "schedule": {
             "timezone": "UTC",
             "minutes": [7],  # 2026-06-16: */5→*/15 egress cut (backstops the */15 GHA cron)
-            "hours": [-1],
+            "hours": [0, 3, 6, 9, 12, 15, 18, 21],
             "mdays": [-1],
             "months": [-1],
-            "wdays": [-1],
+            "wdays": [1, 2, 3, 4, 5],
         },
     },
     "news_agent.yml": {
@@ -156,10 +156,10 @@ WORKFLOWS = {
         "schedule": {
             "timezone": "UTC",
             "minutes": [7],  # 2026-06-16: */5→*/15 egress cut (backstops the */15 GHA cron)
-            "hours": [-1],
+            "hours": [0, 3, 6, 9, 12, 15, 18, 21],
             "mdays": [-1],
             "months": [-1],
-            "wdays": [-1],
+            "wdays": [1, 2, 3, 4, 5],
         },
     },
     "thesis_agent.yml": {
@@ -167,10 +167,10 @@ WORKFLOWS = {
         "schedule": {
             "timezone": "UTC",
             "minutes": [17],  # 2026-06-16: */5→*/15 egress cut (backstops the */15 GHA cron)
-            "hours": [-1],
+            "hours": [0, 3, 6, 9, 12, 15, 18, 21],
             "mdays": [-1],
             "months": [-1],
-            "wdays": [-1],
+            "wdays": [1, 2, 3, 4, 5],
         },
     },
     "truth_social_agent.yml": {
@@ -178,10 +178,10 @@ WORKFLOWS = {
         "schedule": {
             "timezone": "UTC",
             "minutes": [7],  # 2026-06-16: */5→*/15 egress cut (backstops the */15 GHA cron)
-            "hours": [-1],
+            "hours": [0, 3, 6, 9, 12, 15, 18, 21],
             "mdays": [-1],
             "months": [-1],
-            "wdays": [-1],
+            "wdays": [1, 2, 3, 4, 5],
         },
     },
     # ---------------------------------------------------------------
@@ -200,10 +200,10 @@ WORKFLOWS = {
         "schedule": {
             "timezone": "UTC",
             "minutes": [22],
-            "hours": [-1],
+            "hours": [0, 3, 6, 9, 12, 15, 18, 21],
             "mdays": [-1],
             "months": [-1],
-            "wdays": [-1],
+            "wdays": [1, 2, 3, 4, 5],
         },
     },
     "realistic_loop_agent.yml": {
@@ -214,10 +214,10 @@ WORKFLOWS = {
         "schedule": {
             "timezone": "UTC",
             "minutes": [32],
-            "hours": [-1],
+            "hours": [0, 3, 6, 9, 12, 15, 18, 21],
             "mdays": [-1],
             "months": [-1],
-            "wdays": [-1],
+            "wdays": [1, 2, 3, 4, 5],
         },
     },
     "price_agent.yml": {
@@ -227,7 +227,7 @@ WORKFLOWS = {
         "schedule": {
             "timezone": "UTC",
             "minutes": [17],
-            "hours": [0, 2, 4, 6, 8, 10, 12, 14, 16, 18, 20, 22],
+            "hours": [0, 3, 6, 9, 12, 15, 18, 21],
             "mdays": [-1],
             "months": [-1],
             "wdays": [1, 2, 3, 4, 5],
@@ -241,10 +241,10 @@ WORKFLOWS = {
         "schedule": {
             "timezone": "UTC",
             "minutes": [47],
-            "hours": [-1],
+            "hours": [0, 3, 6, 9, 12, 15, 18, 21],
             "mdays": [-1],
             "months": [-1],
-            "wdays": [-1],
+            "wdays": [1, 2, 3, 4, 5],
         },
     },
 }

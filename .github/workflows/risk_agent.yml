@@ -12,7 +12,7 @@ name: risk_agent
 
 on:
   schedule:
-    - cron: "*/30 * * * *"
+    - cron: "40 */3 * * 1-5"  # 2026-10-05: every 3h on weekdays (cron+pinger+orchestrator+dashboard+pulsecheck aligned)
   workflow_dispatch:
   workflow_run:
     workflows:

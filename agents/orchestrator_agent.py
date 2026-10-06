@@ -56,22 +56,22 @@ class AgentExpectation:
 # cron fired late.
 EXPECTED: list[AgentExpectation] = [
     # ----- always-on agents -----
-    AgentExpectation("filing_agent",          "hourly, 24/7",          3.0,  False),
-    AgentExpectation("news_agent",            "hourly, 24/7",          3.0,  False),
-    AgentExpectation("thesis_agent",          "hourly, 24/7",          3.0,  False),
-    AgentExpectation("truth_social_agent",    "hourly, 24/7",          3.0,  False),
-    AgentExpectation("paper_trade_agent",     "hourly, 24/7",          3.0,  False),
+    AgentExpectation("filing_agent", "every 3h, trading days", 8.0, True),
+    AgentExpectation("news_agent", "every 3h, trading days", 8.0, True),
+    AgentExpectation("thesis_agent", "every 3h, trading days", 8.0, True),
+    AgentExpectation("truth_social_agent", "every 3h, trading days", 8.0, True),
+    AgentExpectation("paper_trade_agent", "every 3h, trading days", 8.0, True),
     AgentExpectation("site_generator",        "once daily (EOD) via pinger", 30.0, False),
-    AgentExpectation("risk_agent",            "every 30 min, 24/7",    2.0,  False),
-    AgentExpectation("trade_setup_agent",     "every 30 min, 24/7",    2.0,  False),
-    AgentExpectation("event_paper_agent",     "hourly, 24/7",          4.0,  False),
-    AgentExpectation("activist_insider_agent","every 2h, 24/7",        5.0,  False),
+    AgentExpectation("risk_agent", "every 3h, trading days", 8.0, True),
+    AgentExpectation("trade_setup_agent", "every 3h, trading days", 8.0, True),
+    AgentExpectation("event_paper_agent", "every 3h, trading days", 8.0, True),
+    AgentExpectation("activist_insider_agent", "every 3h, trading days", 8.0, True),
 
     # ----- daily anytime -----
     AgentExpectation("audit_agent",           "daily 04:00 UTC",       26.0, False),
 
     # ----- trading-day only -----
-    AgentExpectation("intraday_alert_agent",  "*/15 during US session",  2.0, True),
+    AgentExpectation("intraday_alert_agent", "3 runs/day in session (14,17,20 UTC)", 64.0, True),  # orchestrator runs 04:30 UTC, outside the session: Fri 20:00 -> Mon 04:30 = 56h
     AgentExpectation("consumer_health_agent", "daily 15:00 UTC weekdays", 28.0, True),
     AgentExpectation("energy_transition_agent","daily 13:45 UTC weekdays", 28.0, True),
     AgentExpectation("biotech_agent",         "daily 14:00 UTC weekdays", 28.0, True),
@@ -83,7 +83,7 @@ EXPECTED: list[AgentExpectation] = [
     # but the watchdog still said daily/28h — a multi-hour stall (the 513-class
     # stuck-trade incident) could hide for a day+. 5h covers the 2h cadence + a
     # skipped run + GHA best-effort; trading_only adds weekend slack.
-    AgentExpectation("price_agent",           "every 2h weekday (0 */2 * * 1-5)", 5.0, True),
+    AgentExpectation("price_agent", "every 3h, trading days", 8.0, True),
     # H7: learning_snapshot had NO watchdog and already failed silently once
     # (5/30-6/08). Weekday daily at 22:00 UTC (records as workflow_learning_snapshot).
     AgentExpectation("learning_snapshot",     "weekdays 22:00 UTC",    28.0, True),

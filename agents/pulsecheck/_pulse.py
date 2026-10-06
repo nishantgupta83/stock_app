@@ -30,6 +30,14 @@ import requests
 
 SUPABASE_URL = os.environ["SUPABASE_URL"]
 SUPABASE_SERVICE_KEY = os.environ["SUPABASE_SERVICE_KEY"]
+
+
+def in_trading_session() -> bool:
+    """True on a US trading day between 13:00 and 21:00 UTC. Hot-path agents run every 3h on
+    trading days only, so run-count checks are meaningless outside it (weekends, Monday-early)."""
+    from _market_calendar import is_trading_day
+    n = datetime.now(timezone.utc)
+    return is_trading_day(n.date()) and 13 <= n.hour < 21
 HEADERS_SB = {
     "apikey": SUPABASE_SERVICE_KEY,
     "Authorization": f"Bearer {SUPABASE_SERVICE_KEY}",
