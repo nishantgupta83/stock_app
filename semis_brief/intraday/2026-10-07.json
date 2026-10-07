@@ -166,6 +166,87 @@
     "SOXS": []
    },
    "sent": "telegram"
+  },
+  "t1100et": {
+   "at": "2026-10-07T08:00:37-07:00",
+   "late_min": 0,
+   "per": {
+    "SOXL": {
+     "price": 155.77000427246094,
+     "vwap": 154.7199647553529,
+     "vs_vwap": 0.006786709903717991,
+     "above_vwap": true,
+     "session_open": 153.6999969482422,
+     "from_open": 0.013467842324784263,
+     "vwap_events": {
+      "n_below": 4,
+      "first_below": 1,
+      "last_below": 6,
+      "n_bars": 18
+     },
+     "opening_range": {
+      "high": 156.10000610351562,
+      "low": 151.4199981689453,
+      "complete": true
+     },
+     "or_break": "inside",
+     "atr": 11.561022114608784,
+     "atr_pct": 0.07421853885544698,
+     "noise_dollars": 289.0255528652196,
+     "anchors": {
+      "peak": {
+       "date": "2026-06-22",
+       "px": 300.7699890136719,
+       "avwap": 144.23130574559906
+      },
+      "trough": {
+       "date": "2026-07-29",
+       "px": 91.98999786376953,
+       "avwap": 126.9271326018527
+      }
+     }
+    },
+    "SOXS": {
+     "price": 31.170000076293945,
+     "vwap": 31.374584471004322,
+     "vs_vwap": -0.006520704517997689,
+     "above_vwap": false,
+     "session_open": 31.549999237060547,
+     "from_open": -0.012044347700656433,
+     "vwap_events": {
+      "n_below": 13,
+      "first_below": 0,
+      "last_below": 17,
+      "n_bars": 18
+     },
+     "opening_range": {
+      "high": 31.969999313354492,
+      "low": 31.1200008392334,
+      "complete": true
+     },
+     "or_break": "inside",
+     "atr": 3.3485487131574523,
+     "atr_pct": 0.10742857571258589,
+     "noise_dollars": 83.71371782893631,
+     "anchors": {
+      "peak": {
+       "date": "2025-10-10",
+       "px": 1184.2846281392433,
+       "avwap": 77.83230707307803
+      },
+      "trough": {
+       "date": "2026-10-05",
+       "px": 29.6200008392334,
+       "avwap": 30.120847906616074
+      }
+     }
+    }
+   },
+   "triggers": {
+    "SOXL": [],
+    "SOXS": []
+   },
+   "sent": "telegram"
   }
  },
  "fired": [
