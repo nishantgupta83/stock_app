@@ -1,0 +1,518 @@
+{
+ "date": "2026-10-08",
+ "generated_at": "2026-10-08T13:00:43+00:00",
+ "snapshot_cutoff": "2026-10-08T13:00:43.835174+00:00",
+ "prior_session": "2026-10-07",
+ "calendar_verified": true,
+ "weights": {
+  "INTC": 0.09591231,
+  "AMD": 0.09280071,
+  "MU": 0.0793287,
+  "NVDA": 0.0738637,
+  "AVGO": 0.0677134,
+  "MRVL": 0.044567,
+  "AMAT": 0.03983,
+  "KLAC": 0.039666902,
+  "ADI": 0.039111,
+  "LRCX": 0.0389026
+ },
+ "weights_source": "yfinance",
+ "premarket": {
+  "INTC": {
+   "price": 110.54,
+   "ts": "2026-10-08T13:00:39+00:00",
+   "prior_close": 113.12000274658203,
+   "move": -0.02280766163312331
+  },
+  "AMD": {
+   "price": 637.01,
+   "ts": "2026-10-08T13:00:13+00:00",
+   "prior_close": 645.8599853515625,
+   "move": -0.013702637649466998
+  },
+  "MU": {
+   "price": 1074.0,
+   "ts": "2026-10-08T13:00:36+00:00",
+   "prior_close": 1088.0,
+   "move": -0.012867647058823484
+  },
+  "NVDA": {
+   "price": 235.26,
+   "ts": "2026-10-08T12:55:00+00:00",
+   "prior_close": 237.47000122070312,
+   "move": -0.009306443800660036
+  },
+  "AVGO": {
+   "price": 370.275,
+   "ts": "2026-10-08T13:00:30+00:00",
+   "prior_close": 376.510009765625,
+   "move": -0.01656001063426249
+  },
+  "MRVL": {
+   "price": 278.01,
+   "ts": "2026-10-08T13:00:35+00:00",
+   "prior_close": 284.67999267578125,
+   "move": -0.023429790808578654
+  },
+  "AMAT": {
+   "price": 508.02,
+   "ts": "2026-10-08T13:00:36+00:00",
+   "prior_close": 520.6500244140625,
+   "move": -0.024258184618883516
+  },
+  "KLAC": {
+   "price": 192.0,
+   "ts": "2026-10-08T13:00:26+00:00",
+   "prior_close": 196.8300018310547,
+   "move": -0.02453895130885808
+  },
+  "ADI": {
+   "price": 403.85,
+   "ts": "2026-10-08T10:15:00+00:00",
+   "prior_close": 410.0799865722656,
+   "move": null,
+   "why_missing": "stale"
+  },
+  "LRCX": {
+   "price": 321.11,
+   "ts": "2026-10-08T12:50:08+00:00",
+   "prior_close": 329.510009765625,
+   "move": -0.025492426684093017
+  },
+  "SOXX": {
+   "price": 572.0,
+   "ts": "2026-10-08T12:55:00+00:00",
+   "prior_close": 582.8200073242188,
+   "move": -0.0185649208816534
+  },
+  "SOXL": {
+   "price": 149.72,
+   "ts": "2026-10-08T12:55:00+00:00",
+   "prior_close": 158.91000366210938,
+   "move": -0.057831498649072444
+  },
+  "SOXS": {
+   "price": 32.37,
+   "ts": "2026-10-08T12:55:00+00:00",
+   "prior_close": 30.649999618530273,
+   "move": 0.056117468283094274
+  }
+ },
+ "implied": {
+  "implied_soxx": -0.017926012363548793,
+  "n_used": 9,
+  "n_missing": 1,
+  "coverage": 0.9360614105507079,
+  "contrib": {
+   "INTC": -0.0038204533523324043,
+   "AMD": -0.0022208297242088024,
+   "MU": -0.001782745163061114,
+   "NVDA": -0.001200534394695526,
+   "AVGO": -0.0019583712348149743,
+   "MRVL": -0.0018236504619409803,
+   "AMAT": -0.001687440205409475,
+   "KLAC": -0.0016999810147966823,
+   "LRCX": -0.0017320068122888366
+  },
+  "dispersion": 0.005771186323717687,
+  "n_up": 0,
+  "n_down": 9
+ },
+ "implied_soxx": -0.017926012363548793,
+ "implied_soxl": -0.05377803709064638,
+ "implied_soxs": 0.05377803709064638,
+ "bias": "lean_soxs",
+ "components": {
+  "overnight_asia_eu": -0.01954607137700517,
+  "nasdaq_futures": -0.005795784304346463,
+  "news_net": 9,
+  "social_skew": 33
+ },
+ "overnight": {
+  "2330.TW": {
+   "label": "TSMC (Taiwan)",
+   "move": -0.013539651837524147
+  },
+  "000660.KS": {
+   "label": "SK Hynix",
+   "move": -0.024376088218224012
+  },
+  "005930.KS": {
+   "label": "Samsung",
+   "move": -0.02420856610800748
+  },
+  "8035.T": {
+   "label": "Tokyo Electron",
+   "move": -0.024800000000000044
+  },
+  "ASML.AS": {
+   "label": "ASML (Amsterdam)",
+   "move": -0.010806050721270166
+  }
+ },
+ "nasdaq_futures": -0.005795784304346463,
+ "news": [
+  {
+   "ticker": "NVDA",
+   "title": "1 Stat That Makes Nike Hard to Ignore This October",
+   "link": "https://www.fool.com/investing/2026/10/08/1-stat-that-makes-nike-hard-to-ignore-this-october/?.tsrc=rss",
+   "published": "2026-10-08 12:50:00+00:00",
+   "tag": 0
+  },
+  {
+   "ticker": "NVDA",
+   "title": "The Unconventional Route to Fusion Power Just Hit a World First",
+   "link": "https://finance.yahoo.com/news/unconventional-route-fusion-power-just-124700118.html?.tsrc=rss",
+   "published": "2026-10-08 12:47:00+00:00",
+   "tag": 0
+  },
+  {
+   "ticker": "MU",
+   "title": "Micron Is Making Record Profits, But a Taiwan Union Just Voted 99% to Authorize a Strike",
+   "link": "https://247wallst.com/investing/2026/10/08/micron-is-making-record-profits-but-a-taiwan-union-just-voted-99-to-authorize-a-strike/?.tsrc=rss",
+   "published": "2026-10-08 12:45:58+00:00",
+   "tag": 1
+  },
+  {
+   "ticker": "INTC",
+   "title": "AMD\u2019s Biggest Analyst Price Target Is Eye-Opening. Here\u2019s What It Would Take to Reach It",
+   "link": "https://247wallst.com/investing/2026/10/08/amds-biggest-analyst-price-target-is-eye-opening-heres-what-it-would-take-to-reach-it/?.tsrc=rss",
+   "published": "2026-10-08 12:45:43+00:00",
+   "tag": 0
+  },
+  {
+   "ticker": "INTC",
+   "title": "Elon Musk Reaffirms Control Over Terafab AI Chip Complex As Intel Remains Involved",
+   "link": "https://www.tikr.com/blog/elon-musk-terafab-ai-chip-complex-intel-remains-involved?ref=yahoofinance&.tsrc=rss",
+   "published": "2026-10-08 12:43:20+00:00",
+   "tag": 0
+  },
+  {
+   "ticker": "NVDA",
+   "title": "Data Centers Are Running Out of Transformers. Here's the Industrial Stock With a 3-Year Backlog.",
+   "link": "https://www.fool.com/investing/2026/10/08/data-center-run-out-transformers-stock-backlog/?.tsrc=rss",
+   "published": "2026-10-08 12:35:00+00:00",
+   "tag": 0
+  },
+  {
+   "ticker": "AVGO",
+   "title": "Stock Futures Fall on Higher Oil Prices, AI Pullback",
+   "link": "https://www.wsj.com/finance/commodities-futures/global-stocks-fall-on-higher-oil-prices-ai-pullback-05f7b87e?.tsrc=rss",
+   "published": "2026-10-08 12:35:00+00:00",
+   "tag": 0
+  },
+  {
+   "ticker": "NVDA",
+   "title": "Upscale Introduces Token Fabric, the Industry's Most Comprehensive Standards-Based Networking Portfolio for AI Factories",
+   "link": "https://finance.yahoo.com/technology/ai/articles/upscale-introduces-token-fabric-industrys-123000002.html?.tsrc=rss",
+   "published": "2026-10-08 12:30:00+00:00",
+   "tag": 0
+  },
+  {
+   "ticker": "MU",
+   "title": "Why Micron Stock Isn\u2019t Getting a Boost From Samsung\u2019s 783% Profit Jump",
+   "link": "https://finance.yahoo.com/m/fbbd4618-edc4-3c5c-863f-cfb39ac385b4/why-micron-stock-isn%E2%80%99t.html?.tsrc=rss",
+   "published": "2026-10-08 12:28:00+00:00",
+   "tag": 0
+  },
+  {
+   "ticker": "NVDA",
+   "title": "Here's What a $5,000 Investment in SpaceX Stock Could Be Worth in 3 Years",
+   "link": "https://www.fool.com/investing/2026/10/08/heres-what-a-5000-investment-in-spacex-stock-could/?.tsrc=rss",
+   "published": "2026-10-08 12:20:00+00:00",
+   "tag": 0
+  }
+ ],
+ "news_net": 9,
+ "filings": [],
+ "truth_social": [],
+ "social": {
+  "SOXL": {
+   "bull": 7,
+   "bear": 9,
+   "msgs": 30,
+   "last12h": 30,
+   "vol_ratio": 1.0
+  },
+  "SOXS": {
+   "bull": 4,
+   "bear": 3,
+   "msgs": 30,
+   "last12h": 21,
+   "vol_ratio": 0.9130434782608695
+  },
+  "SOXX": {
+   "bull": 14,
+   "bear": 3,
+   "msgs": 30,
+   "last12h": 13,
+   "vol_ratio": 0.9285714285714286
+  },
+  "NVDA": {
+   "bull": 12,
+   "bear": 7,
+   "msgs": 30,
+   "last12h": 30,
+   "vol_ratio": 1.0
+  },
+  "MU": {
+   "bull": 14,
+   "bear": 0,
+   "msgs": 30,
+   "last12h": 30,
+   "vol_ratio": 1.0
+  },
+  "AMD": {
+   "bull": 10,
+   "bear": 6,
+   "msgs": 30,
+   "last12h": 30,
+   "vol_ratio": 1.0
+  }
+ },
+ "levels": {
+  "soxl_prior_close": 158.91000366210938,
+  "soxl_prior_high": 159.49000549316406,
+  "soxl_prior_low": 151.4199981689453,
+  "soxl_pm_high": 153.27,
+  "soxl_pm_low": 148.48,
+  "soxl_gap": -0.057831498649072444,
+  "gap_fill": {
+   "bucket": "down 4+%",
+   "n": 73,
+   "fill_rate": 0.2876712328767123
+  }
+ },
+ "bands": {
+  "SOXX": {
+   "state": {
+    "as_of": "2026-10-07",
+    "close": 582.8200073242188,
+    "upper": 614.6603600043492,
+    "middle": 552.7725036621093,
+    "lower": 490.8846473198695,
+    "pct_b": 0.7427576703897023,
+    "bandwidth": 0.2239179985698773,
+    "zone": "inside"
+   },
+   "open_trade": null,
+   "record_5y": {
+    "n": 24,
+    "win_rate": 0.7916666666666666,
+    "mean": 0.03354375471187052
+   },
+   "record_live": {
+    "n": 0,
+    "win_rate": null,
+    "mean": null
+   },
+   "last_trade": {
+    "signal_date": "2026-07-29",
+    "entry_date": "2026-07-30",
+    "entry": 491.57000732421875,
+    "exit_date": "2026-08-04",
+    "exit": 542.2100219726562,
+    "ret": 0.10261689259702429,
+    "hold_days": 4
+   }
+  },
+  "SOXL": {
+   "state": {
+    "as_of": "2026-10-07",
+    "close": 158.91000366210938,
+    "upper": 179.97411916910312,
+    "middle": 138.16949958801268,
+    "lower": 96.36488000692223,
+    "pct_b": 0.7480647388007603,
+    "bandwidth": 0.6051208074971899,
+    "zone": "inside"
+   },
+   "open_trade": null,
+   "record_5y": {
+    "n": 24,
+    "win_rate": 0.7083333333333334,
+    "mean": 0.07545322936058657
+   },
+   "record_live": {
+    "n": 0,
+    "win_rate": null,
+    "mean": null
+   },
+   "last_trade": {
+    "signal_date": "2026-07-29",
+    "entry_date": "2026-07-30",
+    "entry": 107.37999725341797,
+    "exit_date": "2026-08-07",
+    "exit": 140.25,
+    "ret": 0.3057091785000558,
+    "hold_days": 7
+   }
+  },
+  "SOXS": {
+   "state": {
+    "as_of": "2026-10-07",
+    "close": 30.649999618530273,
+    "upper": 52.63101557459515,
+    "middle": 37.49550018310547,
+    "lower": 22.359984791615787,
+    "pct_b": 0.27385968077359796,
+    "bandwidth": 0.8073243625276062,
+    "zone": "inside"
+   },
+   "open_trade": {
+    "signal_date": "2026-09-18",
+    "entry_date": "2026-09-21",
+    "entry": 38.75,
+    "last": 30.649999618530273,
+    "unrealized": -0.20923226790889618
+   },
+   "record_5y": {
+    "n": 20,
+    "win_rate": 0.5,
+    "mean": -0.05450411367801486
+   },
+   "record_live": {
+    "n": 0,
+    "win_rate": null,
+    "mean": null
+   },
+   "last_trade": {
+    "signal_date": "2026-04-08",
+    "entry_date": "2026-04-09",
+    "entry": 267.6000061035156,
+    "exit_date": "2026-07-07",
+    "exit": 48.0,
+    "ret": -0.8210278067817675,
+    "hold_days": 61
+   }
+  }
+ },
+ "portfolio": [
+  {
+   "ticker": "VTI",
+   "role": "core",
+   "note": "total US market",
+   "close": 381.0299987792969,
+   "as_of": "2026-10-07",
+   "chg": -0.003947325069000418,
+   "pct_b": 0.8200692305535681,
+   "vs_sma20": 0.010658829527511404,
+   "vs_sma200": 0.06997131731642647,
+   "range_pos": 0.9549712306039808,
+   "range_n": 251,
+   "dollar_volume": 1081833207.3944092,
+   "thin": false
+  },
+  {
+   "ticker": "RRX",
+   "role": "theme",
+   "note": "frameless motors; ~$30M humanoid orders (JPM note, not an RRX filing)",
+   "close": 164.1699981689453,
+   "as_of": "2026-10-07",
+   "chg": -0.013164236795933149,
+   "pct_b": 0.9275268781149906,
+   "vs_sma20": 0.056054446519801626,
+   "vs_sma200": -0.13130488880775326,
+   "range_pos": 0.32364763686759823,
+   "range_n": 251,
+   "dollar_volume": 188723473.12545776,
+   "thin": false
+  },
+  {
+   "ticker": "NOVT",
+   "role": "theme",
+   "note": "ATI force/torque, global #1; no humanoid revenue disclosed",
+   "close": 143.63999938964844,
+   "as_of": "2026-10-07",
+   "chg": -0.03661976184009319,
+   "pct_b": 0.5834760347589284,
+   "vs_sma20": 0.012155157912876247,
+   "vs_sma200": 0.020319004571119015,
+   "range_pos": 0.6388609082238577,
+   "range_n": 251,
+   "dollar_volume": 51291477.23083496,
+   "thin": false
+  },
+  {
+   "ticker": "ALGM",
+   "role": "theme",
+   "note": "2 disclosed humanoid joint design wins",
+   "close": 37.029998779296875,
+   "as_of": "2026-10-07",
+   "chg": -0.04463363305346746,
+   "pct_b": 0.6644549169081475,
+   "vs_sma20": 0.032943719322553466,
+   "vs_sma200": -0.08454489620964745,
+   "range_pos": 0.30392991190917923,
+   "range_n": 251,
+   "dollar_volume": 87319187.51277924,
+   "thin": false
+  },
+  {
+   "ticker": "KOID",
+   "role": "theme",
+   "note": "humanoid ETF, 41 holdings, 0.69%",
+   "close": 36.16999816894531,
+   "as_of": "2026-10-07",
+   "chg": -0.02296062340107563,
+   "pct_b": 0.6004122874486707,
+   "vs_sma20": 0.00791391306247835,
+   "vs_sma200": -0.005696062958758685,
+   "range_pos": 0.5408030580829711,
+   "range_n": 251,
+   "dollar_volume": 4938173.892402649,
+   "thin": false
+  },
+  {
+   "ticker": "MP",
+   "role": "watch",
+   "note": "NdPr + magnets; DoD $110/kg floor",
+   "close": 46.310001373291016,
+   "as_of": "2026-10-07",
+   "chg": -0.04574484776111143,
+   "pct_b": 0.18939629637117467,
+   "vs_sma20": -0.04444533572639775,
+   "vs_sma200": -0.18235321300352658,
+   "range_pos": 0.13559046218630338,
+   "range_n": 251,
+   "dollar_volume": 286559005.8441162,
+   "thin": false
+  },
+  {
+   "ticker": "USAR",
+   "role": "watch",
+   "note": "magnet converter, no mine",
+   "close": 13.229999542236328,
+   "as_of": "2026-10-07",
+   "chg": -0.037117921206510474,
+   "pct_b": 0.08904546769612486,
+   "vs_sma20": -0.11667504645688076,
+   "vs_sma200": -0.31425108476565267,
+   "range_pos": 0.04966392418239523,
+   "range_n": 251,
+   "dollar_volume": 184160873.57840538,
+   "thin": false
+  },
+  {
+   "ticker": "AME",
+   "role": "watch",
+   "note": "no humanoid disclosure found",
+   "close": 248.6199951171875,
+   "as_of": "2026-10-07",
+   "chg": -0.020100922587806935,
+   "pct_b": 0.6514519127224273,
+   "vs_sma20": 0.017810229786265452,
+   "vs_sma200": 0.07618875161381555,
+   "range_pos": 0.8750631610730604,
+   "range_n": 251,
+   "dollar_volume": 316536087.45422363,
+   "thin": false
+  }
+ ],
+ "catalysts": {
+  "earnings_next_7d": [],
+  "macro_today": [
+   "Unemployment Insurance Weekly Claims Report"
+  ]
+ }
+}

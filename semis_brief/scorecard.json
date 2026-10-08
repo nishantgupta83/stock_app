@@ -1,59 +1,59 @@
 {
- "updated": "2026-10-07T13:00:33+00:00",
- "n_graded": 9,
- "n_called": 8,
+ "updated": "2026-10-08T13:00:47+00:00",
+ "n_graded": 10,
+ "n_called": 9,
  "n_no_edge": 1,
  "all": {
   "bias": {
-   "n": 8,
+   "n": 9,
    "hits": 2,
-   "hit_rate": 0.25
+   "hit_rate": 0.2222222222222222
   },
   "fade_called": {
-   "n": 8,
-   "hits": 6,
-   "hit_rate": 0.75
+   "n": 9,
+   "hits": 7,
+   "hit_rate": 0.7777777777777778
   },
   "up_day_base_rate": {
-   "n": 8,
-   "hits": 3,
-   "hit_rate": 0.375
+   "n": 9,
+   "hits": 4,
+   "hit_rate": 0.4444444444444444
   },
-  "follow_compounded": -0.06483989872613671,
-  "follow_n": 8,
-  "fade_compounded": 0.05163598325477525,
-  "fade_n": 8
+  "follow_compounded": -0.0924515645251528,
+  "follow_n": 9,
+  "fade_compounded": 0.08623191163124355,
+  "fade_n": 9
  },
  "last20": {
   "bias": {
-   "n": 8,
+   "n": 9,
    "hits": 2,
-   "hit_rate": 0.25
+   "hit_rate": 0.2222222222222222
   },
   "fade_called": {
-   "n": 8,
-   "hits": 6,
-   "hit_rate": 0.75
+   "n": 9,
+   "hits": 7,
+   "hit_rate": 0.7777777777777778
   },
   "up_day_base_rate": {
-   "n": 8,
-   "hits": 3,
-   "hit_rate": 0.375
+   "n": 9,
+   "hits": 4,
+   "hit_rate": 0.4444444444444444
   },
-  "follow_compounded": -0.06483989872613671,
-  "follow_n": 8,
-  "fade_compounded": 0.05163598325477525,
-  "fade_n": 8
+  "follow_compounded": -0.0924515645251528,
+  "follow_n": 9,
+  "fade_compounded": 0.08623191163124355,
+  "fade_n": 9
  },
  "fade_gap_null_all_days": {
-  "n": 9,
-  "hits": 6,
-  "hit_rate": 0.6666666666666666
+  "n": 10,
+  "hits": 7,
+  "hit_rate": 0.7
  },
  "fade_gap_null_last20": {
-  "n": 9,
-  "hits": 6,
-  "hit_rate": 0.6666666666666666
+  "n": 10,
+  "hits": 7,
+  "hit_rate": 0.7
  },
  "no_edge_days_up_rate": {
   "n": 1,
@@ -62,26 +62,26 @@
  },
  "components": {
   "nasdaq_futures": {
-   "n": 9,
+   "n": 10,
    "hits": 1,
-   "hit_rate": 0.1111111111111111
+   "hit_rate": 0.1
   },
   "news_net": {
-   "n": 7,
-   "hits": 3,
-   "hit_rate": 0.42857142857142855
+   "n": 8,
+   "hits": 4,
+   "hit_rate": 0.5
   },
   "overnight_asia_eu": {
-   "n": 9,
+   "n": 10,
    "hits": 7,
-   "hit_rate": 0.7777777777777778
+   "hit_rate": 0.7
   },
   "social_skew": {
-   "n": 9,
-   "hits": 4,
-   "hit_rate": 0.4444444444444444
+   "n": 10,
+   "hits": 5,
+   "hit_rate": 0.5
   }
  },
  "mean_soxl_oc_on_lean_soxl": -0.0054777593920596335,
- "mean_soxs_oc_on_lean_soxs": -0.009657830486596
+ "mean_soxs_oc_on_lean_soxs": -0.014374907257133918
 }
