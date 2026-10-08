@@ -1,0 +1,91 @@
+{
+ "date": "2026-10-08",
+ "slots": {
+  "open": {
+   "at": "2026-10-08T06:35:27-07:00",
+   "late_min": 0,
+   "per": {
+    "SOXL": {
+     "price": 150.88999938964844,
+     "vwap": 150.49666341145834,
+     "vs_vwap": 0.0026135860375502418,
+     "above_vwap": true,
+     "session_open": 150.52000427246094,
+     "from_open": 0.0024581125875984267,
+     "vwap_events": {
+      "n_below": 0,
+      "first_below": null,
+      "last_below": null,
+      "n_bars": 2
+     },
+     "opening_range": {
+      "high": 151.5,
+      "low": 148.72999572753906,
+      "complete": false
+     },
+     "or_break": null,
+     "atr": 11.462378224317527,
+     "atr_pct": 0.07596512870755492,
+     "noise_dollars": 286.55945560793816,
+     "anchors": {
+      "peak": {
+       "date": "2026-06-22",
+       "px": 300.7699890136719,
+       "avwap": 144.3240307375695
+      },
+      "trough": {
+       "date": "2026-07-29",
+       "px": 91.98999786376953,
+       "avwap": 127.2747035984243
+      }
+     }
+    },
+    "SOXS": {
+     "price": 32.149898529052734,
+     "vwap": 32.220001220703125,
+     "vs_vwap": -0.0021757507447065505,
+     "above_vwap": false,
+     "session_open": 32.20500183105469,
+     "from_open": -0.001711016887718908,
+     "vwap_events": {
+      "n_below": 2,
+      "first_below": 0,
+      "last_below": 1,
+      "n_bars": 2
+     },
+     "opening_range": {
+      "high": 32.560001373291016,
+      "low": 32.02000045776367,
+      "complete": false
+     },
+     "or_break": null,
+     "atr": 3.2458875752177105,
+     "atr_pct": 0.10096105193876478,
+     "noise_dollars": 81.14718938044277,
+     "anchors": {
+      "peak": {
+       "date": "2025-10-10",
+       "px": 1184.2846281392433,
+       "avwap": 77.50899504624084
+      },
+      "trough": {
+       "date": "2026-10-05",
+       "px": 29.6200008392334,
+       "avwap": 30.40560278288847
+      }
+     }
+    }
+   },
+   "triggers": {
+    "SOXL": [],
+    "SOXS": [
+     "VWAP BREAK \u2014 first 5-min close below session VWAP"
+    ]
+   },
+   "sent": "telegram"
+  }
+ },
+ "fired": [
+  "SOXS:VWAP BREAK \u2014 first 5-min close below session VWAP"
+ ]
+}
