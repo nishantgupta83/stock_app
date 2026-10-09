@@ -2,19 +2,19 @@
   "experiment_id": "fwd_prov_long_h1d",
   "config_hash": "f1b6a019435833a8a180b7609cacb0bb88f94948ae54ed6bd9d36175e615b9cc",
   "forward_epoch": "2026-08-03",
-  "captured_at": "2026-10-08T02:18:18.487609+00:00",
+  "captured_at": "2026-10-09T02:36:04.837630+00:00",
   "sync_ok": true,
-  "n_admitted": 193,
-  "n_open": 3,
-  "n_cohorts_forward": 37,
+  "n_admitted": 194,
+  "n_open": 1,
+  "n_cohorts_forward": 38,
   "forward": {
-    "n_cohorts": 37,
-    "n_positions": 190,
-    "weeks": 8.9,
-    "mean_cohort_excess": 0.006972,
-    "mean_cohort_net": 0.006647,
-    "profit_factor": 2.7395,
-    "top_cohort_excess_share": 0.3291,
+    "n_cohorts": 38,
+    "n_positions": 193,
+    "weeks": 9.1,
+    "mean_cohort_excess": 0.007179,
+    "mean_cohort_net": 0.006645,
+    "profit_factor": 2.8396,
+    "top_cohort_excess_share": 0.3112,
     "max_drawdown": 0.0979,
     "subperiods_positive": 2,
     "cohorts": {
@@ -239,15 +239,21 @@
         "net": 0.018726,
         "qqq": 0.013759,
         "excess": 0.004967
+      },
+      "2026-10-07": {
+        "n": 2,
+        "net": 0.006598499999999999,
+        "qqq": -0.008238,
+        "excess": 0.0148365
       }
     },
-    "mean_position_excess": 0.007425,
+    "mean_position_excess": 0.007573,
     "top_ticker": "AI",
-    "top_ticker_excess_share": 0.4201,
-    "top_ticker_positions": 15,
-    "mean_position_excess_ex_top_ticker": 0.005084,
-    "n_positions_ex_top_ticker": 83,
-    "n_positions_deduped": 98
+    "top_ticker_excess_share": 0.4309,
+    "top_ticker_positions": 16,
+    "mean_position_excess_ex_top_ticker": 0.005131,
+    "n_positions_ex_top_ticker": 84,
+    "n_positions_deduped": 100
   },
   "replay": {
     "n_cohorts": 0,
@@ -270,10 +276,10 @@
   },
   "tier": {
     "status": "continue",
-    "mean_cohort_excess": 0.006972,
+    "mean_cohort_excess": 0.007179,
     "max_drawdown": 0.0979,
-    "n_cohorts": 37,
-    "weeks": 8.9,
-    "profit_factor": 2.7395
+    "n_cohorts": 38,
+    "weeks": 9.1,
+    "profit_factor": 2.8396
   }
 }
