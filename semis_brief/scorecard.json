@@ -1,59 +1,59 @@
 {
- "updated": "2026-10-08T13:00:47+00:00",
- "n_graded": 10,
- "n_called": 9,
+ "updated": "2026-10-09T13:00:37+00:00",
+ "n_graded": 11,
+ "n_called": 10,
  "n_no_edge": 1,
  "all": {
   "bias": {
-   "n": 9,
-   "hits": 2,
-   "hit_rate": 0.2222222222222222
+   "n": 10,
+   "hits": 3,
+   "hit_rate": 0.3
   },
   "fade_called": {
-   "n": 9,
+   "n": 10,
    "hits": 7,
-   "hit_rate": 0.7777777777777778
+   "hit_rate": 0.7
   },
   "up_day_base_rate": {
-   "n": 9,
+   "n": 10,
    "hits": 4,
-   "hit_rate": 0.4444444444444444
+   "hit_rate": 0.4
   },
-  "follow_compounded": -0.0924515645251528,
-  "follow_n": 9,
-  "fade_compounded": 0.08623191163124355,
-  "fade_n": 9
+  "follow_compounded": -0.05002189058801754,
+  "follow_n": 10,
+  "fade_compounded": 0.027686901275245868,
+  "fade_n": 10
  },
  "last20": {
   "bias": {
-   "n": 9,
-   "hits": 2,
-   "hit_rate": 0.2222222222222222
+   "n": 10,
+   "hits": 3,
+   "hit_rate": 0.3
   },
   "fade_called": {
-   "n": 9,
+   "n": 10,
    "hits": 7,
-   "hit_rate": 0.7777777777777778
+   "hit_rate": 0.7
   },
   "up_day_base_rate": {
-   "n": 9,
+   "n": 10,
    "hits": 4,
-   "hit_rate": 0.4444444444444444
+   "hit_rate": 0.4
   },
-  "follow_compounded": -0.0924515645251528,
-  "follow_n": 9,
-  "fade_compounded": 0.08623191163124355,
-  "fade_n": 9
+  "follow_compounded": -0.05002189058801754,
+  "follow_n": 10,
+  "fade_compounded": 0.027686901275245868,
+  "fade_n": 10
  },
  "fade_gap_null_all_days": {
-  "n": 10,
+  "n": 11,
   "hits": 7,
-  "hit_rate": 0.7
+  "hit_rate": 0.6363636363636364
  },
  "fade_gap_null_last20": {
-  "n": 10,
+  "n": 11,
   "hits": 7,
-  "hit_rate": 0.7
+  "hit_rate": 0.6363636363636364
  },
  "no_edge_days_up_rate": {
   "n": 1,
@@ -62,26 +62,26 @@
  },
  "components": {
   "nasdaq_futures": {
-   "n": 10,
-   "hits": 1,
-   "hit_rate": 0.1
+   "n": 11,
+   "hits": 2,
+   "hit_rate": 0.18181818181818182
   },
   "news_net": {
-   "n": 8,
+   "n": 9,
    "hits": 4,
-   "hit_rate": 0.5
+   "hit_rate": 0.4444444444444444
   },
   "overnight_asia_eu": {
-   "n": 10,
-   "hits": 7,
-   "hit_rate": 0.7
+   "n": 11,
+   "hits": 8,
+   "hit_rate": 0.7272727272727273
   },
   "social_skew": {
-   "n": 10,
+   "n": 11,
    "hits": 5,
-   "hit_rate": 0.5
+   "hit_rate": 0.45454545454545453
   }
  },
  "mean_soxl_oc_on_lean_soxl": -0.0054777593920596335,
- "mean_soxs_oc_on_lean_soxs": -0.014374907257133918
+ "mean_soxs_oc_on_lean_soxs": -0.0019495325311189582
 }
