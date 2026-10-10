@@ -2,19 +2,19 @@
   "experiment_id": "fwd_prov_long_h1d",
   "config_hash": "f1b6a019435833a8a180b7609cacb0bb88f94948ae54ed6bd9d36175e615b9cc",
   "forward_epoch": "2026-08-03",
-  "captured_at": "2026-10-09T02:36:04.837630+00:00",
+  "captured_at": "2026-10-10T01:56:44.077112+00:00",
   "sync_ok": true,
   "n_admitted": 194,
-  "n_open": 1,
-  "n_cohorts_forward": 38,
+  "n_open": 0,
+  "n_cohorts_forward": 39,
   "forward": {
-    "n_cohorts": 38,
-    "n_positions": 193,
-    "weeks": 9.1,
-    "mean_cohort_excess": 0.007179,
-    "mean_cohort_net": 0.006645,
-    "profit_factor": 2.8396,
-    "top_cohort_excess_share": 0.3112,
+    "n_cohorts": 39,
+    "n_positions": 194,
+    "weeks": 9.3,
+    "mean_cohort_excess": 0.006292,
+    "mean_cohort_net": 0.00568,
+    "profit_factor": 2.3965,
+    "top_cohort_excess_share": 0.346,
     "max_drawdown": 0.0979,
     "subperiods_positive": 2,
     "cohorts": {
@@ -245,15 +245,21 @@
         "net": 0.006598499999999999,
         "qqq": -0.008238,
         "excess": 0.0148365
+      },
+      "2026-10-08": {
+        "n": 1,
+        "net": -0.031,
+        "qqq": -0.003581,
+        "excess": -0.027419
       }
     },
-    "mean_position_excess": 0.007573,
+    "mean_position_excess": 0.007227,
     "top_ticker": "AI",
-    "top_ticker_excess_share": 0.4309,
+    "top_ticker_excess_share": 0.4471,
     "top_ticker_positions": 16,
-    "mean_position_excess_ex_top_ticker": 0.005131,
-    "n_positions_ex_top_ticker": 84,
-    "n_positions_deduped": 100
+    "mean_position_excess_ex_top_ticker": 0.004748,
+    "n_positions_ex_top_ticker": 85,
+    "n_positions_deduped": 101
   },
   "replay": {
     "n_cohorts": 0,
@@ -276,10 +282,10 @@
   },
   "tier": {
     "status": "continue",
-    "mean_cohort_excess": 0.007179,
+    "mean_cohort_excess": 0.006292,
     "max_drawdown": 0.0979,
-    "n_cohorts": 38,
-    "weeks": 9.1,
-    "profit_factor": 2.8396
+    "n_cohorts": 39,
+    "weeks": 9.3,
+    "profit_factor": 2.3965
   }
 }
