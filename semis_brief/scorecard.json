@@ -1,59 +1,59 @@
 {
- "updated": "2026-10-09T13:00:37+00:00",
- "n_graded": 11,
- "n_called": 10,
+ "updated": "2026-10-12T13:00:38+00:00",
+ "n_graded": 12,
+ "n_called": 11,
  "n_no_edge": 1,
  "all": {
   "bias": {
-   "n": 10,
+   "n": 11,
    "hits": 3,
-   "hit_rate": 0.3
+   "hit_rate": 0.2727272727272727
   },
   "fade_called": {
-   "n": 10,
-   "hits": 7,
-   "hit_rate": 0.7
+   "n": 11,
+   "hits": 8,
+   "hit_rate": 0.7272727272727273
   },
   "up_day_base_rate": {
-   "n": 10,
+   "n": 11,
    "hits": 4,
-   "hit_rate": 0.4
+   "hit_rate": 0.36363636363636365
   },
-  "follow_compounded": -0.05002189058801754,
-  "follow_n": 10,
-  "fade_compounded": 0.027686901275245868,
-  "fade_n": 10
+  "follow_compounded": -0.10495225968913702,
+  "follow_n": 11,
+  "fade_compounded": 0.08977941936927558,
+  "fade_n": 11
  },
  "last20": {
   "bias": {
-   "n": 10,
+   "n": 11,
    "hits": 3,
-   "hit_rate": 0.3
+   "hit_rate": 0.2727272727272727
   },
   "fade_called": {
-   "n": 10,
-   "hits": 7,
-   "hit_rate": 0.7
+   "n": 11,
+   "hits": 8,
+   "hit_rate": 0.7272727272727273
   },
   "up_day_base_rate": {
-   "n": 10,
+   "n": 11,
    "hits": 4,
-   "hit_rate": 0.4
+   "hit_rate": 0.36363636363636365
   },
-  "follow_compounded": -0.05002189058801754,
-  "follow_n": 10,
-  "fade_compounded": 0.027686901275245868,
-  "fade_n": 10
+  "follow_compounded": -0.10495225968913702,
+  "follow_n": 11,
+  "fade_compounded": 0.08977941936927558,
+  "fade_n": 11
  },
  "fade_gap_null_all_days": {
-  "n": 11,
-  "hits": 7,
-  "hit_rate": 0.6363636363636364
+  "n": 12,
+  "hits": 8,
+  "hit_rate": 0.6666666666666666
  },
  "fade_gap_null_last20": {
-  "n": 11,
-  "hits": 7,
-  "hit_rate": 0.6363636363636364
+  "n": 12,
+  "hits": 8,
+  "hit_rate": 0.6666666666666666
  },
  "no_edge_days_up_rate": {
   "n": 1,
@@ -62,26 +62,26 @@
  },
  "components": {
   "nasdaq_futures": {
-   "n": 11,
+   "n": 12,
    "hits": 2,
-   "hit_rate": 0.18181818181818182
+   "hit_rate": 0.16666666666666666
   },
   "news_net": {
-   "n": 9,
+   "n": 10,
    "hits": 4,
-   "hit_rate": 0.4444444444444444
+   "hit_rate": 0.4
   },
   "overnight_asia_eu": {
-   "n": 11,
-   "hits": 8,
-   "hit_rate": 0.7272727272727273
+   "n": 12,
+   "hits": 9,
+   "hit_rate": 0.75
   },
   "social_skew": {
-   "n": 11,
+   "n": 12,
    "hits": 5,
-   "hit_rate": 0.45454545454545453
+   "hit_rate": 0.4166666666666667
   }
  },
- "mean_soxl_oc_on_lean_soxl": -0.0054777593920596335,
+ "mean_soxl_oc_on_lean_soxl": -0.014035261752266067,
  "mean_soxs_oc_on_lean_soxs": -0.0019495325311189582
 }
