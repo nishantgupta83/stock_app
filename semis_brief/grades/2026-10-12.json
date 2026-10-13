@@ -1,0 +1,21 @@
+{
+ "date": "2026-10-12",
+ "status": "graded",
+ "bias": "lean_soxs",
+ "soxx_open_to_close": -0.014096045990183437,
+ "soxx_open_to_1030": -0.01458453485986011,
+ "outcome_sign": -1,
+ "soxl_open_to_close": -0.044856052278750336,
+ "soxs_open_to_close": 0.04027968186598563,
+ "soxl_open_actual_vs_prior": -0.03813682055342371,
+ "soxl_open_error": -0.0012507385257379058,
+ "gap_filled": false,
+ "bias_hit": true,
+ "component_hits": {
+  "overnight_asia_eu": true,
+  "nasdaq_futures": true,
+  "news_net": false,
+  "social_skew": false
+ },
+ "fade_gap_hit": false
+}
