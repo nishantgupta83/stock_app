@@ -1,0 +1,518 @@
+{
+ "date": "2026-10-14",
+ "generated_at": "2026-10-14T13:00:42+00:00",
+ "snapshot_cutoff": "2026-10-14T13:00:42.810975+00:00",
+ "prior_session": "2026-10-13",
+ "calendar_verified": true,
+ "weights": {
+  "INTC": 0.09591231,
+  "AMD": 0.09280071,
+  "MU": 0.0793287,
+  "NVDA": 0.0738637,
+  "AVGO": 0.0677134,
+  "MRVL": 0.044567,
+  "AMAT": 0.03983,
+  "KLAC": 0.039666902,
+  "ADI": 0.039111,
+  "LRCX": 0.0389026
+ },
+ "weights_source": "yfinance",
+ "premarket": {
+  "INTC": {
+   "price": 99.9562,
+   "ts": "2026-10-14T12:55:00+00:00",
+   "prior_close": 102.80999755859375,
+   "move": -0.027757977106918186
+  },
+  "AMD": {
+   "price": 590.71,
+   "ts": "2026-10-14T13:00:42+00:00",
+   "prior_close": 605.530029296875,
+   "move": -0.02447447455922802
+  },
+  "MU": {
+   "price": 932.2,
+   "ts": "2026-10-14T12:55:00+00:00",
+   "prior_close": 953.1900024414062,
+   "move": -0.02202079584095984
+  },
+  "NVDA": {
+   "price": 225.84,
+   "ts": "2026-10-14T12:55:00+00:00",
+   "prior_close": 228.52000427246094,
+   "move": -0.011727657195672037
+  },
+  "AVGO": {
+   "price": 353.297,
+   "ts": "2026-10-14T12:55:00+00:00",
+   "prior_close": 357.30999755859375,
+   "move": -0.011231137068689612
+  },
+  "MRVL": {
+   "price": 262.547,
+   "ts": "2026-10-14T12:55:00+00:00",
+   "prior_close": 268.7300109863281,
+   "move": -0.023008263809592422
+  },
+  "AMAT": {
+   "price": 453.5,
+   "ts": "2026-10-14T12:55:00+00:00",
+   "prior_close": 464.239990234375,
+   "move": -0.02313456501012079
+  },
+  "KLAC": {
+   "price": 179.98,
+   "ts": "2026-10-14T12:55:00+00:00",
+   "prior_close": 184.0,
+   "move": -0.021847826086956568
+  },
+  "ADI": {
+   "price": 409.02,
+   "ts": "2026-10-14T12:55:00+00:00",
+   "prior_close": 414.70001220703125,
+   "move": -0.013696677212046038
+  },
+  "LRCX": {
+   "price": 293.07,
+   "ts": "2026-10-14T12:55:00+00:00",
+   "prior_close": 301.1099853515625,
+   "move": -0.026701158190338248
+  },
+  "SOXX": {
+   "price": 532.0,
+   "ts": "2026-10-14T13:00:31+00:00",
+   "prior_close": 543.9000244140625,
+   "move": -0.021879065783978024
+  },
+  "SOXL": {
+   "price": 119.4569,
+   "ts": "2026-10-14T12:55:00+00:00",
+   "prior_close": 127.56999969482422,
+   "move": -0.06359723849049581
+  },
+  "SOXS": {
+   "price": 39.89,
+   "ts": "2026-10-14T12:55:00+00:00",
+   "prior_close": 37.41999816894531,
+   "move": 0.0660075347920388
+  }
+ },
+ "implied": {
+  "implied_soxx": -0.020753987582027685,
+  "n_used": 10,
+  "n_missing": 0,
+  "coverage": 1.0,
+  "contrib": {
+   "INTC": -0.004352374878676547,
+   "AMD": -0.003713032977780921,
+   "MU": -0.0028557979575831926,
+   "NVDA": -0.001416140855599195,
+   "AVGO": -0.0012432614835748632,
+   "MRVL": -0.0016763371894233908,
+   "AMAT": -0.0015063842812399826,
+   "KLAC": -0.0014167742148110374,
+   "ADI": -0.0008757462210804867,
+   "LRCX": -0.0016981375222580668
+  },
+  "dispersion": 0.005774130006199273,
+  "n_up": 0,
+  "n_down": 10
+ },
+ "implied_soxx": -0.020753987582027685,
+ "implied_soxl": -0.062261962746083054,
+ "implied_soxs": 0.062261962746083054,
+ "bias": "lean_soxs",
+ "components": {
+  "overnight_asia_eu": -0.0076392170749094435,
+  "nasdaq_futures": -0.008225654975873575,
+  "news_net": 2,
+  "social_skew": 23
+ },
+ "overnight": {
+  "2330.TW": {
+   "label": "TSMC (Taiwan)",
+   "move": 0.0
+  },
+  "000660.KS": {
+   "label": "SK Hynix",
+   "move": -0.016632016632016633
+  },
+  "005930.KS": {
+   "label": "Samsung",
+   "move": 0.0
+  },
+  "8035.T": {
+   "label": "Tokyo Electron",
+   "move": -0.027260926006058006
+  },
+  "ASML.AS": {
+   "label": "ASML (Amsterdam)",
+   "move": 0.005696857263527422
+  }
+ },
+ "nasdaq_futures": -0.008225654975873575,
+ "news": [
+  {
+   "ticker": "NVDA",
+   "title": "IonQ Announces Pricing of $2.0 Billion Equity Offering",
+   "link": "https://finance.yahoo.com/technology/ai/articles/ionq-announces-pricing-2-0-125000311.html?.tsrc=rss",
+   "published": "2026-10-14 12:50:00+00:00",
+   "tag": 0
+  },
+  {
+   "ticker": "MU",
+   "title": "SK Hynix Delays HBM4 Equipment Orders as Its Stock Falls 5 Days Straight",
+   "link": "https://247wallst.com/investing/2026/10/14/sk-hynix-delays-hbm4-equipment-orders-as-its-stock-falls-5-days-straight/?.tsrc=rss",
+   "published": "2026-10-14 12:45:39+00:00",
+   "tag": -1
+  },
+  {
+   "ticker": "NVDA",
+   "title": "One Stock Could Benefit as AI Spending Moves Beyond Nvidia",
+   "link": "https://247wallst.com/investing/2026/10/14/one-stock-could-benefit-as-ai-spending-moves-beyond-nvidia/?.tsrc=rss",
+   "published": "2026-10-14 12:45:30+00:00",
+   "tag": 0
+  },
+  {
+   "ticker": "INTC",
+   "title": "Nvidia\u2019s Aggressive Buyback Expansion is a Flashing Green Light",
+   "link": "https://247wallst.com/investing/2026/10/14/nvidias-aggressive-buyback-expansion-is-a-flashing-green-light/?.tsrc=rss",
+   "published": "2026-10-14 12:45:10+00:00",
+   "tag": 0
+  },
+  {
+   "ticker": "AMAT",
+   "title": "Every Yield Trap Has a Tell. This $7,750-a-Month Portfolio Avoids All of Them",
+   "link": "https://247wallst.com/personal-finance/2026/10/14/every-yield-trap-has-a-tell-this-7750-a-month-portfolio-avoids-all-of-them/?.tsrc=rss",
+   "published": "2026-10-14 12:33:41+00:00",
+   "tag": 0
+  },
+  {
+   "ticker": "NVDA",
+   "title": "2 Beaten-Down Healthcare Stocks That Could Soar in the Fourth Quarter",
+   "link": "https://www.fool.com/investing/2026/10/14/2-beaten-down-healthcare-stocks-that-could-soar-in/?.tsrc=rss",
+   "published": "2026-10-14 12:20:00+00:00",
+   "tag": 1
+  },
+  {
+   "ticker": "MU",
+   "title": "Elon Musk Backs Micron\u2019s Pricing Restraint After a 4-Day Stock Slide",
+   "link": "https://beincrypto.com/elon-musk-micron-stock-memory-prices/?.tsrc=rss",
+   "published": "2026-10-14 12:17:24+00:00",
+   "tag": 0
+  },
+  {
+   "ticker": "NVDA",
+   "title": "A  $250 Million Why Nvidia Stock in News",
+   "link": "https://finance.yahoo.com/technology/ai/articles/nvidia-pledging-250-million-ai-121544575.html?.tsrc=rss",
+   "published": "2026-10-14 12:15:44+00:00",
+   "tag": 0
+  },
+  {
+   "ticker": "NVDA",
+   "title": "Navitas Semiconductor (NVTS) Stock Looks Cheap On Its 77% Three Year Run",
+   "link": "https://finance.yahoo.com/markets/stocks/articles/navitas-semiconductor-nvts-stock-looks-121056498.html?.tsrc=rss",
+   "published": "2026-10-14 12:10:56+00:00",
+   "tag": 0
+  },
+  {
+   "ticker": "NVDA",
+   "title": "How Investors May Respond To Enbridge (TSX:ENB) Sunrise Expansion And Reaffirmed 2026 Dividend Outlook",
+   "link": "https://finance.yahoo.com/markets/stocks/articles/investors-may-respond-enbridge-tsx-121051857.html?.tsrc=rss",
+   "published": "2026-10-14 12:10:51+00:00",
+   "tag": 0
+  }
+ ],
+ "news_net": 2,
+ "filings": [],
+ "truth_social": [],
+ "social": {
+  "SOXL": {
+   "bull": 11,
+   "bear": 6,
+   "msgs": 30,
+   "last12h": 30,
+   "vol_ratio": 1.0
+  },
+  "SOXS": {
+   "bull": 5,
+   "bear": 6,
+   "msgs": 30,
+   "last12h": 14,
+   "vol_ratio": 0.6511627906976745
+  },
+  "SOXX": {
+   "bull": 5,
+   "bear": 4,
+   "msgs": 30,
+   "last12h": 16,
+   "vol_ratio": 1.1428571428571428
+  },
+  "NVDA": {
+   "bull": 11,
+   "bear": 5,
+   "msgs": 30,
+   "last12h": 30,
+   "vol_ratio": 1.0
+  },
+  "MU": {
+   "bull": 10,
+   "bear": 2,
+   "msgs": 30,
+   "last12h": 30,
+   "vol_ratio": 1.0
+  },
+  "AMD": {
+   "bull": 9,
+   "bear": 5,
+   "msgs": 30,
+   "last12h": 30,
+   "vol_ratio": 1.0
+  }
+ },
+ "levels": {
+  "soxl_prior_close": 127.56999969482422,
+  "soxl_prior_high": 127.91999816894531,
+  "soxl_prior_low": 115.83999633789062,
+  "soxl_pm_high": 128.55,
+  "soxl_pm_low": 119.4569,
+  "soxl_gap": -0.06359723849049581,
+  "gap_fill": {
+   "bucket": "down 4+%",
+   "n": 75,
+   "fill_rate": 0.28
+  }
+ },
+ "bands": {
+  "SOXX": {
+   "state": {
+    "as_of": "2026-10-13",
+    "close": 543.9000244140625,
+    "upper": 606.2649477359851,
+    "middle": 561.3065063476563,
+    "lower": 516.3480649593275,
+    "pct_b": 0.30641586545177113,
+    "bandwidth": 0.1601921263334969,
+    "zone": "inside"
+   },
+   "open_trade": null,
+   "record_5y": {
+    "n": 24,
+    "win_rate": 0.7916666666666666,
+    "mean": 0.03354375471187052
+   },
+   "record_live": {
+    "n": 0,
+    "win_rate": null,
+    "mean": null
+   },
+   "last_trade": {
+    "signal_date": "2026-07-29",
+    "entry_date": "2026-07-30",
+    "entry": 491.57000732421875,
+    "exit_date": "2026-08-04",
+    "exit": 542.2100219726562,
+    "ret": 0.10261689259702429,
+    "hold_days": 4
+   }
+  },
+  "SOXL": {
+   "state": {
+    "as_of": "2026-10-13",
+    "close": 127.56999969482422,
+    "upper": 174.8681839819461,
+    "middle": 143.03049926757814,
+    "lower": 111.19281455321018,
+    "pct_b": 0.2571981173967593,
+    "bandwidth": 0.4451873534302184,
+    "zone": "inside"
+   },
+   "open_trade": null,
+   "record_5y": {
+    "n": 24,
+    "win_rate": 0.7083333333333334,
+    "mean": 0.07545322936058657
+   },
+   "record_live": {
+    "n": 0,
+    "win_rate": null,
+    "mean": null
+   },
+   "last_trade": {
+    "signal_date": "2026-07-29",
+    "entry_date": "2026-07-30",
+    "entry": 107.37999725341797,
+    "exit_date": "2026-08-07",
+    "exit": 140.25,
+    "ret": 0.3057091785000558,
+    "hold_days": 7
+   }
+  },
+  "SOXS": {
+   "state": {
+    "as_of": "2026-10-13",
+    "close": 37.41999816894531,
+    "upper": 45.166516958978924,
+    "middle": 34.94950008392334,
+    "lower": 24.732483208867755,
+    "pct_b": 0.620901145375104,
+    "bandwidth": 0.5846731341233335,
+    "zone": "inside"
+   },
+   "open_trade": null,
+   "record_5y": {
+    "n": 21,
+    "win_rate": 0.5238095238095238,
+    "mean": -0.042335864379200054
+   },
+   "record_live": {
+    "n": 0,
+    "win_rate": null,
+    "mean": null
+   },
+   "last_trade": {
+    "signal_date": "2026-09-18",
+    "entry_date": "2026-09-21",
+    "entry": 38.75,
+    "exit_date": "2026-10-12",
+    "exit": 37.189998626708984,
+    "ret": -0.04065809995589713,
+    "hold_days": 16
+   }
+  }
+ },
+ "portfolio": [
+  {
+   "ticker": "VTI",
+   "role": "core",
+   "note": "total US market",
+   "close": 381.32000732421875,
+   "as_of": "2026-10-13",
+   "chg": -0.0006551877642405612,
+   "pct_b": 0.7372413089246858,
+   "vs_sma20": 0.007776646178265789,
+   "vs_sma200": 0.06820645635188805,
+   "range_pos": 0.9589647387893488,
+   "range_n": 251,
+   "dollar_volume": 1068988815.9103394,
+   "thin": false
+  },
+  {
+   "ticker": "RRX",
+   "role": "theme",
+   "note": "frameless motors; ~$30M humanoid orders (JPM note, not an RRX filing)",
+   "close": 163.27999877929688,
+   "as_of": "2026-10-13",
+   "chg": 0.0007968427071776141,
+   "pct_b": 0.7836031307586914,
+   "vs_sma20": 0.04150587673571371,
+   "vs_sma200": -0.1378183773688021,
+   "range_pos": 0.31551533268453735,
+   "range_n": 251,
+   "dollar_volume": 187797827.72140503,
+   "thin": false
+  },
+  {
+   "ticker": "NOVT",
+   "role": "theme",
+   "note": "ATI force/torque, global #1; no humanoid revenue disclosed",
+   "close": 145.5500030517578,
+   "as_of": "2026-10-13",
+   "chg": 0.0035854945655227066,
+   "pct_b": 0.6753190811644463,
+   "vs_sma20": 0.025816338142387707,
+   "vs_sma200": 0.030825272271217452,
+   "range_pos": 0.6663311181424877,
+   "range_n": 251,
+   "dollar_volume": 51636074.13101196,
+   "thin": false
+  },
+  {
+   "ticker": "ALGM",
+   "role": "theme",
+   "note": "2 disclosed humanoid joint design wins",
+   "close": 33.650001525878906,
+   "as_of": "2026-10-13",
+   "chg": -0.004143219468931814,
+   "pct_b": 0.18491790751896486,
+   "vs_sma20": -0.062112354252109814,
+   "vs_sma200": -0.17132459405383538,
+   "range_pos": 0.2317386047741723,
+   "range_n": 251,
+   "dollar_volume": 87971791.84989929,
+   "thin": false
+  },
+  {
+   "ticker": "KOID",
+   "role": "theme",
+   "note": "humanoid ETF, 41 holdings, 0.69%",
+   "close": 34.66999816894531,
+   "as_of": "2026-10-13",
+   "chg": -0.00028841223017450623,
+   "pct_b": 0.0914392195686698,
+   "vs_sma20": -0.03288798168800555,
+   "vs_sma200": -0.048992309727744265,
+   "range_pos": 0.44365279037470756,
+   "range_n": 251,
+   "dollar_volume": 4938173.892402649,
+   "thin": false
+  },
+  {
+   "ticker": "MP",
+   "role": "watch",
+   "note": "NdPr + magnets; DoD $110/kg floor",
+   "close": 42.43000030517578,
+   "as_of": "2026-10-13",
+   "chg": -0.021448346219666736,
+   "pct_b": -0.07926385965183436,
+   "vs_sma20": -0.10264679972891522,
+   "vs_sma200": -0.2482674930243325,
+   "range_pos": 0.07151117444789269,
+   "range_n": 251,
+   "dollar_volume": 274885761.69166565,
+   "thin": false
+  },
+  {
+   "ticker": "USAR",
+   "role": "watch",
+   "note": "magnet converter, no mine",
+   "close": 11.279999732971191,
+   "as_of": "2026-10-13",
+   "chg": -0.045685277140022684,
+   "pct_b": 0.0040202763340495785,
+   "vs_sma20": -0.20878197815425903,
+   "vs_sma200": -0.4140754497575949,
+   "range_pos": 0.0,
+   "range_n": 251,
+   "dollar_volume": 182869485.97311974,
+   "thin": false
+  },
+  {
+   "ticker": "AME",
+   "role": "watch",
+   "note": "no humanoid disclosure found",
+   "close": 250.47999572753906,
+   "as_of": "2026-10-13",
+   "chg": 0.002361024207978124,
+   "pct_b": 0.6543967466340287,
+   "vs_sma20": 0.014571693162382049,
+   "vs_sma200": 0.08026280267711416,
+   "range_pos": 0.8918337853012241,
+   "range_n": 251,
+   "dollar_volume": 316536087.45422363,
+   "thin": false
+  }
+ ],
+ "catalysts": {
+  "earnings_next_7d": [
+   {
+    "ticker": "LRCX",
+    "date": "2026-10-21"
+   }
+  ],
+  "macro_today": [
+   "Consumer Price Index",
+   "Research Consumer Price Index"
+  ]
+ }
+}
