@@ -1,0 +1,529 @@
+{
+ "date": "2026-10-15",
+ "generated_at": "2026-10-15T13:00:35+00:00",
+ "snapshot_cutoff": "2026-10-15T13:00:35.459115+00:00",
+ "prior_session": "2026-10-14",
+ "calendar_verified": true,
+ "weights": {
+  "INTC": 0.09591231,
+  "AMD": 0.09280071,
+  "MU": 0.0793287,
+  "NVDA": 0.0738637,
+  "AVGO": 0.0677134,
+  "MRVL": 0.044567,
+  "AMAT": 0.03983,
+  "KLAC": 0.039666902,
+  "ADI": 0.039111,
+  "LRCX": 0.0389026
+ },
+ "weights_source": "yfinance",
+ "premarket": {
+  "INTC": {
+   "price": 94.1,
+   "ts": "2026-10-15T13:00:30+00:00",
+   "prior_close": 98.12000274658203,
+   "move": -0.04097026736703868
+  },
+  "AMD": {
+   "price": 548.4109,
+   "ts": "2026-10-15T13:00:28+00:00",
+   "prior_close": 570.8200073242188,
+   "move": -0.03925774681455885
+  },
+  "MU": {
+   "price": 871.5,
+   "ts": "2026-10-15T12:55:00+00:00",
+   "prior_close": 914.1300048828125,
+   "move": -0.046634510031510756
+  },
+  "NVDA": {
+   "price": 216.78,
+   "ts": "2026-10-15T12:55:00+00:00",
+   "prior_close": 221.3000030517578,
+   "move": -0.020424776273955447
+  },
+  "AVGO": {
+   "price": 339.5,
+   "ts": "2026-10-15T13:00:32+00:00",
+   "prior_close": 346.25,
+   "move": -0.01949458483754518
+  },
+  "MRVL": {
+   "price": 235.8,
+   "ts": "2026-10-15T12:55:00+00:00",
+   "prior_close": 245.27999877929688,
+   "move": -0.03864970167350246
+  },
+  "AMAT": {
+   "price": 434.05,
+   "ts": "2026-10-15T12:55:00+00:00",
+   "prior_close": 446.6300048828125,
+   "move": -0.028166501903769903
+  },
+  "KLAC": {
+   "price": 173.57,
+   "ts": "2026-10-15T13:00:35+00:00",
+   "prior_close": 178.80999755859375,
+   "move": -0.029304835468591084
+  },
+  "ADI": {
+   "price": 397.01,
+   "ts": "2026-10-15T12:49:07+00:00",
+   "prior_close": 403.57000732421875,
+   "move": -0.016254942649760906
+  },
+  "LRCX": {
+   "price": 279.5794,
+   "ts": "2026-10-15T12:55:00+00:00",
+   "prior_close": 286.9200134277344,
+   "move": -0.02558418055275613
+  },
+  "SOXX": {
+   "price": 503.0,
+   "ts": "2026-10-15T13:00:19+00:00",
+   "prior_close": 519.4199829101562,
+   "move": -0.03161215095761227
+  },
+  "SOXL": {
+   "price": 99.66,
+   "ts": "2026-10-15T12:55:00+00:00",
+   "prior_close": 110.54000091552734,
+   "move": -0.09842591664027256
+  },
+  "SOXS": {
+   "price": 46.71,
+   "ts": "2026-10-15T12:55:00+00:00",
+   "prior_close": 42.52000045776367,
+   "move": 0.09854185082613953
+  }
+ },
+ "implied": {
+  "implied_soxx": -0.032268777075201725,
+  "n_used": 10,
+  "n_missing": 0,
+  "coverage": 1.0,
+  "contrib": {
+   "INTC": -0.00642402584936631,
+   "AMD": -0.005955809519141263,
+   "MU": -0.00604786218730396,
+   "NVDA": -0.002466337450475243,
+   "AVGO": -0.0021580064706333674,
+   "MRVL": -0.002815941820364557,
+   "AMAT": -0.0018340338669343105,
+   "KLAC": -0.0019003417134470305,
+   "ADI": -0.0010393181046048513,
+   "LRCX": -0.001627100092930836
+  },
+  "dispersion": 0.009847070085986651,
+  "n_up": 0,
+  "n_down": 10
+ },
+ "implied_soxx": -0.032268777075201725,
+ "implied_soxl": -0.09680633122560517,
+ "implied_soxs": 0.09680633122560517,
+ "bias": "lean_soxs",
+ "components": {
+  "overnight_asia_eu": -0.07088732412652923,
+  "nasdaq_futures": -0.0018761726078799779,
+  "news_net": -3,
+  "social_skew": 8
+ },
+ "overnight": {
+  "2330.TW": {
+   "label": "TSMC (Taiwan)",
+   "move": -0.02008032128514059
+  },
+  "000660.KS": {
+   "label": "SK Hynix",
+   "move": -0.11064129668780831
+  },
+  "005930.KS": {
+   "label": "Samsung",
+   "move": -0.09482758620689657
+  },
+  "8035.T": {
+   "label": "Tokyo Electron",
+   "move": -0.07784697508896798
+  },
+  "ASML.AS": {
+   "label": "ASML (Amsterdam)",
+   "move": -0.05104044136383268
+  }
+ },
+ "nasdaq_futures": -0.0018761726078799779,
+ "news": [
+  {
+   "ticker": "AMAT",
+   "title": "Intel vs. Qualcomm: Which Tech Stock Is a Better Buy in 2026?",
+   "link": "https://www.fool.com/coverage/better-buy/2026/10/15/intel-vs-qualcomm-which-tech-stock-is-a-better-buy-in-2026/?.tsrc=rss",
+   "published": "2026-10-15 12:57:01+00:00",
+   "tag": 0
+  },
+  {
+   "ticker": "NVDA",
+   "title": "Nvidia\u2019s Jensen Huang Says US \u2018Absolutely Must\u2019 Work With China On \u2018Potentially Dangerous\u2019 AI",
+   "link": "https://stocktwits.com/news-articles/markets/equity/nvidia-jensen-huang-says-us-absolutely-must-work-with-china-on-potentially-dangerous-ai/cZxWvlSRBAH?.tsrc=rss",
+   "published": "2026-10-15 12:48:47+00:00",
+   "tag": 0
+  },
+  {
+   "ticker": "AMD",
+   "title": "Stock Market Today: Dow Rises, Nasdaq Tumbles As AI Worries Hit Major Players (Live Coverage)",
+   "link": "https://finance.yahoo.com/m/27f9f9ee-5b06-3a78-a91a-ddc2a33bd2d2/stock-market-today%3A-dow.html?.tsrc=rss",
+   "published": "2026-10-15 12:47:55+00:00",
+   "tag": 0
+  },
+  {
+   "ticker": "NVDA",
+   "title": "Coherent Has Massively Diappointed Investors for 6 Months: A Respected Analyst Predicts It Will Double Moving Forward",
+   "link": "https://247wallst.com/investing/2026/10/15/coherent-has-massively-diappointed-investors-for-6-months-a-respected-analyst-predicts-it-will-double-moving-forward/?.tsrc=rss",
+   "published": "2026-10-15 12:45:32+00:00",
+   "tag": 0
+  },
+  {
+   "ticker": "MU",
+   "title": "Seagate Could Have a Long Runway as Data Storage Demand Explodes",
+   "link": "https://247wallst.com/investing/2026/10/15/seagate-could-have-a-long-runway-as-data-storage-demand-explodes/?.tsrc=rss",
+   "published": "2026-10-15 12:45:10+00:00",
+   "tag": 0
+  },
+  {
+   "ticker": "AMD",
+   "title": "Jensen Huang Is Giving $250 Million to AI Safety and Says He\u2019d Cut Off Reckless Customers",
+   "link": "https://247wallst.com/investing/2026/10/15/jensen-huang-is-giving-250-million-to-ai-safety-and-says-hed-cut-off-reckless-customers/?.tsrc=rss",
+   "published": "2026-10-15 12:43:35+00:00",
+   "tag": -1
+  },
+  {
+   "ticker": "AMD",
+   "title": "Advanced Micro Devices vs. Arm: Which Tech Stock Is a Better Buy in 2026?",
+   "link": "https://www.fool.com/coverage/better-buy/2026/10/15/advanced-micro-devices-vs-arm-which-tech-stock-is-a-better-buy-in-2026/?.tsrc=rss",
+   "published": "2026-10-15 12:43:02+00:00",
+   "tag": 0
+  },
+  {
+   "ticker": "NVDA",
+   "title": "Microsoft Went 240 Trading Days Without a Record Close. History Says What Usually Happens Next.",
+   "link": "https://www.fool.com/investing/2026/10/15/microsoft-went-240-trading-days-without-a-record-close-history-says-what-usually-happens-next/?.tsrc=rss",
+   "published": "2026-10-15 12:41:02+00:00",
+   "tag": 1
+  },
+  {
+   "ticker": "NVDA",
+   "title": "Three Dividend ETFs, Three Completely Different Portfolios: NOBL, DGRW, VIG Compared",
+   "link": "https://247wallst.com/investing/etf/2026/10/15/three-dividend-etfs-three-completely-different-portfolios-nobl-dgrw-vig-compared/?.tsrc=rss",
+   "published": "2026-10-15 12:33:10+00:00",
+   "tag": 0
+  },
+  {
+   "ticker": "NVDA",
+   "title": "2 Revolutionary Developments That Should Change Your Investing Thesis on Ford and General Motors",
+   "link": "https://www.fool.com/investing/2026/10/15/2-revolutionary-developments-that-should-change-yo/?.tsrc=rss",
+   "published": "2026-10-15 12:25:00+00:00",
+   "tag": 0
+  }
+ ],
+ "news_net": -3,
+ "filings": [],
+ "truth_social": [],
+ "social": {
+  "SOXL": {
+   "bull": 6,
+   "bear": 8,
+   "msgs": 30,
+   "last12h": 30,
+   "vol_ratio": 1.0
+  },
+  "SOXS": {
+   "bull": 1,
+   "bear": 0,
+   "msgs": 30,
+   "last12h": 30,
+   "vol_ratio": 1.4285714285714286
+  },
+  "SOXX": {
+   "bull": 7,
+   "bear": 4,
+   "msgs": 30,
+   "last12h": 30,
+   "vol_ratio": 2.142857142857143
+  },
+  "NVDA": {
+   "bull": 5,
+   "bear": 4,
+   "msgs": 30,
+   "last12h": 30,
+   "vol_ratio": 1.0
+  },
+  "MU": {
+   "bull": 10,
+   "bear": 6,
+   "msgs": 30,
+   "last12h": 30,
+   "vol_ratio": 1.0
+  },
+  "AMD": {
+   "bull": 7,
+   "bear": 6,
+   "msgs": 30,
+   "last12h": 30,
+   "vol_ratio": 1.0
+  }
+ },
+ "levels": {
+  "soxl_prior_close": 110.54000091552734,
+  "soxl_prior_high": 120.9000015258789,
+  "soxl_prior_low": 109.0,
+  "soxl_pm_high": 104.16,
+  "soxl_pm_low": 99.66,
+  "soxl_gap": -0.09842591664027256,
+  "gap_fill": {
+   "bucket": "down 4+%",
+   "n": 76,
+   "fill_rate": 0.27631578947368424
+  }
+ },
+ "bands": {
+  "SOXX": {
+   "state": {
+    "as_of": "2026-10-14",
+    "close": 519.4199829101562,
+    "upper": 603.0048150623998,
+    "middle": 562.1745056152344,
+    "lower": 521.344196168069,
+    "pct_b": -0.023563539977607045,
+    "bandwidth": 0.14525848838513727,
+    "zone": "below_lower"
+   },
+   "open_trade": {
+    "signal_date": "2026-10-14",
+    "entry_date": null,
+    "entry": null,
+    "last": 519.4199829101562,
+    "unrealized": null,
+    "pending_entry": true
+   },
+   "record_5y": {
+    "n": 24,
+    "win_rate": 0.7916666666666666,
+    "mean": 0.03354375471187052
+   },
+   "record_live": {
+    "n": 0,
+    "win_rate": null,
+    "mean": null
+   },
+   "last_trade": {
+    "signal_date": "2026-07-29",
+    "entry_date": "2026-07-30",
+    "entry": 491.57000732421875,
+    "exit_date": "2026-08-04",
+    "exit": 542.2100219726562,
+    "ret": 0.10261689259702429,
+    "hold_days": 4
+   }
+  },
+  "SOXL": {
+   "state": {
+    "as_of": "2026-10-14",
+    "close": 110.54000091552734,
+    "upper": 173.67712112869117,
+    "middle": 143.35899925231934,
+    "lower": 113.0408773759475,
+    "pct_b": -0.041243921220087104,
+    "bandwidth": 0.4229678225223985,
+    "zone": "below_lower"
+   },
+   "open_trade": {
+    "signal_date": "2026-10-14",
+    "entry_date": null,
+    "entry": null,
+    "last": 110.54000091552734,
+    "unrealized": null,
+    "pending_entry": true
+   },
+   "record_5y": {
+    "n": 24,
+    "win_rate": 0.7083333333333334,
+    "mean": 0.07545322936058657
+   },
+   "record_live": {
+    "n": 0,
+    "win_rate": null,
+    "mean": null
+   },
+   "last_trade": {
+    "signal_date": "2026-07-29",
+    "entry_date": "2026-07-30",
+    "entry": 107.37999725341797,
+    "exit_date": "2026-08-07",
+    "exit": 140.25,
+    "ret": 0.3057091785000558,
+    "hold_days": 7
+   }
+  },
+  "SOXS": {
+   "state": {
+    "as_of": "2026-10-14",
+    "close": 42.52000045776367,
+    "upper": 42.89500414486382,
+    "middle": 34.570000076293944,
+    "lower": 26.24499600772407,
+    "pct_b": 0.977477267037266,
+    "bandwidth": 0.4816317066934963,
+    "zone": "inside"
+   },
+   "open_trade": null,
+   "record_5y": {
+    "n": 21,
+    "win_rate": 0.5238095238095238,
+    "mean": -0.042335864379200054
+   },
+   "record_live": {
+    "n": 0,
+    "win_rate": null,
+    "mean": null
+   },
+   "last_trade": {
+    "signal_date": "2026-09-18",
+    "entry_date": "2026-09-21",
+    "entry": 38.75,
+    "exit_date": "2026-10-12",
+    "exit": 37.189998626708984,
+    "ret": -0.04065809995589713,
+    "hold_days": 16
+   }
+  }
+ },
+ "portfolio": [
+  {
+   "ticker": "VTI",
+   "role": "core",
+   "note": "total US market",
+   "close": 376.8800048828125,
+   "as_of": "2026-10-14",
+   "chg": -0.011643769946828697,
+   "pct_b": 0.3333106492444643,
+   "vs_sma20": -0.004696829113062795,
+   "vs_sma200": 0.05521853790060094,
+   "range_pos": 0.8978245192913803,
+   "range_n": 251,
+   "dollar_volume": 1074445455.0125122,
+   "thin": false
+  },
+  {
+   "ticker": "RRX",
+   "role": "theme",
+   "note": "frameless motors; ~$30M humanoid orders (JPM note, not an RRX filing)",
+   "close": 157.05999755859375,
+   "as_of": "2026-10-14",
+   "chg": -0.038094079294492156,
+   "pct_b": 0.49515237554629415,
+   "vs_sma20": -0.0006744494362364017,
+   "vs_sma200": -0.1709211236734487,
+   "range_pos": 0.25868052747669495,
+   "range_n": 251,
+   "dollar_volume": 187797827.72140503,
+   "thin": false
+  },
+  {
+   "ticker": "NOVT",
+   "role": "theme",
+   "note": "ATI force/torque, global #1; no humanoid revenue disclosed",
+   "close": 140.07000732421875,
+   "as_of": "2026-10-14",
+   "chg": -0.03765026185255638,
+   "pct_b": 0.3867944776827554,
+   "vs_sma20": -0.015328544761374241,
+   "vs_sma200": -0.008594676337591811,
+   "range_pos": 0.5875162781633623,
+   "range_n": 251,
+   "dollar_volume": 51251299.853515625,
+   "thin": false
+  },
+  {
+   "ticker": "ALGM",
+   "role": "theme",
+   "note": "2 disclosed humanoid joint design wins",
+   "close": 32.220001220703125,
+   "as_of": "2026-10-14",
+   "chg": -0.04249629243184505,
+   "pct_b": 0.00835402036816959,
+   "vs_sma20": -0.1009667942832474,
+   "vs_sma200": -0.20706257703108277,
+   "range_pos": 0.2011960973417461,
+   "range_n": 251,
+   "dollar_volume": 87971791.84989929,
+   "thin": false
+  },
+  {
+   "ticker": "KOID",
+   "role": "theme",
+   "note": "humanoid ETF, 41 holdings, 0.69%",
+   "close": 33.36000061035156,
+   "as_of": "2026-10-14",
+   "chg": -0.037784759959034075,
+   "pct_b": -0.20137166539248058,
+   "vs_sma20": -0.06781789293546236,
+   "vs_sma200": -0.08518249010239942,
+   "range_pos": 0.35880838136500454,
+   "range_n": 251,
+   "dollar_volume": 4938173.892402649,
+   "thin": false
+  },
+  {
+   "ticker": "MP",
+   "role": "watch",
+   "note": "NdPr + magnets; DoD $110/kg floor",
+   "close": 39.95000076293945,
+   "as_of": "2026-10-14",
+   "chg": -0.05844919925522152,
+   "pct_b": -0.16331338072961177,
+   "vs_sma20": -0.1469416833824827,
+   "vs_sma200": -0.2913625923981549,
+   "range_pos": 0.03574883649890549,
+   "range_n": 251,
+   "dollar_volume": 280639574.6448517,
+   "thin": false
+  },
+  {
+   "ticker": "USAR",
+   "role": "watch",
+   "note": "magnet converter, no mine",
+   "close": 10.319999694824219,
+   "as_of": "2026-10-14",
+   "chg": -0.08510638837525086,
+   "pct_b": -0.03974513938518494,
+   "vs_sma20": -0.263777441349191,
+   "vs_sma200": -0.46349687837950815,
+   "range_pos": 0.0,
+   "range_n": 251,
+   "dollar_volume": 184502204.03370857,
+   "thin": false
+  },
+  {
+   "ticker": "AME",
+   "role": "watch",
+   "note": "no humanoid disclosure found",
+   "close": 246.8300018310547,
+   "as_of": "2026-10-14",
+   "chg": -0.0145719975995795,
+   "pct_b": 0.4587471396400351,
+   "vs_sma20": -0.003168222516514607,
+   "vs_sma200": 0.06364092434090862,
+   "range_pos": 0.8427285174974185,
+   "range_n": 251,
+   "dollar_volume": 319961202.70080566,
+   "thin": false
+  }
+ ],
+ "catalysts": {
+  "earnings_next_7d": [
+   {
+    "ticker": "LRCX",
+    "date": "2026-10-21"
+   }
+  ],
+  "macro_today": null
+ }
+}
