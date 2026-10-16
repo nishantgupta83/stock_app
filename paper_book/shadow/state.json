@@ -8310,6 +8310,21 @@
 "return_pct": -0.006433,
 "qqq_return_pct": -0.010705,
 "excess_pct": 0.004272
+},
+{
+"setup_id": 656,
+"ticker": "JPM",
+"skip_category": "other",
+"reason_to_skip": "neutral or unknown signal direction",
+"priceable": 1,
+"status": "resolved",
+"entry_date": "2026-10-14",
+"entry_px": 327.17,
+"exit_date": "2026-10-15",
+"exit_px": 335.53,
+"return_pct": 0.025552,
+"qqq_return_pct": -0.001303,
+"excess_pct": 0.026856
 }
 ]
 }
