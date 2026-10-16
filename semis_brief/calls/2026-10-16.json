@@ -1,0 +1,530 @@
+{
+ "date": "2026-10-16",
+ "generated_at": "2026-10-16T13:00:36+00:00",
+ "snapshot_cutoff": "2026-10-16T13:00:36.946729+00:00",
+ "prior_session": "2026-10-15",
+ "calendar_verified": true,
+ "weights": {
+  "INTC": 0.09591231,
+  "AMD": 0.09280071,
+  "MU": 0.0793287,
+  "NVDA": 0.0738637,
+  "AVGO": 0.0677134,
+  "MRVL": 0.044567,
+  "AMAT": 0.03983,
+  "KLAC": 0.039666902,
+  "ADI": 0.039111,
+  "LRCX": 0.0389026
+ },
+ "weights_source": "yfinance",
+ "premarket": {
+  "INTC": {
+   "price": 93.78,
+   "ts": "2026-10-16T13:00:13+00:00",
+   "prior_close": 95.37000274658203,
+   "move": -0.016671937724558883
+  },
+  "AMD": {
+   "price": 551.9,
+   "ts": "2026-10-16T13:00:10+00:00",
+   "prior_close": 562.22998046875,
+   "move": -0.01837322951034659
+  },
+  "MU": {
+   "price": 909.13,
+   "ts": "2026-10-16T12:55:00+00:00",
+   "prior_close": 931.239990234375,
+   "move": -0.02374252659490106
+  },
+  "NVDA": {
+   "price": 216.88,
+   "ts": "2026-10-16T13:00:26+00:00",
+   "prior_close": 217.22999572753906,
+   "move": -0.0016111758708408086
+  },
+  "AVGO": {
+   "price": 341.31,
+   "ts": "2026-10-16T12:55:00+00:00",
+   "prior_close": 344.3299865722656,
+   "move": -0.008770617402013015
+  },
+  "MRVL": {
+   "price": 236.66,
+   "ts": "2026-10-16T13:00:08+00:00",
+   "prior_close": 241.24000549316406,
+   "move": -0.018985265249854444
+  },
+  "AMAT": {
+   "price": 424.0,
+   "ts": "2026-10-16T12:55:00+00:00",
+   "prior_close": 430.010009765625,
+   "move": -0.013976441545862417
+  },
+  "KLAC": {
+   "price": 171.75,
+   "ts": "2026-10-16T13:00:27+00:00",
+   "prior_close": 174.4600067138672,
+   "move": -0.015533684567099026
+  },
+  "ADI": {
+   "price": 399.16,
+   "ts": "2026-10-16T12:46:42+00:00",
+   "prior_close": 403.95001220703125,
+   "move": -0.011857933066669268
+  },
+  "LRCX": {
+   "price": 272.58,
+   "ts": "2026-10-16T12:59:28+00:00",
+   "prior_close": 277.4599914550781,
+   "move": -0.017588090554916058
+  },
+  "SOXX": {
+   "price": 506.83,
+   "ts": "2026-10-16T13:00:27+00:00",
+   "prior_close": 514.7100219726562,
+   "move": -0.015309633844811543
+  },
+  "SOXL": {
+   "price": 102.11,
+   "ts": "2026-10-16T12:55:00+00:00",
+   "prior_close": 107.3499984741211,
+   "move": -0.04881228270705851
+  },
+  "SOXS": {
+   "price": 45.83,
+   "ts": "2026-10-16T12:55:00+00:00",
+   "prior_close": 43.63999938964844,
+   "move": 0.050183332744753395
+  }
+ },
+ "implied": {
+  "implied_soxx": -0.014823403673035807,
+  "n_used": 10,
+  "n_missing": 0,
+  "coverage": 1.0,
+  "contrib": {
+   "INTC": -0.0026141142292802374,
+   "AMD": -0.002787410488227712,
+   "MU": -0.003079083038019195,
+   "NVDA": -0.0001945530925899931,
+   "AVGO": -0.0009708875189043038,
+   "MRVL": -0.0013832293671863258,
+   "AMAT": -0.0009100621448099863,
+   "KLAC": -0.001007318699264681,
+   "ADI": -0.0007581795140669519,
+   "LRCX": -0.0011185655806864201
+  },
+  "dispersion": 0.005844848863377924,
+  "n_up": 0,
+  "n_down": 10
+ },
+ "implied_soxx": -0.014823403673035807,
+ "implied_soxl": -0.04447021101910742,
+ "implied_soxs": 0.04447021101910742,
+ "bias": "lean_soxs",
+ "components": {
+  "overnight_asia_eu": 0.012974142621679906,
+  "nasdaq_futures": -0.004312592604855614,
+  "news_net": null,
+  "social_skew": 23
+ },
+ "overnight": {
+  "2330.TW": {
+   "label": "TSMC (Taiwan)",
+   "move": -0.008196721311475419
+  },
+  "000660.KS": {
+   "label": "SK Hynix",
+   "move": 0.007923930269413626
+  },
+  "005930.KS": {
+   "label": "Samsung",
+   "move": 0.026190476190476097
+  },
+  "8035.T": {
+   "label": "Tokyo Electron",
+   "move": 0.025566811384466925
+  },
+  "ASML.AS": {
+   "label": "ASML (Amsterdam)",
+   "move": 0.013386216575518306
+  }
+ },
+ "nasdaq_futures": -0.004312592604855614,
+ "news": [
+  {
+   "ticker": "NVDA",
+   "title": "Who\u2019s Really Paying for the AI Boom? The Bond Market Is Starting to Ask",
+   "link": "https://247wallst.com/investing/2026/10/16/whos-really-paying-for-the-ai-boom-the-bond-market-is-starting-to-ask/?.tsrc=rss",
+   "published": "2026-10-16 12:50:50+00:00",
+   "tag": 0
+  },
+  {
+   "ticker": "INTC",
+   "title": "Intel Cratered Over The Last 90 Days: This Prominent Analyst Says It\u2019s Going to Double",
+   "link": "https://247wallst.com/investing/2026/10/16/intel-cratered-over-the-last-90-days-this-prominent-analyst-says-its-going-to-double/?.tsrc=rss",
+   "published": "2026-10-16 12:45:02+00:00",
+   "tag": 0
+  },
+  {
+   "ticker": "NVDA",
+   "title": "CoreWeave stock sinks in pre-market as AI financing worries linger",
+   "link": "https://finance.yahoo.com/markets/article/coreweave-stock-sinks-in-pre-market-as-ai-financing-worries-linger-124345588.html?.tsrc=rss",
+   "published": "2026-10-16 12:43:45+00:00",
+   "tag": 0
+  },
+  {
+   "ticker": "NVDA",
+   "title": "The Number Changing My View on Nvidia Stock",
+   "link": "https://www.fool.com/investing/2026/10/16/the-number-changing-my-view-on-nvidia-stock/?.tsrc=rss",
+   "published": "2026-10-16 12:35:00+00:00",
+   "tag": 0
+  },
+  {
+   "ticker": "MU",
+   "title": "Goldman flags 2 memory stocks to buy amid deeper sector pullback",
+   "link": "https://finance.yahoo.com/markets/stocks/articles/goldman-flags-2-memory-stocks-123059503.html?.tsrc=rss",
+   "published": "2026-10-16 12:30:59+00:00",
+   "tag": 0
+  },
+  {
+   "ticker": "NVDA",
+   "title": "Should You Buy Netflix Stock Before Oct. 20? History Has a Clear Answer.",
+   "link": "https://www.fool.com/investing/2026/10/16/should-you-buy-netflix-stock-before-oct-20-history/?.tsrc=rss",
+   "published": "2026-10-16 12:27:00+00:00",
+   "tag": 0
+  },
+  {
+   "ticker": "NVDA",
+   "title": "Cathie Wood Is Buying Shares of This Bargain \u201cMagnificent Seven\u201d Stock Before Oct. 21. Should You?",
+   "link": "https://www.fool.com/investing/2026/10/16/cathie-wood-is-buying-shares-of-this-bargain-magnificent-seven-stock-before-oct-21-should-you/?.tsrc=rss",
+   "published": "2026-10-16 12:25:01+00:00",
+   "tag": 0
+  },
+  {
+   "ticker": "NVDA",
+   "title": "S&P 500 Correction Risk Grows as Index Rally Lacks Broad Participation",
+   "link": "https://finance.yahoo.com/markets/stocks/articles/p-500-correction-risk-grows-121800987.html?.tsrc=rss",
+   "published": "2026-10-16 12:18:00+00:00",
+   "tag": 0
+  },
+  {
+   "ticker": "INTC",
+   "title": "Got $1,000? 1 Top Stock to Buy Amid the Semiconductor Sell-Off Before It Triples by 2030",
+   "link": "https://www.fool.com/investing/2026/10/16/got-usd1-000-1-top-stock-to-buy-amid-the-semiconductor-sell-off-before-it-triples-by-2030/?.tsrc=rss",
+   "published": "2026-10-16 12:16:01+00:00",
+   "tag": 0
+  },
+  {
+   "ticker": "NVDA",
+   "title": "How AI Chips Will Power Google Cloud Revenue In 2027 And Beyond",
+   "link": "https://finance.yahoo.com/m/be5564f9-4e5f-3bd3-9c28-29510cdd1a74/how-ai-chips-will-power.html?.tsrc=rss",
+   "published": "2026-10-16 12:00:34+00:00",
+   "tag": 0
+  }
+ ],
+ "news_net": 0,
+ "filings": [],
+ "truth_social": [],
+ "social": {
+  "SOXL": {
+   "bull": 13,
+   "bear": 6,
+   "msgs": 30,
+   "last12h": 30,
+   "vol_ratio": 1.0
+  },
+  "SOXS": {
+   "bull": 7,
+   "bear": 4,
+   "msgs": 30,
+   "last12h": 19,
+   "vol_ratio": 0.8837209302325582
+  },
+  "SOXX": {
+   "bull": 7,
+   "bear": 8,
+   "msgs": 30,
+   "last12h": 28,
+   "vol_ratio": 1.8666666666666667
+  },
+  "NVDA": {
+   "bull": 7,
+   "bear": 2,
+   "msgs": 30,
+   "last12h": 30,
+   "vol_ratio": 1.0
+  },
+  "MU": {
+   "bull": 9,
+   "bear": 2,
+   "msgs": 30,
+   "last12h": 30,
+   "vol_ratio": 1.0
+  },
+  "AMD": {
+   "bull": 7,
+   "bear": 5,
+   "msgs": 30,
+   "last12h": 30,
+   "vol_ratio": 1.0
+  }
+ },
+ "levels": {
+  "soxl_prior_close": 107.3499984741211,
+  "soxl_prior_high": 108.80000305175781,
+  "soxl_prior_low": 95.2300033569336,
+  "soxl_pm_high": 106.6,
+  "soxl_pm_low": 102.051,
+  "soxl_gap": -0.04881228270705851,
+  "gap_fill": {
+   "bucket": "down 4+%",
+   "n": 77,
+   "fill_rate": 0.2727272727272727
+  }
+ },
+ "bands": {
+  "SOXX": {
+   "state": {
+    "as_of": "2026-10-15",
+    "close": 514.7100219726562,
+    "upper": 603.7451247885152,
+    "middle": 561.9550079345703,
+    "lower": 520.1648910806254,
+    "pct_b": -0.06526506167754553,
+    "bandwidth": 0.1487311840410208,
+    "zone": "below_lower"
+   },
+   "open_trade": {
+    "signal_date": "2026-10-14",
+    "entry_date": "2026-10-15",
+    "entry": 500.42999267578125,
+    "last": 514.7100219726562,
+    "unrealized": 0.028335518465870214
+   },
+   "record_5y": {
+    "n": 24,
+    "win_rate": 0.7916666666666666,
+    "mean": 0.03354375471187052
+   },
+   "record_live": {
+    "n": 0,
+    "win_rate": null,
+    "mean": null
+   },
+   "last_trade": {
+    "signal_date": "2026-07-29",
+    "entry_date": "2026-07-30",
+    "entry": 491.57000732421875,
+    "exit_date": "2026-08-04",
+    "exit": 542.2100219726562,
+    "ret": 0.10261689259702429,
+    "hold_days": 4
+   }
+  },
+  "SOXL": {
+   "state": {
+    "as_of": "2026-10-15",
+    "close": 107.3499984741211,
+    "upper": 174.84558759650488,
+    "middle": 142.9854991912842,
+    "lower": 111.1254107860635,
+    "pct_b": -0.05924987187612061,
+    "bandwidth": 0.44564083190839754,
+    "zone": "below_lower"
+   },
+   "open_trade": {
+    "signal_date": "2026-10-14",
+    "entry_date": "2026-10-15",
+    "entry": 98.3499984741211,
+    "last": 107.3499984741211,
+    "unrealized": 0.09130991499372706
+   },
+   "record_5y": {
+    "n": 24,
+    "win_rate": 0.7083333333333334,
+    "mean": 0.07545322936058657
+   },
+   "record_live": {
+    "n": 0,
+    "win_rate": null,
+    "mean": null
+   },
+   "last_trade": {
+    "signal_date": "2026-07-29",
+    "entry_date": "2026-07-30",
+    "entry": 107.37999725341797,
+    "exit_date": "2026-08-07",
+    "exit": 140.25,
+    "ret": 0.3057091785000558,
+    "hold_days": 7
+   }
+  },
+  "SOXS": {
+   "state": {
+    "as_of": "2026-10-15",
+    "close": 43.63999938964844,
+    "upper": 42.50407221428567,
+    "middle": 34.502499961853026,
+    "lower": 26.50092770942038,
+    "pct_b": 1.07098149835599,
+    "bandwidth": 0.46382565096902645,
+    "zone": "above_upper"
+   },
+   "open_trade": null,
+   "record_5y": {
+    "n": 21,
+    "win_rate": 0.5238095238095238,
+    "mean": -0.042335864379200054
+   },
+   "record_live": {
+    "n": 0,
+    "win_rate": null,
+    "mean": null
+   },
+   "last_trade": {
+    "signal_date": "2026-09-18",
+    "entry_date": "2026-09-21",
+    "entry": 38.75,
+    "exit_date": "2026-10-12",
+    "exit": 37.189998626708984,
+    "ret": -0.04065809995589713,
+    "hold_days": 16
+   }
+  }
+ },
+ "portfolio": [
+  {
+   "ticker": "VTI",
+   "role": "core",
+   "note": "total US market",
+   "close": 378.4200134277344,
+   "as_of": "2026-10-15",
+   "chg": 0.004086203897712082,
+   "pct_b": 0.4616414053345789,
+   "vs_sma20": -0.0010360972044629602,
+   "vs_sma200": 0.05893695214871797,
+   "range_pos": 0.9190309176453977,
+   "range_n": 251,
+   "dollar_volume": 1074445455.0125122,
+   "thin": false
+  },
+  {
+   "ticker": "RRX",
+   "role": "theme",
+   "note": "frameless motors; ~$30M humanoid orders (JPM note, not an RRX filing)",
+   "close": 156.1300048828125,
+   "as_of": "2026-10-15",
+   "chg": -0.005921257419059245,
+   "pct_b": 0.4284570233106536,
+   "vs_sma20": -0.009173338070749049,
+   "vs_sma200": -0.17610409124566173,
+   "range_pos": 0.25018278757323353,
+   "range_n": 251,
+   "dollar_volume": 188723473.12545776,
+   "thin": false
+  },
+  {
+   "ticker": "NOVT",
+   "role": "theme",
+   "note": "ATI force/torque, global #1; no humanoid revenue disclosed",
+   "close": 134.8000030517578,
+   "as_of": "2026-10-15",
+   "chg": -0.037624073655272317,
+   "pct_b": 0.1011316972083239,
+   "vs_sma20": -0.05279206685788418,
+   "vs_sma200": -0.04630714370058919,
+   "range_pos": 0.5117215943580445,
+   "range_n": 251,
+   "dollar_volume": 51251299.853515625,
+   "thin": false
+  },
+  {
+   "ticker": "ALGM",
+   "role": "theme",
+   "note": "2 disclosed humanoid joint design wins",
+   "close": 32.36000061035156,
+   "as_of": "2026-10-15",
+   "chg": 0.004345108142282728,
+   "pct_b": 0.047670688124931776,
+   "vs_sma20": -0.0961146075677165,
+   "vs_sma200": -0.20418808121762255,
+   "range_pos": 0.2041862592203108,
+   "range_n": 251,
+   "dollar_volume": 88418160.92758179,
+   "thin": false
+  },
+  {
+   "ticker": "KOID",
+   "role": "theme",
+   "note": "humanoid ETF, 41 holdings, 0.69%",
+   "close": 32.869998931884766,
+   "as_of": "2026-10-15",
+   "chg": -0.014688299445496766,
+   "pct_b": -0.15317364303656814,
+   "vs_sma20": -0.07841984321120188,
+   "vs_sma200": -0.09879877468284637,
+   "range_pos": 0.32707251853797265,
+   "range_n": 251,
+   "dollar_volume": 5025581.011390686,
+   "thin": false
+  },
+  {
+   "ticker": "MP",
+   "role": "watch",
+   "note": "NdPr + magnets; DoD $110/kg floor",
+   "close": 41.61000061035156,
+   "as_of": "2026-10-15",
+   "chg": 0.041551935311902266,
+   "pct_b": 0.06213430862627529,
+   "vs_sma20": -0.10406303614918666,
+   "vs_sma200": -0.26124116081918725,
+   "range_pos": 0.07673813511501555,
+   "range_n": 251,
+   "dollar_volume": 280639574.6448517,
+   "thin": false
+  },
+  {
+   "ticker": "USAR",
+   "role": "watch",
+   "note": "magnet converter, no mine",
+   "close": 11.09000015258789,
+   "as_of": "2026-10-15",
+   "chg": 0.07461244966410696,
+   "pct_b": 0.1214100672410214,
+   "vs_sma20": -0.19582319900933776,
+   "vs_sma200": -0.42322569012363054,
+   "range_pos": 0.036201243121394354,
+   "range_n": 251,
+   "dollar_volume": 185198822.0591545,
+   "thin": false
+  },
+  {
+   "ticker": "AME",
+   "role": "watch",
+   "note": "no humanoid disclosure found",
+   "close": 248.52000427246094,
+   "as_of": "2026-10-15",
+   "chg": 0.006846827488025564,
+   "pct_b": 0.5134009689748203,
+   "vs_sma20": 0.0007872954989402992,
+   "vs_sma200": 0.07000523520875745,
+   "range_pos": 0.8654650000307926,
+   "range_n": 251,
+   "dollar_volume": 323606589.9040222,
+   "thin": false
+  }
+ ],
+ "catalysts": {
+  "earnings_next_7d": [
+   {
+    "ticker": "LRCX",
+    "date": "2026-10-21"
+   }
+  ],
+  "macro_today": [
+   "G.17 Industrial Production and Capacity Utilization",
+   "State Unemployment Insurance Weekly Claims Report"
+  ]
+ }
+}
